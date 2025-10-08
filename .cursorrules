@@ -1,0 +1,11 @@
+# Project guardrails
+- Always write/update tests (Vitest for units, Playwright for e2e) for every feature.
+- Never run long shell commands without summarizing what they do.
+- After generating code, run the exact npm script and paste the output.
+- Keep DB schema in /db; migrations must be idempotent and scripted.
+- Use SQLite FTS5 for search; add test data seeds.
+- Definition of Done for any task:
+  1) Code + migration + seed
+  2) Unit tests passing
+  3) Playwright e2e for the user story
+  4) Demo steps I (the user) can click through

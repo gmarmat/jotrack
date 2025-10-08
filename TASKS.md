@@ -1,0 +1,8 @@
+- [ ] Init Next.js + Tailwind + ESLint/Prettier
+- [ ] Setup SQLite + ORM + migrations + seed
+- [ ] Jobs CRUD (UI + API) + status history
+- [ ] Attachments: upload, list, delete, sanitize paths
+- [ ] Search (FTS5) + filters/sort on dashboard
+- [ ] Inline previews (PDF/images) + fallback download
+- [ ] Backup/restore ZIP
+- [ ] Tests: Vitest + Playwright flows

@@ -1,0 +1,21 @@
+
+The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshoo
+The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+
+ DEV  v1.6.1 /Users/guaravmarmat/Downloads/ai projects/jotrack
+
+ ✓ __tests__/example.test.ts (2)
+   ✓ Jotrack Unit Tests (2)
+     ✓ should pass a basic test
+     ✓ should validate environment
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  09:56:12
+   Duration  262ms (transform 16ms, setup 0ms, collect 10ms, tests 1ms, environment 0m
+   Duration  262ms (transform 16ms, setup 0ms, collect 10ms, tests 1ms, environment 0ms, prepare 146ms)
+
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+Cancelling test run. Press CTRL+c again to exit forcefully.
