@@ -12,6 +12,9 @@ import {
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
+// Constants
+const MAX_DOCX_PREVIEW_BYTES = 10 * 1024 * 1024;
+
 interface AttachmentViewerModalProps {
   open: boolean;
   onClose: () => void;
@@ -20,7 +23,7 @@ interface AttachmentViewerModalProps {
   filename: string;
 }
 
-type FileType = 'pdf' | 'image' | 'text' | 'markdown' | 'unsupported';
+type FileType = 'pdf' | 'image' | 'text' | 'markdown' | 'docx' | 'unsupported';
 
 function getFileType(mime: string, filename: string): FileType {
   const ext = filename.toLowerCase().split('.').pop() || '';
@@ -29,9 +32,15 @@ function getFileType(mime: string, filename: string): FileType {
   if (mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp'].includes(ext)) return 'image';
   if (mime === 'text/markdown' || ext === 'md') return 'markdown';
   if (mime === 'text/plain' || ext === 'txt') return 'text';
+  if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || ext === 'docx') return 'docx';
   
   return 'unsupported';
 }
+
+// Helper to check if file is DOCX
+const isDocx = (filename: string, mime: string): boolean => {
+  return getFileType(mime, filename) === 'docx';
+};
 
 export default function AttachmentViewerModal({
   open,
@@ -45,6 +54,8 @@ export default function AttachmentViewerModal({
   const [error, setError] = useState<string | null>(null);
   const [content, setContent] = useState<string | null>(null);
   const [pdfPages, setPdfPages] = useState<HTMLCanvasElement[]>([]);
+  const [docxContent, setDocxContent] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number>(0);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const fileType = getFileType(mime, filename);
@@ -125,6 +136,44 @@ export default function AttachmentViewerModal({
     }
   }, [src]);
 
+  // Load DOCX content
+  const loadDocx = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // First, get file size via HEAD request
+      const headResponse = await fetch(src, { method: 'HEAD' });
+      const size = parseInt(headResponse.headers.get('content-length') || '0');
+      setFileSize(size);
+      
+      // Check size limit
+      if (size > MAX_DOCX_PREVIEW_BYTES) {
+        setError(`Preview not supported for large files (>10MB). Use Open externally.`);
+        return;
+      }
+      
+      // Fetch the file as ArrayBuffer
+      const response = await fetch(src);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // Dynamically import mammoth
+      const mammoth = await import("mammoth/mammoth.browser");
+      const { value: html } = await mammoth.convertToHtml(
+        { arrayBuffer }, 
+        { includeDefaultStyleMap: true }
+      );
+      
+      // Sanitize the HTML
+      const sanitizedHtml = DOMPurify.sanitize(html);
+      setDocxContent(sanitizedHtml);
+    } catch (err) {
+      setError('Failed to load DOCX file');
+    } finally {
+      setLoading(false);
+    }
+  }, [src]);
+
   // Load content based on file type
   useEffect(() => {
     if (!open) return;
@@ -132,14 +181,18 @@ export default function AttachmentViewerModal({
     setZoom(1);
     setContent(null);
     setPdfPages([]);
+    setDocxContent(null);
+    setFileSize(0);
     setError(null);
     
     if (fileType === 'pdf') {
       loadPDF();
     } else if (fileType === 'text' || fileType === 'markdown') {
       loadText();
+    } else if (fileType === 'docx') {
+      loadDocx();
     }
-  }, [open, fileType, loadPDF, loadText]);
+  }, [open, fileType, loadPDF, loadText, loadDocx]);
 
   // Handle download
   const handleDownload = () => {
@@ -228,6 +281,17 @@ export default function AttachmentViewerModal({
             <pre className="whitespace-pre-wrap text-sm font-mono">
               {content}
             </pre>
+          </div>
+        );
+
+      case 'docx':
+        return (
+          <div className="overflow-auto h-full p-4">
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert"
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+              dangerouslySetInnerHTML={{ __html: docxContent || '' }}
+            />
           </div>
         );
 

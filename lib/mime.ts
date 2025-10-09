@@ -35,6 +35,6 @@ export function getMimeType(filename: string): string {
 export function isPreviewable(filename: string): boolean {
   const ext = filename.split('.').pop()?.toLowerCase();
   if (!ext) return false;
-  return ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp'].includes(ext);
+  return ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'docx'].includes(ext);
 }
 
