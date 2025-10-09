@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Eye, Download, Trash2, Undo2, ExternalLink, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import DropZone from "./DropZone";
-import FileViewer from "./FileViewer";
+import AttachmentViewerModal from "./AttachmentViewerModal";
 import { useToast } from "./ToastProvider";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
+import { getMimeType } from "@/lib/mime";
 
 interface AttachmentFile {
   id: string;
@@ -60,6 +61,26 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     other: [],
   });
   const [viewerFile, setViewerFile] = useState<AttachmentFile | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalProps, setModalProps] = useState<{
+    src: string;
+    mime: string;
+    filename: string;
+  } | null>(null);
+
+  const getMimeTypeFromFilename = (filename: string): string => {
+    return getMimeType(filename);
+  };
+
+  const openPreview = (file: AttachmentFile | VersionInfo) => {
+    const src = 'url' in file ? file.url : `/api/files/stream?path=${encodeURIComponent(file.path || '')}`;
+    setModalProps({
+      src,
+      mime: getMimeTypeFromFilename(file.filename),
+      filename: file.filename
+    });
+    setModalOpen(true);
+  };
 
   const loadAttachments = async () => {
     try {
@@ -344,10 +365,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                 <div className="flex gap-2">
                   {canPreview && (
                     <button
-                      onClick={() => setViewerFile({
-                        ...file,
-                        url: file.url
-                      })}
+                      onClick={() => openPreview(file)}
                       className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                       aria-label="Preview"
                       title="Preview"
@@ -488,15 +506,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                           )}
                           {canPreview && (
                             <button
-                              onClick={() => setViewerFile({
-                                id: ver.id,
-                                filename: ver.filename,
-                                url: `/api/files/stream?path=${encodeURIComponent(ver.path || '')}`,
-                                size: ver.size,
-                                kind: ver.kind,
-                                version: ver.version,
-                                created_at: ver.createdAt,
-                              })}
+                              onClick={() => openPreview(ver)}
                               className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                               aria-label="Preview"
                               title="Preview"
@@ -585,11 +595,16 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       </div>
 
       {/* File Viewer Modal */}
-      {viewerFile && (
-        <FileViewer
-          file={viewerFile}
-          isOpen={!!viewerFile}
-          onClose={() => setViewerFile(null)}
+      {modalProps && (
+        <AttachmentViewerModal
+          open={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setModalProps(null);
+          }}
+          src={modalProps.src}
+          mime={modalProps.mime}
+          filename={modalProps.filename}
         />
       )}
     </div>
