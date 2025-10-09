@@ -1,3 +1,6 @@
+[![CI](https://github.com/gmarmat/jotrack/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarmat/jotrack/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/gmarmat/jotrack?sort=semver&display_name=release)](https://github.com/gmarmat/jotrack/releases)
+
 # Jotrack
 
 Local-first, privacy-friendly job tracker. Runs at `http://localhost:3000`.
