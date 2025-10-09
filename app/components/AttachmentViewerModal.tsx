@@ -14,6 +14,7 @@ import DOMPurify from 'dompurify';
 
 // Constants
 const MAX_DOCX_PREVIEW_BYTES = 10 * 1024 * 1024;
+const MAX_RTF_PREVIEW_BYTES = 10 * 1024 * 1024;
 
 interface AttachmentViewerModalProps {
   open: boolean;
@@ -23,7 +24,7 @@ interface AttachmentViewerModalProps {
   filename: string;
 }
 
-type FileType = 'pdf' | 'image' | 'text' | 'markdown' | 'docx' | 'unsupported';
+type FileType = 'pdf' | 'image' | 'text' | 'markdown' | 'docx' | 'rtf' | 'unsupported';
 
 function getFileType(mime: string, filename: string): FileType {
   const ext = filename.toLowerCase().split('.').pop() || '';
@@ -33,6 +34,7 @@ function getFileType(mime: string, filename: string): FileType {
   if (mime === 'text/markdown' || ext === 'md') return 'markdown';
   if (mime === 'text/plain' || ext === 'txt') return 'text';
   if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || ext === 'docx') return 'docx';
+  if (mime === 'application/rtf' || mime === 'text/rtf' || ext === 'rtf') return 'rtf';
   
   return 'unsupported';
 }
@@ -55,6 +57,7 @@ export default function AttachmentViewerModal({
   const [content, setContent] = useState<string | null>(null);
   const [pdfPages, setPdfPages] = useState<HTMLCanvasElement[]>([]);
   const [docxContent, setDocxContent] = useState<string | null>(null);
+  const [rtfContent, setRtfContent] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number>(0);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -174,6 +177,83 @@ export default function AttachmentViewerModal({
     }
   }, [src]);
 
+  // Load RTF content
+  const loadRtf = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // First, get file size via HEAD request
+      const headResponse = await fetch(src, { method: 'HEAD' });
+      const size = parseInt(headResponse.headers.get('content-length') || '0');
+      setFileSize(size);
+      
+      // Check size limit
+      if (size > MAX_RTF_PREVIEW_BYTES) {
+        setError(`Preview not supported for large RTF files (>10MB). Use Open externally.`);
+        return;
+      }
+      
+      // Fetch the file as ArrayBuffer
+      const response = await fetch(src);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      // Basic plain-text extraction from RTF
+      let text = '';
+      try {
+        // Try UTF-8 first, fallback to windows-1252
+        let decoder = new TextDecoder('utf-8');
+        text = decoder.decode(arrayBuffer);
+        
+        // If text looks corrupted (too many replacement chars), try windows-1252
+        if ((text.match(/\uFFFD/g) || []).length > 10) {
+          try {
+            decoder = new TextDecoder('windows-1252');
+            text = decoder.decode(arrayBuffer);
+          } catch (_) {
+            // Keep UTF-8 version
+          }
+        }
+        
+        // Strip RTF control sequences
+        text = text
+          // Remove destinations
+          .replace(/\{\\\*[^}]*\}/g, '')
+          // Remove control words
+          .replace(/\\[a-zA-Z]+-?\d* ?/g, '')
+          // Convert common control sequences
+          .replace(/\\par\b/g, '\n')
+          .replace(/\\tab\b/g, '\t')
+          // Remove enclosing braces
+          .replace(/[{}]/g, '')
+          // Trim extra whitespace
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        
+        // Escape HTML for safe display
+        const escapeHtml = (str: string) => {
+          return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        };
+        
+        const escapedText = escapeHtml(text);
+        const html = `<pre style="white-space: pre-wrap; font-family: monospace;">${escapedText}</pre>`;
+        
+        setRtfContent(html);
+      } catch (err) {
+        setError('Failed to load RTF file');
+      }
+    } catch (err) {
+      setError('Failed to load RTF file');
+    } finally {
+      setLoading(false);
+    }
+  }, [src]);
+
   // Load content based on file type
   useEffect(() => {
     if (!open) return;
@@ -182,6 +262,7 @@ export default function AttachmentViewerModal({
     setContent(null);
     setPdfPages([]);
     setDocxContent(null);
+    setRtfContent(null);
     setFileSize(0);
     setError(null);
     
@@ -191,8 +272,10 @@ export default function AttachmentViewerModal({
       loadText();
     } else if (fileType === 'docx') {
       loadDocx();
+    } else if (fileType === 'rtf') {
+      loadRtf();
     }
-  }, [open, fileType, loadPDF, loadText, loadDocx]);
+  }, [open, fileType, loadPDF, loadText, loadDocx, loadRtf]);
 
   // Handle download
   const handleDownload = () => {
@@ -309,6 +392,17 @@ export default function AttachmentViewerModal({
               className="prose prose-sm max-w-none dark:prose-invert"
               style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
               dangerouslySetInnerHTML={{ __html: docxContent || '' }}
+            />
+          </div>
+        );
+
+      case 'rtf':
+        return (
+          <div className="overflow-auto h-full p-4">
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert"
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+              dangerouslySetInnerHTML={{ __html: rtfContent || '' }}
             />
           </div>
         );

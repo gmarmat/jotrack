@@ -35,7 +35,7 @@ export function getMimeType(filename: string): string {
 export function isPreviewable(filename: string): boolean {
   const ext = filename.split('.').pop()?.toLowerCase();
   if (!ext) return false;
-  return ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'docx'].includes(ext);
+  return ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'docx', 'rtf'].includes(ext);
 }
 
 /**
@@ -50,19 +50,22 @@ export function extOf(filename: string): string {
  */
 export function canPreview({ ext, mime, size }: { ext?: string; mime?: string; size?: number }): boolean {
   const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_RTF_SIZE = 10 * 1024 * 1024; // 10MB
   
   // Get extension from mime if not provided
   const fileExt = ext?.toLowerCase() || '';
   
   // Check if type is previewable
-  const previewableExts = ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'docx'];
+  const previewableExts = ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp', 'docx', 'rtf'];
   const isSupported = previewableExts.includes(fileExt) || 
     (mime && (
       mime.startsWith('image/') ||
       mime === 'application/pdf' ||
       mime === 'text/plain' ||
       mime === 'text/markdown' ||
-      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mime === 'application/rtf' ||
+      mime === 'text/rtf'
     ));
   
   if (!isSupported) return false;
@@ -70,6 +73,11 @@ export function canPreview({ ext, mime, size }: { ext?: string; mime?: string; s
   // For DOCX, check size limit
   if (fileExt === 'docx' || mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     if (size && size > MAX_DOCX_SIZE) return false;
+  }
+  
+  // For RTF, check size limit
+  if (fileExt === 'rtf' || mime === 'application/rtf' || mime === 'text/rtf') {
+    if (size && size > MAX_RTF_SIZE) return false;
   }
   
   return true;
