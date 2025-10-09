@@ -26,12 +26,17 @@ export function inferExtFromType(type: string | null | undefined): string | null
     'image/jpeg': 'jpg',
     'image/webp': 'webp',
     'text/plain': 'txt',
+    'text/markdown': 'md',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/rtf': 'rtf',
+    'text/rtf': 'rtf',
   };
   return map[type] ?? null;
 }
 
 export function isAllowedExtension(ext: string): boolean {
-  const allowed = new Set(['pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt']);
+  const allowed = new Set(['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'png', 'jpg', 'jpeg', 'webp']);
   return allowed.has(ext.toLowerCase());
 }
 

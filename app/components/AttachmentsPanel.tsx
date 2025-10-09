@@ -17,7 +17,7 @@ interface AttachmentsPanelProps {
   jobId: string;
 }
 
-const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf";
+const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf,image/png,image/jpeg,image/webp";
 
 export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [files, setFiles] = useState<AttachmentFile[]>([]);
@@ -58,38 +58,51 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     if (kindFiles.length === 0) return null;
 
     return (
-      <div className="mt-2 space-y-1">
+      <div className="mt-2 space-y-2">
         {kindFiles.map((file) => {
           const canPreview = isPreviewable(file.filename);
+          const isImage = /\.(png|jpg|jpeg|webp)$/i.test(file.filename);
+          
           return (
-            <div key={file.id} className="text-xs bg-gray-50 rounded p-2 flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 truncate">{file.filename}</div>
-                <div className="text-gray-500">
-                  {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
+            <div key={file.id} className="text-xs bg-gray-50 rounded p-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">{file.filename}</div>
+                  <div className="text-gray-500">
+                    {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-1 ml-2">
-                {canPreview && (
+                <div className="flex gap-1 ml-2">
+                  {canPreview && (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                      data-testid={`preview-${file.id}`}
+                    >
+                      Preview
+                    </a>
+                  )}
                   <a
                     href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                    data-testid={`preview-${file.id}`}
+                    download={file.filename}
+                    className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                    data-testid={`download-${file.id}`}
                   >
-                    Preview
+                    Download
                   </a>
-                )}
-                <a
-                  href={file.url}
-                  download={file.filename}
-                  className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
-                  data-testid={`download-${file.id}`}
-                >
-                  Download
-                </a>
+                </div>
               </div>
+              {isImage && (
+                <div className="mt-2 rounded overflow-hidden bg-white border">
+                  <img 
+                    src={file.url} 
+                    alt={file.filename}
+                    className="w-full h-auto max-h-32 object-contain"
+                  />
+                </div>
+              )}
             </div>
           );
         })}

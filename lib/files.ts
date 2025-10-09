@@ -1,29 +1,53 @@
-export const ACCEPT_EXTS = ['pdf', 'doc', 'docx', 'txt', 'md', 'rtf'] as const;
+export const ACCEPT_EXTS = ['pdf', 'doc', 'docx', 'txt', 'md', 'rtf', 'png', 'jpg', 'jpeg', 'webp'] as const;
 
 export const MIME_MAP: Record<string, string[]> = {
   pdf: ['application/pdf'],
-  doc: ['application/msword'],
+  doc: ['application/msword', 'application/vnd.ms-word'],
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   txt: ['text/plain'],
   md: ['text/markdown', 'text/x-markdown'],
   rtf: ['application/rtf', 'text/rtf'],
+  png: ['image/png'],
+  jpg: ['image/jpeg'],
+  jpeg: ['image/jpeg'],
+  webp: ['image/webp'],
 };
 
 export function isAllowed(mime: string, ext: string): boolean {
   const normalizedExt = ext.toLowerCase().replace(/^\./, '');
+  
+  // First check if extension is in whitelist
   if (!ACCEPT_EXTS.includes(normalizedExt as any)) {
     return false;
   }
-  // If mime is provided, check if it matches the extension
+  
+  // If mime is provided and we have a MIME map, do a lenient check
+  // But if MIME doesn't match, still allow based on extension (browsers can send wrong/empty MIMEs)
   if (mime && MIME_MAP[normalizedExt]) {
-    return MIME_MAP[normalizedExt].some(m => mime.includes(m) || m.includes(mime));
+    const matches = MIME_MAP[normalizedExt].some(m => mime.includes(m) || m.includes(mime));
+    if (matches) return true;
+    // Even if MIME doesn't match, trust the extension if it's whitelisted
+    // This handles cases where browsers send empty or incorrect MIME types
+    console.warn(`MIME mismatch for .${normalizedExt}: got "${mime}", allowing based on extension`);
   }
+  
   return true;
 }
 
 export function isPreviewable(extOrMime: string): boolean {
   const lower = extOrMime.toLowerCase();
-  return lower.includes('pdf') || lower.includes('txt') || lower.includes('text/plain') || lower.includes('markdown') || lower.endsWith('.md');
+  return (
+    lower.includes('pdf') ||
+    lower.includes('txt') ||
+    lower.includes('text/plain') ||
+    lower.includes('markdown') ||
+    lower.endsWith('.md') ||
+    lower.includes('png') ||
+    lower.includes('jpg') ||
+    lower.includes('jpeg') ||
+    lower.includes('webp') ||
+    lower.includes('image/')
+  );
 }
 
 export function formatFileSize(bytes: number): string {
