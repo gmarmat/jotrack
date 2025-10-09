@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Eye, Download, Trash2, Undo2, ExternalLink } from "lucide-react";
 import DropZone from "./DropZone";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
@@ -17,11 +18,18 @@ interface AttachmentsPanelProps {
   jobId: string;
 }
 
+interface DeletePendingState {
+  file: AttachmentFile;
+  secondsRemaining: number;
+}
+
 const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf,image/png,image/jpeg,image/webp";
 
 export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [files, setFiles] = useState<AttachmentFile[]>([]);
   const [error, setError] = useState<string>("");
+  const [deletePending, setDeletePending] = useState<Map<string, DeletePendingState>>(new Map());
+  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const loadAttachments = async () => {
     try {
@@ -29,15 +37,26 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       if (res.ok) {
         const data = await res.json();
         setFiles(data);
+      } else {
+        setError("Failed to load attachments");
       }
     } catch (err) {
       console.error("Failed to load attachments:", err);
+      setError("Failed to load attachments");
     }
   };
 
   useEffect(() => {
     loadAttachments();
   }, [jobId]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearInterval(timer));
+      timersRef.current.clear();
+    };
+  }, []);
 
   const handleUploaded = (newFile: AttachmentFile) => {
     setFiles((prev) => [newFile, ...prev]);
@@ -49,49 +68,168 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     setTimeout(() => setError(""), 5000);
   };
 
+  const handleDelete = async (file: AttachmentFile) => {
+    try {
+      const res = await fetch(`/api/attachments/${file.id}/delete`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        handleError('Failed to delete attachment');
+        return;
+      }
+
+      // Remove from main list
+      setFiles((prev) => prev.filter((f) => f.id !== file.id));
+
+      // Add to pending delete with countdown
+      const newPending = new Map(deletePending);
+      newPending.set(file.id, { file, secondsRemaining: 10 });
+      setDeletePending(newPending);
+
+      // Start countdown timer
+      const interval = setInterval(() => {
+        setDeletePending((prev) => {
+          const entry = prev.get(file.id);
+          if (!entry || entry.secondsRemaining <= 1) {
+            // Timer expired - remove from pending
+            clearInterval(interval);
+            timersRef.current.delete(file.id);
+            const newMap = new Map(prev);
+            newMap.delete(file.id);
+            return newMap;
+          }
+          // Decrement
+          const newMap = new Map(prev);
+          newMap.set(file.id, { ...entry, secondsRemaining: entry.secondsRemaining - 1 });
+          return newMap;
+        });
+      }, 1000);
+
+      timersRef.current.set(file.id, interval);
+    } catch (err) {
+      console.error('Delete error:', err);
+      handleError('Failed to delete attachment');
+    }
+  };
+
+  const handleUndo = async (attachmentId: string) => {
+    const pending = deletePending.get(attachmentId);
+    if (!pending) return;
+
+    try {
+      const res = await fetch(`/api/attachments/${attachmentId}/restore`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        handleError('Undo failed - file may be permanently deleted');
+        return;
+      }
+
+      // Clear timer
+      const timer = timersRef.current.get(attachmentId);
+      if (timer) {
+        clearInterval(timer);
+        timersRef.current.delete(attachmentId);
+      }
+
+      // Remove from pending
+      const newPending = new Map(deletePending);
+      newPending.delete(attachmentId);
+      setDeletePending(newPending);
+
+      // Restore file to list
+      setFiles((prev) => [pending.file, ...prev]);
+    } catch (err) {
+      console.error('Undo error:', err);
+      handleError('Undo failed');
+    }
+  };
+
   const getFilesByKind = (kind: AttachmentKind) => {
     return files.filter((f) => f.kind === kind);
   };
 
+  const getPendingByKind = (kind: AttachmentKind) => {
+    return Array.from(deletePending.values()).filter((p) => p.file.kind === kind);
+  };
+
   const renderFileList = (kind: AttachmentKind) => {
     const kindFiles = getFilesByKind(kind);
-    if (kindFiles.length === 0) return null;
+    const pendingFiles = getPendingByKind(kind);
+    
+    if (kindFiles.length === 0 && pendingFiles.length === 0) return null;
 
     return (
       <div className="mt-2 space-y-2">
+        {/* Active files */}
         {kindFiles.map((file) => {
           const canPreview = isPreviewable(file.filename);
           const isImage = /\.(png|jpg|jpeg|webp)$/i.test(file.filename);
+          const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(file.filename);
           
           return (
             <div key={file.id} className="text-xs bg-gray-50 rounded p-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{file.filename}</div>
+                  <div 
+                    className="font-medium text-gray-900 max-w-[22ch] md:max-w-[28ch] truncate" 
+                    title={file.filename}
+                    data-testid={`att-name-${file.id}`}
+                  >
+                    {file.filename}
+                  </div>
                   <div className="text-gray-500">
                     {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="flex gap-1 ml-2">
+                <div className="flex gap-1.5 ml-2">
                   {canPreview && (
                     <a
                       href={file.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                      data-testid={`preview-${file.id}`}
+                      className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                      aria-label="Preview"
+                      title="Preview"
+                      data-testid={`att-preview-${file.id}`}
                     >
-                      Preview
+                      <Eye size={16} />
+                    </a>
+                  )}
+                  {isNonPreviewable && (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                      aria-label="Open externally"
+                      title="Open externally"
+                      data-testid={`att-openext-${file.id}`}
+                    >
+                      <ExternalLink size={16} />
                     </a>
                   )}
                   <a
                     href={file.url}
                     download={file.filename}
-                    className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
-                    data-testid={`download-${file.id}`}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                    aria-label="Download"
+                    title="Download"
+                    data-testid={`att-download-${file.id}`}
                   >
-                    Download
+                    <Download size={16} />
                   </a>
+                  <button
+                    onClick={() => handleDelete(file)}
+                    className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-red-50 text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                    aria-label="Delete"
+                    title="Delete"
+                    data-testid={`att-delete-${file.id}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
               {isImage && (
@@ -103,6 +241,31 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                   />
                 </div>
               )}
+            </div>
+          );
+        })}
+
+        {/* Pending delete files with undo */}
+        {pendingFiles.map((pending) => {
+          const file = pending.file;
+          return (
+            <div key={file.id} className="text-xs bg-yellow-50 border border-yellow-300 rounded p-2 opacity-75">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-700 truncate line-through">{file.filename}</div>
+                  <div className="text-gray-500 text-[10px]">Deleted</div>
+                </div>
+                <button
+                  onClick={() => handleUndo(file.id)}
+                  className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+                  aria-label="Undo delete"
+                  title="Undo delete"
+                  data-testid={`att-undo-${file.id}`}
+                >
+                  <Undo2 size={14} />
+                  Undo ({pending.secondsRemaining}s)
+                </button>
+              </div>
             </div>
           );
         })}
@@ -158,4 +321,3 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     </div>
   );
 }
-
