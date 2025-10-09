@@ -4,6 +4,7 @@ import { db } from '@/db/client';
 import { jobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import StatusSelect from '@/app/components/StatusSelect';
+import StatusBadge from '@/app/components/StatusBadge';
 import { STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
@@ -20,7 +21,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900" data-testid="job-title">{job.title}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gray-900" data-testid="job-title">{job.title}</h1>
+                <StatusBadge status={currentStatus} />
+              </div>
               <p className="text-lg text-gray-600 mt-1" data-testid="job-company">{job.company}</p>
             </div>
             <div className="flex items-center gap-2">

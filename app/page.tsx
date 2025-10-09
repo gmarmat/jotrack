@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import StatusSelect from './components/StatusSelect';
+import StatusBadge from './components/StatusBadge';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
 import BackupRestorePanel from './components/BackupRestorePanel';
@@ -248,13 +249,16 @@ export default function Home() {
                   {jobs.map((job) => (
                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-sm">
-                        <Link 
-                          href={`/jobs/${job.id}`} 
-                          className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                          data-testid={`job-link-${job.id}`}
-                        >
-                          {job.title}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link 
+                            href={`/jobs/${job.id}`} 
+                            className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                            data-testid={`job-link-${job.id}`}
+                          >
+                            {job.title}
+                          </Link>
+                          <StatusBadge status={job.status} />
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{job.company}</td>
                       <td className="px-4 py-3">
