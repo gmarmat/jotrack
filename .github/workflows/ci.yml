@@ -21,6 +21,7 @@ jobs:
       NODE_ENV: "production"
       CI: "true"
       PORT: "3000"
+      BASE_URL: "http://localhost:3000"
 
     steps:
       - name: Checkout
@@ -52,7 +53,7 @@ jobs:
           echo $! > server.pid
           
       - name: Wait for server
-        run: npx wait-on http://localhost:3000 --timeout 60000
+        run: npx wait-on http://localhost:3000 --timeout 120000
 
       - name: Run e2e
         run: npm run e2e

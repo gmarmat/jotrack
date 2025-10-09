@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('backup button triggers a .zip download', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
 
   // Wait for page to fully load
   await page.waitForSelector('[data-testid="backup-btn"]', { state: 'visible' });
@@ -29,7 +29,7 @@ test('backup button triggers a .zip download', async ({ page }) => {
 });
 
 test('restore modal stages a plan when a zip is uploaded', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'networkidle' });
 
   // Wait for page to load
   await page.waitForSelector('[data-testid="restore-btn"]', { state: 'visible' });

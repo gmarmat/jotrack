@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('attachments: upload then list + preview (stable)', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const firstRow = page.locator('table tbody tr').first();
   await firstRow.waitFor({ state: 'visible' });
@@ -35,7 +35,7 @@ test('attachments: upload then list + preview (stable)', async ({ page }) => {
 });
 
 test('attachments: upload image and verify preview', async ({ page }) => {
-  await page.goto('http://localhost:3000');
+  await page.goto('/');
 
   // Open attachments for first job
   const firstRow = page.locator('table tbody tr').first();
@@ -73,7 +73,7 @@ test('attachments: upload image and verify preview', async ({ page }) => {
 });
 
 test('attachments: list shows newest first', async ({ page }) => {
-  await page.goto('http://localhost:3000');
+  await page.goto('/');
 
   // Open attachments for first job
   const firstRow = page.locator('table tbody tr').first();
@@ -113,7 +113,7 @@ test('attachments: list shows newest first', async ({ page }) => {
 });
 
 test('attachments: delete removes item (stable)', async ({ page }) => {
-  await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   const firstRow = page.locator('table tbody tr').first();
   await firstRow.waitFor({ state: 'visible' });

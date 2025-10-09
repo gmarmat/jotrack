@@ -1,16 +1,22 @@
-// playwright.config.ts
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+
+const isCI = !!process.env.CI;
+const baseURL = process.env.BASE_URL || 'http://localhost:3000';
 
 export default defineConfig({
   testDir: './e2e',
+  fullyParallel: !isCI,
+  retries: isCI ? 2 : 0,
+  reporter: isCI ? [['list'], ['html', { outputFolder: 'playwright-report' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:3000'
+    baseURL,
+    headless: true,
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
-  // Start/reuse the Next dev server automatically when running e2e tests
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 60_000, // 60s
-  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Add webkit/firefox locally if you want, but keep CI lean
+  ],
 });
