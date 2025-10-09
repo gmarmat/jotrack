@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, isNull, and } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import {
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         created_at: attachments.createdAt,
       })
       .from(attachments)
-      .where(sql`${attachments.jobId} = ${jobId} AND ${attachments.deletedAt} IS NULL`)
+      .where(and(eq(attachments.jobId, jobId), isNull(attachments.deletedAt)))
       .orderBy(desc(attachments.createdAt));
 
     const list = rows.map((r) => ({
