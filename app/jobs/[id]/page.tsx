@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/db/client';
-import { jobs } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { jobs, attachments } from '@/db/schema';
+import { eq, isNull, and } from 'drizzle-orm';
 import StatusSelect from '@/app/components/StatusSelect';
 import StatusBadge from '@/app/components/StatusBadge';
 import AttachmentsPanel from '@/app/components/AttachmentsPanel';
 import JobDetailsPanel from '@/app/components/JobDetailsPanel';
+import JobActionsBar from '@/app/components/JobActionsBar';
 import { STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
@@ -15,6 +16,13 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   if (!job) return notFound();
 
   const currentStatus = (job.status as JobStatus) ?? 'ON_RADAR';
+  
+  // Get attachment count for actions bar
+  const attachmentRows = await db
+    .select({ count: attachments.id })
+    .from(attachments)
+    .where(and(eq(attachments.jobId, id), isNull(attachments.deletedAt)));
+  const attachmentCount = attachmentRows.length;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
@@ -26,6 +34,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-bold text-gray-900" data-testid="job-title">{job.title}</h1>
                 <StatusBadge status={currentStatus} />
+                <JobActionsBar job={job} attachmentCount={attachmentCount} />
               </div>
               <p className="text-lg text-gray-600 mt-1" data-testid="job-company">{job.company}</p>
             </div>
