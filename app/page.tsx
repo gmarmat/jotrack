@@ -9,6 +9,7 @@ import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
 import BackupRestorePanel from './components/BackupRestorePanel';
 import FilterChips from './components/FilterChips';
+import { SelectionBar } from './components/SelectionBar';
 import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
@@ -37,6 +38,7 @@ export default function Home() {
     jobId: '',
     jobTitle: '',
   });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Client-side filtering based on status URL param
   const filteredJobs = useMemo(() => {
@@ -110,6 +112,20 @@ export default function Home() {
 
   const handleCloseHistory = () => {
     setHistoryModal({ isOpen: false, jobId: '', jobTitle: '' });
+  };
+
+  const toggleSelection = (jobId: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredJobs.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredJobs.map((job) => job.id));
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -246,6 +262,10 @@ export default function Home() {
             </form>
           </div>
 
+          {selectedIds.length > 0 && (
+            <SelectionBar selectedIds={selectedIds} clearSelection={() => setSelectedIds([])} />
+          )}
+
           {isLoading ? (
             <p className="text-center text-gray-500">Loading...</p>
           ) : filteredJobs.length === 0 ? (
@@ -257,6 +277,15 @@ export default function Home() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
+                    <th className="px-4 py-3 text-center w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.length === filteredJobs.length && filteredJobs.length > 0}
+                        onChange={toggleSelectAll}
+                        className="cursor-pointer"
+                        data-testid="row-select-all"
+                      />
+                    </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Company</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
@@ -268,6 +297,15 @@ export default function Home() {
                 <tbody className="divide-y divide-gray-200">
                   {filteredJobs.map((job) => (
                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(job.id)}
+                          onChange={() => toggleSelection(job.id)}
+                          className="cursor-pointer"
+                          data-testid={`row-select-${job.id}`}
+                        />
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center gap-2">
                           <Link 
