@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Eye, Download, Trash2, Undo2, ExternalLink } from "lucide-react";
+import { Eye, Download, Trash2, Undo2, ExternalLink, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import DropZone from "./DropZone";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
@@ -12,6 +12,15 @@ interface AttachmentFile {
   kind: AttachmentKind;
   created_at: number;
   url: string;
+}
+
+interface VersionInfo {
+  id: string;
+  version: number;
+  filename: string;
+  size: number;
+  createdAt: number;
+  deletedAt: number | null;
 }
 
 interface AttachmentsPanelProps {
@@ -30,6 +39,18 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [error, setError] = useState<string>("");
   const [deletePending, setDeletePending] = useState<Map<string, DeletePendingState>>(new Map());
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [versionsOpen, setVersionsOpen] = useState<Record<AttachmentKind, boolean>>({
+    resume: false,
+    jd: false,
+    cover_letter: false,
+    other: false,
+  });
+  const [versions, setVersions] = useState<Record<AttachmentKind, VersionInfo[]>>({
+    resume: [],
+    jd: [],
+    cover_letter: [],
+    other: [],
+  });
 
   const loadAttachments = async () => {
     try {
@@ -155,6 +176,48 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     };
   }, []);
 
+  const loadVersions = async (kind: AttachmentKind) => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
+      if (res.ok) {
+        const data = await res.json();
+        setVersions((prev) => ({ ...prev, [kind]: data.versions }));
+      }
+    } catch (err) {
+      console.error('Failed to load versions:', err);
+    }
+  };
+
+  const toggleVersions = (kind: AttachmentKind) => {
+    const isOpening = !versionsOpen[kind];
+    setVersionsOpen((prev) => ({ ...prev, [kind]: isOpening }));
+    if (isOpening && versions[kind].length === 0) {
+      loadVersions(kind);
+    }
+  };
+
+  const handleMakeActive = async (kind: AttachmentKind, version: number) => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions/make-active`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind, version }),
+      });
+
+      if (!res.ok) {
+        handleError('Failed to make version active');
+        return;
+      }
+
+      // Reload both current files and versions list
+      await loadAttachments();
+      await loadVersions(kind);
+    } catch (err) {
+      console.error('Make active error:', err);
+      handleError('Failed to make version active');
+    }
+  };
+
   const getFilesByKind = (kind: AttachmentKind) => {
     return files.filter((f) => f.kind === kind);
   };
@@ -277,6 +340,107 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             </div>
           );
         })}
+
+        {/* Versions section */}
+        {kindFiles.length > 0 && (
+          <div className="mt-3 border-t pt-2">
+            <button
+              onClick={() => toggleVersions(kind)}
+              className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+              data-testid={`ver-toggle-${kind}`}
+            >
+              {versionsOpen[kind] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <span>Versions ({versions[kind].length || '…'})</span>
+            </button>
+
+            {versionsOpen[kind] && (
+              <div className="mt-2 space-y-1">
+                {versions[kind].map((ver, idx) => {
+                  const isLatest = idx === 0 && ver.deletedAt === null;
+                  const canPreview = isPreviewable(ver.filename);
+                  const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(ver.filename);
+                  const verUrl = `/api/jobs/${jobId}/attachments?download=${ver.id}`;
+
+                  if (ver.deletedAt !== null) {
+                    // Skip deleted versions in the list for now (or show grayed out)
+                    return null;
+                  }
+
+                  return (
+                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-2 border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0 flex items-center gap-2">
+                          <span className="font-mono text-blue-700 font-semibold">v{ver.version}</span>
+                          {isLatest && (
+                            <span className="px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 rounded font-medium">
+                              Active
+                            </span>
+                          )}
+                          <div 
+                            className="font-medium text-gray-900 max-w-[18ch] truncate" 
+                            title={ver.filename}
+                          >
+                            {ver.filename}
+                          </div>
+                          <span className="text-gray-500 text-[10px]">
+                            {formatFileSize(ver.size)}
+                          </span>
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          {!isLatest && (
+                            <button
+                              onClick={() => handleMakeActive(kind, ver.version)}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700"
+                              aria-label="Make active"
+                              title="Make active"
+                              data-testid={`ver-makeactive-${kind}-${ver.version}`}
+                            >
+                              <RotateCcw size={12} />
+                              Make Active
+                            </button>
+                          )}
+                          {canPreview && (
+                            <a
+                              href={verUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                              aria-label="Preview"
+                              title="Preview"
+                            >
+                              <Eye size={14} />
+                            </a>
+                          )}
+                          {isNonPreviewable && (
+                            <a
+                              href={verUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                              aria-label="Open externally"
+                              title="Open externally"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                          )}
+                          <a
+                            href={verUrl}
+                            download={ver.filename}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                            aria-label="Download"
+                            title="Download"
+                          >
+                            <Download size={14} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
