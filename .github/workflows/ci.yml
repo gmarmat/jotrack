@@ -55,6 +55,11 @@ jobs:
       - name: Wait for server
         run: npx wait-on http://localhost:3000 --timeout 120000
 
+      - name: Health check
+        run: |
+          curl -fsS http://localhost:3000/api/health | tee health.json
+          node -e "const x=require('./health.json'); if(!x.ok){console.error('Health not OK'); process.exit(1)}"
+
       - name: Run e2e
         run: npm run e2e
 
