@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import StatusSelect from './components/StatusSelect';
 import StatusBadge from './components/StatusBadge';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
 import BackupRestorePanel from './components/BackupRestorePanel';
-import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus } from '@/lib/status';
+import FilterChips from './components/FilterChips';
+import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
   id: string;
@@ -20,6 +22,7 @@ interface Job {
 }
 
 export default function Home() {
+  const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +37,15 @@ export default function Home() {
     jobId: '',
     jobTitle: '',
   });
+
+  // Client-side filtering based on status URL param
+  const filteredJobs = useMemo(() => {
+    const statusParam = searchParams.get('status');
+    if (!statusParam || !isJobStatus(statusParam)) {
+      return jobs;
+    }
+    return jobs.filter((job) => job.status === statusParam);
+  }, [jobs, searchParams]);
 
   const fetchJobs = async (query = '') => {
     try {
@@ -199,6 +211,12 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Applications</h2>
+            
+            {/* Status Filter Chips */}
+            <Suspense fallback={<div className="h-8 mb-4" />}>
+              <FilterChips />
+            </Suspense>
+            
             <form onSubmit={handleSearch} className="flex gap-2">
               <input
                 type="text"
@@ -230,8 +248,10 @@ export default function Home() {
 
           {isLoading ? (
             <p className="text-center text-gray-500">Loading...</p>
-          ) : jobs.length === 0 ? (
-            <p className="text-center text-gray-500">No job applications yet. Add one above!</p>
+          ) : filteredJobs.length === 0 ? (
+            <p className="text-center text-gray-500">
+              {jobs.length === 0 ? 'No job applications yet. Add one above!' : 'No jobs match the selected filter.'}
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -246,7 +266,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {jobs.map((job) => (
+                  {filteredJobs.map((job) => (
                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center gap-2">
