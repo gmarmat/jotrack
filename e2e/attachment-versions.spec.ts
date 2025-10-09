@@ -67,7 +67,7 @@ test("attachment versioning: auto-increment, list, make-active", async ({ page }
   );
   expect(makeActiveResponse.ok()).toBeTruthy();
   const makeActiveData = await makeActiveResponse.json();
-  expect(makeActiveData.newVersion).toBe(3);
+  expect(makeActiveData.activeVersion).toBe(1); // Now just toggles the flag, no clone
 
   // Fetch versions list again
   const versionsResponse2 = await page.request.get(
@@ -75,12 +75,13 @@ test("attachment versioning: auto-increment, list, make-active", async ({ page }
   );
   const versionsData2 = await versionsResponse2.json();
 
-  expect(versionsData2.versions).toHaveLength(3);
-  expect(versionsData2.versions[0].version).toBe(3); // New clone of v1
-  expect(versionsData2.versions[1].version).toBe(2);
-  expect(versionsData2.versions[2].version).toBe(1);
+  // Still have 2 versions (no clone created)
+  expect(versionsData2.versions).toHaveLength(2);
   
-  // Verify v3 has the same filename as v1
-  expect(versionsData2.versions[0].filename).toBe(versionsData2.versions[2].filename);
+  // v2 is still listed first (DESC order by version), but v1 is now active
+  expect(versionsData2.versions[0].version).toBe(2);
+  expect(versionsData2.versions[0].isActive).toBe(false);
+  expect(versionsData2.versions[1].version).toBe(1);
+  expect(versionsData2.versions[1].isActive).toBe(true);
 });
 

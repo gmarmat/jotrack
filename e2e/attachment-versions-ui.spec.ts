@@ -78,28 +78,29 @@ test("attachment versions UI: list, make active, delete/undo", async ({ page }) 
   // Wait for reload
   await page.waitForTimeout(1500);
 
-  // Verify v3 now appears with Active badge
-  const v3Active = page.locator('.bg-blue-50').filter({ hasText: 'v3' }).filter({ hasText: 'Active' });
-  await expect(v3Active).toBeVisible({ timeout: 5000 });
+  // Verify v1 now has the Active badge (no v3 created, just toggled the flag)
+  const v1Active = page.locator('.bg-blue-50').filter({ hasText: 'v1' }).filter({ hasText: 'Active' });
+  await expect(v1Active).toBeVisible({ timeout: 5000 });
 
-  // Verify v2 and v1 still appear (without Active badge)
-  await expect(page.locator('.bg-blue-50').filter({ hasText: 'v2' })).toBeVisible();
-  await expect(page.locator('.bg-blue-50').filter({ hasText: 'v1' })).toBeVisible();
+  // Verify v2 is still visible but WITHOUT Active badge
+  const v2Row = page.locator('.bg-blue-50').filter({ hasText: 'v2' });
+  await expect(v2Row).toBeVisible();
+  await expect(v2Row.locator('.bg-green-100')).not.toBeVisible();
 
-  // Verify we can see 3 versions total
+  // Verify we still only have 2 versions total (no clone created)
   const versionRows = page.locator('.bg-blue-50:has-text("v")');
-  await expect(versionRows).toHaveCount(3);
+  await expect(versionRows).toHaveCount(2);
 
-  // Go back to list
-  await page.goto("/");
+  // Verify the main area shows "v1" badge on the active file
+  await page.getByRole("link", { name: /back to list/i }).click();
   await page.waitForSelector(`a:has-text("${jobTitle}")`, { state: "visible", timeout: 5000 });
-  await page.waitForTimeout(1000);
-
-  // Verify resume icon badge shows count 3 (or verify presence)
-  const jobRow = page.locator(`tr:has(a:has-text("${jobTitle}"))`);
-  await expect(jobRow.getByTestId("attn-resume-on")).toBeVisible();
-  // Badge might show "3" or just be present - either is ok
-  const badge = jobRow.getByTestId("attn-badge-resume");
-  await expect(badge).toBeVisible();
+  
+  // Click back into the job to verify active file display
+  await page.getByRole("link", { name: jobTitle }).click();
+  await page.waitForTimeout(500);
+  
+  // Verify the main active file area shows v1 badge
+  const activeFileArea = page.locator('.bg-gray-50').first();
+  await expect(activeFileArea).toContainText('v1');
 });
 

@@ -156,16 +156,21 @@ export interface VersionInfo {
   size: number;
   createdAt: number;
   deletedAt: number | null;
+  isActive: boolean;
 }
 
 export function listVersions(jobId: string, kind: string): VersionInfo[] {
   const stmt = sqlite.prepare(`
-    SELECT id, version, filename, size, created_at as createdAt, deleted_at as deletedAt
+    SELECT id, version, filename, size, created_at as createdAt, deleted_at as deletedAt, is_active as isActive
     FROM attachments
     WHERE job_id = ? AND kind = ?
     ORDER BY version DESC
   `);
   
-  return stmt.all(jobId, kind) as VersionInfo[];
+  const rows = stmt.all(jobId, kind) as any[];
+  return rows.map(row => ({
+    ...row,
+    isActive: Boolean(row.isActive), // Convert 0/1 to false/true
+  })) as VersionInfo[];
 }
 

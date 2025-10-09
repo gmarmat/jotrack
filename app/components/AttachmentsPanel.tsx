@@ -10,6 +10,7 @@ interface AttachmentFile {
   filename: string;
   size: number;
   kind: AttachmentKind;
+  version: number;
   created_at: number;
   url: string;
 }
@@ -21,6 +22,7 @@ interface VersionInfo {
   size: number;
   createdAt: number;
   deletedAt: number | null;
+  isActive: boolean;
 }
 
 interface AttachmentsPanelProps {
@@ -244,12 +246,17 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             <div key={file.id} className="text-xs bg-gray-50 rounded p-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <div 
-                    className="font-medium text-gray-900 max-w-[22ch] md:max-w-[28ch] truncate" 
-                    title={file.filename}
-                    data-testid={`att-name-${file.id}`}
-                  >
-                    {file.filename}
+                  <div className="flex items-center gap-1.5">
+                    <div 
+                      className="font-medium text-gray-900 max-w-[18ch] md:max-w-[24ch] truncate" 
+                      title={file.filename}
+                      data-testid={`att-name-${file.id}`}
+                    >
+                      {file.filename}
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 font-mono flex-shrink-0">
+                      v{file.version}
+                    </span>
                   </div>
                   <div className="text-gray-500">
                     {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
@@ -355,8 +362,8 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
 
             {versionsOpen[kind] && (
               <div className="mt-2 space-y-1">
-                {versions[kind].map((ver, idx) => {
-                  const isLatest = idx === 0 && ver.deletedAt === null;
+                {versions[kind].map((ver) => {
+                  const isActiveVer = ver.isActive && ver.deletedAt === null;
                   const canPreview = isPreviewable(ver.filename);
                   const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(ver.filename);
                   const verUrl = `/api/jobs/${jobId}/attachments?download=${ver.id}`;
@@ -371,7 +378,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0 flex items-center gap-2">
                           <span className="font-mono text-blue-700 font-semibold">v{ver.version}</span>
-                          {isLatest && (
+                          {isActiveVer && (
                             <span className="px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 rounded font-medium">
                               Active
                             </span>
@@ -387,7 +394,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                           </span>
                         </div>
                         <div className="flex gap-1 ml-2">
-                          {!isLatest && (
+                          {!isActiveVer && (
                             <button
                               onClick={() => handleMakeActive(kind, ver.version)}
                               className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700"
