@@ -82,7 +82,11 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   }, []);
 
   const handleUploaded = (newFile: AttachmentFile) => {
-    setFiles((prev) => [newFile, ...prev]);
+    // Replace any existing file of the same kind with the new one (since new uploads are automatically active)
+    setFiles((prev) => {
+      const filtered = prev.filter(f => f.kind !== newFile.kind);
+      return [newFile, ...filtered];
+    });
     setError("");
   };
 
@@ -311,7 +315,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                     >
                       {file.filename}
                     </div>
-                    <span className="ml-1 text-[10px] px-1 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0">
+                    <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0 min-w-[2ch] text-center">
                       v{file.version}
                     </span>
                   </div>
