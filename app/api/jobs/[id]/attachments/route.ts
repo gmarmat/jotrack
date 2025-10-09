@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
-import { eq, desc, and, isNull } from 'drizzle-orm';
+import { eq, desc, and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import {
@@ -147,11 +147,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    // Check job quota
+    // Check job quota (exclude soft-deleted)
     const jobTotalResult = await db
       .select({ total: sql<number>`COALESCE(SUM(${attachments.size}), 0)` })
       .from(attachments)
-      .where(eq(attachments.jobId, jobId));
+      .where(and(eq(attachments.jobId, jobId), isNull(attachments.deletedAt)));
     const jobTotal = jobTotalResult[0]?.total || 0;
 
     if (jobTotal + fileSize > MAX_PER_JOB_BYTES) {
@@ -162,10 +162,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       );
     }
 
-    // Check global quota
+    // Check global quota (exclude soft-deleted)
     const globalTotalResult = await db
       .select({ total: sql<number>`COALESCE(SUM(${attachments.size}), 0)` })
-      .from(attachments);
+      .from(attachments)
+      .where(isNull(attachments.deletedAt));
     const globalTotal = globalTotalResult[0]?.total || 0;
 
     if (globalTotal + fileSize > MAX_GLOBAL_BYTES) {
