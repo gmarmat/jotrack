@@ -1,0 +1,1 @@
+ALTER TABLE `attachments` ADD `kind` text DEFAULT 'other' NOT NULL;

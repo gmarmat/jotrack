@@ -1,6 +1,10 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import type { JobStatus } from '@/lib/status';
 
+// Attachment kinds
+export const ATTACHMENT_KINDS = ['resume', 'jd', 'cover_letter', 'other'] as const;
+export type AttachmentKind = typeof ATTACHMENT_KINDS[number];
+
 export const jobs = sqliteTable('jobs', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
@@ -24,6 +28,7 @@ export const attachments = sqliteTable('attachments', {
   filename: text('filename').notNull(),
   path: text('path').notNull(),
   size: integer('size', { mode: 'number' }).notNull().default(0),
+  kind: text('kind').$type<AttachmentKind>().notNull().default('other'),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
 });
 

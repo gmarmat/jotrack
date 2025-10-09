@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { eq, desc } from 'drizzle-orm';
 import { db } from '@/db/client';
-import { jobs, attachments } from '@/db/schema';
+import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import {
   ATTACHMENTS_ROOT,
   ensureJobDir,
@@ -69,6 +69,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         id: attachments.id,
         filename: attachments.filename,
         size: attachments.size,
+        kind: attachments.kind,
         created_at: attachments.createdAt,
       })
       .from(attachments)
@@ -79,6 +80,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       id: r.id,
       filename: r.filename,
       size: r.size,
+      kind: r.kind,
       created_at: r.created_at,
       url: `/api/jobs/${jobId}/attachments?download=${r.id}`,
     }));
@@ -108,6 +110,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (!file || typeof file === 'string') {
       return NextResponse.json({ error: 'Missing file field' }, { status: 400 });
     }
+
+    // Parse and validate kind (optional, defaults to 'other')
+    const kindRaw = form.get('kind');
+    const kind: AttachmentKind = 
+      kindRaw && typeof kindRaw === 'string' && ATTACHMENT_KINDS.includes(kindRaw as AttachmentKind)
+        ? (kindRaw as AttachmentKind)
+        : 'other';
 
     const originalName =
       'name' in file && typeof (file as any).name === 'string' ? (file as any).name : 'upload';
@@ -158,6 +167,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       filename: path.basename(candidate),
       path: relPath,
       size,
+      kind,
       createdAt: now,
     });
 
@@ -165,6 +175,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       id: attId,
       filename: path.basename(candidate),
       size,
+      kind,
       created_at: now,
       url: `/api/jobs/${jobId}/attachments?download=${attId}`,
     });
