@@ -6,7 +6,7 @@ import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus } from '@/lib/status';
 interface StatusSelectProps {
   jobId: string;
   initialStatus: string;
-  onStatusChange: (jobId: string, newStatus: string) => void;
+  onStatusChange?: (jobId: string, newStatus: string) => void;
 }
 
 export default function StatusSelect({ jobId, initialStatus, onStatusChange }: StatusSelectProps) {
@@ -36,7 +36,7 @@ export default function StatusSelect({ jobId, initialStatus, onStatusChange }: S
 
       if (data.success) {
         setHasUnsavedChanges(false);
-        onStatusChange(jobId, status);
+        onStatusChange?.(jobId, status);
       } else {
         throw new Error(data.message || 'Failed to update status');
       }

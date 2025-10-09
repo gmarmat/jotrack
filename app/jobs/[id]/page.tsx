@@ -29,7 +29,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 font-medium">Status:</span>
-              <StatusSelect jobId={job.id} initialStatus={currentStatus} onStatusChange={() => {}} />
+              <StatusSelect jobId={job.id} initialStatus={currentStatus} />
             </div>
           </div>
         </div>
