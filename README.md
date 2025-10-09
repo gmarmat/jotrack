@@ -153,11 +153,8 @@ normalize(company) | normalize(title) | normalizeUrl(url host+path)
 ## Tests
 
 ```bash
-# E2E tests (Playwright)
+# E2E tests (Playwright) - Primary test suite
 npm run e2e
-
-# Unit tests (Vitest)
-npm test
 
 # Specific test suites
 npm run e2e -- attachments.spec.ts
@@ -171,6 +168,8 @@ npm run e2e -- homepage.spec.ts
 - ✅ Backup download (1 test)
 - ✅ Restore staging + dedup + apply (1 comprehensive test)
 - ✅ Toast notifications (integrated assertions)
+
+**Note:** Unit tests (Vitest) are currently skipped due to a tinypool path resolution issue with hyphens in the project path. E2E tests provide comprehensive coverage. See `KNOWN_ISSUES.md` for details and workarounds.
 
 ## Development
 

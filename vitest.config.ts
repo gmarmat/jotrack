@@ -1,9 +1,8 @@
-// vitest.config.ts
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: ['**/__tests__/**/*.{test,spec}.ts?(x)'],
+    include: ['**/__tests__/**/*.{test,spec}.ts?(x)', '**/*.{test,spec}.ts?(x)'],
     exclude: [
       'e2e/**',
       'node_modules/**',
@@ -11,21 +10,15 @@ export default defineConfig({
       'dist/**',
       'coverage/**',
       'playwright-report/**',
-      'test-results/**'
+      'test-results/**',
+      'data/**',
     ],
     environment: 'node',
-
-    // Use vmThreads to avoid tinypool path resolution issues
-    pool: 'vmThreads',
-    poolOptions: {
-      vmThreads: {
-        singleThread: true,
-      },
-    },
-
-    // Nice-to-haves
+    // Disable threading entirely to avoid tinypool issues
+    threads: false,
+    // Nice-to-haves for stability
     globals: true,
     clearMocks: true,
-    reporters: ['default'],
+    reporters: ['basic'],
   },
-})
+});

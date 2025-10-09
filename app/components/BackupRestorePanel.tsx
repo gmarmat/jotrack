@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import RestoreModal from './RestoreModal';
+import { useToast } from './ToastProvider';
 
 function parseFilenameFromCD(cd: string | null): string | null {
   if (!cd) return null;
@@ -13,6 +14,7 @@ export default function BackupRestorePanel() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<'backup' | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   async function onBackup() {
     setBusy('backup');
@@ -32,8 +34,10 @@ export default function BackupRestorePanel() {
       a.remove();
       URL.revokeObjectURL(url);
       setMessage(`Backup downloaded: ${name}`);
+      showToast({ kind: 'success', title: 'Backup complete', detail: name });
     } catch (e: any) {
       setMessage(e?.message || 'Backup failed');
+      showToast({ kind: 'error', title: 'Backup failed', detail: String(e?.message || '') });
     } finally {
       setBusy(null);
     }

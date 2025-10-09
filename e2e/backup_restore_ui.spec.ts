@@ -23,6 +23,9 @@ test('backup button triggers a .zip download', async ({ page }) => {
   // Verify download has content
   const path = await download.path();
   expect(path).toBeTruthy();
+  
+  // Verify success toast appears
+  await expect(page.getByText('Backup complete', { exact: false })).toBeVisible({ timeout: 3000 });
 });
 
 test('restore modal stages a plan when a zip is uploaded', async ({ page }) => {
@@ -48,12 +51,43 @@ test('restore modal stages a plan when a zip is uploaded', async ({ page }) => {
   // Wait for upload to complete
   await page.waitForTimeout(3000);
 
-  // Expect summary to render with stagingId and counts
-  await expect(page.getByText('Staging ID:')).toBeVisible();
-  await expect(page.getByText('DB files detected:')).toBeVisible();
-  
   // Verify plan summary is visible
   const summary = page.locator('[data-testid="restore-plan-summary"]');
   await expect(summary).toBeVisible();
+  
+  // Expect summary to render with stagingId and counts
+  await expect(summary.getByText('Staging ID:')).toBeVisible();
+  await expect(summary.getByText('DB files detected:')).toBeVisible();
+  
+  // Verify staging success toast
+  await expect(page.getByText('Restore staged', { exact: false })).toBeVisible({ timeout: 3000 });
+  
+  // Wait for dedup analysis
+  await page.waitForTimeout(2000);
+  
+  // Verify duplicates preview section appears
+  await expect(page.getByText('Duplicates Preview')).toBeVisible();
+  await expect(page.getByText('Within current DB:')).toBeVisible();
+  await expect(page.getByText('Within staged ZIP:')).toBeVisible();
+  await expect(page.getByText('Overlap (current ↔ staged):')).toBeVisible();
+  
+  // Verify Apply Restore section is visible
+  const applyBtn = page.getByRole('button', { name: 'Apply restore now' });
+  await expect(applyBtn).toBeVisible();
+  
+  // Click Apply Restore
+  await applyBtn.click();
+
+  // Wait for summary JSON to appear
+  await expect(page.getByText('Apply Summary')).toBeVisible({ timeout: 10000 });
+  
+  // Basic sanity checks - look for strategy and mode in the JSON
+  const applySum = page.locator('[data-testid="apply-summary"]');
+  await expect(applySum).toContainText('skip-duplicates');
+  await expect(applySum).toContainText('merge');
+  await expect(applySum).toContainText('autosavePath');
+  
+  // Verify apply success toast
+  await expect(page.getByText('Restore applied', { exact: false })).toBeVisible({ timeout: 3000 });
 });
 
