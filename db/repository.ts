@@ -113,3 +113,28 @@ export function getJobStatusHistory(jobId: string) {
   }>;
 }
 
+export interface AttachmentSummary {
+  jobId: string;
+  kind: string;
+  count: number;
+  latest: number | null;
+}
+
+export function getAttachmentSummaries(jobIds: string[]): AttachmentSummary[] {
+  if (jobIds.length === 0) return [];
+  
+  const placeholders = jobIds.map(() => '?').join(',');
+  const stmt = sqlite.prepare(`
+    SELECT 
+      job_id as jobId,
+      kind,
+      COUNT(*) as count,
+      MAX(created_at) as latest
+    FROM attachments
+    WHERE job_id IN (${placeholders})
+    GROUP BY job_id, kind
+  `);
+  
+  return stmt.all(...jobIds) as AttachmentSummary[];
+}
+

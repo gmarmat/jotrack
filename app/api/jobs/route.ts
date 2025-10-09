@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createJob, listJobs, searchJobs } from '@/db/repository';
+import { createJob, listJobs, searchJobs, getAttachmentSummaries } from '@/db/repository';
 import { ORDERED_STATUSES } from '@/lib/status';
 
 const createJobSchema = z.object({
@@ -46,7 +46,25 @@ export async function GET(request: NextRequest) {
       jobs = await listJobs();
     }
     
-    return NextResponse.json({ success: true, jobs });
+    // Fetch attachment summaries for all jobs
+    const jobIds = jobs.map((j) => j.id);
+    const attachmentSummaries = getAttachmentSummaries(jobIds);
+    
+    // Map summaries to jobs
+    const summaryMap = new Map<string, Record<string, { count: number; latest: number | null }>>();
+    attachmentSummaries.forEach((s) => {
+      if (!summaryMap.has(s.jobId)) {
+        summaryMap.set(s.jobId, {});
+      }
+      summaryMap.get(s.jobId)![s.kind] = { count: s.count, latest: s.latest };
+    });
+    
+    const jobsWithAttachments = jobs.map((job) => ({
+      ...job,
+      attachmentSummary: summaryMap.get(job.id) || {},
+    }));
+    
+    return NextResponse.json({ success: true, jobs: jobsWithAttachments });
   } catch (error) {
     console.error('Error fetching jobs:', error);
     return NextResponse.json(
