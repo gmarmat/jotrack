@@ -29,6 +29,7 @@ export const attachments = sqliteTable('attachments', {
   path: text('path').notNull(),
   size: integer('size', { mode: 'number' }).notNull().default(0),
   kind: text('kind').$type<AttachmentKind>().notNull().default('other'),
+  version: integer('version', { mode: 'number' }).notNull().default(1),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
   deletedAt: integer('deleted_at', { mode: 'number' }).$type<number | null>().default(null),
 });

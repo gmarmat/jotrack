@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { eq, desc, and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
+import { getMaxVersion } from '@/db/repository';
 import {
   ATTACHMENTS_ROOT,
   ensureJobDir,
@@ -200,6 +201,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const attId = randomUUID();
     const now = Date.now();
 
+    // Auto-increment version per (jobId, kind)
+    const maxVersion = getMaxVersion(jobId, kind);
+    const newVersion = maxVersion + 1;
+
     await db.insert(attachments).values({
       id: attId,
       jobId: jobId,
@@ -207,6 +212,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       path: relPath,
       size: fileSize,
       kind,
+      version: newVersion,
       createdAt: now,
       deletedAt: null,
     });
