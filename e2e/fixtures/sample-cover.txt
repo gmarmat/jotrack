@@ -1,0 +1,16 @@
+Dear Hiring Manager,
+
+I am writing to express my strong interest in the Senior Software Engineer position at TechCorp Inc.
+
+With over 5 years of experience in React and Next.js development, I believe I would be a great fit for your team.
+
+Key highlights:
+- Led migration of legacy app to Next.js 14
+- Improved performance by 40%
+- Mentored junior developers
+
+I look forward to discussing this opportunity further.
+
+Best regards,
+John Doe
+

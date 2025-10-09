@@ -1,0 +1,16 @@
+Senior Software Engineer - Job Description
+
+Company: TechCorp Inc.
+
+Requirements:
+- 5+ years experience with React/Next.js
+- Strong TypeScript skills
+- Experience with SQL databases
+- Excellent problem-solving abilities
+
+Benefits:
+- Competitive salary
+- Health insurance
+- Remote work options
+- 401k matching
+
