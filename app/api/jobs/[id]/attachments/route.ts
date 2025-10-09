@@ -169,6 +169,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       size,
       kind,
       createdAt: now,
+      deletedAt: null,
     });
 
     return NextResponse.json({

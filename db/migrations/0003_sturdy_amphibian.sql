@@ -1,1 +1,1 @@
-ALTER TABLE `attachments` ADD `deleted_at` integer DEFAULT 'null';
+ALTER TABLE `attachments` ADD `deleted_at` integer DEFAULT NULL;
