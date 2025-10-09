@@ -7,6 +7,7 @@ import StatusSelect from './components/StatusSelect';
 import StatusBadge from './components/StatusBadge';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
+import AttachmentPresence from './components/AttachmentPresence';
 import BackupRestorePanel from './components/BackupRestorePanel';
 import FilterChips from './components/FilterChips';
 import { SelectionBar } from './components/SelectionBar';
@@ -20,6 +21,7 @@ interface Job {
   notes: string;
   createdAt: number;
   updatedAt: number;
+  attachmentSummary?: Record<string, { count: number; latest: number | null }>;
 }
 
 export default function Home() {
@@ -337,7 +339,10 @@ export default function Home() {
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <AttachmentsButton jobId={job.id} />
+                        <AttachmentPresence 
+                          summary={job.attachmentSummary || {}} 
+                          jobId={job.id} 
+                        />
                       </td>
                     </tr>
                   ))}

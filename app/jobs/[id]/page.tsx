@@ -68,7 +68,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         </section>
 
         {/* Attachments */}
-        <section className="bg-white rounded-xl border shadow p-6">
+        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
           <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
           <AttachmentsPanel jobId={job.id} />
         </section>
