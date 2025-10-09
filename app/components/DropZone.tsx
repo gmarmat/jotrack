@@ -39,7 +39,17 @@ export default function DropZone({ jobId, kind, label, accept, onUploaded, onErr
 
       if (!res.ok) {
         const errorData = await res.json();
-        onError(errorData.error || 'Upload failed');
+        
+        // Handle quota/limit errors with friendly messages
+        if (errorData.error === 'FILE_TOO_LARGE') {
+          onError(`File too large. Max ${errorData.maxMb} MB per file.`);
+        } else if (errorData.error === 'JOB_QUOTA_EXCEEDED') {
+          onError(`Job quota exceeded. ${errorData.remainingMb} MB remaining.`);
+        } else if (errorData.error === 'GLOBAL_QUOTA_EXCEEDED') {
+          onError(`Library quota exceeded. ${errorData.remainingMb} MB remaining.`);
+        } else {
+          onError(errorData.error || 'Upload failed');
+        }
         return;
       }
 
