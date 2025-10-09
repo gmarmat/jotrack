@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, isNull } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import {
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return new NextResponse(fileBuffer.buffer as ArrayBuffer, { headers });
     }
 
-    // List path
+    // List path (exclude soft-deleted)
     const rows = await db
       .select({
         id: attachments.id,
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         created_at: attachments.createdAt,
       })
       .from(attachments)
-      .where(eq(attachments.jobId, jobId))
+      .where(and(eq(attachments.jobId, jobId), isNull(attachments.deletedAt)))
       .orderBy(desc(attachments.createdAt));
 
     const list = rows.map((r) => ({
@@ -169,6 +169,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       size,
       kind,
       createdAt: now,
+      deletedAt: null,
     });
 
     return NextResponse.json({
