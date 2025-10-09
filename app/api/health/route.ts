@@ -7,7 +7,7 @@ import { findMainDbFile } from '@/lib/dedup';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-function safeCount(db: Database, table: string): number {
+function safeCount(db: Database.Database, table: string): number {
   try {
     const row = db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get() as { c: number };
     return typeof row?.c === 'number' ? row.c : 0;

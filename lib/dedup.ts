@@ -10,7 +10,7 @@ export function normalizeText(s: unknown): string {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, ' ')
-    .replace(/[^\p{L}\p{N}\._\-\/: ]+/gu, ''); // keep letters, numbers, basic symbols
+    .replace(/[^a-z0-9\._\-\/: ]+/g, ''); // keep letters, numbers, basic symbols
 }
 
 export function normalizeUrl(u: unknown): string {
@@ -34,13 +34,13 @@ export function fingerprint(row: JobRow): string {
   return `${normalizeText(company)}|${normalizeText(title)}|${normalizeUrl(url)}`;
 }
 
-export function listColumns(db: Database, table: string): string[] {
+export function listColumns(db: Database.Database, table: string): string[] {
   const stmt = db.prepare(`PRAGMA table_info(${table})`);
   const cols = stmt.all() as { name: string }[];
   return cols.map((c) => c.name);
 }
 
-export function selectJobs(db: Database): JobRow[] {
+export function selectJobs(db: Database.Database): JobRow[] {
   const cols = listColumns(db, 'jobs');
   if (!cols.length) return [];
   // Read all rows; we'll pick fields dynamically
@@ -64,7 +64,7 @@ export function detectDuplicates(rows: JobRow[]) {
     if (!map.has(fp)) map.set(fp, []);
     map.get(fp)!.push(r);
   }
-  const groups = [...map.entries()]
+  const groups = Array.from(map.entries())
     .filter(([, arr]) => arr.length > 1)
     .map(([fp, arr]) => ({ fp, count: arr.length, ids: arr.map(x => x.id).filter(Boolean) }))
     .sort((a, b) => b.count - a.count);

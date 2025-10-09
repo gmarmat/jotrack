@@ -14,8 +14,6 @@ export default defineConfig({
       'data/**',
     ],
     environment: 'node',
-    // Disable threading entirely to avoid tinypool issues
-    threads: false,
     // Nice-to-haves for stability
     globals: true,
     clearMocks: true,
