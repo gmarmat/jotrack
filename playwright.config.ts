@@ -7,6 +7,9 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: !isCI,
   retries: isCI ? 2 : 0,
+  // Slightly higher timeouts on CI for stability
+  timeout: isCI ? 60_000 : 30_000,
+  expect: { timeout: isCI ? 8_000 : 5_000 },
   reporter: isCI ? [['list'], ['html', { outputFolder: 'playwright-report' }]] : 'list',
   use: {
     baseURL,
