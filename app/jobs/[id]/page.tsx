@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import StatusSelect from '@/app/components/StatusSelect';
 import StatusBadge from '@/app/components/StatusBadge';
 import AttachmentsPanel from '@/app/components/AttachmentsPanel';
+import JobDetailsPanel from '@/app/components/JobDetailsPanel';
 import { STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
@@ -42,36 +43,18 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           </Link>
         </div>
 
-        {/* Details */}
-        <section className="bg-white rounded-xl border shadow p-6">
-          <h2 className="font-semibold text-lg mb-4 text-gray-900">Details</h2>
-          <dl className="text-sm space-y-3 max-w-2xl">
-            <div className="flex gap-8">
-              <div className="flex-1">
-                <dt className="text-gray-500 font-medium">Current Status</dt>
-                <dd className="text-gray-900 mt-1">{STATUS_LABELS[currentStatus]}</dd>
-              </div>
-              <div className="flex-1">
-                <dt className="text-gray-500 font-medium">Created</dt>
-                <dd className="text-gray-900 mt-1">{new Date(job.createdAt).toLocaleDateString()}</dd>
-              </div>
-              <div className="flex-1">
-                <dt className="text-gray-500 font-medium">Last Updated</dt>
-                <dd className="text-gray-900 mt-1">{new Date(job.updatedAt).toLocaleDateString()}</dd>
-              </div>
-            </div>
-            <div>
-              <dt className="text-gray-500 font-medium">Notes</dt>
-              <dd className="text-gray-900 mt-1 whitespace-pre-wrap">{job.notes || '—'}</dd>
-            </div>
-          </dl>
-        </section>
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left column - Details */}
+          <JobDetailsPanel job={job} currentStatus={currentStatus} />
+          
+          {/* Right column - Attachments */}
+          <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
+            <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
+            <AttachmentsPanel jobId={job.id} />
+          </section>
+        </div>
 
-        {/* Attachments */}
-        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
-          <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
-          <AttachmentsPanel jobId={job.id} />
-        </section>
       </div>
     </main>
   );

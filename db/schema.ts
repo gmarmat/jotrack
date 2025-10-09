@@ -10,6 +10,7 @@ export const jobs = sqliteTable('jobs', {
   title: text('title').notNull(),
   company: text('company').notNull(),
   status: text('status').$type<JobStatus>().notNull(),
+  postingUrl: text('posting_url'),
   notes: text('notes').default(''),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),

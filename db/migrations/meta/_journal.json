@@ -43,6 +43,13 @@
       "when": 1760037200000,
       "tag": "0005_shiny_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1760039786610,
+      "tag": "0006_breezy_psylocke",
+      "breakpoints": true
     }
   ]
 }
