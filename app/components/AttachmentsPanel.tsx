@@ -10,6 +10,7 @@ import { isPreviewable, formatFileSize } from "@/lib/files";
 interface AttachmentFile {
   id: string;
   filename: string;
+  path?: string;
   size: number;
   kind: AttachmentKind;
   version: number;
@@ -21,6 +22,7 @@ interface VersionInfo {
   id: string;
   version: number;
   filename: string;
+  path?: string;
   size: number;
   createdAt: number;
   deletedAt: number | null;
@@ -344,7 +346,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                     <button
                       onClick={() => setViewerFile({
                         ...file,
-                        url: `/api/files/preview/${file.id}`
+                        url: file.url
                       })}
                       className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                       aria-label="Preview"
@@ -489,7 +491,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                               onClick={() => setViewerFile({
                                 id: ver.id,
                                 filename: ver.filename,
-                                url: `/api/files/preview/${ver.id}`,
+                                url: `/api/files/stream?path=${encodeURIComponent(ver.path || '')}`,
                                 size: ver.size,
                                 kind: ver.kind,
                                 version: ver.version,
