@@ -31,10 +31,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
+    // Generate incremental copy title
+    let newTitle = originalJob.title;
+    const copyPattern = /^(.+?)\s*\(copy(?:\s+(\d+))?\)$/;
+    const match = newTitle.match(copyPattern);
+    
+    if (match) {
+      // Already has (copy N)
+      const baseName = match[1];
+      const copyNum = match[2] ? parseInt(match[2]) : 1;
+      newTitle = `${baseName} (copy ${copyNum + 1})`;
+    } else {
+      // First copy
+      newTitle = `${newTitle} (copy)`;
+    }
+
     // Create duplicate with new ID and timestamps
     const newJob = {
       id: crypto.randomUUID(),
-      title: originalJob.title,
+      title: newTitle,
       company: originalJob.company,
       status: originalJob.status,
       postingUrl: originalJob.postingUrl,
