@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import {
@@ -13,11 +13,15 @@ import {
   relativeAttachmentPath,
   inferExtFromType,
   isAllowedExtension,
+  MAX_FILE_BYTES,
+  MAX_FILE_MB,
+  MAX_PER_JOB_BYTES,
+  MAX_PER_JOB_MB,
+  MAX_GLOBAL_BYTES,
+  MAX_GLOBAL_MB,
 } from '@/lib/attachments';
 
 export const dynamic = 'force-dynamic';
-
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 const paramsSchema = z.object({
   id: z.string().uuid('Invalid job id'),
@@ -133,8 +137,43 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const bytes = await (file as File).arrayBuffer();
-    if (bytes.byteLength > MAX_SIZE) {
-      return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 });
+    const fileSize = bytes.byteLength;
+
+    // Check file size limit
+    if (fileSize > MAX_FILE_BYTES) {
+      return NextResponse.json(
+        { error: 'FILE_TOO_LARGE', maxMb: MAX_FILE_MB },
+        { status: 400 }
+      );
+    }
+
+    // Check job quota
+    const jobTotalResult = await db
+      .select({ total: sql<number>`COALESCE(SUM(${attachments.size}), 0)` })
+      .from(attachments)
+      .where(eq(attachments.jobId, jobId));
+    const jobTotal = jobTotalResult[0]?.total || 0;
+
+    if (jobTotal + fileSize > MAX_PER_JOB_BYTES) {
+      const remainingMb = Math.max(0, (MAX_PER_JOB_BYTES - jobTotal) / (1024 * 1024));
+      return NextResponse.json(
+        { error: 'JOB_QUOTA_EXCEEDED', remainingMb: remainingMb.toFixed(1) },
+        { status: 400 }
+      );
+    }
+
+    // Check global quota
+    const globalTotalResult = await db
+      .select({ total: sql<number>`COALESCE(SUM(${attachments.size}), 0)` })
+      .from(attachments);
+    const globalTotal = globalTotalResult[0]?.total || 0;
+
+    if (globalTotal + fileSize > MAX_GLOBAL_BYTES) {
+      const remainingMb = Math.max(0, (MAX_GLOBAL_BYTES - globalTotal) / (1024 * 1024));
+      return NextResponse.json(
+        { error: 'GLOBAL_QUOTA_EXCEEDED', remainingMb: remainingMb.toFixed(1) },
+        { status: 400 }
+      );
     }
 
     // Ensure storage area exists
@@ -159,14 +198,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const relPath = relativeAttachmentPath(jobId, path.basename(candidate));
     const attId = randomUUID();
     const now = Date.now();
-    const size = bytes.byteLength;
 
     await db.insert(attachments).values({
       id: attId,
       jobId: jobId,
       filename: path.basename(candidate),
       path: relPath,
-      size,
+      size: fileSize,
       kind,
       createdAt: now,
     });
@@ -174,7 +212,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({
       id: attId,
       filename: path.basename(candidate),
-      size,
+      size: fileSize,
       kind,
       created_at: now,
       url: `/api/jobs/${jobId}/attachments?download=${attId}`,

@@ -3,6 +3,16 @@ import path from 'path';
 
 export const ATTACHMENTS_ROOT = path.join(process.cwd(), 'data', 'attachments');
 
+// Configurable limits (in MB)
+export const MAX_FILE_MB = parseInt(process.env.JOTRACK_MAX_FILE_MB || '20', 10);
+export const MAX_PER_JOB_MB = parseInt(process.env.JOTRACK_MAX_PER_JOB_MB || '200', 10);
+export const MAX_GLOBAL_MB = parseInt(process.env.JOTRACK_MAX_GLOBAL_MB || '1024', 10);
+
+// Convert to bytes
+export const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+export const MAX_PER_JOB_BYTES = MAX_PER_JOB_MB * 1024 * 1024;
+export const MAX_GLOBAL_BYTES = MAX_GLOBAL_MB * 1024 * 1024;
+
 export function sanitizeFilename(name: string): string {
   // allow [a-zA-Z0-9._-], replace others with '_'
   return name.replace(/[^a-zA-Z0-9._-]/g, '_');
