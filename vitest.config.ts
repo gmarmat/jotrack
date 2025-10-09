@@ -1,13 +1,11 @@
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
-import path from 'path'
 
 export default defineConfig({
-  root: path.resolve(__dirname),
   test: {
     include: ['**/__tests__/**/*.{test,spec}.ts?(x)'],
     exclude: [
-      'e2e/**',           // <-- keep Playwright tests out of Vitest
+      'e2e/**',
       'node_modules/**',
       '.next/**',
       'dist/**',
@@ -16,6 +14,18 @@ export default defineConfig({
       'test-results/**'
     ],
     environment: 'node',
-    pool: 'forks'
-  }
+
+    // Use vmThreads to avoid tinypool path resolution issues
+    pool: 'vmThreads',
+    poolOptions: {
+      vmThreads: {
+        singleThread: true,
+      },
+    },
+
+    // Nice-to-haves
+    globals: true,
+    clearMocks: true,
+    reporters: ['default'],
+  },
 })

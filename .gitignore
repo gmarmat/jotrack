@@ -24,6 +24,9 @@ coverage/
 # SQLite & app data (we'll later decide what to commit)
 data/attachments/
 data/uploads/
+data/backups/
+data/backups/uploads/
+data/backups/staging/
 *.db
 *.db-shm
 *.db-wal

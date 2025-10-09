@@ -1,0 +1,1 @@
+ALTER TABLE `attachments` ADD `size` integer DEFAULT 0 NOT NULL;
