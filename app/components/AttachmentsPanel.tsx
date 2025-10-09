@@ -17,10 +17,9 @@ interface AttachmentsPanelProps {
   jobId: string;
 }
 
-interface UndoState {
-  attachmentId: string;
+interface DeletePendingState {
   file: AttachmentFile;
-  expiresAt: number;
+  secondsRemaining: number;
 }
 
 const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf,image/png,image/jpeg,image/webp";
@@ -28,8 +27,8 @@ const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,applic
 export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [files, setFiles] = useState<AttachmentFile[]>([]);
   const [error, setError] = useState<string>("");
-  const [undoState, setUndoState] = useState<UndoState | null>(null);
-  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [deletePending, setDeletePending] = useState<Map<string, DeletePendingState>>(new Map());
+  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const loadAttachments = async () => {
     try {
@@ -68,29 +67,46 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
         return;
       }
 
-      // Optimistically remove from list
+      // Remove from main list
       setFiles((prev) => prev.filter((f) => f.id !== file.id));
 
-      // Set undo state with 10s expiry
-      const expiresAt = Date.now() + 10000;
-      setUndoState({ attachmentId: file.id, file, expiresAt });
+      // Add to pending delete with countdown
+      const newPending = new Map(deletePending);
+      newPending.set(file.id, { file, secondsRemaining: 10 });
+      setDeletePending(newPending);
 
-      // Clear undo after 10s
-      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
-      undoTimerRef.current = setTimeout(() => {
-        setUndoState(null);
-      }, 10000);
+      // Start countdown timer
+      const interval = setInterval(() => {
+        setDeletePending((prev) => {
+          const entry = prev.get(file.id);
+          if (!entry || entry.secondsRemaining <= 1) {
+            // Timer expired - remove from pending
+            clearInterval(interval);
+            timersRef.current.delete(file.id);
+            const newMap = new Map(prev);
+            newMap.delete(file.id);
+            return newMap;
+          }
+          // Decrement
+          const newMap = new Map(prev);
+          newMap.set(file.id, { ...entry, secondsRemaining: entry.secondsRemaining - 1 });
+          return newMap;
+        });
+      }, 1000);
+
+      timersRef.current.set(file.id, interval);
     } catch (err) {
       console.error('Delete error:', err);
       handleError('Failed to delete attachment');
     }
   };
 
-  const handleUndo = async () => {
-    if (!undoState) return;
+  const handleUndo = async (attachmentId: string) => {
+    const pending = deletePending.get(attachmentId);
+    if (!pending) return;
 
     try {
-      const res = await fetch(`/api/attachments/${undoState.attachmentId}/restore`, {
+      const res = await fetch(`/api/attachments/${attachmentId}/restore`, {
         method: 'POST',
       });
 
@@ -99,26 +115,51 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
         return;
       }
 
+      // Clear timer
+      const timer = timersRef.current.get(attachmentId);
+      if (timer) {
+        clearInterval(timer);
+        timersRef.current.delete(attachmentId);
+      }
+
+      // Remove from pending
+      const newPending = new Map(deletePending);
+      newPending.delete(attachmentId);
+      setDeletePending(newPending);
+
       // Restore file to list
-      setFiles((prev) => [undoState.file, ...prev]);
-      setUndoState(null);
-      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      setFiles((prev) => [pending.file, ...prev]);
     } catch (err) {
       console.error('Undo error:', err);
       handleError('Undo failed');
     }
   };
 
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearInterval(timer));
+      timersRef.current.clear();
+    };
+  }, []);
+
   const getFilesByKind = (kind: AttachmentKind) => {
     return files.filter((f) => f.kind === kind);
   };
 
+  const getPendingByKind = (kind: AttachmentKind) => {
+    return Array.from(deletePending.values()).filter((p) => p.file.kind === kind);
+  };
+
   const renderFileList = (kind: AttachmentKind) => {
     const kindFiles = getFilesByKind(kind);
-    if (kindFiles.length === 0) return null;
+    const pendingFiles = getPendingByKind(kind);
+    
+    if (kindFiles.length === 0 && pendingFiles.length === 0) return null;
 
     return (
       <div className="mt-2 space-y-2">
+        {/* Active files */}
         {kindFiles.map((file) => {
           const canPreview = isPreviewable(file.filename);
           const isImage = /\.(png|jpg|jpeg|webp)$/i.test(file.filename);
@@ -173,6 +214,28 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             </div>
           );
         })}
+
+        {/* Pending delete files with undo */}
+        {pendingFiles.map((pending) => {
+          const file = pending.file;
+          return (
+            <div key={file.id} className="text-xs bg-yellow-50 border border-yellow-300 rounded p-2 opacity-75">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-700 truncate line-through">{file.filename}</div>
+                  <div className="text-gray-500 text-[10px]">Deleted</div>
+                </div>
+                <button
+                  onClick={() => handleUndo(file.id)}
+                  className="px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 font-medium"
+                  data-testid={`undo-btn-${file.id}`}
+                >
+                  Undo ({pending.secondsRemaining}s)
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -182,19 +245,6 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
           {error}
-        </div>
-      )}
-
-      {undoState && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-900 px-4 py-2 rounded text-sm flex items-center justify-between">
-          <span>Attachment deleted.</span>
-          <button
-            onClick={handleUndo}
-            className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 font-medium"
-            data-testid="undo-delete-btn"
-          >
-            Undo (10s)
-          </button>
         </div>
       )}
 

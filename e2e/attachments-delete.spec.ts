@@ -41,9 +41,12 @@ test("attachment soft-delete with undo", async ({ page }) => {
   // Verify file appears
   await expect(page.locator('text=sample-cover.txt')).toBeVisible({ timeout: 5000 });
 
+  // Wait for component to fully render
+  await page.waitForTimeout(1000);
+
   // Get the file ID from the delete button
   const deleteButton = page.getByTestId(/^delete-/).first();
-  await expect(deleteButton).toBeVisible();
+  await expect(deleteButton).toBeVisible({ timeout: 5000 });
 
   // Click delete
   const deleteResponse = page.waitForResponse(
@@ -52,34 +55,46 @@ test("attachment soft-delete with undo", async ({ page }) => {
   await deleteButton.click();
   await deleteResponse;
 
-  // Verify undo toast appears
-  await expect(page.getByTestId("undo-delete-btn")).toBeVisible({ timeout: 2000 });
-  await expect(page.locator('text=/Attachment deleted/i')).toBeVisible();
+  // Wait for state update
+  await page.waitForTimeout(500);
 
-  // Verify file is hidden
-  await expect(page.locator('text=sample-cover.txt')).not.toBeVisible();
+  // Verify undo button appears with countdown (in-row, not toast)
+  const undoButton = page.getByTestId(/^undo-btn-/).first();
+  await expect(undoButton).toBeVisible({ timeout: 2000 });
+  await expect(undoButton).toContainText(/Undo \(\d+s\)/);
+
+  // Verify active file is gone (moved to pending section)
+  const activeFile = page.locator('.bg-gray-50').getByText('sample-cover.txt');
+  await expect(activeFile).not.toBeVisible();
+
+  // Verify file appears in pending section (yellow bg, strikethrough)
+  const pendingFile = page.locator('.bg-yellow-50').getByText('sample-cover.txt');
+  await expect(pendingFile).toBeVisible();
 
   // Click undo
   const restoreResponse = page.waitForResponse(
     (resp) => resp.url().includes('/api/attachments/') && resp.url().includes('/restore')
   );
-  await page.getByTestId("undo-delete-btn").click();
+  await undoButton.click();
   await restoreResponse;
 
   // Wait a moment for state update
   await page.waitForTimeout(500);
 
-  // Verify file reappears
-  await expect(page.locator('text=sample-cover.txt')).toBeVisible({ timeout: 3000 });
-  await expect(page.getByTestId("undo-delete-btn")).not.toBeVisible();
+  // Verify file returns to active section with Delete button
+  await expect(page.locator('.bg-gray-50').getByText('sample-cover.txt')).toBeVisible({ timeout: 3000 });
+  await expect(undoButton).not.toBeVisible();
+  
+  // Verify Delete button is back
+  const deleteButtonRestored = page.getByTestId(/^delete-/).first();
+  await expect(deleteButtonRestored).toBeVisible();
 
   // Delete again and wait for undo window to expire
-  const deleteButton2 = page.getByTestId(/^delete-/).first();
-  await deleteButton2.click();
+  await deleteButtonRestored.click();
   await page.waitForTimeout(11000); // Wait 11 seconds for undo window to expire
 
-  // Verify undo toast is gone
-  await expect(page.getByTestId("undo-delete-btn")).not.toBeVisible();
+  // Verify undo button is gone
+  await expect(page.getByTestId(/^undo-btn-/)).not.toBeVisible();
 
   // Reload page
   await page.reload();

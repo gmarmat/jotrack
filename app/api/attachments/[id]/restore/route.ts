@@ -1,45 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { eq } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { attachments } from '@/db/schema';
-import { getUndoEntry, clearUndo } from '@/lib/trash';
+import { eq, and, isNotNull } from 'drizzle-orm';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic';
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const attachmentId = params.id;
 
-    // Check undo window
-    const undoEntry = getUndoEntry(attachmentId);
-    if (!undoEntry) {
+    // Find the soft-deleted attachment
+    const attachment = await db.query.attachments.findFirst({
+      where: (a, { eq, isNotNull }) => 
+        and(eq(a.id, attachmentId), isNotNull(a.deletedAt)) as any,
+    });
+
+    if (!attachment) {
       return NextResponse.json(
-        { error: 'Undo window expired or not found' },
+        { error: 'Attachment not found or not deleted' },
         { status: 400 }
       );
     }
 
-    // Move file back from trash
-    try {
-      await fs.rename(undoEntry.trashPath, undoEntry.originalPath);
-    } catch (err) {
-      console.error('Failed to restore file from trash:', err);
-      // Continue anyway if file already exists or is missing
-    }
-
-    // Clear deleted_at
+    // Restore: clear deleted_at timestamp
     await db
       .update(attachments)
       .set({ deletedAt: null })
       .where(eq(attachments.id, attachmentId));
 
-    // Clear undo entry
-    clearUndo(attachmentId);
-
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: attachmentId });
   } catch (err) {
-    console.error('RESTORE attachment error:', err);
+    console.error('POST /api/attachments/[id]/restore error', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
-
