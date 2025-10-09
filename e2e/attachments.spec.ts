@@ -9,7 +9,11 @@ test.describe('attachments', () => {
 
     const firstRow = page.locator('table tbody tr').first();
     await firstRow.waitFor({ state: 'visible' });
-    await firstRow.getByRole('button', { name: 'Attachments' }).click();
+    
+    // Click the job title link to navigate to detail page
+    const jobLink = firstRow.locator('a[data-testid^="job-link-"]');
+    await jobLink.click();
+    
     await expect(page.getByRole('heading', { name: 'Attachments' })).toBeVisible();
 
     // Unique filename to avoid collisions
@@ -20,7 +24,8 @@ test.describe('attachments', () => {
       buffer: Buffer.from('hello jotrack e2e'),
     };
 
-    const input = page.getByLabel('Upload attachment');
+    // Use the first file input (resume dropzone)
+    const input = page.locator('input[type="file"]').first();
 
     // Strictly wait for the POST /attachments network response
     const [res] = await Promise.all([
@@ -31,10 +36,10 @@ test.describe('attachments', () => {
     // Ensure server acknowledged before asserting UI
     expect(res.ok()).toBeTruthy();
 
-    // Now assert the item shows with a download link (optimistic replaced by real)
-    const item = page.locator(`li:has-text("${filename}")`).first();
+    // Now assert the item shows with a download button (icon button)
+    const item = page.locator(`.bg-gray-50:has-text("${filename}")`).first();
     await expect(item).toBeVisible();
-    await expect(item.getByRole('link', { name: 'Download' })).toBeVisible();
+    await expect(item.locator('[data-testid^="att-download-"]')).toBeVisible();
     await expect(item.locator('img')).toHaveCount(0); // non-image, no preview
   });
 
@@ -43,12 +48,16 @@ test.describe('attachments', () => {
 
     const firstRow = page.locator('table tbody tr').first();
     await firstRow.waitFor({ state: 'visible' });
-    await firstRow.getByRole('button', { name: 'Attachments' }).click();
+    
+    // Click the job title link to navigate to detail page
+    const jobLink = firstRow.locator('a[data-testid^="job-link-"]');
+    await jobLink.click();
+    
     await expect(page.getByRole('heading', { name: 'Attachments' })).toBeVisible();
 
     // Ensure there is an attachment; upload a fresh one
     const filename = `e2e-delete-${Date.now()}.txt`;
-    const input = page.getByLabel('Upload attachment');
+    const input = page.locator('input[type="file"]').first();
     const payload = {
       name: filename,
       mimeType: 'text/plain',
@@ -60,18 +69,27 @@ test.describe('attachments', () => {
       input.setInputFiles(payload),
     ]);
 
-    const row = page.locator(`li:has-text("${filename}")`).first();
-    await expect(row.getByRole('link', { name: 'Download' })).toBeVisible();
+    const row = page.locator(`.bg-gray-50:has-text("${filename}")`).first();
+    await expect(row.locator('[data-testid^="att-download-"]')).toBeVisible();
 
-    // Confirm delete (override native confirm)
-    await page.evaluate(() => { window.confirm = () => true; });
+    // Click delete button (icon button)
+    const deleteBtn = row.locator('[data-testid^="att-delete-"]');
+    await expect(deleteBtn).toBeVisible();
 
-    // Wait for DELETE network response explicitly, then assert disappearance
+    // Wait for soft-delete response
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/attachments?attachment=') && r.request().method() === 'DELETE' && r.ok()),
-      row.getByRole('button', { name: 'Delete' }).click(),
+      page.waitForResponse((r) => r.url().includes('/api/attachments/') && r.url().includes('/delete') && r.ok()),
+      deleteBtn.click(),
     ]);
 
-    await expect(row).toHaveCount(0);
+    // Wait a moment for state transition
+    await page.waitForTimeout(500);
+
+    // Verify file moved to pending delete state (yellow bg with undo)
+    const pendingRow = page.locator(`.bg-yellow-50:has-text("${filename}")`).first();
+    await expect(pendingRow).toBeVisible();
+    
+    // Verify undo button is present
+    await expect(pendingRow.locator('[data-testid^="att-undo-"]')).toBeVisible();
   });
 });

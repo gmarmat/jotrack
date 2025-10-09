@@ -71,8 +71,8 @@ test("attachments panel with three dropzones", async ({ page }) => {
   // Verify cover letter appears
   await expect(page.locator('text=sample-cover.txt')).toBeVisible({ timeout: 5000 });
 
-  // Verify preview buttons exist for txt files
-  const previewButtons = page.getByTestId(/^preview-/);
+  // Verify preview buttons exist for txt files (updated testid: att-preview-)
+  const previewButtons = page.getByTestId(/^att-preview-/);
   await expect(previewButtons.first()).toBeVisible();
 
   // Reload page and verify persistence
