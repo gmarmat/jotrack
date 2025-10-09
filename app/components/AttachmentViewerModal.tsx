@@ -221,7 +221,25 @@ export default function AttachmentViewerModal({
     if (error) {
       return (
         <div className="flex items-center justify-center h-full">
-          <div className="text-red-500">{error}</div>
+          <div className="text-center" data-testid="viewer-docx-fallback">
+            <div className="text-red-500 mb-4">{error}</div>
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={handleExternal}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open Externally
+              </button>
+              <button
+                onClick={handleDownload}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
