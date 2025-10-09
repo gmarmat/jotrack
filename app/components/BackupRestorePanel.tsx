@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import RestoreModal from './RestoreModal';
 import { useToast } from './ToastProvider';
+import HealthChip from './HealthChip';
 
 function parseFilenameFromCD(cd: string | null): string | null {
   if (!cd) return null;
@@ -44,26 +45,29 @@ export default function BackupRestorePanel() {
   }
 
   return (
-    <div className="mb-4 rounded-2xl border p-3 flex items-center gap-3 bg-white">
-      <div className="font-semibold">Backup & Restore</div>
-      <button
-        onClick={onBackup}
-        disabled={busy === 'backup'}
-        className="px-3 py-1 rounded-md border text-sm hover:bg-gray-50 disabled:opacity-50"
-        aria-label="Backup ZIP"
-        data-testid="backup-btn"
-      >
-        {busy === 'backup' ? 'Backing up…' : 'Backup (ZIP)'}
-      </button>
-      <button
-        onClick={() => setOpen(true)}
-        className="px-3 py-1 rounded-md border text-sm hover:bg-gray-50"
-        aria-label="Open restore modal"
-        data-testid="restore-btn"
-      >
-        Restore…
-      </button>
-      {message && <span className="ml-2 text-xs text-gray-600">{message}</span>}
+    <div className="mb-4 rounded-2xl border p-3 bg-white">
+      <div className="flex items-center gap-3">
+        <div className="font-semibold">Backup & Restore</div>
+        <button
+          onClick={onBackup}
+          disabled={busy === 'backup'}
+          className="px-3 py-1 rounded-md border text-sm hover:bg-gray-50 disabled:opacity-50"
+          aria-label="Backup ZIP"
+          data-testid="backup-btn"
+        >
+          {busy === 'backup' ? 'Backing up…' : 'Backup (ZIP)'}
+        </button>
+        <button
+          onClick={() => setOpen(true)}
+          className="px-3 py-1 rounded-md border text-sm hover:bg-gray-50"
+          aria-label="Open restore modal"
+          data-testid="restore-btn"
+        >
+          Restore…
+        </button>
+        <HealthChip />
+      </div>
+      {message && <span className="mt-2 block text-xs text-gray-600">{message}</span>}
       {open && <RestoreModal onClose={() => setOpen(false)} />}
     </div>
   );
