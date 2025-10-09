@@ -45,7 +45,7 @@ test("attachment soft-delete with undo", async ({ page }) => {
   await page.waitForTimeout(1000);
 
   // Get the file ID from the delete button
-  const deleteButton = page.getByTestId(/^delete-/).first();
+  const deleteButton = page.getByTestId(/^att-delete-/).first();
   await expect(deleteButton).toBeVisible({ timeout: 5000 });
 
   // Click delete
@@ -59,7 +59,7 @@ test("attachment soft-delete with undo", async ({ page }) => {
   await page.waitForTimeout(500);
 
   // Verify undo button appears with countdown (in-row, not toast)
-  const undoButton = page.getByTestId(/^undo-btn-/).first();
+  const undoButton = page.getByTestId(/^att-undo-/).first();
   await expect(undoButton).toBeVisible({ timeout: 2000 });
   await expect(undoButton).toContainText(/Undo \(\d+s\)/);
 
@@ -86,7 +86,7 @@ test("attachment soft-delete with undo", async ({ page }) => {
   await expect(undoButton).not.toBeVisible();
   
   // Verify Delete button is back
-  const deleteButtonRestored = page.getByTestId(/^delete-/).first();
+  const deleteButtonRestored = page.getByTestId(/^att-delete-/).first();
   await expect(deleteButtonRestored).toBeVisible();
 
   // Delete again and wait for undo window to expire
@@ -94,7 +94,7 @@ test("attachment soft-delete with undo", async ({ page }) => {
   await page.waitForTimeout(11000); // Wait 11 seconds for undo window to expire
 
   // Verify undo button is gone
-  await expect(page.getByTestId(/^undo-btn-/)).not.toBeVisible();
+  await expect(page.getByTestId(/^att-undo-/)).not.toBeVisible();
 
   // Reload page
   await page.reload();

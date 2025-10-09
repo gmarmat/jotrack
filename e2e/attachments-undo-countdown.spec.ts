@@ -50,7 +50,7 @@ test("per-item undo with countdown supports concurrent deletes", async ({ page }
   await expect(page.locator('text=sample-jd.txt')).toBeVisible({ timeout: 3000 });
 
   // Delete both files quickly
-  const deleteButtons = page.getByTestId(/^delete-/);
+  const deleteButtons = page.getByTestId(/^att-delete-/);
   
   const delete1 = page.waitForResponse(
     (resp) => resp.url().includes('/api/attachments/') && resp.url().includes('/delete')
@@ -65,7 +65,7 @@ test("per-item undo with countdown supports concurrent deletes", async ({ page }
   await delete2;
 
   // Verify both undo buttons appear with countdown
-  const undoButtons = page.getByTestId(/^undo-btn-/);
+  const undoButtons = page.getByTestId(/^att-undo-/);
   await expect(undoButtons).toHaveCount(2);
   await expect(undoButtons.first()).toContainText(/Undo \(\d+s\)/);
   await expect(undoButtons.nth(1)).toContainText(/Undo \(\d+s\)/);
