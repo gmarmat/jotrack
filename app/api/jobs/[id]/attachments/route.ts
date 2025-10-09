@@ -232,6 +232,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       filename: path.basename(candidate),
       size: fileSize,
       kind,
+      version: newVersion,
+      isActive: true,
       created_at: now,
       url: `/api/jobs/${jobId}/attachments?download=${attId}`,
     });

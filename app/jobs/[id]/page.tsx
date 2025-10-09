@@ -52,17 +52,14 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           </Link>
         </div>
 
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left column - Details */}
-          <JobDetailsPanel job={job} currentStatus={currentStatus} />
-          
-          {/* Right column - Attachments */}
-          <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
-            <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
-            <AttachmentsPanel jobId={job.id} />
-          </section>
-        </div>
+               {/* Details section - full width */}
+               <JobDetailsPanel job={job} currentStatus={currentStatus} />
+
+               {/* Attachments section - full width */}
+               <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
+                 <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
+                 <AttachmentsPanel jobId={job.id} />
+               </section>
 
       </div>
     </main>
