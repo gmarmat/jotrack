@@ -130,9 +130,36 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       }, 1000);
 
       timersRef.current.set(file.id, interval);
+
+      // Auto-promote: If we deleted the active file, promote the next highest non-deleted version
+      await autoPromoteIfNeeded(file.kind);
     } catch (err) {
       console.error('Delete error:', err);
       handleError('Failed to delete attachment');
+    }
+  };
+
+  const autoPromoteIfNeeded = async (kind: AttachmentKind) => {
+    try {
+      // Fetch current versions for this kind
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      const versions = data.versions as VersionInfo[];
+      
+      // Find the highest non-deleted version that is NOT currently active
+      const nonDeletedVersions = versions.filter(v => v.deletedAt === null);
+      const hasActiveVersion = nonDeletedVersions.some(v => v.isActive);
+      
+      // If no active version exists and we have non-deleted versions, promote the highest
+      if (!hasActiveVersion && nonDeletedVersions.length > 0) {
+        const highest = nonDeletedVersions[0]; // Already sorted DESC by version
+        await handleMakeActive(kind, highest.version);
+      }
+    } catch (err) {
+      console.error('Auto-promote error:', err);
+      // Silently fail - not critical
     }
   };
 
@@ -178,6 +205,22 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     };
   }, []);
 
+  // Deep-link support: auto-expand versions if #versions is in URL
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#versions') {
+      // Open versions for all kinds that have files
+      const kindsToOpen: AttachmentKind[] = ['resume', 'jd', 'cover_letter'];
+      kindsToOpen.forEach(kind => {
+        if (files.some(f => f.kind === kind)) {
+          setVersionsOpen(prev => ({ ...prev, [kind]: true }));
+          if (versions[kind].length === 0) {
+            loadVersions(kind);
+          }
+        }
+      });
+    }
+  }, []); // Run once on mount
+
   const loadVersions = async (kind: AttachmentKind) => {
     try {
       const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
@@ -193,8 +236,22 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const toggleVersions = (kind: AttachmentKind) => {
     const isOpening = !versionsOpen[kind];
     setVersionsOpen((prev) => ({ ...prev, [kind]: isOpening }));
-    if (isOpening && versions[kind].length === 0) {
-      loadVersions(kind);
+    if (isOpening) {
+      if (versions[kind].length === 0) {
+        loadVersions(kind);
+      }
+      // Set hash when opening
+      if (typeof window !== 'undefined') {
+        window.location.hash = 'versions';
+      }
+    } else {
+      // Clear hash when closing (only if all versions are closed)
+      if (typeof window !== 'undefined') {
+        const anyOpen = Object.values({ ...versionsOpen, [kind]: false }).some(v => v);
+        if (!anyOpen) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
     }
   };
 
@@ -254,7 +311,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                     >
                       {file.filename}
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-700 font-mono flex-shrink-0">
+                    <span className="ml-1 text-[10px] px-1 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0">
                       v{file.version}
                     </span>
                   </div>
