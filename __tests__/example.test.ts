@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { eq, desc } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import * as schema from '../db/schema';
 import fs from 'fs';
@@ -86,7 +87,7 @@ describe('Job Repository Tests', () => {
       id: jobId,
       title: 'Software Engineer',
       company: 'Test Corp',
-      status: 'Applied',
+      status: 'APPLIED' as const,
       notes: 'Test notes',
       createdAt: now,
       updatedAt: now,
@@ -94,19 +95,19 @@ describe('Job Repository Tests', () => {
 
     testDb.insert(schema.jobs).values(job).run();
 
-    const result = testDb.select().from(schema.jobs).where(schema.jobs.id.eq(jobId)).get();
+    const result = testDb.select().from(schema.jobs).where(eq(schema.jobs.id, jobId)).get();
     
     expect(result).toBeDefined();
     expect(result?.title).toBe('Software Engineer');
     expect(result?.company).toBe('Test Corp');
-    expect(result?.status).toBe('Applied');
+    expect(result?.status).toBe('APPLIED');
   });
 
   it('should search jobs using FTS5', () => {
     const now = Date.now();
     const jobs = [
-      { id: uuidv4(), title: 'React Developer', company: 'Facebook', status: 'Applied', notes: 'Great company', createdAt: now, updatedAt: now },
-      { id: uuidv4(), title: 'Vue Developer', company: 'Google', status: 'Applied', notes: 'Another opportunity', createdAt: now, updatedAt: now },
+      { id: uuidv4(), title: 'React Developer', company: 'Facebook', status: 'APPLIED' as const, notes: 'Great company', createdAt: now, updatedAt: now },
+      { id: uuidv4(), title: 'Vue Developer', company: 'Google', status: 'APPLIED' as const, notes: 'Another opportunity', createdAt: now, updatedAt: now },
     ];
 
     jobs.forEach(job => {
@@ -129,16 +130,16 @@ describe('Job Repository Tests', () => {
   it('should list jobs ordered by updated date', () => {
     const now = Date.now();
     const jobs = [
-      { id: uuidv4(), title: 'Job 1', company: 'A', status: 'Applied', notes: '', createdAt: now - 2000, updatedAt: now - 2000 },
-      { id: uuidv4(), title: 'Job 2', company: 'B', status: 'Applied', notes: '', createdAt: now - 1000, updatedAt: now - 1000 },
-      { id: uuidv4(), title: 'Job 3', company: 'C', status: 'Applied', notes: '', createdAt: now, updatedAt: now },
+      { id: uuidv4(), title: 'Job 1', company: 'A', status: 'APPLIED' as const, notes: '', createdAt: now - 2000, updatedAt: now - 2000 },
+      { id: uuidv4(), title: 'Job 2', company: 'B', status: 'APPLIED' as const, notes: '', createdAt: now - 1000, updatedAt: now - 1000 },
+      { id: uuidv4(), title: 'Job 3', company: 'C', status: 'APPLIED' as const, notes: '', createdAt: now, updatedAt: now },
     ];
 
     jobs.forEach(job => {
       testDb.insert(schema.jobs).values(job).run();
     });
 
-    const results = testDb.select().from(schema.jobs).orderBy(schema.jobs.updatedAt.desc()).all();
+    const results = testDb.select().from(schema.jobs).orderBy(desc(schema.jobs.updatedAt)).all();
     
     expect(results).toHaveLength(3);
     expect(results[0].title).toBe('Job 3');
@@ -155,7 +156,7 @@ describe('Job Repository Tests', () => {
       id: jobId,
       title: 'Software Engineer',
       company: 'TechCorp',
-      status: 'Applied',
+      status: 'APPLIED' as const,
       notes: 'Initial application',
       createdAt: now,
       updatedAt: now,
@@ -167,17 +168,17 @@ describe('Job Repository Tests', () => {
     testDb.insert(schema.statusHistory).values({
       id: uuidv4(),
       jobId: jobId,
-      status: 'Applied',
+      status: 'APPLIED' as const,
       changedAt: now,
     }).run();
 
     // Update status to Phone Screen
-    const newStatus = 'Phone Screen';
+    const newStatus = 'PHONE_SCREEN' as const;
     const updateTime = now + 1000;
 
     testDb.update(schema.jobs)
       .set({ status: newStatus, updatedAt: updateTime })
-      .where(schema.jobs.id.eq(jobId))
+      .where(eq(schema.jobs.id, jobId))
       .run();
 
     testDb.insert(schema.statusHistory).values({
@@ -188,33 +189,33 @@ describe('Job Repository Tests', () => {
     }).run();
 
     // Verify job was updated
-    const updatedJob = testDb.select().from(schema.jobs).where(schema.jobs.id.eq(jobId)).get();
-    expect(updatedJob?.status).toBe('Phone Screen');
+    const updatedJob = testDb.select().from(schema.jobs).where(eq(schema.jobs.id, jobId)).get();
+    expect(updatedJob?.status).toBe('PHONE_SCREEN');
     expect(updatedJob?.updatedAt).toBe(updateTime);
 
     // Verify status history has 2 entries
     const history = testDb.select()
       .from(schema.statusHistory)
-      .where(schema.statusHistory.jobId.eq(jobId))
-      .orderBy(schema.statusHistory.changedAt.desc())
+      .where(eq(schema.statusHistory.jobId, jobId))
+      .orderBy(desc(schema.statusHistory.changedAt))
       .all();
 
     expect(history).toHaveLength(2);
-    expect(history[0].status).toBe('Phone Screen');
-    expect(history[1].status).toBe('Applied');
+    expect(history[0].status).toBe('PHONE_SCREEN');
+    expect(history[1].status).toBe('APPLIED');
   });
 
   it('should maintain status history order across multiple updates', () => {
     const jobId = uuidv4();
     const now = Date.now();
-    const statuses = ['Applied', 'Phone Screen', 'Onsite', 'Offer'];
+    const statuses = ['APPLIED', 'PHONE_SCREEN', 'ONSITE', 'OFFER'] as const;
 
     // Create initial job
     testDb.insert(schema.jobs).values({
       id: jobId,
       title: 'Full Stack Developer',
       company: 'StartupXYZ',
-      status: statuses[0],
+      status: statuses[0] as 'APPLIED',
       notes: '',
       createdAt: now,
       updatedAt: now,
@@ -227,14 +228,14 @@ describe('Job Repository Tests', () => {
       testDb.insert(schema.statusHistory).values({
         id: uuidv4(),
         jobId: jobId,
-        status: status,
+        status: status as any,
         changedAt: changedAt,
       }).run();
 
       if (index > 0) {
         testDb.update(schema.jobs)
-          .set({ status: status, updatedAt: changedAt })
-          .where(schema.jobs.id.eq(jobId))
+          .set({ status: status as any, updatedAt: changedAt })
+          .where(eq(schema.jobs.id, jobId))
           .run();
       }
     });
@@ -242,15 +243,15 @@ describe('Job Repository Tests', () => {
     // Verify history is in correct order (most recent first)
     const history = testDb.select()
       .from(schema.statusHistory)
-      .where(schema.statusHistory.jobId.eq(jobId))
-      .orderBy(schema.statusHistory.changedAt.desc())
+      .where(eq(schema.statusHistory.jobId, jobId))
+      .orderBy(desc(schema.statusHistory.changedAt))
       .all();
 
     expect(history).toHaveLength(4);
-    expect(history[0].status).toBe('Offer');
-    expect(history[1].status).toBe('Onsite');
-    expect(history[2].status).toBe('Phone Screen');
-    expect(history[3].status).toBe('Applied');
+    expect(history[0].status).toBe('OFFER');
+    expect(history[1].status).toBe('ONSITE');
+    expect(history[2].status).toBe('PHONE_SCREEN');
+    expect(history[3].status).toBe('APPLIED');
 
     // Verify timestamps are in descending order
     for (let i = 0; i < history.length - 1; i++) {

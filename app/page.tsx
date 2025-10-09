@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import StatusSelect from './components/StatusSelect';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
@@ -246,7 +247,15 @@ export default function Home() {
                 <tbody className="divide-y divide-gray-200">
                   {jobs.map((job) => (
                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm text-gray-900">{job.title}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <Link 
+                          href={`/jobs/${job.id}`} 
+                          className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                          data-testid={`job-link-${job.id}`}
+                        >
+                          {job.title}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{job.company}</td>
                       <td className="px-4 py-3">
                         <StatusSelect
