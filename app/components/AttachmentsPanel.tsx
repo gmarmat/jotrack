@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DropZone from "./DropZone";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
@@ -17,11 +17,19 @@ interface AttachmentsPanelProps {
   jobId: string;
 }
 
+interface UndoState {
+  attachmentId: string;
+  file: AttachmentFile;
+  expiresAt: number;
+}
+
 const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf,image/png,image/jpeg,image/webp";
 
 export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [files, setFiles] = useState<AttachmentFile[]>([]);
   const [error, setError] = useState<string>("");
+  const [undoState, setUndoState] = useState<UndoState | null>(null);
+  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadAttachments = async () => {
     try {
@@ -47,6 +55,58 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const handleError = (msg: string) => {
     setError(msg);
     setTimeout(() => setError(""), 5000);
+  };
+
+  const handleDelete = async (file: AttachmentFile) => {
+    try {
+      const res = await fetch(`/api/attachments/${file.id}/delete`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        handleError('Failed to delete attachment');
+        return;
+      }
+
+      // Optimistically remove from list
+      setFiles((prev) => prev.filter((f) => f.id !== file.id));
+
+      // Set undo state with 10s expiry
+      const expiresAt = Date.now() + 10000;
+      setUndoState({ attachmentId: file.id, file, expiresAt });
+
+      // Clear undo after 10s
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = setTimeout(() => {
+        setUndoState(null);
+      }, 10000);
+    } catch (err) {
+      console.error('Delete error:', err);
+      handleError('Failed to delete attachment');
+    }
+  };
+
+  const handleUndo = async () => {
+    if (!undoState) return;
+
+    try {
+      const res = await fetch(`/api/attachments/${undoState.attachmentId}/restore`, {
+        method: 'POST',
+      });
+
+      if (!res.ok) {
+        handleError('Undo failed - file may be permanently deleted');
+        return;
+      }
+
+      // Restore file to list
+      setFiles((prev) => [undoState.file, ...prev]);
+      setUndoState(null);
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    } catch (err) {
+      console.error('Undo error:', err);
+      handleError('Undo failed');
+    }
   };
 
   const getFilesByKind = (kind: AttachmentKind) => {
@@ -92,6 +152,13 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                   >
                     Download
                   </a>
+                  <button
+                    onClick={() => handleDelete(file)}
+                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                    data-testid={`delete-${file.id}`}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
               {isImage && (
@@ -115,6 +182,19 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
           {error}
+        </div>
+      )}
+
+      {undoState && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-900 px-4 py-2 rounded text-sm flex items-center justify-between">
+          <span>Attachment deleted.</span>
+          <button
+            onClick={handleUndo}
+            className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 font-medium"
+            data-testid="undo-delete-btn"
+          >
+            Undo (10s)
+          </button>
         </div>
       )}
 
