@@ -67,7 +67,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return new NextResponse(fileBuffer.buffer as ArrayBuffer, { headers });
     }
 
-    // List path
+    // List path (exclude soft-deleted)
     const rows = await db
       .select({
         id: attachments.id,
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         created_at: attachments.createdAt,
       })
       .from(attachments)
-      .where(eq(attachments.jobId, jobId))
+      .where(sql`${attachments.jobId} = ${jobId} AND ${attachments.deletedAt} IS NULL`)
       .orderBy(desc(attachments.createdAt));
 
     const list = rows.map((r) => ({
