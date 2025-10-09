@@ -5,6 +5,7 @@ import StatusSelect from './components/StatusSelect';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
 import BackupRestorePanel from './components/BackupRestorePanel';
+import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 interface Job {
   id: string;
@@ -16,8 +17,6 @@ interface Job {
   updatedAt: number;
 }
 
-const STATUS_OPTIONS = ['Applied', 'Phone Screen', 'Onsite', 'Offer', 'Rejected'] as const;
-
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,7 +24,7 @@ export default function Home() {
   const [formData, setFormData] = useState({
     title: '',
     company: '',
-    status: 'Applied' as typeof STATUS_OPTIONS[number],
+    status: 'APPLIED' as JobStatus,
     notes: '',
   });
   const [historyModal, setHistoryModal] = useState<{ isOpen: boolean; jobId: string; jobTitle: string }>({
@@ -71,7 +70,7 @@ export default function Home() {
       const data = await response.json();
       
       if (data.success) {
-        setFormData({ title: '', company: '', status: 'Applied', notes: '' });
+        setFormData({ title: '', company: '', status: 'APPLIED', notes: '' });
         fetchJobs();
       } else {
         alert(data.message || 'Failed to create job');
@@ -163,11 +162,11 @@ export default function Home() {
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as typeof STATUS_OPTIONS[number] })}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as JobStatus })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status}</option>
+                {ORDERED_STATUSES.map((key) => (
+                  <option key={key} value={key}>{STATUS_LABELS[key]}</option>
                 ))}
               </select>
             </div>

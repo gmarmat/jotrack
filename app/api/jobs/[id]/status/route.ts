@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { isJobStatus, type JobStatus } from '@/lib/status';
 import { updateJobStatus } from '@/db/repository';
-
-const updateStatusSchema = z.object({
-  status: z.enum(['Applied', 'Phone Screen', 'Onsite', 'Offer', 'Rejected']),
-});
 
 export async function PATCH(
   request: NextRequest,
@@ -12,9 +8,16 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json();
-    const validatedData = updateStatusSchema.parse(body);
+    const nextStatus = String(body?.status ?? '');
     
-    const job = updateJobStatus(params.id, validatedData.status);
+    if (!isJobStatus(nextStatus)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid status value' },
+        { status: 400 }
+      );
+    }
+    
+    const job = updateJobStatus(params.id, nextStatus);
     
     if (!job) {
       return NextResponse.json(
@@ -25,13 +28,6 @@ export async function PATCH(
     
     return NextResponse.json({ success: true, job });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, message: 'Validation failed', errors: error.errors },
-        { status: 400 }
-      );
-    }
-    
     console.error('Error updating job status:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },

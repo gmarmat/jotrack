@@ -2,11 +2,12 @@ import { db, sqlite } from './client';
 import { jobs, statusHistory, type NewJob, type Job } from './schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq, desc, SQL } from 'drizzle-orm';
+import type { JobStatus } from '@/lib/status';
 
 export interface CreateJobInput {
   title: string;
   company: string;
-  status: string;
+  status: JobStatus | string; // Accept both for backward compatibility
   notes?: string;
 }
 
@@ -18,7 +19,7 @@ export async function createJob(input: CreateJobInput): Promise<Job> {
     id: jobId,
     title: input.title,
     company: input.company,
-    status: input.status,
+    status: input.status as JobStatus,
     notes: input.notes || '',
     createdAt: now,
     updatedAt: now,
@@ -30,7 +31,7 @@ export async function createJob(input: CreateJobInput): Promise<Job> {
   await db.insert(statusHistory).values({
     id: uuidv4(),
     jobId: jobId,
-    status: input.status,
+    status: input.status as JobStatus,
     changedAt: now,
   });
 
@@ -63,7 +64,7 @@ export function searchJobs(query: string): SearchJobsResult[] {
   return stmt.all(query) as SearchJobsResult[];
 }
 
-export function updateJobStatus(jobId: string, status: string): Job | null {
+export function updateJobStatus(jobId: string, status: JobStatus | string): Job | null {
   const now = Date.now();
   const historyId = uuidv4();
   

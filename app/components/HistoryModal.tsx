@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { relativeTime } from '@/app/lib/utils';
+import { STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 interface StatusHistoryEntry {
   id: string;
@@ -106,13 +107,14 @@ export default function HistoryModal({ jobId, jobTitle, isOpen, onClose }: Histo
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        entry.status === 'Offer' ? 'bg-green-100 text-green-800' :
-                        entry.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                        entry.status === 'Onsite' ? 'bg-purple-100 text-purple-800' :
-                        entry.status === 'Phone Screen' ? 'bg-blue-100 text-blue-800' :
+                        entry.status === 'OFFER' ? 'bg-green-100 text-green-800' :
+                        entry.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                        entry.status === 'ONSITE' ? 'bg-purple-100 text-purple-800' :
+                        entry.status === 'PHONE_SCREEN' ? 'bg-blue-100 text-blue-800' :
+                        entry.status === 'ON_RADAR' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {entry.status}
+                        {STATUS_LABELS[entry.status as JobStatus] || entry.status}
                       </span>
                       <span className="text-xs text-gray-500 whitespace-nowrap">
                         {relativeTime(entry.changedAt)}

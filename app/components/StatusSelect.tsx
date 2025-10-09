@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus } from '@/lib/status';
 
 interface StatusSelectProps {
   jobId: string;
   initialStatus: string;
   onStatusChange: (jobId: string, newStatus: string) => void;
 }
-
-const STATUS_OPTIONS = ['Applied', 'Phone Screen', 'Onsite', 'Offer', 'Rejected'] as const;
 
 export default function StatusSelect({ jobId, initialStatus, onStatusChange }: StatusSelectProps) {
   const [status, setStatus] = useState(initialStatus);
@@ -58,9 +57,9 @@ export default function StatusSelect({ jobId, initialStatus, onStatusChange }: S
         className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         data-testid={`status-select-${jobId}`}
       >
-        {STATUS_OPTIONS.map((option) => (
-          <option key={option} value={option}>
-            {option}
+        {ORDERED_STATUSES.map((key) => (
+          <option key={key} value={key}>
+            {STATUS_LABELS[key]}
           </option>
         ))}
       </select>

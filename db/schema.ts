@@ -1,10 +1,11 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import type { JobStatus } from '@/lib/status';
 
 export const jobs = sqliteTable('jobs', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
   company: text('company').notNull(),
-  status: text('status').notNull(), // Applied, Phone Screen, Onsite, Offer, Rejected
+  status: text('status').$type<JobStatus>().notNull(),
   notes: text('notes').default(''),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
@@ -13,7 +14,7 @@ export const jobs = sqliteTable('jobs', {
 export const statusHistory = sqliteTable('status_history', {
   id: text('id').primaryKey(),
   jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
-  status: text('status').notNull(),
+  status: text('status').$type<JobStatus>().notNull(),
   changedAt: integer('changed_at', { mode: 'number' }).notNull(),
 });
 

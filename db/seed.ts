@@ -15,7 +15,7 @@ async function seed() {
         id: uuidv4(),
         title: 'Senior Frontend Engineer',
         company: 'TechCorp',
-        status: 'Phone Screen',
+        status: 'PHONE_SCREEN' as const,
         notes: 'Excited about this role! Team seems great.',
         createdAt: now - 7 * 24 * 60 * 60 * 1000, // 7 days ago
         updatedAt: now - 2 * 24 * 60 * 60 * 1000, // 2 days ago
@@ -24,7 +24,7 @@ async function seed() {
         id: uuidv4(),
         title: 'Full Stack Developer',
         company: 'StartupXYZ',
-        status: 'Onsite',
+        status: 'ONSITE' as const,
         notes: 'Fast-paced environment, React + Node.js stack',
         createdAt: now - 14 * 24 * 60 * 60 * 1000, // 14 days ago
         updatedAt: now - 1 * 24 * 60 * 60 * 1000, // 1 day ago
@@ -33,7 +33,7 @@ async function seed() {
         id: uuidv4(),
         title: 'React Developer',
         company: 'Digital Agency',
-        status: 'Applied',
+        status: 'APPLIED' as const,
         notes: 'Fully remote position',
         createdAt: now - 3 * 24 * 60 * 60 * 1000, // 3 days ago
         updatedAt: now - 3 * 24 * 60 * 60 * 1000,
@@ -46,34 +46,39 @@ async function seed() {
       console.log(`✅ Created job: ${job.title} at ${job.company}`);
       
       // Add status history entries
-      const historyEntries = [
+      const historyEntries: Array<{
+        id: string;
+        jobId: string;
+        status: 'ON_RADAR' | 'APPLIED' | 'PHONE_SCREEN' | 'ONSITE' | 'OFFER' | 'REJECTED';
+        changedAt: number;
+      }> = [
         {
           id: uuidv4(),
           jobId: job.id,
-          status: 'Applied',
+          status: 'APPLIED',
           changedAt: job.createdAt,
         },
       ];
       
       // Add additional status changes for some jobs
-      if (job.status === 'Phone Screen') {
+      if (job.status === 'PHONE_SCREEN') {
         historyEntries.push({
           id: uuidv4(),
           jobId: job.id,
-          status: 'Phone Screen',
+          status: 'PHONE_SCREEN',
           changedAt: job.updatedAt,
         });
-      } else if (job.status === 'Onsite') {
+      } else if (job.status === 'ONSITE') {
         historyEntries.push({
           id: uuidv4(),
           jobId: job.id,
-          status: 'Phone Screen',
+          status: 'PHONE_SCREEN',
           changedAt: job.createdAt + 5 * 24 * 60 * 60 * 1000,
         });
         historyEntries.push({
           id: uuidv4(),
           jobId: job.id,
-          status: 'Onsite',
+          status: 'ONSITE',
           changedAt: job.updatedAt,
         });
       }

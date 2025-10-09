@@ -18,7 +18,7 @@ test('should create a new job application and verify it appears in the list', as
   
   await page.fill('input[placeholder*="Senior React Developer"]', jobTitle);
   await page.fill('input[placeholder*="TechCorp"]', company);
-  await page.selectOption('select', 'Phone Screen');
+  await page.selectOption('select', 'PHONE_SCREEN');
   await page.fill('textarea[placeholder*="additional notes"]', 'This is a test job application');
   
   // Submit the form
@@ -31,7 +31,7 @@ test('should create a new job application and verify it appears in the list', as
   const jobRow = page.locator('table tbody tr').filter({ hasText: jobTitle });
   await expect(jobRow).toBeVisible();
   await expect(jobRow).toContainText(company);
-  await expect(jobRow).toContainText('Phone Screen');
+  await expect(jobRow.locator('select')).toHaveValue('PHONE_SCREEN');
 });
 
 test('should search for a job by title', async ({ page }) => {
@@ -86,21 +86,21 @@ test('should update job status and show changes', async ({ page }) => {
   
   // Find the status select for this job
   const statusSelect = jobRow.locator('select');
-  await expect(statusSelect).toHaveValue('Applied');
+  await expect(statusSelect).toHaveValue('APPLIED');
   
   // Change status to Phone Screen
-  await statusSelect.selectOption('Phone Screen');
-  
+  await statusSelect.selectOption('PHONE_SCREEN');
+
   // Click the save button (checkmark icon)
-  const saveButton = jobRow.locator('button[title="Save status"]');
+  const saveButton = jobRow.locator('button[title="Save status"]').or(jobRow.locator('[data-testid^="save-status"]'));
   await expect(saveButton).toBeVisible();
   await saveButton.click();
-  
+
   // Wait for the save to complete
   await page.waitForTimeout(1000);
-  
+
   // Verify the status was updated
-  await expect(statusSelect).toHaveValue('Phone Screen');
+  await expect(statusSelect).toHaveValue('PHONE_SCREEN');
 });
 
 test('should track status history and display in modal', async ({ page }) => {
@@ -113,24 +113,24 @@ test('should track status history and display in modal', async ({ page }) => {
   
   await page.fill('input[placeholder*="Senior React Developer"]', jobTitle);
   await page.fill('input[placeholder*="TechCorp"]', company);
-  await page.selectOption('select', 'Applied');
+  await page.selectOption('select', 'APPLIED');
   await page.click('button:has-text("Add Job Application")');
-  
+
   await page.waitForTimeout(1000);
-  
+
   // Find the job row
   const jobRow = page.locator('table tbody tr').filter({ hasText: jobTitle });
   await expect(jobRow).toBeVisible();
-  
+
   // Change status to Phone Screen
   const statusSelect = jobRow.locator('select');
-  await statusSelect.selectOption('Phone Screen');
-  await jobRow.locator('button[title="Save status"]').click();
+  await statusSelect.selectOption('PHONE_SCREEN');
+  await jobRow.locator('button[title="Save status"]').or(jobRow.locator('[data-testid^="save-status"]')).click();
   await page.waitForTimeout(1000);
-  
+
   // Change status to Onsite
-  await statusSelect.selectOption('Onsite');
-  await jobRow.locator('button[title="Save status"]').click();
+  await statusSelect.selectOption('ONSITE');
+  await jobRow.locator('button[title="Save status"]').or(jobRow.locator('[data-testid^="save-status"]')).click();
   await page.waitForTimeout(1000);
   
   // Open history modal
@@ -174,18 +174,18 @@ test('should show optimistic update and handle errors', async ({ page }) => {
   
   await page.fill('input[placeholder*="Senior React Developer"]', jobTitle);
   await page.fill('input[placeholder*="TechCorp"]', company);
-  await page.selectOption('select', 'Applied');
+  await page.selectOption('select', 'APPLIED');
   await page.click('button:has-text("Add Job Application")');
-  
+
   await page.waitForTimeout(1000);
-  
+
   // Find the job row
   const jobRow = page.locator('table tbody tr').filter({ hasText: jobTitle });
   await expect(jobRow).toBeVisible();
-  
+
   // Change status
   const statusSelect = jobRow.locator('select');
-  await statusSelect.selectOption('Offer');
+  await statusSelect.selectOption('OFFER');
   
   // Verify save button appears
   const saveButton = jobRow.locator('button[title="Save status"]');
@@ -198,6 +198,6 @@ test('should show optimistic update and handle errors', async ({ page }) => {
   await page.waitForTimeout(1000);
   
   // Verify status was updated
-  await expect(statusSelect).toHaveValue('Offer');
+  await expect(statusSelect).toHaveValue('OFFER');
 });
 
