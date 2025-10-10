@@ -19,7 +19,7 @@ export default function FilterChips() {
     <div className="flex flex-wrap gap-2 mb-4">
       <button
         onClick={() => setStatus("ALL")}
-        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+        className={`px-1.5 py-1 text-xs rounded-full border transition-colors ${
           active === "ALL" ? "bg-gray-900 text-white border-gray-900" : "bg-white hover:bg-gray-50"
         }`}
         data-testid="chip-ALL"
@@ -30,7 +30,7 @@ export default function FilterChips() {
         <button
           key={s}
           onClick={() => setStatus(s)}
-          className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+          className={`px-1.5 py-1 text-xs rounded-full border transition-colors ${
             active === s ? "bg-gray-900 text-white border-gray-900" : "bg-white hover:bg-gray-50"
           }`}
           data-testid={`chip-${s}`}

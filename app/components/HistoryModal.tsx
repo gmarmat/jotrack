@@ -106,7 +106,7 @@ export default function HistoryModal({ jobId, jobTitle, isOpen, onClose }: Histo
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         entry.status === 'OFFER' ? 'bg-green-100 text-green-800' :
                         entry.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
                         entry.status === 'ONSITE' ? 'bg-purple-100 text-purple-800' :
