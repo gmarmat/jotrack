@@ -20,10 +20,12 @@ export async function GET(
         id: attachments.id,
         filename: attachments.filename,
         path: attachments.path,
-        mime: attachments.mime,
         size: attachments.size,
+        version: attachments.version,
         isActive: attachments.isActive,
         createdAt: attachments.createdAt,
+        deletedAt: attachments.deletedAt,
+        kind: attachments.kind,
       })
       .from(attachments)
       .where(
