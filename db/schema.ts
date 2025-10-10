@@ -51,6 +51,14 @@ export const statusDetails = sqliteTable('status_details', {
   aiRefreshedAt: integer('ai_refreshed_at', { mode: 'number' }),
 });
 
+export const jobStatusEvents = sqliteTable('job_status_events', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  status: text('status').$type<JobStatus>().notNull(),
+  enteredAt: integer('entered_at', { mode: 'number' }).notNull(),
+  leftAt: integer('left_at', { mode: 'number' }),
+});
+
 // Types
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
@@ -60,6 +68,8 @@ export type Attachment = typeof attachments.$inferSelect;
 export type NewAttachment = typeof attachments.$inferInsert;
 export type StatusDetail = typeof statusDetails.$inferSelect;
 export type NewStatusDetail = typeof statusDetails.$inferInsert;
+export type JobStatusEvent = typeof jobStatusEvents.$inferSelect;
+export type NewJobStatusEvent = typeof jobStatusEvents.$inferInsert;
 
 // Typed structures for JSON columns
 export type InterviewerBlock = {

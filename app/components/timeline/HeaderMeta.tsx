@@ -1,0 +1,83 @@
+"use client";
+
+import { ExternalLink } from "lucide-react";
+import { calculateDelta, formatDateTime } from "@/lib/timeDelta";
+
+interface HeaderMetaProps {
+  postingUrl?: string | null;
+  createdAt: number;
+  updatedAt: number;
+  currentStatusEnteredAt?: number;
+}
+
+export default function HeaderMeta({
+  postingUrl,
+  createdAt,
+  updatedAt,
+  currentStatusEnteredAt,
+}: HeaderMetaProps) {
+  const delta = currentStatusEnteredAt
+    ? calculateDelta(currentStatusEnteredAt)
+    : null;
+
+  return (
+    <div 
+      className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 px-6 py-3"
+      data-testid="header-meta"
+    >
+      <div className="flex items-center justify-between max-w-7xl mx-auto flex-wrap gap-3">
+        {/* Left: Posting Link */}
+        <div className="flex items-center gap-4">
+          {postingUrl && (
+            <a
+              href={postingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+              data-testid="posting-link"
+            >
+              <ExternalLink size={14} />
+              View Posting
+            </a>
+          )}
+        </div>
+
+        {/* Right: Metadata */}
+        <div className="flex items-center gap-4 text-xs text-gray-600">
+          <div title={formatDateTime(createdAt)}>
+            <span className="font-medium">Created:</span> {formatDateTime(createdAt)}
+          </div>
+          <div title={formatDateTime(updatedAt)}>
+            <span className="font-medium">Updated:</span> {formatDateTime(updatedAt)}
+          </div>
+
+          {/* Delta Chip */}
+          {delta && (
+            <div 
+              className={`px-2.5 py-1 rounded-full font-semibold ${
+                delta.isStale
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-blue-100 text-blue-700"
+              }`}
+              data-testid="timeline-current-delta"
+              title={`In current status for ${delta.days} days`}
+            >
+              {delta.label}
+            </div>
+          )}
+
+          {/* Stale Badge */}
+          {delta && delta.isStale && (
+            <div 
+              className="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold"
+              data-testid="stale-badge"
+            >
+              ⏳ STALE
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

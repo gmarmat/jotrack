@@ -6,11 +6,13 @@ import { JOURNEY_MAPPING } from "@/lib/statusJourney";
 interface HorizontalTimelineProps {
   currentStatus: JobStatus;
   onStatusClick?: (status: JobStatus) => void;
+  currentStatusDelta?: string; // e.g., "6d"
 }
 
 export default function HorizontalTimeline({
   currentStatus,
   onStatusClick,
+  currentStatusDelta,
 }: HorizontalTimelineProps) {
   const currentIndex = ORDERED_STATUSES.indexOf(currentStatus);
 
@@ -89,6 +91,11 @@ export default function HorizontalTimeline({
                   }`}
                 >
                   {STATUS_LABELS[status]}
+                  {isActive && currentStatusDelta && (
+                    <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white rounded text-[10px] font-bold">
+                      {currentStatusDelta}
+                    </span>
+                  )}
                 </div>
 
                 {/* Description */}

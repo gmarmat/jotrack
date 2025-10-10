@@ -11,13 +11,17 @@ import JobActionsBar from '@/app/components/JobActionsBar';
 import TrashPanel from '@/app/components/attachments/TrashPanel';
 import HorizontalTimeline from '@/app/components/timeline/HorizontalTimeline';
 import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
+import HeaderMeta from '@/app/components/timeline/HeaderMeta';
+import UtilityRail from '@/app/components/timeline/UtilityRail';
 import { type JobStatus } from '@/lib/status';
+import { calculateDelta } from '@/lib/timeDelta';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [showTrash, setShowTrash] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [job, setJob] = useState<any>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
+  const [currentStatusEnteredAt, setCurrentStatusEnteredAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const id = params.id;
@@ -32,10 +36,23 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         }
         const data = await res.json();
         setJob(data);
+        
         // Fetch attachment count
         const attRes = await fetch(`/api/jobs/${id}/attachments`);
         const attData = await attRes.json();
         setAttachmentCount(attData.attachments?.filter((a: any) => !a.deletedAt).length ?? 0);
+        
+        // Fetch status events for delta calculation
+        try {
+          const eventsRes = await fetch(`/api/jobs/${id}/status-events`);
+          const eventsData = await eventsRes.json();
+          const currentEvent = eventsData.events?.find((e: any) => !e.leftAt);
+          if (currentEvent) {
+            setCurrentStatusEnteredAt(currentEvent.enteredAt);
+          }
+        } catch (error) {
+          console.error("Failed to fetch status events:", error);
+        }
       } catch (error) {
         console.error('Failed to fetch job:', error);
         router.push('/');
@@ -59,13 +76,23 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   if (!job) return null;
 
   const currentStatus = (job.status as JobStatus) ?? 'ON_RADAR';
+  const delta = currentStatusEnteredAt ? calculateDelta(currentStatusEnteredAt) : null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Timeline - Full width above everything */}
       <HorizontalTimeline 
         currentStatus={currentStatus} 
         onStatusClick={setSelectedStatus}
+        currentStatusDelta={delta?.label}
+      />
+
+      {/* Header Meta - Delta chip, posting link */}
+      <HeaderMeta
+        postingUrl={job.posting_url || job.postingUrl}
+        createdAt={job.created_at || job.createdAt}
+        updatedAt={job.updated_at || job.updatedAt}
+        currentStatusEnteredAt={currentStatusEnteredAt || undefined}
       />
 
       <div className="max-w-4xl mx-auto px-4 space-y-6 mt-6">
@@ -127,6 +154,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         </section>
 
       </div>
+
+      {/* Utility Rail */}
+      <UtilityRail jobId={job.id} job={job} />
 
       {/* Trash Panel */}
       {showTrash && (
