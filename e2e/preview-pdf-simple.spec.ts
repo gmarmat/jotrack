@@ -25,24 +25,41 @@ test('PDF preview - check error message', async ({ page }) => {
   
   console.log('\n=== CLICKING PREVIEW ===');
   await previewBtn.click();
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1000);
   
   const modal = page.locator('[data-testid="viewer-modal"]');
   await expect(modal).toBeVisible();
   
-  // Check for error message
-  const errorDiv = page.locator('[data-testid="viewer-docx-fallback"]');
-  const hasError = await errorDiv.isVisible().catch(() => false);
+  // Wait for PDF to finish loading (up to 10 seconds)
+  const pdfCanvas = page.locator('[data-testid="pdf-canvas"]');
+  const pdfError = page.locator('[data-testid="pdf-error"]');
   
-  console.log('Has error fallback:', hasError);
+  console.log('Waiting for PDF to load...');
+  
+  // Wait for either canvas or error to appear
+  try {
+    await Promise.race([
+      pdfCanvas.waitFor({ state: 'visible', timeout: 10000 }),
+      pdfError.waitFor({ state: 'visible', timeout: 10000 })
+    ]);
+  } catch (e) {
+    console.log('Timeout waiting for PDF render');
+  }
+  
+  // Check results
+  const hasError = await pdfError.isVisible().catch(() => false);
+  const hasCanvas = await pdfCanvas.isVisible().catch(() => false);
+  
+  console.log('Has error:', hasError);
+  console.log('Has canvas:', hasCanvas);
   
   if (hasError) {
-    const errorText = await errorDiv.innerText();
+    const errorText = await pdfError.innerText();
     console.log('ERROR MESSAGE:', errorText);
   }
   
   // Check for canvas
-  const canvas = page.locator('canvas, [data-testid="pdf-canvas"], [data-testid="viewer-pdf-page"]');
+  const canvas = page.locator('canvas, [data-testid="pdf-canvas"]');
   const canvasCount = await canvas.count();
   console.log('Canvas count:', canvasCount);
   

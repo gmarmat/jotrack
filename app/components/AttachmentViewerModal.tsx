@@ -13,8 +13,8 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import dynamic from 'next/dynamic';
 
-const PdfViewer = dynamic(() => import('../preview/PdfViewer'), { ssr: false });
-const DocxViewer = dynamic(() => import('../preview/DocxViewer'), { ssr: false });
+const PdfViewer = dynamic(() => import('./preview/PdfViewer'), { ssr: false });
+const DocxViewer = dynamic(() => import('./preview/DocxViewer'), { ssr: false });
 
 // Constants
 const MAX_DOCX_PREVIEW_BYTES = 10 * 1024 * 1024;
@@ -123,7 +123,7 @@ export default function AttachmentViewerModal({
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         
-        await page.render({ canvas, canvasContext: context, viewport }).promise;
+        await page.render({ canvasContext: context, viewport } as any).promise;
         canvases.push(canvas);
       }
       
