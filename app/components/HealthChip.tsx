@@ -48,7 +48,7 @@ export default function HealthChip() {
         {h?.ok ? '🟢' : '🔴'} Health
         {h && (
           <span className="ml-1 text-gray-600">
-            jobs: <span className="font-medium">{h.jobs}</span> • att:{' '}
+            jobs: <span className="font-medium">{h.jobs}</span> • files:{' '}
             <span className="font-medium">{h.attachments}</span>
             {!isProd && h.env ? (
               <span className="ml-1 text-gray-500">• {h.env}</span>
