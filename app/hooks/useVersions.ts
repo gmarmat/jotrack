@@ -1,65 +1,87 @@
-"use client";
+import useSWR, { mutate as globalMutate } from "swr";
 
-import { useState, useCallback } from 'react';
+export type AttachmentKind = "resume" | "jd" | "cover_letter" | "other";
 
-export type Kind = 'resume' | 'jd' | 'cover_letter' | 'other';
-
-interface Version {
+export type VersionRec = {
   id: string;
+  jobId?: string;
+  kind: AttachmentKind;
   filename: string;
   path: string;
-  mime: string;
   size: number;
+  version: number;
   isActive: boolean;
-  createdAt: string;
-}
+  createdAt: number;
+  deletedAt: number | null;
+};
 
-interface UseVersionsState {
-  data: Version[];
-  loading: boolean;
-  error: string | null;
-}
-
-interface UseVersionsReturn extends UseVersionsState {
-  refresh: () => Promise<void>;
-  setData: (updater: (prev: Version[]) => Version[]) => void;
-}
-
-export function useVersions(jobId: string, kind: Kind): UseVersionsReturn {
-  const [state, setState] = useState<UseVersionsState>({
-    data: [],
-    loading: false,
-    error: null,
+const fetcher = (url: string) =>
+  fetch(url, { headers: { accept: "application/json" } }).then((r) => {
+    if (!r.ok) throw new Error(`Fetch ${url} failed`);
+    return r.json();
   });
 
-  const refresh = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
-    try {
-      const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
-      
-      if (!res.ok) {
-        throw new Error(`Failed to fetch versions: ${res.status}`);
-      }
-      
-      const response = await res.json();
-      const data = response.versions || [];
-      setState({ data, loading: false, error: null });
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load versions';
-      setState(prev => ({ ...prev, loading: false, error: errorMsg }));
-      console.error('useVersions refresh error:', err);
-    }
-  }, [jobId, kind]);
+export function useVersions(jobId: string, kind: AttachmentKind) {
+  const key =
+    jobId && kind
+      ? `/api/jobs/${jobId}/attachments/versions?kind=${kind}`
+      : null;
+  const { data, error, isLoading, mutate } = useSWR<{ versions: VersionRec[] }>(
+    key,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
-  const setData = useCallback((updater: (prev: Version[]) => Version[]) => {
-    setState(prev => ({ ...prev, data: updater(prev.data) }));
-  }, []);
+  const refresh = () => mutate(); // deterministic explicit refresh
+
+  // Helpers for optimistic updates
+  const setActiveLocal = (version: number) =>
+    mutate(
+      (prev) =>
+        prev
+          ? {
+              versions: prev.versions.map((v) => ({
+                ...v,
+                isActive: v.version === version,
+              })),
+            }
+          : prev,
+      { revalidate: false }
+    );
+
+  const removeLocal = (id: string) =>
+    mutate(
+      (prev) =>
+        prev ? { versions: prev.versions.filter((v) => v.id !== id) } : prev,
+      { revalidate: false }
+    );
+
+  const upsertLocal = (rec: VersionRec) =>
+    mutate(
+      (prev) => {
+        const list = prev?.versions ?? [];
+        const idx = list.findIndex((v) => v.id === rec.id);
+        const next =
+          idx >= 0 ? list.map((v) => (v.id === rec.id ? rec : v)) : [rec, ...list];
+        return { versions: next.sort((a, b) => b.version - a.version) };
+      },
+      { revalidate: false }
+    );
+
+  // Global refresh for all kinds of this job (used by Upload that returns new record)
+  const refreshAllKinds = () =>
+    globalMutate((keyStr: string) =>
+      typeof keyStr === 'string' && keyStr.startsWith(`/api/jobs/${jobId}/attachments/versions?kind=`)
+    );
 
   return {
-    ...state,
+    data: data?.versions ?? [],
+    error,
+    isLoading,
     refresh,
-    setData,
+    setActiveLocal,
+    removeLocal,
+    upsertLocal,
+    refreshAllKinds,
   };
 }
-
