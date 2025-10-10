@@ -153,6 +153,7 @@ export interface VersionInfo {
   id: string;
   version: number;
   filename: string;
+  path?: string;
   size: number;
   createdAt: number;
   deletedAt: number | null;
@@ -161,7 +162,7 @@ export interface VersionInfo {
 
 export function listVersions(jobId: string, kind: string): VersionInfo[] {
   const stmt = sqlite.prepare(`
-    SELECT id, version, filename, size, created_at as createdAt, deleted_at as deletedAt, is_active as isActive
+    SELECT id, version, filename, path, size, created_at as createdAt, deleted_at as deletedAt, is_active as isActive
     FROM attachments
     WHERE job_id = ? AND kind = ?
     ORDER BY version DESC

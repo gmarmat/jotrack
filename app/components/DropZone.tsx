@@ -38,7 +38,13 @@ export default function DropZone({ jobId, kind, label, accept, onUploaded, onErr
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch {
+          onError(`Upload failed: ${res.status} ${res.statusText}`);
+          return;
+        }
         
         // Handle quota/limit errors with friendly messages
         if (errorData.error === 'FILE_TOO_LARGE') {
@@ -48,13 +54,27 @@ export default function DropZone({ jobId, kind, label, accept, onUploaded, onErr
         } else if (errorData.error === 'GLOBAL_QUOTA_EXCEEDED') {
           onError(`Library quota exceeded. ${errorData.remainingMb} MB remaining.`);
         } else {
-          onError(errorData.error || 'Upload failed');
+          onError(errorData.error || `Upload failed: ${res.status}`);
         }
         return;
       }
 
-      const data = await res.json();
-      onUploaded(data);
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        console.error('Failed to parse upload response:', parseError);
+        onError('Upload succeeded but received invalid response');
+        return;
+      }
+
+      try {
+        onUploaded(data);
+      } catch (callbackError) {
+        console.error('Error in onUploaded callback:', callbackError);
+        onError('Upload succeeded but UI update failed');
+        return;
+      }
     } catch (error) {
       console.error('Upload error:', error);
       onError('Upload failed');
@@ -104,4 +124,5 @@ export default function DropZone({ jobId, kind, label, accept, onUploaded, onErr
     </div>
   );
 }
+
 

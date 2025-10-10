@@ -25,7 +25,7 @@ export async function ensureJobDir(jobId: string): Promise<string> {
 }
 
 export function relativeAttachmentPath(jobId: string, filename: string): string {
-  return path.join('data', 'attachments', jobId, filename);
+  return path.join(jobId, filename);
 }
 
 export function inferExtFromType(type: string | null | undefined): string | null {

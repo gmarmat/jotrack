@@ -1,0 +1,13 @@
+total 2000
+drwxr-xr-x@ 12 guaravmarmat  staff     384 Oct  9 20:22 .
+drwxr-xr-x@ 24 guaravmarmat  staff     768 Oct  9 19:45 ..
+-rw-r--r--@  1 guaravmarmat  staff    6148 Oct  9 20:21 .DS_Store
+-rw-rw----@  1 guaravmarmat  staff   24287 Sep 25 08:38 JD no images.docx
+-rw-r--r--   1 guaravmarmat  staff       0 Oct  9 20:22 names.txt
+-rw-r--r--@  1 guaravmarmat  staff   90985 Oct  9 20:20 Resume sample no images PDF.pdf
+-rw-rw----@  1 guaravmarmat  staff   26279 Oct  2 15:18 Resume sample no images.docx
+-rw-r--r--@  1 guaravmarmat  staff  827101 Oct  9 20:18 Resume sample with Images rtf.rtf
+-rw-rw----@  1 guaravmarmat  staff   26279 Oct  2 15:18 Resume sample with Images.docx
+-rw-r--r--@  1 guaravmarmat  staff     439 Oct  9 12:55 sample-cover.txt
+-rw-r--r--@  1 guaravmarmat  staff      78 Oct  9 13:01 sample-image.png
+-rw-r--r--@  1 guaravmarmat  staff     310 Oct  9 12:55 sample-jd.txt

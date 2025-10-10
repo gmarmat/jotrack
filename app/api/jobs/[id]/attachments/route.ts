@@ -73,6 +73,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       .select({
         id: attachments.id,
         filename: attachments.filename,
+        path: attachments.path,
         size: attachments.size,
         kind: attachments.kind,
         version: attachments.version,
@@ -85,11 +86,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const list = rows.map((r) => ({
       id: r.id,
       filename: r.filename,
+      path: r.path,
       size: r.size,
       kind: r.kind,
       version: r.version,
       created_at: r.created_at,
-      url: `/api/jobs/${jobId}/attachments?download=${r.id}`,
+      url: `/api/files/stream?path=${encodeURIComponent(r.path)}`,
     }));
 
     return NextResponse.json(list);
@@ -230,10 +232,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({
       id: attId,
       filename: path.basename(candidate),
+      path: relPath,
       size: fileSize,
       kind,
+      version: newVersion,
+      isActive: true,
       created_at: now,
-      url: `/api/jobs/${jobId}/attachments?download=${attId}`,
+      url: `/api/files/stream?path=${encodeURIComponent(relPath)}`,
     });
   } catch (err) {
     console.error('POST /attachments error', err);

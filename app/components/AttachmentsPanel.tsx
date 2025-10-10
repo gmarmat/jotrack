@@ -2,12 +2,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Eye, Download, Trash2, Undo2, ExternalLink, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import DropZone from "./DropZone";
+import AttachmentViewerModal from "./AttachmentViewerModal";
+import { useToast } from "./ToastProvider";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
+import { getMimeType } from "@/lib/mime";
 
 interface AttachmentFile {
   id: string;
   filename: string;
+  path?: string;
   size: number;
   kind: AttachmentKind;
   version: number;
@@ -19,10 +23,12 @@ interface VersionInfo {
   id: string;
   version: number;
   filename: string;
+  path?: string;
   size: number;
   createdAt: number;
   deletedAt: number | null;
   isActive: boolean;
+  kind: AttachmentKind;
 }
 
 interface AttachmentsPanelProps {
@@ -37,6 +43,7 @@ interface DeletePendingState {
 const ACCEPT_FILES = ".pdf,.doc,.docx,.txt,.md,.rtf,.png,.jpg,.jpeg,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,application/rtf,image/png,image/jpeg,image/webp";
 
 export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
+  const { showToast } = useToast();
   const [files, setFiles] = useState<AttachmentFile[]>([]);
   const [error, setError] = useState<string>("");
   const [deletePending, setDeletePending] = useState<Map<string, DeletePendingState>>(new Map());
@@ -53,6 +60,27 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     cover_letter: [],
     other: [],
   });
+  const [viewerFile, setViewerFile] = useState<AttachmentFile | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalProps, setModalProps] = useState<{
+    src: string;
+    mime: string;
+    filename: string;
+  } | null>(null);
+
+  const getMimeTypeFromFilename = (filename: string): string => {
+    return getMimeType(filename);
+  };
+
+  const openPreview = (file: AttachmentFile | VersionInfo) => {
+    const src = 'url' in file ? file.url : `/api/files/stream?path=${encodeURIComponent(file.path || '')}`;
+    setModalProps({
+      src,
+      mime: getMimeTypeFromFilename(file.filename),
+      filename: file.filename
+    });
+    setModalOpen(true);
+  };
 
   const loadAttachments = async () => {
     try {
@@ -82,12 +110,36 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   }, []);
 
   const handleUploaded = (newFile: AttachmentFile) => {
-    // Replace any existing file of the same kind with the new one (since new uploads are automatically active)
-    setFiles((prev) => {
-      const filtered = prev.filter(f => f.kind !== newFile.kind);
-      return [newFile, ...filtered];
+    // Update files state immediately
+    setFiles((prevFiles) => {
+      const filteredFiles = prevFiles.filter(f => f.kind !== newFile.kind);
+      return [...filteredFiles, newFile];
     });
+    
+    // Transform AttachmentFile to VersionInfo format for versions array
+    const versionInfo: VersionInfo = {
+      id: newFile.id,
+      version: newFile.version,
+      filename: newFile.filename,
+      path: newFile.path,
+      size: newFile.size,
+      createdAt: newFile.created_at,
+      deletedAt: null,
+      isActive: true, // Newly uploaded file is active
+      kind: newFile.kind,
+    };
+    
+    // Also update versions for the specific kind
+    setVersions((prevVersions) => ({
+      ...prevVersions,
+      [newFile.kind]: [
+        versionInfo, // New upload is always the latest version
+        ...(prevVersions[newFile.kind] || []).filter(v => v.id !== newFile.id) // Ensure no duplicates
+      ].sort((a, b) => b.version - a.version) // Sort by version descending
+    }));
+    
     setError("");
+    showToast({ kind: 'success', title: `Uploaded ${newFile.filename}` });
   };
 
   const handleError = (msg: string) => {
@@ -240,6 +292,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const toggleVersions = (kind: AttachmentKind) => {
     const isOpening = !versionsOpen[kind];
     setVersionsOpen((prev) => ({ ...prev, [kind]: isOpening }));
+    
     if (isOpening) {
       if (versions[kind].length === 0) {
         loadVersions(kind);
@@ -304,38 +357,36 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
           const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(file.filename);
           
           return (
-            <div key={file.id} className="text-xs bg-gray-50 rounded p-2">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
+            <div key={file.id} className="text-xs bg-gray-50 rounded p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0 mr-4">
+                  <div className="flex items-center gap-2">
                     <div 
-                      className="font-medium text-gray-900 max-w-[18ch] md:max-w-[24ch] truncate" 
+                      className="font-medium text-gray-900 max-w-[30ch] md:max-w-[40ch] truncate" 
                       title={file.filename}
                       data-testid={`att-name-${file.id}`}
                     >
                       {file.filename}
                     </div>
-                    <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0 min-w-[2ch] text-center">
+                    <span className="text-[10px] px-2 py-1 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0">
                       v{file.version}
                     </span>
                   </div>
-                  <div className="text-gray-500">
+                  <div className="text-gray-500 mt-1">
                     {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="flex gap-1.5 ml-2">
+                <div className="flex gap-2">
                   {canPreview && (
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => openPreview(file)}
                       className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                       aria-label="Preview"
                       title="Preview"
                       data-testid={`att-preview-${file.id}`}
                     >
                       <Eye size={16} />
-                    </a>
+                    </button>
                   )}
                   {isNonPreviewable && (
                     <a
@@ -422,7 +473,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             </button>
 
             {versionsOpen[kind] && (
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 space-y-1" data-testid="versions-list">
                 {versions[kind].map((ver) => {
                   const isActiveVer = ver.isActive && ver.deletedAt === null;
                   const canPreview = isPreviewable(ver.filename);
@@ -435,17 +486,17 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                   }
 
                   return (
-                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-2 border border-blue-200">
+                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-3 border border-blue-200" data-testid={`version-item-${ver.id}`}>
                       <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <div className="flex-1 min-w-0 flex items-center gap-3 mr-4">
                           <span className="font-mono text-blue-700 font-semibold">v{ver.version}</span>
                           {isActiveVer && (
-                            <span className="px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 rounded font-medium">
+                            <span className="px-2 py-1 text-[10px] bg-green-100 text-green-700 rounded font-medium">
                               Active
                             </span>
                           )}
                           <div 
-                            className="font-medium text-gray-900 max-w-[18ch] truncate" 
+                            className="font-medium text-gray-900 max-w-[25ch] md:max-w-[35ch] truncate" 
                             title={ver.filename}
                           >
                             {ver.filename}
@@ -454,11 +505,11 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                             {formatFileSize(ver.size)}
                           </span>
                         </div>
-                        <div className="flex gap-1 ml-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {!isActiveVer && (
                             <button
                               onClick={() => handleMakeActive(kind, ver.version)}
-                              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
                               aria-label="Make active"
                               title="Make active"
                               data-testid={`ver-makeactive-${kind}-${ver.version}`}
@@ -468,16 +519,15 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                             </button>
                           )}
                           {canPreview && (
-                            <a
-                              href={verUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                            <button
+                              onClick={() => openPreview(ver)}
+                              className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                               aria-label="Preview"
                               title="Preview"
+                              data-testid={`version-preview-${ver.id}`}
                             >
-                              <Eye size={14} />
-                            </a>
+                              <Eye size={16} />
+                            </button>
                           )}
                           {isNonPreviewable && (
                             <a
@@ -558,6 +608,20 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
           {renderFileList("cover_letter")}
         </div>
       </div>
+
+      {/* File Viewer Modal */}
+      {modalProps && (
+        <AttachmentViewerModal
+          open={modalOpen}
+          onClose={() => {
+            setModalOpen(false);
+            setModalProps(null);
+          }}
+          src={modalProps.src}
+          mime={modalProps.mime}
+          filename={modalProps.filename}
+        />
+      )}
     </div>
   );
 }
