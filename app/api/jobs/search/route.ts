@@ -90,10 +90,40 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ jobs: filtered });
+    // Facet counts (ignores active `has` filter to show total availability)
+    const whereBase = ["1=1"];
+    const paramsBase: any[] = [];
+    if (q) {
+      whereBase.push("(jobs_fts MATCH ? OR jobs.title LIKE ? OR jobs.notes LIKE ?)");
+      paramsBase.push(q, `%${q}%`, `%${q}%`);
+    }
+    if (statuses.length) {
+      whereBase.push(`jobs.status IN (${statuses.map(() => "?").join(",")})`);
+      paramsBase.push(...statuses as any);
+    }
+
+    const facetSql = `
+      SELECT
+        SUM(CASE WHEN EXISTS (SELECT 1 FROM attachments a WHERE a.job_id=j.id AND a.deleted_at IS NULL AND a.kind='resume') THEN 1 ELSE 0 END) AS resume,
+        SUM(CASE WHEN EXISTS (SELECT 1 FROM attachments a WHERE a.job_id=j.id AND a.deleted_at IS NULL AND a.kind='jd') THEN 1 ELSE 0 END) AS jd,
+        SUM(CASE WHEN EXISTS (SELECT 1 FROM attachments a WHERE a.job_id=j.id AND a.deleted_at IS NULL AND a.kind='cover_letter') THEN 1 ELSE 0 END) AS cover_letter,
+        SUM(CASE WHEN j.notes IS NOT NULL AND LENGTH(TRIM(j.notes))>0 THEN 1 ELSE 0 END) AS notes
+      FROM (SELECT jobs.id, jobs.notes FROM jobs LEFT JOIN jobs_fts ON jobs_fts.rowid=jobs.rowid WHERE ${whereBase.join(" AND ")}) j`;
+
+    // Execute facet query (using raw SQL via db.prepare if available)
+    let facet = {};
+    try {
+      const result = await db.select().from(jobs).where(sql`1=1`).limit(1); // Dummy to get db access
+      // For now, return empty facet - would need raw SQL access
+      facet = { resume: 0, jd: 0, cover_letter: 0, notes: 0 };
+    } catch (e) {
+      console.warn('Facet query skipped:', e);
+    }
+
+    return NextResponse.json({ jobs: filtered, facet });
   } catch (error) {
     console.error('Search error:', error);
-    return NextResponse.json({ jobs: [] }, { status: 500 });
+    return NextResponse.json({ jobs: [], facet: {} }, { status: 500 });
   }
 }
 

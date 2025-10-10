@@ -20,7 +20,7 @@ export function useJobsSearch(p: SearchParams) {
   if (p.has?.length) qs.set("has", p.has.join(","));
   if (p.sort) qs.set("sort", p.sort);
   const key = `/api/jobs/search${qs.toString() ? `?${qs}` : ""}`;
-  const { data, isLoading, error, mutate } = useSWR<{ jobs: any[] }>(key, fetcher, { revalidateOnFocus: true });
-  return { jobs: data?.jobs ?? [], isLoading, error, refresh: mutate };
+  const { data, isLoading, error, mutate } = useSWR<{ jobs: any[]; facet?: Record<string, number> }>(key, fetcher, { revalidateOnFocus: true });
+  return { jobs: data?.jobs ?? [], facet: data?.facet ?? {}, isLoading, error, refresh: mutate };
 }
 
