@@ -14,8 +14,31 @@ export default function HorizontalTimeline({
 }: HorizontalTimelineProps) {
   const currentIndex = ORDERED_STATUSES.indexOf(currentStatus);
 
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent, status: JobStatus) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onStatusClick?.(status);
+    }
+    
+    const currentIdx = ORDERED_STATUSES.indexOf(status);
+    
+    if (e.key === "ArrowLeft" && currentIdx > 0) {
+      e.preventDefault();
+      const prev = ORDERED_STATUSES[currentIdx - 1];
+      onStatusClick?.(prev);
+    } else if (e.key === "ArrowRight" && currentIdx < ORDERED_STATUSES.length - 1) {
+      e.preventDefault();
+      const next = ORDERED_STATUSES[currentIdx + 1];
+      onStatusClick?.(next);
+    }
+  };
+
   return (
-    <div className="bg-white border-b border-gray-200 overflow-x-auto">
+    <div 
+      className="bg-white border-b border-gray-200 overflow-x-auto sticky top-0 z-40 shadow-sm"
+      data-testid="horizontal-timeline"
+    >
       <div className="flex items-center min-w-max px-6 py-4">
         {ORDERED_STATUSES.map((status, index) => {
           const isActive = status === currentStatus;
@@ -32,7 +55,8 @@ export default function HorizontalTimeline({
               {/* Status Node */}
               <button
                 onClick={() => onStatusClick?.(status)}
-                className={`flex flex-col items-center min-w-[120px] px-3 py-2 rounded-lg transition-all ${
+                onKeyDown={(e) => handleKeyDown(e, status)}
+                className={`flex flex-col items-center min-w-[120px] px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                   isActive
                     ? "bg-blue-100 ring-2 ring-blue-500"
                     : isPast
@@ -41,6 +65,7 @@ export default function HorizontalTimeline({
                 }`}
                 aria-label={`${STATUS_LABELS[status]} ${isActive ? "(current)" : ""}`}
                 data-current={isActive}
+                tabIndex={0}
               >
                 {/* Status Indicator */}
                 <div

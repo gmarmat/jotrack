@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { JobStatus } from "@/lib/status";
 import { allowsMultipleInterviewers } from "@/lib/statusJourney";
 import type { InterviewerBlock } from "@/db/schema";
-import { Plus, X, RefreshCw } from "lucide-react";
+import { Plus, X, RefreshCw, GripVertical } from "lucide-react";
+import Wordcloud from "./Wordcloud";
 
 interface StatusDetailPanelProps {
   jobId: string;
@@ -132,6 +133,34 @@ export default function StatusDetailPanel({
     save({ keywordsManual: details.keywordsManual.filter((k) => k !== keyword) });
   };
 
+  // Wordcloud click handler
+  const handleWordcloudClick = (word: string) => {
+    addKeyword(word);
+  };
+
+  // Interviewer reorder (drag and drop)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropIndex) return;
+
+    const blocks = [...details.interviewerBlocks];
+    const [draggedBlock] = blocks.splice(draggedIndex, 1);
+    blocks.splice(dropIndex, 0, draggedBlock);
+
+    save({ interviewerBlocks: blocks });
+    setDraggedIndex(null);
+  };
+
   // AI refresh
   const refreshAI = async () => {
     try {
@@ -144,12 +173,29 @@ export default function StatusDetailPanel({
       
       save({
         aiBlob: `**Analysis Score:** ${data.sample.score}\n\n**Highlights:**\n${data.sample.highlights.map((h: string) => `- ${h}`).join("\n")}`,
-        keywordsAuto: ["keyword1", "keyword2", "keyword3"], // From AI
+        keywordsAuto: ["React", "TypeScript", "Leadership", "Communication", "Problem-solving"], // From AI
         aiRefreshedAt: Date.now(),
       });
     } catch (error) {
       console.error("AI refresh failed:", error);
     }
+  };
+
+  // Export notes
+  const exportNotes = () => {
+    const exportData = {
+      jobId,
+      status,
+      notes: details.notes,
+      interviewers: details.interviewerBlocks,
+      keywords: [...details.keywordsAuto, ...details.keywordsManual],
+      aiAnalysis: details.aiBlob,
+      exportedAt: new Date().toISOString(),
+    };
+
+    const json = JSON.stringify(exportData, null, 2);
+    navigator.clipboard.writeText(json);
+    alert("Notes exported to clipboard!");
   };
 
   if (loading) {
@@ -176,13 +222,22 @@ export default function StatusDetailPanel({
           </div>
 
           <div className="space-y-3">
-            {details.interviewerBlocks.map((interviewer) => (
+            {details.interviewerBlocks.map((interviewer, index) => (
               <div
                 key={interviewer.id}
-                className="border rounded-lg p-4 bg-gray-50"
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`border rounded-lg p-4 bg-gray-50 cursor-move transition-all ${
+                  draggedIndex === index ? "opacity-50" : ""
+                }`}
                 data-testid={`interviewer-${interviewer.id}`}
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start gap-2 mb-3">
+                  <div className="p-1 text-gray-400 cursor-grab active:cursor-grabbing">
+                    <GripVertical size={16} />
+                  </div>
                   <input
                     type="text"
                     placeholder="Interviewer Name"
@@ -194,7 +249,7 @@ export default function StatusDetailPanel({
                   />
                   <button
                     onClick={() => removeInterviewer(interviewer.id)}
-                    className="ml-2 p-2 text-red-600 hover:bg-red-50 rounded"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded"
                     aria-label="Remove interviewer"
                   >
                     <X size={16} />
@@ -288,20 +343,14 @@ export default function StatusDetailPanel({
       <section data-testid="keywords-section">
         <h3 className="text-base font-semibold text-gray-900 mb-3">Keywords & Tags</h3>
         
-        {/* Auto keywords (from AI) */}
+        {/* Wordcloud (auto keywords) */}
         {details.keywordsAuto.length > 0 && (
-          <div className="mb-3">
-            <div className="text-xs text-gray-600 mb-2">Auto-generated (from AI):</div>
-            <div className="flex flex-wrap gap-2">
-              {details.keywordsAuto.map((kw) => (
-                <span
-                  key={kw}
-                  className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
-                >
-                  {kw}
-                </span>
-              ))}
-            </div>
+          <div className="mb-4">
+            <Wordcloud 
+              words={details.keywordsAuto} 
+              onWordClick={handleWordcloudClick}
+              title="Auto-generated keywords (click to add to your tags)"
+            />
           </div>
         )}
 
@@ -339,15 +388,26 @@ export default function StatusDetailPanel({
       <section data-testid="notes-section">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-gray-900">Notes</h3>
-          {details.notesHistory.length > 0 && (
+          <div className="flex items-center gap-2">
+            {details.notesHistory.length > 0 && (
+              <button
+                onClick={undoNotes}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded"
+                title="Undo to previous version"
+                data-testid="undo-notes"
+              >
+                ↩️ Undo
+              </button>
+            )}
             <button
-              onClick={undoNotes}
+              onClick={exportNotes}
               className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded"
-              title="Undo to previous version"
+              title="Export notes to clipboard"
+              data-testid="export-notes"
             >
-              ↩️ Undo
+              📋 Export
             </button>
-          )}
+          </div>
         </div>
 
         <textarea
