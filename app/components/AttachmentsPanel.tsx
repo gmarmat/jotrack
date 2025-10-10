@@ -116,11 +116,24 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       return [...filteredFiles, newFile];
     });
     
+    // Transform AttachmentFile to VersionInfo format for versions array
+    const versionInfo: VersionInfo = {
+      id: newFile.id,
+      version: newFile.version,
+      filename: newFile.filename,
+      path: newFile.path,
+      size: newFile.size,
+      createdAt: newFile.created_at,
+      deletedAt: null,
+      isActive: true, // Newly uploaded file is active
+      kind: newFile.kind,
+    };
+    
     // Also update versions for the specific kind
     setVersions((prevVersions) => ({
       ...prevVersions,
       [newFile.kind]: [
-        newFile, // New upload is always the latest version
+        versionInfo, // New upload is always the latest version
         ...(prevVersions[newFile.kind] || []).filter(v => v.id !== newFile.id) // Ensure no duplicates
       ].sort((a, b) => b.version - a.version) // Sort by version descending
     }));
@@ -279,6 +292,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const toggleVersions = (kind: AttachmentKind) => {
     const isOpening = !versionsOpen[kind];
     setVersionsOpen((prev) => ({ ...prev, [kind]: isOpening }));
+    
     if (isOpening) {
       if (versions[kind].length === 0) {
         loadVersions(kind);
