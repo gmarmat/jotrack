@@ -1,28 +1,61 @@
+"use client";
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { db } from '@/db/client';
-import { jobs, attachments } from '@/db/schema';
-import { eq, isNull, and } from 'drizzle-orm';
+import { useRouter } from 'next/navigation';
 import StatusSelect from '@/app/components/StatusSelect';
 import StatusBadge from '@/app/components/StatusBadge';
 import AttachmentsPanel from '@/app/components/AttachmentsPanel';
 import JobDetailsPanel from '@/app/components/JobDetailsPanel';
 import JobActionsBar from '@/app/components/JobActionsBar';
-import { STATUS_LABELS, type JobStatus } from '@/lib/status';
+import TrashPanel from '@/app/components/attachments/TrashPanel';
+import { type JobStatus } from '@/lib/status';
 
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
+export default function JobDetailPage({ params }: { params: { id: string } }) {
+  const [showTrash, setShowTrash] = useState(false);
+  const [job, setJob] = useState<any>(null);
+  const [attachmentCount, setAttachmentCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const id = params.id;
-  const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
-  if (!job) return notFound();
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${id}`);
+        if (!res.ok) {
+          router.push('/');
+          return;
+        }
+        const data = await res.json();
+        setJob(data);
+        // Fetch attachment count
+        const attRes = await fetch(`/api/jobs/${id}/attachments`);
+        const attData = await attRes.json();
+        setAttachmentCount(attData.attachments?.filter((a: any) => !a.deletedAt).length ?? 0);
+      } catch (error) {
+        console.error('Failed to fetch job:', error);
+        router.push('/');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id, router]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center text-gray-600">Loading...</div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!job) return null;
 
   const currentStatus = (job.status as JobStatus) ?? 'ON_RADAR';
-  
-  // Get attachment count for actions bar
-  const attachmentRows = await db
-    .select({ count: attachments.id })
-    .from(attachments)
-    .where(and(eq(attachments.jobId, id), isNull(attachments.deletedAt)));
-  const attachmentCount = attachmentRows.length;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
@@ -38,9 +71,18 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               </div>
               <p className="text-lg text-gray-600 mt-1" data-testid="job-company">{job.company}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Status:</span>
-              <StatusSelect jobId={job.id} initialStatus={currentStatus} />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowTrash(true)}
+                className="px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
+                data-testid="open-trash"
+              >
+                🗑️ Trash
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 font-medium">Status:</span>
+                <StatusSelect jobId={job.id} initialStatus={currentStatus} />
+              </div>
             </div>
           </div>
         </div>
@@ -62,6 +104,11 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         </section>
 
       </div>
+
+      {/* Trash Panel */}
+      {showTrash && (
+        <TrashPanel jobId={job.id} onClose={() => setShowTrash(false)} />
+      )}
     </main>
   );
 }
