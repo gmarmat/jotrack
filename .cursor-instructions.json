@@ -1,0 +1,6 @@
+{
+  "cursor_summary_mode": "compact",
+  "cursor_auto_questions": false,
+  "cursor_summary_format": "#SUMMARY
+CHG:+X-Y | TEST:x/x | TYPE:ok/fail | KEYS:ok/fail | GIT:<branch>,<hash> | READY:<next-step>"
+}

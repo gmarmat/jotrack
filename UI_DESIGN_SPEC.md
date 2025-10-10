@@ -214,6 +214,28 @@ Before making ANY UI changes:
 
 ---
 
+## Privacy & AI Governance
+
+### AI Assist Feature
+- AI Assist is **gated** by Settings → "Enable AI Assist"
+- **Default**: OFF
+- **Privacy First**: No external network calls unless explicitly enabled by user
+- API keys stored **locally only**:
+  - Masked version in `localStorage` (for UI display)
+  - Full key in `sessionStorage` (cleared on tab close)
+  - Keys never sent to backend or external services by default
+- All AI features operate in **dry-run mode** with deterministic output
+- User must take explicit action to trigger any AI functionality
+
+### Implementation Requirements
+1. Check `aiEnabled()` from `@/app/lib/aiGate` before showing AI UI
+2. All AI endpoints must default to dry-run/stub mode
+3. Display clear privacy notices on settings page
+4. Never auto-enable AI features
+5. Provide clear "local only" indicators in UI
+
+---
+
 **Last Updated**: 2025-10-10
 **Version**: 0.3.0
 
