@@ -60,10 +60,15 @@ export default function VersionsPanel({
   };
 
   return (
-    <div data-testid={`versions-${kind}`}>
+    <div 
+      data-testid={`versions-${kind}`} 
+      role="table" 
+      aria-label={`${kind} versions`}
+    >
       {ordered.map((rec, idx) => (
         <div
           key={rec.id}
+          role="row"
           draggable
           onDragStart={() => onDragStart(rec.id)}
           onDragOver={(e) => {
@@ -77,7 +82,9 @@ export default function VersionsPanel({
           data-testid={`version-row-${rec.version}`}
           aria-label={`v${rec.version}${rec.isActive ? " active" : ""}`}
         >
-          {children(rec, idx)}
+          <div role="cell" className="flex-1 min-w-0">
+            {children(rec, idx)}
+          </div>
         </div>
       ))}
     </div>

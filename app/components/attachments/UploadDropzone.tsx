@@ -11,7 +11,7 @@ export default function UploadDropzone({
 }: {
   kind: Kind;
   jobId: string;
-  onUploaded?: (a: any) => void;
+  onUploaded: (attachment: any) => void;
 }) {
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);

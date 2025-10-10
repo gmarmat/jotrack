@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./_setup";
 import path from "path";
 
 test.describe("Multi-Upload", () => {

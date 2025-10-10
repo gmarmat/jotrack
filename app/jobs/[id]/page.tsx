@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import StatusSelect from '@/app/components/StatusSelect';
 import StatusBadge from '@/app/components/StatusBadge';
-import AttachmentsPanel from '@/app/components/AttachmentsPanel';
+import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import JobDetailsPanel from '@/app/components/JobDetailsPanel';
 import JobActionsBar from '@/app/components/JobActionsBar';
 import TrashPanel from '@/app/components/attachments/TrashPanel';
@@ -98,9 +98,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                <JobDetailsPanel job={job} currentStatus={currentStatus} />
 
         {/* Attachments section - full width */}
-        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-24 max-w-screen-lg mx-auto" data-testid="attachments-section">
+        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-24 max-w-screen-lg mx-auto">
           <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
-          <AttachmentsPanel jobId={job.id} />
+          <AttachmentsSection jobId={job.id} />
         </section>
 
       </div>

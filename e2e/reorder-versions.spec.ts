@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./_setup";
 import path from "path";
 
 test.describe("Drag Reorder Versions", () => {
@@ -32,7 +32,7 @@ test.describe("Drag Reorder Versions", () => {
     await expect(versionsSection).toBeVisible();
 
     // Check that we have 3 versions
-    const versionRows = versionsSection.locator('[data-testid^="version-row-"]');
+    const versionRows = versionsSection.locator('[role="row"]');
     await expect(versionRows).toHaveCount(3);
 
     // Get initial order
