@@ -11,6 +11,7 @@ import AttachmentPresence from './components/AttachmentPresence';
 import BackupRestorePanel from './components/BackupRestorePanel';
 import FilterChips from './components/FilterChips';
 import { SelectionBar } from './components/SelectionBar';
+import ReloadDataButton from './components/ReloadDataButton';
 import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
@@ -228,7 +229,10 @@ export default function Home() {
         {/* Search and List */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Applications</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800">Your Applications</h2>
+              <ReloadDataButton onReload={() => fetchJobs()} />
+            </div>
             
             {/* Status Filter Chips */}
             <Suspense fallback={<div className="h-8 mb-4" />}>
