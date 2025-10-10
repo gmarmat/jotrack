@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { eq, desc, and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
+import { getMaxVersion } from '@/db/repository';
 import {
   ATTACHMENTS_ROOT,
   ensureJobDir,
@@ -67,17 +68,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return new NextResponse(fileBuffer.buffer as ArrayBuffer, { headers });
     }
 
-    // List path (exclude soft-deleted)
+    // List path (only active, non-deleted files)
     const rows = await db
       .select({
         id: attachments.id,
         filename: attachments.filename,
         size: attachments.size,
         kind: attachments.kind,
+        version: attachments.version,
         created_at: attachments.createdAt,
       })
       .from(attachments)
-      .where(and(eq(attachments.jobId, jobId), isNull(attachments.deletedAt)))
+      .where(and(eq(attachments.jobId, jobId), isNull(attachments.deletedAt), eq(attachments.isActive, true)))
       .orderBy(desc(attachments.createdAt));
 
     const list = rows.map((r) => ({
@@ -85,6 +87,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       filename: r.filename,
       size: r.size,
       kind: r.kind,
+      version: r.version,
       created_at: r.created_at,
       url: `/api/jobs/${jobId}/attachments?download=${r.id}`,
     }));
@@ -200,6 +203,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const attId = randomUUID();
     const now = Date.now();
 
+    // Auto-increment version per (jobId, kind)
+    const maxVersion = getMaxVersion(jobId, kind);
+    const newVersion = maxVersion + 1;
+
+    // First, set is_active=0 for all existing attachments of this kind (non-deleted)
+    await db
+      .update(attachments)
+      .set({ isActive: false })
+      .where(and(eq(attachments.jobId, jobId), eq(attachments.kind, kind), isNull(attachments.deletedAt)));
+
+    // Then insert the new file with is_active=1
     await db.insert(attachments).values({
       id: attId,
       jobId: jobId,
@@ -207,6 +221,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       path: relPath,
       size: fileSize,
       kind,
+      version: newVersion,
+      isActive: true,
       createdAt: now,
       deletedAt: null,
     });

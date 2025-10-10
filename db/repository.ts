@@ -138,3 +138,39 @@ export function getAttachmentSummaries(jobIds: string[]): AttachmentSummary[] {
   return stmt.all(...jobIds) as AttachmentSummary[];
 }
 
+export function getMaxVersion(jobId: string, kind: string): number {
+  const stmt = sqlite.prepare(`
+    SELECT COALESCE(MAX(version), 0) as maxVersion
+    FROM attachments
+    WHERE job_id = ? AND kind = ?
+  `);
+  
+  const result = stmt.get(jobId, kind) as { maxVersion: number } | undefined;
+  return result?.maxVersion || 0;
+}
+
+export interface VersionInfo {
+  id: string;
+  version: number;
+  filename: string;
+  size: number;
+  createdAt: number;
+  deletedAt: number | null;
+  isActive: boolean;
+}
+
+export function listVersions(jobId: string, kind: string): VersionInfo[] {
+  const stmt = sqlite.prepare(`
+    SELECT id, version, filename, size, created_at as createdAt, deleted_at as deletedAt, is_active as isActive
+    FROM attachments
+    WHERE job_id = ? AND kind = ?
+    ORDER BY version DESC
+  `);
+  
+  const rows = stmt.all(jobId, kind) as any[];
+  return rows.map(row => ({
+    ...row,
+    isActive: Boolean(row.isActive), // Convert 0/1 to false/true
+  })) as VersionInfo[];
+}
+

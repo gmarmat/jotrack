@@ -17,6 +17,33 @@ try {
   migrate(db, { migrationsFolder });
   console.log('✅ Migrations completed');
   
+  // Backfill is_active for attachments
+  console.log('🔄 Backfilling is_active flags...');
+  sqlite.exec(`
+    UPDATE attachments
+    SET is_active = 1
+    WHERE id IN (
+      SELECT a1.id
+      FROM attachments a1
+      WHERE a1.deleted_at IS NULL
+        AND a1.version = (
+          SELECT MAX(a2.version)
+          FROM attachments a2
+          WHERE a2.job_id = a1.job_id
+            AND a2.kind = a1.kind
+            AND a2.deleted_at IS NULL
+        )
+    );
+  `);
+  console.log('✅ Backfill completed');
+  
+  // Create index for is_active
+  console.log('🔄 Creating index for is_active...');
+  sqlite.exec(`
+    CREATE INDEX IF NOT EXISTS idx_active_by_job_kind ON attachments(job_id, kind, is_active);
+  `);
+  console.log('✅ Index created');
+  
   // Create FTS5 table and triggers if they don't exist
   console.log('🔄 Setting up FTS5 search...');
   

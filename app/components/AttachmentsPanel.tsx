@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Eye, Download, Trash2, Undo2, ExternalLink } from "lucide-react";
+import { Eye, Download, Trash2, Undo2, ExternalLink, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import DropZone from "./DropZone";
 import type { AttachmentKind } from "@/db/schema";
 import { isPreviewable, formatFileSize } from "@/lib/files";
@@ -10,8 +10,19 @@ interface AttachmentFile {
   filename: string;
   size: number;
   kind: AttachmentKind;
+  version: number;
   created_at: number;
   url: string;
+}
+
+interface VersionInfo {
+  id: string;
+  version: number;
+  filename: string;
+  size: number;
+  createdAt: number;
+  deletedAt: number | null;
+  isActive: boolean;
 }
 
 interface AttachmentsPanelProps {
@@ -30,6 +41,18 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   const [error, setError] = useState<string>("");
   const [deletePending, setDeletePending] = useState<Map<string, DeletePendingState>>(new Map());
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [versionsOpen, setVersionsOpen] = useState<Record<AttachmentKind, boolean>>({
+    resume: false,
+    jd: false,
+    cover_letter: false,
+    other: false,
+  });
+  const [versions, setVersions] = useState<Record<AttachmentKind, VersionInfo[]>>({
+    resume: [],
+    jd: [],
+    cover_letter: [],
+    other: [],
+  });
 
   const loadAttachments = async () => {
     try {
@@ -59,7 +82,11 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
   }, []);
 
   const handleUploaded = (newFile: AttachmentFile) => {
-    setFiles((prev) => [newFile, ...prev]);
+    // Replace any existing file of the same kind with the new one (since new uploads are automatically active)
+    setFiles((prev) => {
+      const filtered = prev.filter(f => f.kind !== newFile.kind);
+      return [newFile, ...filtered];
+    });
     setError("");
   };
 
@@ -107,9 +134,36 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       }, 1000);
 
       timersRef.current.set(file.id, interval);
+
+      // Auto-promote: If we deleted the active file, promote the next highest non-deleted version
+      await autoPromoteIfNeeded(file.kind);
     } catch (err) {
       console.error('Delete error:', err);
       handleError('Failed to delete attachment');
+    }
+  };
+
+  const autoPromoteIfNeeded = async (kind: AttachmentKind) => {
+    try {
+      // Fetch current versions for this kind
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      const versions = data.versions as VersionInfo[];
+      
+      // Find the highest non-deleted version that is NOT currently active
+      const nonDeletedVersions = versions.filter(v => v.deletedAt === null);
+      const hasActiveVersion = nonDeletedVersions.some(v => v.isActive);
+      
+      // If no active version exists and we have non-deleted versions, promote the highest
+      if (!hasActiveVersion && nonDeletedVersions.length > 0) {
+        const highest = nonDeletedVersions[0]; // Already sorted DESC by version
+        await handleMakeActive(kind, highest.version);
+      }
+    } catch (err) {
+      console.error('Auto-promote error:', err);
+      // Silently fail - not critical
     }
   };
 
@@ -155,6 +209,78 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
     };
   }, []);
 
+  // Deep-link support: auto-expand versions if #versions is in URL
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#versions') {
+      // Open versions for all kinds that have files
+      const kindsToOpen: AttachmentKind[] = ['resume', 'jd', 'cover_letter'];
+      kindsToOpen.forEach(kind => {
+        if (files.some(f => f.kind === kind)) {
+          setVersionsOpen(prev => ({ ...prev, [kind]: true }));
+          if (versions[kind].length === 0) {
+            loadVersions(kind);
+          }
+        }
+      });
+    }
+  }, []); // Run once on mount
+
+  const loadVersions = async (kind: AttachmentKind) => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions?kind=${kind}`);
+      if (res.ok) {
+        const data = await res.json();
+        setVersions((prev) => ({ ...prev, [kind]: data.versions }));
+      }
+    } catch (err) {
+      console.error('Failed to load versions:', err);
+    }
+  };
+
+  const toggleVersions = (kind: AttachmentKind) => {
+    const isOpening = !versionsOpen[kind];
+    setVersionsOpen((prev) => ({ ...prev, [kind]: isOpening }));
+    if (isOpening) {
+      if (versions[kind].length === 0) {
+        loadVersions(kind);
+      }
+      // Set hash when opening
+      if (typeof window !== 'undefined') {
+        window.location.hash = 'versions';
+      }
+    } else {
+      // Clear hash when closing (only if all versions are closed)
+      if (typeof window !== 'undefined') {
+        const anyOpen = Object.values({ ...versionsOpen, [kind]: false }).some(v => v);
+        if (!anyOpen) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
+    }
+  };
+
+  const handleMakeActive = async (kind: AttachmentKind, version: number) => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/attachments/versions/make-active`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind, version }),
+      });
+
+      if (!res.ok) {
+        handleError('Failed to make version active');
+        return;
+      }
+
+      // Reload both current files and versions list
+      await loadAttachments();
+      await loadVersions(kind);
+    } catch (err) {
+      console.error('Make active error:', err);
+      handleError('Failed to make version active');
+    }
+  };
+
   const getFilesByKind = (kind: AttachmentKind) => {
     return files.filter((f) => f.kind === kind);
   };
@@ -181,12 +307,17 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             <div key={file.id} className="text-xs bg-gray-50 rounded p-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <div 
-                    className="font-medium text-gray-900 max-w-[22ch] md:max-w-[28ch] truncate" 
-                    title={file.filename}
-                    data-testid={`att-name-${file.id}`}
-                  >
-                    {file.filename}
+                  <div className="flex items-center gap-1.5">
+                    <div 
+                      className="font-medium text-gray-900 max-w-[18ch] md:max-w-[24ch] truncate" 
+                      title={file.filename}
+                      data-testid={`att-name-${file.id}`}
+                    >
+                      {file.filename}
+                    </div>
+                    <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100 font-mono flex-shrink-0 min-w-[2ch] text-center">
+                      v{file.version}
+                    </span>
                   </div>
                   <div className="text-gray-500">
                     {formatFileSize(file.size)} • {new Date(file.created_at).toLocaleDateString()}
@@ -277,6 +408,107 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             </div>
           );
         })}
+
+        {/* Versions section */}
+        {kindFiles.length > 0 && (
+          <div className="mt-3 border-t pt-2">
+            <button
+              onClick={() => toggleVersions(kind)}
+              className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+              data-testid={`ver-toggle-${kind}`}
+            >
+              {versionsOpen[kind] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <span>Versions ({versions[kind].length || '…'})</span>
+            </button>
+
+            {versionsOpen[kind] && (
+              <div className="mt-2 space-y-1">
+                {versions[kind].map((ver) => {
+                  const isActiveVer = ver.isActive && ver.deletedAt === null;
+                  const canPreview = isPreviewable(ver.filename);
+                  const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(ver.filename);
+                  const verUrl = `/api/jobs/${jobId}/attachments?download=${ver.id}`;
+
+                  if (ver.deletedAt !== null) {
+                    // Skip deleted versions in the list for now (or show grayed out)
+                    return null;
+                  }
+
+                  return (
+                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-2 border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0 flex items-center gap-2">
+                          <span className="font-mono text-blue-700 font-semibold">v{ver.version}</span>
+                          {isActiveVer && (
+                            <span className="px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 rounded font-medium">
+                              Active
+                            </span>
+                          )}
+                          <div 
+                            className="font-medium text-gray-900 max-w-[18ch] truncate" 
+                            title={ver.filename}
+                          >
+                            {ver.filename}
+                          </div>
+                          <span className="text-gray-500 text-[10px]">
+                            {formatFileSize(ver.size)}
+                          </span>
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          {!isActiveVer && (
+                            <button
+                              onClick={() => handleMakeActive(kind, ver.version)}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-blue-600 text-white rounded hover:bg-blue-700"
+                              aria-label="Make active"
+                              title="Make active"
+                              data-testid={`ver-makeactive-${kind}-${ver.version}`}
+                            >
+                              <RotateCcw size={12} />
+                              Make Active
+                            </button>
+                          )}
+                          {canPreview && (
+                            <a
+                              href={verUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                              aria-label="Preview"
+                              title="Preview"
+                            >
+                              <Eye size={14} />
+                            </a>
+                          )}
+                          {isNonPreviewable && (
+                            <a
+                              href={verUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                              aria-label="Open externally"
+                              title="Open externally"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                          )}
+                          <a
+                            href={verUrl}
+                            download={ver.filename}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-gray-100"
+                            aria-label="Download"
+                            title="Download"
+                          >
+                            <Download size={14} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
