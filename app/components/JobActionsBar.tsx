@@ -54,17 +54,17 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
       if (res.ok) {
         const data = await res.json();
         if (data.job?.id) {
-          showToast(`Duplicated to: ${data.job.title}`, 'success');
+          showToast({ kind: 'success', title: `Duplicated to: ${data.job.title}` });
           setTimeout(() => {
             window.location.href = `/jobs/${data.job.id}`;
           }, 500);
         }
       } else {
-        showToast('Failed to duplicate job', 'error');
+        showToast({ kind: 'error', title: 'Failed to duplicate job' });
       }
     } catch (err) {
       console.error('Failed to duplicate job:', err);
-      showToast('Something went wrong', 'error');
+      showToast({ kind: 'error', title: 'Something went wrong' });
     }
   };
 
@@ -81,7 +81,7 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
         );
         
         if (activeDocs.length === 0) {
-          showToast('No active documents to open', 'info');
+          showToast({ kind: 'info', title: 'No active documents to open' });
           return;
         }
         
@@ -97,14 +97,14 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
         });
         
         if (openedCount > 0) {
-          showToast(`Opened ${openedCount} document${openedCount > 1 ? 's' : ''}`, 'success');
+          showToast({ kind: 'success', title: `Opened ${openedCount} document${openedCount > 1 ? 's' : ''}` });
         }
       } else {
-        showToast('Failed to fetch attachments', 'error');
+        showToast({ kind: 'error', title: 'Failed to fetch attachments' });
       }
     } catch (err) {
       console.error('Failed to open attachments:', err);
-      showToast('Something went wrong', 'error');
+      showToast({ kind: 'error', title: 'Something went wrong' });
     }
   };
 
@@ -119,11 +119,11 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
       
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      showToast('Summary copied', 'success');
+      showToast({ kind: 'success', title: 'Summary copied' });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy summary:', err);
-      showToast('Failed to copy', 'error');
+      showToast({ kind: 'error', title: 'Failed to copy' });
     }
   };
 

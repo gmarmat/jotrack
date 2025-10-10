@@ -92,9 +92,8 @@ export default function AttachmentViewerModal({
     setError(null);
     
     try {
-      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
-      const worker = await import("pdfjs-dist/legacy/build/pdf.worker");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = worker.default;
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
       const response = await fetch(src);
       const arrayBuffer = await response.arrayBuffer();
@@ -111,7 +110,7 @@ export default function AttachmentViewerModal({
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         
-        await page.render({ canvasContext: context, viewport }).promise;
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
         canvases.push(canvas);
       }
       
@@ -162,10 +161,7 @@ export default function AttachmentViewerModal({
       
       // Dynamically import mammoth
       const mammoth = await import("mammoth/mammoth.browser");
-      const { value: html } = await mammoth.convertToHtml(
-        { arrayBuffer }, 
-        { includeDefaultStyleMap: true }
-      );
+      const { value: html } = await mammoth.convertToHtml({ arrayBuffer });
       
       // Sanitize the HTML
       const sanitizedHtml = DOMPurify.sanitize(html);
@@ -367,7 +363,7 @@ export default function AttachmentViewerModal({
         );
 
       case 'markdown':
-        const markdownHtml = content ? DOMPurify.sanitize(marked(content)) : '';
+        const markdownHtml = content ? DOMPurify.sanitize(marked.parse(content) as string) : '';
         return (
           <div className="overflow-auto h-full p-4">
             <div 

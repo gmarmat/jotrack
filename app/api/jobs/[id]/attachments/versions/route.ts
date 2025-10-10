@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
-import { attachments } from '@/db/schema';
+import { attachments, type AttachmentKind } from '@/db/schema';
 import { eq, and, isNull, desc } from 'drizzle-orm';
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const jobId = params.id;
-    const kind = req.nextUrl.searchParams.get('kind');
+    const kind = req.nextUrl.searchParams.get('kind') as AttachmentKind | null;
 
     if (!kind) {
       return NextResponse.json({ error: 'Missing kind parameter' }, { status: 400 });
