@@ -338,11 +338,12 @@ export default function AttachmentViewerModal({
               {pdfPages.map((canvas, index) => (
                 <div key={index} className="shadow-sm border">
                   <canvas 
-                    ref={canvas => {
-                      if (canvas && pdfPages[index]) {
-                        const ctx = canvas.getContext('2d')!;
-                        canvas.width = pdfPages[index].width;
-                        canvas.height = pdfPages[index].height;
+                    data-testid={index === 0 ? "viewer-pdf-page" : undefined}
+                    ref={canvasRef => {
+                      if (canvasRef && pdfPages[index]) {
+                        const ctx = canvasRef.getContext('2d')!;
+                        canvasRef.width = pdfPages[index].width;
+                        canvasRef.height = pdfPages[index].height;
                         ctx.drawImage(pdfPages[index], 0, 0);
                       }
                     }}
@@ -377,6 +378,13 @@ export default function AttachmentViewerModal({
         );
 
       case 'text':
+        if (!content || content.trim().length === 0) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-gray-500" data-testid="viewer-fallback">Empty file</div>
+            </div>
+          );
+        }
         return (
           <div className="overflow-auto h-full p-4">
             <pre className="whitespace-pre-wrap text-sm font-mono">
@@ -410,7 +418,7 @@ export default function AttachmentViewerModal({
       case 'unsupported':
         return (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center text-gray-500">
+            <div className="text-center text-gray-500" data-testid="viewer-fallback">
               <div className="mb-2">Preview not supported</div>
               <div className="text-sm">Use Open externally or Download</div>
             </div>

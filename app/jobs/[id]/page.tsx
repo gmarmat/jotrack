@@ -55,11 +55,11 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                {/* Details section - full width */}
                <JobDetailsPanel job={job} currentStatus={currentStatus} />
 
-               {/* Attachments section - full width */}
-               <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-20">
-                 <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
-                 <AttachmentsPanel jobId={job.id} />
-               </section>
+        {/* Attachments section - full width */}
+        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-24 max-w-screen-lg mx-auto" data-testid="attachments-section">
+          <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
+          <AttachmentsPanel jobId={job.id} />
+        </section>
 
       </div>
     </main>
