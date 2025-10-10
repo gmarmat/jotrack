@@ -54,7 +54,7 @@ export default function StatusSelect({ jobId, initialStatus, onStatusChange }: S
         value={status}
         onChange={handleStatusChange}
         disabled={isSaving}
-        className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+        className="min-w-[140px] px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
         data-testid={`status-select-${jobId}`}
       >
         {ORDERED_STATUSES.map((key) => (
