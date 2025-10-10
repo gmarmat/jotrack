@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { JobStatus } from "@/lib/status";
+import { JobStatus, STATUS_LABELS } from "@/lib/status";
 import { allowsMultipleInterviewers } from "@/lib/statusJourney";
 import type { InterviewerBlock } from "@/db/schema";
-import { Plus, X, RefreshCw, GripVertical } from "lucide-react";
+import { Plus, X, RefreshCw, GripVertical, RotateCcw } from "lucide-react";
 import Wordcloud from "./Wordcloud";
+import CopyForEmail from "./CopyForEmail";
 
 interface StatusDetailPanelProps {
   jobId: string;
@@ -164,18 +165,25 @@ export default function StatusDetailPanel({
   // AI refresh
   const refreshAI = async () => {
     try {
-      const res = await fetch(`/api/ai/dry-run`, {
+      const res = await fetch(`/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ analyzer: "status_analysis", jobId, status }),
+        body: JSON.stringify({ 
+          jobId, 
+          status,
+          mode: "dry-run" // Always dry-run for now
+        }),
       });
       const data = await res.json();
       
-      save({
-        aiBlob: `**Analysis Score:** ${data.sample.score}\n\n**Highlights:**\n${data.sample.highlights.map((h: string) => `- ${h}`).join("\n")}`,
-        keywordsAuto: ["React", "TypeScript", "Leadership", "Communication", "Problem-solving"], // From AI
-        aiRefreshedAt: Date.now(),
-      });
+      if (data.ok && data.insights) {
+        const insights = data.insights;
+        save({
+          aiBlob: `**Analysis Score:** ${insights.score}\n\n**Highlights:**\n${insights.highlights.map((h: string) => `- ${h}`).join("\n")}\n\n**Gaps:**\n${insights.gaps.map((g: string) => `- ${g}`).join("\n")}\n\n${insights.summary}`,
+          keywordsAuto: insights.keywords || [],
+          aiRefreshedAt: Date.now(),
+        });
+      }
     } catch (error) {
       console.error("AI refresh failed:", error);
     }
@@ -204,8 +212,24 @@ export default function StatusDetailPanel({
 
   const canHaveInterviewers = allowsMultipleInterviewers(status);
 
+  // Revert AI to previous version
+  const revertAI = () => {
+    save({ aiBlob: null, keywordsAuto: [], aiRefreshedAt: null });
+  };
+
   return (
     <div className="bg-white rounded-xl border shadow p-6 space-y-6" data-testid="status-detail-panel">
+      {/* Header with Copy for Email */}
+      <div className="flex items-center justify-between border-b pb-4">
+        <h2 className="text-lg font-bold text-gray-900">
+          {STATUS_LABELS[status]} Details
+        </h2>
+        <CopyForEmail
+          job={{ title: "Job Title", company: "Company", status }}
+          statusNotes={details.notes}
+          interviewers={details.interviewerBlocks}
+        />
+      </div>
       {/* Interviewer Blocks */}
       {canHaveInterviewers && (
         <section data-testid="interviewer-section">
@@ -311,14 +335,27 @@ export default function StatusDetailPanel({
       <section data-testid="ai-analysis-section">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-gray-900">AI Analysis</h3>
-          <button
-            onClick={refreshAI}
-            className="flex items-center gap-1 px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm font-medium"
-            data-testid="refresh-ai"
-          >
-            <RefreshCw size={14} />
-            Refresh Analysis
-          </button>
+          <div className="flex items-center gap-2">
+            {details.aiBlob && (
+              <button
+                onClick={revertAI}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                data-testid="revert-ai"
+                title="Clear AI analysis"
+              >
+                <RotateCcw size={12} />
+                Clear
+              </button>
+            )}
+            <button
+              onClick={refreshAI}
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              data-testid="refresh-ai"
+            >
+              <RefreshCw size={14} />
+              Generate Insights
+            </button>
+          </div>
         </div>
 
         {details.aiBlob ? (

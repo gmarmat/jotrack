@@ -28,16 +28,5 @@ export async function GET(
   }
 }
 
-/**
- * Get current event (no leftAt set)
- */
-export async function getCurrentEvent(jobId: string): Promise<any | null> {
-  const events = await db
-    .select()
-    .from(jobStatusEvents)
-    .where(and(eq(jobStatusEvents.jobId, jobId), isNull(jobStatusEvents.leftAt)))
-    .limit(1);
-
-  return events[0] || null;
-}
+// Helper moved to lib/statusEvents.ts to avoid Next.js route export restrictions
 

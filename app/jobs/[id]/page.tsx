@@ -13,6 +13,7 @@ import HorizontalTimeline from '@/app/components/timeline/HorizontalTimeline';
 import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import HeaderMeta from '@/app/components/timeline/HeaderMeta';
 import UtilityRail from '@/app/components/timeline/UtilityRail';
+import ExportButtons from '@/app/components/ExportButtons';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 
@@ -107,7 +108,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
               <p className="text-lg text-gray-600 mt-1" data-testid="job-company">{job.company}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <ExportButtons jobId={job.id} />
               <button
                 onClick={() => setShowTrash(true)}
                 className="px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
