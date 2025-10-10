@@ -459,7 +459,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
             </button>
 
             {versionsOpen[kind] && (
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 space-y-1" data-testid="versions-list">
                 {versions[kind].map((ver) => {
                   const isActiveVer = ver.isActive && ver.deletedAt === null;
                   const canPreview = isPreviewable(ver.filename);
@@ -472,7 +472,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                   }
 
                   return (
-                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-3 border border-blue-200">
+                    <div key={ver.id} className="text-xs bg-blue-50 rounded p-3 border border-blue-200" data-testid={`version-item-${ver.id}`}>
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0 flex items-center gap-3 mr-4">
                           <span className="font-mono text-blue-700 font-semibold">v{ver.version}</span>
@@ -510,6 +510,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                               className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                               aria-label="Preview"
                               title="Preview"
+                              data-testid={`version-preview-${ver.id}`}
                             >
                               <Eye size={16} />
                             </button>
