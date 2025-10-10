@@ -352,7 +352,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
       <div className="mt-2 space-y-2">
         {/* Active files */}
         {kindFiles.map((file) => {
-          const canPreview = isPreviewable(file.filename);
+          const canPreview = isPreviewable(file.filename, file.size);
           const isImage = /\.(png|jpg|jpeg|webp)$/i.test(file.filename);
           const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(file.filename);
           
@@ -476,7 +476,7 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
               <div className="mt-2 space-y-1" data-testid="versions-list">
                 {versions[kind].map((ver) => {
                   const isActiveVer = ver.isActive && ver.deletedAt === null;
-                  const canPreview = isPreviewable(ver.filename);
+                  const canPreview = isPreviewable(ver.filename, ver.size);
                   const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(ver.filename);
                   const verUrl = `/api/jobs/${jobId}/attachments?download=${ver.id}`;
 

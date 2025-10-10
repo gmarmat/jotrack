@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import dynamic from 'next/dynamic';
+
+const PdfViewer = dynamic(() => import('../preview/PdfViewer'), { ssr: false });
+const DocxViewer = dynamic(() => import('../preview/DocxViewer'), { ssr: false });
 
 // Constants
 const MAX_DOCX_PREVIEW_BYTES = 10 * 1024 * 1024;
@@ -93,11 +97,20 @@ export default function AttachmentViewerModal({
     
     try {
       const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      
+      // Set worker - use CDN for reliability
+      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+      }
 
       const response = await fetch(src);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status}`);
+      }
+      
       const arrayBuffer = await response.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
       
       const canvases: HTMLCanvasElement[] = [];
       
@@ -116,7 +129,8 @@ export default function AttachmentViewerModal({
       
       setPdfPages(canvases);
     } catch (err) {
-      setError('Failed to load PDF');
+      console.error('PDF load error:', err);
+      setError(`Failed to load PDF: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -326,27 +340,8 @@ export default function AttachmentViewerModal({
     switch (fileType) {
       case 'pdf':
         return (
-          <div className="overflow-auto h-full">
-            <div 
-              className="space-y-4 p-4"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-            >
-              {pdfPages.map((canvas, index) => (
-                <div key={index} className="shadow-sm border">
-                  <canvas 
-                    data-testid={index === 0 ? "viewer-pdf-page" : undefined}
-                    ref={canvasRef => {
-                      if (canvasRef && pdfPages[index]) {
-                        const ctx = canvasRef.getContext('2d')!;
-                        canvasRef.width = pdfPages[index].width;
-                        canvasRef.height = pdfPages[index].height;
-                        ctx.drawImage(pdfPages[index], 0, 0);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="overflow-auto h-full p-4">
+            <PdfViewer url={src} />
           </div>
         );
 
@@ -392,11 +387,7 @@ export default function AttachmentViewerModal({
       case 'docx':
         return (
           <div className="overflow-auto h-full p-4">
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-              dangerouslySetInnerHTML={{ __html: docxContent || '' }}
-            />
+            <DocxViewer url={src} />
           </div>
         );
 

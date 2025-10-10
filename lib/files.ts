@@ -34,20 +34,17 @@ export function isAllowed(mime: string, ext: string): boolean {
   return true;
 }
 
-export function isPreviewable(extOrMime: string): boolean {
-  const lower = extOrMime.toLowerCase();
-  return (
-    lower.includes('pdf') ||
-    lower.includes('txt') ||
-    lower.includes('text/plain') ||
-    lower.includes('markdown') ||
-    lower.endsWith('.md') ||
-    lower.includes('png') ||
-    lower.includes('jpg') ||
-    lower.includes('jpeg') ||
-    lower.includes('webp') ||
-    lower.includes('image/')
-  );
+export function isPreviewable(filename: string, size?: number): boolean {
+  const ext = filename.toLowerCase().split('.').pop() || '';
+  const sizeOk = !size || size <= 10 * 1024 * 1024; // 10MB limit for docx/rtf
+  
+  if (['pdf', 'png', 'jpg', 'jpeg', 'webp', 'txt', 'md'].includes(ext)) {
+    return true;
+  }
+  if (['docx', 'rtf'].includes(ext) && sizeOk) {
+    return true;
+  }
+  return false;
 }
 
 export function formatFileSize(bytes: number): string {
