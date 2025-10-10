@@ -5,15 +5,18 @@ import { FileText, Info, StickyNote, ChevronRight, ChevronLeft } from "lucide-re
 import { useVersions } from "@/app/hooks/useVersions";
 import { formatFileSize } from "@/lib/files";
 import { formatDateTime } from "@/lib/timeDelta";
+import GlobalNotesHub from "@/app/components/jobs/GlobalNotesHub";
+import type { JobStatus } from "@/lib/status";
 
 type Tab = "files" | "meta" | "notes";
 
 interface UtilityRailProps {
   jobId: string;
   job: any;
+  onJumpToStatus?: (status: JobStatus) => void;
 }
 
-export default function UtilityRail({ jobId, job }: UtilityRailProps) {
+export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailProps) {
   const [activeTab, setActiveTab] = useState<Tab | null>(null);
   const [collapsed, setCollapsed] = useState(true);
 
@@ -122,19 +125,7 @@ export default function UtilityRail({ jobId, job }: UtilityRailProps) {
   };
 
   const renderGlobalNotes = () => {
-    return (
-      <div className="space-y-4">
-        <div className="text-sm text-gray-700">
-          Aggregated notes from all statuses will appear here.
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-xs text-blue-800">
-            💡 <strong>Feature placeholder:</strong> This will show all per-status notes
-            in one view for easy export/review.
-          </p>
-        </div>
-      </div>
-    );
+    return <GlobalNotesHub jobId={jobId} onJumpToStatus={onJumpToStatus} />;
   };
 
   return (

@@ -158,7 +158,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Utility Rail */}
-      <UtilityRail jobId={job.id} job={job} />
+      <UtilityRail 
+        jobId={job.id} 
+        job={job} 
+        onJumpToStatus={setSelectedStatus}
+      />
 
       {/* Trash Panel */}
       {showTrash && (

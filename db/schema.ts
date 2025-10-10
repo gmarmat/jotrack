@@ -59,6 +59,11 @@ export const jobStatusEvents = sqliteTable('job_status_events', {
   leftAt: integer('left_at', { mode: 'number' }),
 });
 
+export const appSettings = sqliteTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
 // Types
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
@@ -70,6 +75,8 @@ export type StatusDetail = typeof statusDetails.$inferSelect;
 export type NewStatusDetail = typeof statusDetails.$inferInsert;
 export type JobStatusEvent = typeof jobStatusEvents.$inferSelect;
 export type NewJobStatusEvent = typeof jobStatusEvents.$inferInsert;
+export type AppSetting = typeof appSettings.$inferSelect;
+export type NewAppSetting = typeof appSettings.$inferInsert;
 
 // Typed structures for JSON columns
 export type InterviewerBlock = {

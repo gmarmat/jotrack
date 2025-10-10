@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StaleThreshold from "./components/StaleThreshold";
 
 export default function SettingsPage() {
   const [enabled, setEnabled] = useState(false);
@@ -88,16 +89,22 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-xs text-gray-700">
-                <strong>Privacy First:</strong> Keys are stored{" "}
-                <b>locally only</b> (masked in localStorage; full key in
-                sessionStorage) and never sent anywhere by default. AI features
-                require explicit user action and operate in dry-run mode unless
-                you configure them otherwise.
-              </p>
-            </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-xs text-gray-700">
+              <strong>Privacy First:</strong> Keys are stored{" "}
+              <b>locally only</b> (masked in localStorage; full key in
+              sessionStorage) and never sent anywhere by default. AI features
+              require explicit user action and operate in dry-run mode unless
+              you configure them otherwise.
+            </p>
           </div>
+        </div>
+
+        {/* Stale Threshold */}
+        <div className="border-t pt-6 space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Timeline Settings</h2>
+          <StaleThreshold />
+        </div>
 
           <div className="border-t pt-6">
             <a
