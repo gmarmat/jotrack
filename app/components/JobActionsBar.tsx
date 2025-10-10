@@ -4,6 +4,30 @@ import { ExternalLink, SquarePlus, Files, Copy } from "lucide-react";
 import type { Job } from "@/db/schema";
 import { useToast } from "./ToastProvider";
 
+// Utility to check if URL is valid http(s)
+function isValidHttpUrl(url: string | null): boolean {
+  if (!url) return false;
+  return /^https?:\/\/.+/.test(url);
+}
+
+// Build summary text for clipboard
+function buildSummaryText(job: Job): string {
+  // Format notes: first 200 chars, single-line, ellipsis if longer
+  let notesText = job.notes || 'N/A';
+  if (notesText !== 'N/A') {
+    // Collapse whitespace and newlines
+    notesText = notesText.replace(/\s+/g, ' ').trim();
+    if (notesText.length > 200) {
+      notesText = notesText.substring(0, 200) + '...';
+    }
+  }
+  
+  return `Job: ${job.title}
+Status: ${job.status}
+Posting: ${job.postingUrl || 'N/A'}
+Notes: ${notesText}`;
+}
+
 interface JobActionsBarProps {
   job: Job;
   attachmentCount: number;
@@ -61,9 +85,20 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
           return;
         }
         
+        // Track opened count for feedback
+        let openedCount = 0;
         activeDocs.forEach((att: any) => {
-          window.open(att.url, '_blank', 'noopener,noreferrer');
+          try {
+            window.open(att.url, '_blank', 'noopener');
+            openedCount++;
+          } catch (err) {
+            console.warn('Failed to open attachment:', att.filename, err);
+          }
         });
+        
+        if (openedCount > 0) {
+          showToast(`Opened ${openedCount} document${openedCount > 1 ? 's' : ''}`, 'success');
+        }
       } else {
         showToast('Failed to fetch attachments', 'error');
       }
@@ -75,22 +110,14 @@ export default function JobActionsBar({ job, attachmentCount }: JobActionsBarPro
 
   const handleCopySummary = async () => {
     try {
-      // Format notes: first 200 chars, single-line, ellipsis if longer
-      let notesText = job.notes || 'N/A';
-      if (notesText !== 'N/A') {
-        // Collapse whitespace and newlines
-        notesText = notesText.replace(/\s+/g, ' ').trim();
-        if (notesText.length > 200) {
-          notesText = notesText.substring(0, 200) + '...';
-        }
+      const text = buildSummaryText(job);
+      
+      // Test bridge for clipboard verification
+      if ((window as any).__TEST_CLIPBOARD__) {
+        (window as any).__TEST_CLIPBOARD__.push(text);
       }
       
-      const summary = `Job: ${job.title}
-Status: ${job.status}
-Posting: ${job.postingUrl || 'N/A'}
-Notes: ${notesText}`;
-      
-      await navigator.clipboard.writeText(summary);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       showToast('Summary copied', 'success');
       setTimeout(() => setCopied(false), 2000);
@@ -101,7 +128,7 @@ Notes: ${notesText}`;
   };
 
   // Check if posting URL is valid http(s)
-  const hasValidPostingUrl = job.postingUrl && /^https?:\/\/.+/.test(job.postingUrl);
+  const hasValidPostingUrl = isValidHttpUrl(job.postingUrl);
   
   // Check which documents are missing
   const getMissingDocsTooltip = () => {
@@ -118,10 +145,11 @@ Notes: ${notesText}`;
       <button
         onClick={handleOpenPosting}
         disabled={!hasValidPostingUrl}
+        aria-disabled={!hasValidPostingUrl}
         className={btnClass}
         aria-label="Open posting"
         title={hasValidPostingUrl ? "Open job posting" : "Add a posting URL to enable"}
-        data-testid="action-open-posting"
+        data-testid="qa-open-posting"
       >
         <ExternalLink size={16} />
       </button>
@@ -131,7 +159,7 @@ Notes: ${notesText}`;
         className={btnClass}
         aria-label="Duplicate job"
         title="Duplicate this job"
-        data-testid="action-duplicate"
+        data-testid="qa-duplicate"
       >
         <SquarePlus size={16} />
       </button>
@@ -139,10 +167,11 @@ Notes: ${notesText}`;
       <button
         onClick={handleOpenAllDocs}
         disabled={attachmentCount === 0}
+        aria-disabled={attachmentCount === 0}
         className={btnClass}
         aria-label="Open all documents"
         title={getMissingDocsTooltip()}
-        data-testid="action-open-docs"
+        data-testid="qa-open-all"
       >
         <Files size={16} />
       </button>
@@ -152,13 +181,13 @@ Notes: ${notesText}`;
         className={btnClass}
         aria-label="Copy job summary"
         title="Copy job summary to clipboard"
-        data-testid="action-copy-summary"
+        data-testid="qa-copy-summary"
       >
         <Copy size={16} />
       </button>
 
       {copied && (
-        <span className="text-xs text-green-600 font-medium" data-testid="copy-feedback">
+        <span className="text-xs text-green-600 font-medium" data-testid="qa-toast-copied" role="status">
           Copied!
         </span>
       )}

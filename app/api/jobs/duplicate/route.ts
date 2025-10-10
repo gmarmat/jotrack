@@ -33,13 +33,13 @@ export async function POST(req: NextRequest) {
 
     // Generate incremental copy title
     let newTitle = originalJob.title;
-    const copyPattern = /^(.+?)\s*\(copy(?:\s+(\d+))?\)$/;
+    const copyPattern = /^(.+?)\s*\(copy(?:\s+(\d+))?\)$/i;
     const match = newTitle.match(copyPattern);
     
     if (match) {
-      // Already has (copy N)
-      const baseName = match[1];
-      const copyNum = match[2] ? parseInt(match[2]) : 1;
+      // Already has (copy) or (copy N)
+      const baseName = match[1].trim();
+      const copyNum = match[2] ? parseInt(match[2], 10) : 1;
       newTitle = `${baseName} (copy ${copyNum + 1})`;
     } else {
       // First copy
