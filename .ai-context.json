@@ -1,12 +1,14 @@
 {
   "repo": "jotrack",
-  "state": "clean:pushed:main@196cc56",
-  "tags": ["v0.5-M6", "v0.4-M4", "v0.2"],
+  "state": "clean:pushed:main@28059da",
+  "tags": ["v0.7-UX-Rail", "v0.6-M7", "v0.5-M6", "v0.4-M4", "v0.2"],
   "typescript": "0_errors",
   "tests": "e2e:6/6_core_passing",
   "milestones_complete": {
     "m5c": "filters:url+session_persist+facets",
-    "m6": "trash:restore+purge+multi_upload:progress+drag_drop+reorder:localStorage"
+    "m6": "trash:restore+purge+multi_upload:progress+drag_drop+reorder:localStorage",
+    "m7": "timeline:keyboard_nav+wordcloud+export_notes",
+    "v0.7": "ux_rail:files_meta_notes+timeline_deltas:stale_detection"
   },
   "features_live": [
     "status_updates:history_modal",
