@@ -25,25 +25,21 @@ test.describe('Versions Expansion and Functionality', () => {
   });
 
   test('should expand versions and show version list when clicking chevron', async ({ page }) => {
-    // Upload first resume - will be v1
-    const resumePath1 = path.join(__dirname, 'fixtures', 'sample-resume.txt');
+    // Upload a resume
+    const resumePath = path.join(__dirname, 'fixtures', 'sample-resume.txt');
     const fileInput = page.locator('input[type="file"]').first();
-    await fileInput.setInputFiles(resumePath1);
+    await fileInput.setInputFiles(resumePath);
     await page.waitForTimeout(2000);
     
-    // Verify uploaded and shows v1
+    // Verify uploaded
     await expect(page.locator('text=/sample-resume/').first()).toBeVisible();
-    const v1Text = await page.locator('text=v1').first().isVisible();
-    expect(v1Text).toBe(true);
     
-    // Close and open versions to test expansion
+    // Find versions button
     const versionsButton = page.locator('button:has-text("Versions")').first();
     await expect(versionsButton).toBeVisible();
-    
-    // Initially should show count of 1
     await expect(versionsButton).toContainText('1');
     
-    console.log('Clicking versions button to expand...');
+    // Click to expand
     await versionsButton.click();
     await page.waitForTimeout(500);
     
@@ -56,7 +52,9 @@ test.describe('Versions Expansion and Functionality', () => {
     const count = await versionItems.count();
     expect(count).toBeGreaterThanOrEqual(1);
     
-    console.log(`Found ${count} version items`);
+    // Check version shows as active
+    await expect(versionsList).toContainText('Active');
+    await expect(versionsList).toContainText('v1');
   });
 
   test('should toggle versions open and closed', async ({ page }) => {
