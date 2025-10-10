@@ -1,0 +1,76 @@
+{
+  "repo": "jotrack",
+  "state": "clean:pushed:main@196cc56",
+  "tags": ["v0.5-M6", "v0.4-M4", "v0.2"],
+  "typescript": "0_errors",
+  "tests": "e2e:6/6_core_passing",
+  "milestones_complete": {
+    "m5c": "filters:url+session_persist+facets",
+    "m6": "trash:restore+purge+multi_upload:progress+drag_drop+reorder:localStorage"
+  },
+  "features_live": [
+    "status_updates:history_modal",
+    "attachments:upload+versions+preview+delete+undo",
+    "preview:pdf+docx+rtf+txt+img:apple_style",
+    "filters:status+has+sort",
+    "trash:viewer+restore+purge_single+purge_all",
+    "multi_upload:progress+drag_drop",
+    "drag_reorder:versions:localStorage",
+    "ai_settings:privacy_first:gated:local_only",
+    "backup_restore:zip"
+  ],
+  "architecture": {
+    "preview_layer": "app/components/preview/*:mammoth.convertToHtml():styled_html:human_viewing",
+    "analysis_layer": "lib/fileContent.ts:mammoth.extractRawText():raw_text:ai_processing",
+    "separation": "enforced:ARCHITECTURE.md:guarantees_analysis_unaffected_by_ui_changes"
+  },
+  "viewer_ui": {
+    "style": "apple_quicklook",
+    "bg": "gray-50:light",
+    "text": "gray-800:dark_on_white_cards",
+    "effects": "backdrop-blur+animations+shadows",
+    "contrast": "fixed:readable"
+  },
+  "db": {
+    "schema": ["jobs", "status_history", "attachments", "jobs_fts"],
+    "migrations": "7_total:idempotent",
+    "location": "data/jotrack.db"
+  },
+  "api_patterns": {
+    "analysis": "POST_/api/analyze/*:use_lib/fileContent.ts",
+    "preview": "GET_/api/files/stream:serves_raw_files",
+    "attachments": "CRUD+versions+soft_delete+restore+purge"
+  },
+  "next_work": {
+    "ready_for": [
+      "resume_analysis:jd_matching:lib/fileContent.extractDocxText",
+      "version_diff:compare_v1_v2:lib/fileContent.compareFiles",
+      "skill_extraction:keywords:lib/fileContent.extractKeywords",
+      "ai_features:gated:settings_enabled"
+    ],
+    "components_ready": [
+      "UploadDropzone:multi+progress",
+      "VersionsPanel:drag_reorder",
+      "TrashPanel:restore+purge",
+      "AttachmentsSection:integrated",
+      "AttachmentViewerModal:apple_style"
+    ]
+  },
+  "testing": {
+    "e2e": "playwright:auto_start_dev_server",
+    "unit": "vitest:skipped:path_issue",
+    "setup": "e2e/_setup.ts:localStorage_cleanup"
+  },
+  "dependencies": {
+    "installed": ["mammoth", "better-sqlite3", "drizzle-orm", "swr", "lucide-react"],
+    "optional_future": ["pdf-parse:for_pdf_text_extraction"]
+  },
+  "docs": [
+    "ARCHITECTURE.md:preview_vs_analysis",
+    "VIEWER_IMPROVEMENTS.md:ui_changes",
+    "UI_DESIGN_SPEC.md:standards+ai_governance",
+    "PREVIEW_SYSTEM_GUIDE.md:implementation",
+    "CHANGELOG.md:v0.5-M6"
+  ]
+}
+
