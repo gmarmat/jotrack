@@ -51,14 +51,14 @@ export function FiltersBar({ onChange, counts }:{
       <div aria-label="Status filters" className="flex gap-1">
         {ALL_STATUSES.map(s=>(
           <button key={s} data-testid={`chip-status-${s}`} onClick={()=>setStatuses(v=>toggle(v,s))}
-            className={`rounded-full px-2 py-1 text-xs border ${statuses.includes(s)?"bg-gray-200 border-gray-400":"hover:bg-gray-50"}`}
+            className={`rounded-full px-1.5 py-1 text-xs border ${statuses.includes(s)?"bg-gray-200 border-gray-400":"hover:bg-gray-50"}`}
             aria-pressed={statuses.includes(s)} title={s.replace("_"," ")}>{s.replace("_"," ")}</button>
         ))}
       </div>
       <div aria-label="Has filters" className="flex gap-1">
         {HAS.map(h=>(
           <button key={h} data-testid={`chip-has-${h}`} onClick={()=>setHas(v=>toggle(v,h))}
-            className={`rounded-full px-2 py-1 text-xs border ${has.includes(h)?"bg-gray-200 border-gray-400":"hover:bg-gray-50"}`}
+            className={`rounded-full px-1.5 py-1 text-xs border ${has.includes(h)?"bg-gray-200 border-gray-400":"hover:bg-gray-50"}`}
             aria-pressed={has.includes(h)} title={`Has ${h}`}>
             {h.replace("_"," ")}{typeof counts?.[h]==="number" ? ` (${counts![h]})` : ""}
           </button>

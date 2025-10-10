@@ -87,20 +87,32 @@ className="fixed inset-0 z-50 flex items-center justify-center"
 Backdrop: className="absolute inset-0 bg-black/50"
 ```
 
-### Status Badges
+### Status Badges & Filter Chips
 
 ```tsx
-// Status-specific colors, rounded badge
-className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+// Status badges - compact padding for better text fit
+className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
 
-// Color mapping:
-ON_RADAR: bg-gray-100 text-gray-800
-APPLIED: bg-blue-100 text-blue-800
-PHONE_SCREEN: bg-purple-100 text-purple-800
-ONSITE: bg-yellow-100 text-yellow-800
-OFFER: bg-green-100 text-green-800
-REJECTED: bg-red-100 text-red-800
+// Filter chips (status/has filters) - same compact padding
+className="rounded-full px-1.5 py-1 text-xs border"
+
+// Color mapping for status badges:
+ON_RADAR: bg-amber-100 text-amber-700
+APPLIED: bg-blue-100 text-blue-700
+PHONE_SCREEN: bg-indigo-100 text-indigo-700
+ONSITE: bg-purple-100 text-purple-700
+OFFER: bg-green-100 text-green-700
+REJECTED: bg-red-100 text-red-700
+
+// Filter chip states:
+Active: bg-gray-200 border-gray-400
+Inactive: hover:bg-gray-50 (with border)
 ```
+
+**CRITICAL**: Use `px-1.5` (6px) horizontal padding, NOT `px-2` (8px) or `px-3` (12px)
+- Prevents excessive empty space around text like "Phone Screen"
+- Maintains visual balance for both short ("Applied") and long status names
+- Consistent across StatusBadge and FiltersBar components
 
 ### Tables
 
@@ -168,6 +180,10 @@ className="px-4 py-3 text-sm text-gray-900"
 ### ❌ Inconsistent Icon Sizes
 **Problem**: Icons of different sizes (14, 16, 18, 20px) in same context
 **Fix**: Use size={16} for most icons, size={14} for very small contexts
+
+### ❌ Excessive Badge Padding
+**Problem**: Status badges with px-2 or px-3 creating too much empty space around text
+**Fix**: Use px-1.5 for compact, balanced appearance across all status text lengths
 
 ---
 

@@ -20,7 +20,7 @@ export default function StatusBadge({ status }: { status: string }) {
 
   return (
     <span 
-      className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${color}`}
+      className={`inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full ${color}`}
       data-testid={`status-badge-${status}`}
     >
       {label}
