@@ -26,9 +26,14 @@ export default function UploadDropzone({
       method: "POST",
       body: fd,
     });
-    if (!r.ok) throw new Error("upload failed");
+    if (!r.ok) {
+      const errorText = await r.text();
+      console.error("Upload failed:", r.status, errorText);
+      throw new Error(`upload failed: ${r.status}`);
+    }
     const j = await r.json();
-    onUploaded?.(j.attachment);
+    // Pass entire response to onUploaded
+    onUploaded(j);
   };
 
   const handleFiles = async (files: FileList | File[]) => {

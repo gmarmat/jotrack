@@ -22,9 +22,23 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const onUploaded =
-    (kind: "resume" | "jd" | "cover_letter") => (attachment: any) => {
+    (kind: "resume" | "jd" | "cover_letter") => (response: any) => {
       const hooks = { resume, jd, cover_letter: cover };
       const hook = hooks[kind];
+      
+      // Handle API response structure
+      if (!response) {
+        console.error("Upload response is undefined");
+        return;
+      }
+
+      // API returns { attachment: {...} }
+      const attachment = response.attachment || response;
+      
+      if (!attachment || !attachment.id) {
+        console.error("Invalid attachment data:", response);
+        return;
+      }
       
       // Transform API response to VersionRec format
       const versionRec = {
