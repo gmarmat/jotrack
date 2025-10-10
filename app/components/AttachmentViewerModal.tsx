@@ -306,27 +306,34 @@ export default function AttachmentViewerModal({
     if (loading) {
       return (
         <div className="flex items-center justify-center h-full">
-          <div className="text-gray-500">Loading...</div>
+          <div className="flex flex-col items-center space-y-3">
+            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="text-sm font-medium text-gray-600">Loading preview...</div>
+          </div>
         </div>
       );
     }
 
     if (error) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center" data-testid="viewer-docx-fallback">
-            <div className="text-red-500 mb-4">{error}</div>
-            <div className="flex gap-2 justify-center">
+        <div className="flex items-center justify-center h-full p-8">
+          <div className="text-center max-w-md" data-testid="viewer-docx-fallback">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Preview Unavailable</h3>
+            <p className="text-sm text-gray-600 mb-6">{error}</p>
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={handleExternal}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded flex items-center gap-2"
+                className="px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg flex items-center gap-2 font-medium text-sm text-gray-700 transition-colors shadow-sm"
               >
                 <ExternalLink className="w-4 h-4" />
                 Open Externally
               </button>
               <button
                 onClick={handleDownload}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center gap-2"
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 font-medium text-sm transition-colors shadow-sm"
               >
                 <Download className="w-4 h-4" />
                 Download
@@ -340,18 +347,20 @@ export default function AttachmentViewerModal({
     switch (fileType) {
       case 'pdf':
         return (
-          <div className="overflow-auto h-full p-4">
-            <PdfViewer url={src} />
+          <div className="overflow-auto h-full p-8 flex justify-center">
+            <div className="w-full max-w-4xl">
+              <PdfViewer url={src} />
+            </div>
           </div>
         );
 
       case 'image':
         return (
-          <div className="flex items-center justify-center h-full overflow-hidden">
+          <div className="flex items-center justify-center h-full overflow-hidden p-8">
             <img
               src={src}
               alt={filename}
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
               style={{ transform: `scale(${zoom})` }}
             />
           </div>
@@ -360,11 +369,13 @@ export default function AttachmentViewerModal({
       case 'markdown':
         const markdownHtml = content ? DOMPurify.sanitize(marked.parse(content) as string) : '';
         return (
-          <div className="overflow-auto h-full p-4">
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: markdownHtml }}
-            />
+          <div className="overflow-auto h-full p-8">
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+              <div 
+                className="prose prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 prose-code:text-gray-800 prose-code:bg-gray-100 prose-pre:bg-gray-900 prose-pre:text-gray-100"
+                dangerouslySetInnerHTML={{ __html: markdownHtml }}
+              />
+            </div>
           </div>
         );
 
@@ -372,42 +383,72 @@ export default function AttachmentViewerModal({
         if (!content || content.trim().length === 0) {
           return (
             <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500" data-testid="viewer-fallback">Empty file</div>
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <span className="text-2xl text-gray-400">📄</span>
+                </div>
+                <div className="text-sm font-medium text-gray-500" data-testid="viewer-fallback">Empty file</div>
+              </div>
             </div>
           );
         }
         return (
-          <div className="overflow-auto h-full p-4">
-            <pre className="whitespace-pre-wrap text-sm font-mono">
-              {content}
-            </pre>
+          <div className="overflow-auto h-full p-8">
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+              <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 leading-relaxed">
+                {content}
+              </pre>
+            </div>
           </div>
         );
 
       case 'docx':
         return (
-          <div className="overflow-auto h-full p-4">
-            <DocxViewer url={src} />
+          <div className="overflow-auto h-full p-8">
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+              <DocxViewer url={src} />
+            </div>
           </div>
         );
 
       case 'rtf':
         return (
-          <div className="overflow-auto h-full p-4">
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-              dangerouslySetInnerHTML={{ __html: rtfContent || '' }}
-            />
+          <div className="overflow-auto h-full p-8">
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+              <div 
+                className="prose prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900"
+                style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+                dangerouslySetInnerHTML={{ __html: rtfContent || '' }}
+              />
+            </div>
           </div>
         );
 
       case 'unsupported':
         return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center text-gray-500" data-testid="viewer-fallback">
-              <div className="mb-2">Preview not supported</div>
-              <div className="text-sm">Use Open externally or Download</div>
+          <div className="flex items-center justify-center h-full p-8">
+            <div className="text-center max-w-md" data-testid="viewer-fallback">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">📎</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Preview Not Supported</h3>
+              <p className="text-sm text-gray-600 mb-6">This file type cannot be previewed in the browser.</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={handleExternal}
+                  className="px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg flex items-center gap-2 font-medium text-sm text-gray-700 transition-colors shadow-sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 font-medium text-sm transition-colors shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -418,91 +459,91 @@ export default function AttachmentViewerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 animate-in fade-in duration-200">
+      {/* Backdrop - Apple-style blur */}
       <div 
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-screen-lg w-full mx-4 h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
-          <div className="flex items-center space-x-2">
-            <span className="font-medium text-sm truncate">{filename}</span>
+      {/* Modal - Apple QuickLook inspired */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        {/* Header - Clean and minimal */}
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <span className="font-semibold text-base text-gray-900 truncate">{filename}</span>
             {fileType !== 'unsupported' && (
-              <span className="text-xs text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">
+              <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
                 {Math.round(zoom * 100)}%
               </span>
             )}
           </div>
           
-          {/* Toolbar */}
-          <div className="flex items-center space-x-1">
+          {/* Toolbar - Apple-style icon buttons */}
+          <div className="flex items-center space-x-0.5">
             {fileType !== 'unsupported' && (
               <>
                 <button
                   onClick={() => setZoom(prev => Math.max(prev - 0.25, 0.25))}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
-                  title="Zoom Out"
+                  className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Zoom Out (⌘−)"
                   aria-label="Zoom Out"
                 >
-                  <ZoomOut className="w-4 h-4" />
+                  <ZoomOut className="w-4 h-4 text-gray-700" />
                 </button>
                 <button
                   onClick={() => setZoom(prev => Math.min(prev + 0.25, 3))}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
-                  title="Zoom In"
+                  className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Zoom In (⌘+)"
                   aria-label="Zoom In"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <ZoomIn className="w-4 h-4 text-gray-700" />
                 </button>
                 <button
                   onClick={() => setZoom(1)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
-                  title="Fit to Width"
+                  className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Actual Size (⌘0)"
                   aria-label="Fit to Width"
                 >
-                  <ScanLine className="w-4 h-4" />
+                  <ScanLine className="w-4 h-4 text-gray-700" />
                 </button>
-                <div className="w-px h-6 bg-gray-300 dark:bg-zinc-600 mx-1" />
+                <div className="w-px h-5 bg-gray-300 mx-2" />
               </>
             )}
             
             <button
               onClick={handleDownload}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
               title="Download"
               aria-label="Download"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-gray-700" />
             </button>
             
             <button
               onClick={handleExternal}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
               title="Open Externally"
               aria-label="Open Externally"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 text-gray-700" />
             </button>
             
-            <div className="w-px h-6 bg-gray-300 dark:bg-zinc-600 mx-1" />
+            <div className="w-px h-5 bg-gray-300 mx-2" />
             
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
-              title="Close"
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Close (Esc)"
               aria-label="Close"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 text-gray-700" />
             </button>
           </div>
         </div>
         
-        {/* Content */}
-        <div className="flex-1 overflow-hidden" ref={containerRef} data-testid="viewer-modal">
+        {/* Content - Light background like QuickLook */}
+        <div className="flex-1 overflow-hidden bg-gray-50" ref={containerRef} data-testid="viewer-modal">
           {renderContent()}
         </div>
       </div>
