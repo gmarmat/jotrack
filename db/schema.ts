@@ -36,6 +36,21 @@ export const attachments = sqliteTable('attachments', {
   deletedAt: integer('deleted_at', { mode: 'number' }).$type<number | null>().default(null),
 });
 
+export const statusDetails = sqliteTable('status_details', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  status: text('status').$type<JobStatus>().notNull(),
+  // JSON columns for structured data
+  interviewerBlocks: text('interviewer_blocks').notNull().default('[]'), // JSON array
+  aiBlob: text('ai_blob'), // Markdown/text from AI analysis
+  keywordsAuto: text('keywords_auto').notNull().default('[]'), // JSON array from AI
+  keywordsManual: text('keywords_manual').notNull().default('[]'), // JSON array user-added
+  notes: text('notes').default(''),
+  notesHistory: text('notes_history').notNull().default('[]'), // JSON array of {text, timestamp}
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+  aiRefreshedAt: integer('ai_refreshed_at', { mode: 'number' }),
+});
+
 // Types
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
@@ -43,4 +58,23 @@ export type StatusHistory = typeof statusHistory.$inferSelect;
 export type NewStatusHistory = typeof statusHistory.$inferInsert;
 export type Attachment = typeof attachments.$inferSelect;
 export type NewAttachment = typeof attachments.$inferInsert;
+export type StatusDetail = typeof statusDetails.$inferSelect;
+export type NewStatusDetail = typeof statusDetails.$inferInsert;
+
+// Typed structures for JSON columns
+export type InterviewerBlock = {
+  id: string;
+  name: string;
+  title: string;
+  linkedinUrl?: string;
+  email?: string;
+  notes?: string;
+  aiPersonaSummary?: string;
+  keywords?: string[];
+};
+
+export type NotesHistoryEntry = {
+  text: string;
+  timestamp: number;
+};
 

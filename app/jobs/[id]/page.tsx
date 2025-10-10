@@ -9,10 +9,13 @@ import AttachmentsSection from '@/app/components/attachments/AttachmentsSection'
 import JobDetailsPanel from '@/app/components/JobDetailsPanel';
 import JobActionsBar from '@/app/components/JobActionsBar';
 import TrashPanel from '@/app/components/attachments/TrashPanel';
+import HorizontalTimeline from '@/app/components/timeline/HorizontalTimeline';
+import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import { type JobStatus } from '@/lib/status';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [showTrash, setShowTrash] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [job, setJob] = useState<any>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -59,7 +62,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="max-w-4xl mx-auto px-4 space-y-6">
+      {/* Timeline - Full width above everything */}
+      <HorizontalTimeline 
+        currentStatus={currentStatus} 
+        onStatusClick={setSelectedStatus}
+      />
+
+      <div className="max-w-4xl mx-auto px-4 space-y-6 mt-6">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex items-start justify-between">
@@ -96,6 +105,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
                {/* Details section - full width */}
                <JobDetailsPanel job={job} currentStatus={currentStatus} />
+
+        {/* Timeline Detail Panel - shown when status clicked */}
+        {selectedStatus && (
+          <div className="relative" data-testid="timeline-detail-wrapper">
+            <button
+              onClick={() => setSelectedStatus(null)}
+              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-lg z-10"
+              aria-label="Close timeline detail"
+            >
+              ✕
+            </button>
+            <StatusDetailPanel jobId={job.id} status={selectedStatus} />
+          </div>
+        )}
 
         {/* Attachments section - full width */}
         <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-24 max-w-screen-lg mx-auto">
