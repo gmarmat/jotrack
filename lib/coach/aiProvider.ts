@@ -1,0 +1,529 @@
+/**
+ * AI Provider utilities for Coach Mode
+ * Handles BYOK (Bring Your Own Key) and dry-run modes
+ */
+
+import { db } from '@/db/client';
+import { appSettings } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
+import {
+  extractVocabulary,
+  generate25ParameterBreakdown,
+  extractKeywordAnalysis,
+} from './strictExtraction';
+import { getRenderedPrompt } from '@/core/ai/promptLoader';
+
+const ENCRYPTION_KEY = process.env.AI_ENCRYPTION_KEY || 'default-key-change-in-production';
+const ALGORITHM = 'aes-256-cbc';
+
+// v1.3: Model allowlist for safety
+const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'];
+
+export interface AiSettings {
+  networkEnabled: boolean;
+  provider: string;
+  model: string;
+  apiKey?: string;
+}
+
+export interface AiError {
+  code: string;
+  message: string;
+  userMessage: string;
+  retryable: boolean;
+}
+
+export interface AiProviderConfig {
+  provider: string;
+  model: string;
+  apiKey?: string;
+}
+
+/**
+ * Encrypt sensitive data
+ */
+function encrypt(text: string): string {
+  const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32));
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + ':' + encrypted;
+}
+
+/**
+ * Decrypt sensitive data
+ */
+function decrypt(text: string): string {
+  const key = Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32));
+  const parts = text.split(':');
+  const iv = Buffer.from(parts[0], 'hex');
+  const encryptedText = parts[1];
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+/**
+ * Get AI settings from database
+ */
+export async function getAiSettings(): Promise<AiSettings> {
+  try {
+    const result = await db
+      .select()
+      .from(appSettings)
+      .where(eq(appSettings.key, 'ai_settings'))
+      .limit(1);
+
+    if (result.length === 0) {
+      return {
+        networkEnabled: false,
+        provider: 'openai',
+        model: 'gpt-4o',
+      };
+    }
+
+    const encrypted = result[0].value;
+    const decrypted = decrypt(encrypted);
+    return JSON.parse(decrypted);
+  } catch (error) {
+    console.error('Error fetching AI settings:', error);
+    return {
+      networkEnabled: false,
+      provider: 'openai',
+      model: 'gpt-4o',
+    };
+  }
+}
+
+/**
+ * Save AI settings to database (encrypted)
+ */
+export async function saveAiSettings(settings: AiSettings): Promise<void> {
+  const encrypted = encrypt(JSON.stringify(settings));
+
+  const existing = await db
+    .select()
+    .from(appSettings)
+    .where(eq(appSettings.key, 'ai_settings'))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(appSettings)
+      .set({ value: encrypted })
+      .where(eq(appSettings.key, 'ai_settings'));
+  } else {
+    await db.insert(appSettings).values({
+      key: 'ai_settings',
+      value: encrypted,
+    });
+  }
+}
+
+/**
+ * Get AI provider configuration (with decrypted API key)
+ */
+export async function getAiProviderConfig(): Promise<AiProviderConfig | null> {
+  const settings = await getAiSettings();
+
+  if (!settings.networkEnabled || !settings.apiKey) {
+    return null;
+  }
+
+  return {
+    provider: settings.provider,
+    model: settings.model,
+    apiKey: settings.apiKey,
+  };
+}
+
+/**
+ * Redact PII from text before sending to AI
+ */
+export function redactPII(text: string): string {
+  // Simple PII redaction - can be enhanced
+  let redacted = text;
+
+  // Redact email addresses
+  redacted = redacted.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]');
+
+  // Redact phone numbers (basic patterns)
+  redacted = redacted.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE]');
+  redacted = redacted.replace(/\(\d{3}\)\s*\d{3}[-.]?\d{4}/g, '[PHONE]');
+
+  // Redact SSN patterns
+  redacted = redacted.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
+
+  return redacted;
+}
+
+/**
+ * Generate mock AI response for dry-run mode
+ * v1.1: Uses strict extraction - NO HALLUCINATIONS
+ */
+export function generateDryRunResponse(capability: string, inputs: any): any {
+  const timestamp = new Date().toISOString();
+
+  switch (capability) {
+    case 'company_profile':
+      return {
+        name: inputs.companyName || 'Sample Company',
+        industry: 'Technology',
+        subindustry: 'Software',
+        principles: ['Innovation', 'Customer Focus', 'Collaboration'],
+        hqCity: 'San Francisco',
+        hqState: 'CA',
+        hqCountry: 'USA',
+        sizeBucket: '51-200',
+        summary: 'A technology company focused on innovative solutions. [DRY RUN]',
+      };
+
+    case 'recruiter_profile':
+      return {
+        name: inputs.recruiterName || 'Sample Recruiter',
+        title: 'Technical Recruiter',
+        techDepth: 'medium',
+        summary: 'Experienced recruiter with focus on technical roles. [DRY RUN]',
+        persona: 'Professional and detail-oriented communicator.',
+      };
+
+    case 'fit_analysis':
+      // v1.1: Strict extraction - ONLY analyze terms in sources
+      const jdVocab = extractVocabulary(inputs.jobDescription || '');
+      const resumeVocab = extractVocabulary(inputs.resume || '');
+      
+      // Generate 25-parameter breakdown with evidence
+      const breakdown = generate25ParameterBreakdown(jdVocab, resumeVocab);
+      
+      // Calculate weighted overall score
+      const overall = breakdown.reduce((sum, item) => sum + (item.weight * item.score), 0);
+      const threshold = 0.75;
+      
+      // Determine score level
+      let scoreLevel = 'Low';
+      if (overall >= threshold) scoreLevel = 'Great';
+      else if (overall >= threshold * 0.8) scoreLevel = 'Medium';
+      
+      // Extract keywords for heatmap
+      const keywords = extractKeywordAnalysis(jdVocab, resumeVocab);
+      
+      return {
+        fit: {
+          overall: Math.round(overall * 100) / 100,
+          threshold,
+          breakdown,
+        },
+        keywords,
+        profiles: [], // Will be populated by profile step
+        sources: [],
+        meta: {
+          dryRun: true,
+          timestamp,
+          evidenceBased: true,
+        },
+      };
+
+    case 'resume_improve':
+      return {
+        suggestions: [
+          {
+            section: 'Summary',
+            current: 'Software engineer with experience',
+            suggested: 'Software Engineer with 5+ years specializing in React and Node.js',
+            reasoning: 'More specific and quantified',
+          },
+          {
+            section: 'Experience',
+            current: 'Built web applications',
+            suggested: 'Architected and delivered 10+ production React applications serving 100K+ users',
+            reasoning: 'Quantified impact',
+          },
+        ],
+        missingKeywords: ['Kubernetes', 'GraphQL', 'CI/CD'],
+        estimatedNewScore: 78,
+      };
+
+    case 'skill_path':
+      return {
+        skills: [
+          {
+            skill: 'Kubernetes',
+            priority: 'high',
+            estimatedHours: 6,
+            resources: [
+              {
+                title: 'Kubernetes Basics',
+                provider: 'YouTube',
+                url: 'https://youtube.com/example',
+                duration: 2,
+              },
+            ],
+          },
+          {
+            skill: 'GraphQL',
+            priority: 'medium',
+            estimatedHours: 4,
+            resources: [],
+          },
+        ],
+        totalHours: 10,
+        talkTrack: 'I\'m actively upskilling in Kubernetes and GraphQL to strengthen my backend expertise. [DRY RUN]',
+      };
+
+    default:
+      return {
+        message: `Dry run response for ${capability}`,
+        timestamp,
+        inputs,
+      };
+  }
+}
+
+/**
+ * Call AI provider (or return dry-run mock)
+ * v1.2: Uses versioned prompts, proper token tracking
+ */
+/**
+ * v1.3: Validate model against allowlist
+ */
+function validateModel(model: string): void {
+  if (!ALLOWED_MODELS.includes(model)) {
+    throw new Error(
+      `Model "${model}" is not allowed. Supported models: ${ALLOWED_MODELS.join(', ')}`
+    );
+  }
+}
+
+/**
+ * v1.3: Create user-friendly error from AI error
+ */
+export function createAiError(code: string, message: string, retryable: boolean): AiError {
+  const userMessages: Record<string, string> = {
+    'rate_limit': 'You have made too many AI requests. Please wait a few minutes and try again.',
+    'invalid_json': 'The AI returned an invalid response. Please try again.',
+    'invalid_model': 'The selected AI model is not supported. Please choose a different model in Settings.',
+    'api_error': 'There was an error communicating with the AI service. Please check your API key and try again.',
+    'network_disabled': 'AI network is disabled. Please enable it in Settings to use remote AI features.',
+    'no_api_key': 'No API key configured. Please add your API key in Settings.',
+  };
+
+  return {
+    code,
+    message,
+    userMessage: userMessages[code] || 'An unexpected error occurred. Please try again.',
+    retryable,
+  };
+}
+
+export async function callAiProvider(
+  capability: string,
+  inputs: any,
+  dryRun = false,
+  promptVersion = 'v1'
+): Promise<{ result: any; usage?: { promptTokens: number; completionTokens: number; totalTokens: number } }> {
+  if (dryRun) {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return {
+      result: generateDryRunResponse(capability, inputs),
+      usage: undefined,
+    };
+  }
+
+  const config = await getAiProviderConfig();
+
+  if (!config) {
+    const error = createAiError('network_disabled', 'AI network is disabled or API key is not configured', false);
+    throw error;
+  }
+
+  // v1.3: Validate model
+  validateModel(config.model);
+
+  // Map capability to prompt kind
+  const promptKind = mapCapabilityToPromptKind(capability);
+  
+  // Build prompt variables from inputs
+  const variables = buildPromptVariables(capability, inputs);
+  
+  // Load and render prompt template
+  const renderedPrompt = getRenderedPrompt(promptKind, variables, promptVersion);
+
+  // Redact PII before sending (allowlist job posting domains)
+  const redactedPrompt = redactPII(renderedPrompt);
+
+  // Call OpenAI API (or other provider)
+  if (config.provider === 'openai') {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.model || 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a career coach assistant. Always return valid JSON matching the specified output contract. Only analyze terms explicitly present in provided documents.',
+          },
+          {
+            role: 'user',
+            content: redactedPrompt,
+          },
+        ],
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+        max_tokens: getMaxTokens(capability),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      
+      // v1.3: Handle rate limit errors specially
+      if (response.status === 429) {
+        const error = createAiError('rate_limit', 'OpenAI rate limit exceeded', true);
+        throw error;
+      }
+      
+      const error = createAiError(
+        'api_error',
+        `OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`,
+        response.status >= 500 // 5xx errors are retryable
+      );
+      throw error;
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+    const usage = data.usage;
+
+    if (!content) {
+      const error = createAiError('api_error', 'No response from OpenAI', true);
+      throw error;
+    }
+
+    // v1.3: Improved JSON parsing with better error handling
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (error) {
+      console.error('Failed to parse OpenAI response:', content.slice(0, 500));
+      const aiError = createAiError(
+        'invalid_json',
+        `Failed to parse OpenAI response as JSON: ${content.slice(0, 200)}`,
+        true
+      );
+      throw aiError;
+    }
+
+    // v1.3: Validate response structure
+    if (!result.fit || typeof result.fit.overall !== 'number') {
+      console.error('Invalid response structure:', JSON.stringify(result).slice(0, 500));
+      const error = createAiError(
+        'invalid_json',
+        'AI response missing required fields',
+        true
+      );
+      throw error;
+    }
+
+    return {
+      result,
+      usage: usage ? {
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+        totalTokens: usage.total_tokens,
+      } : undefined,
+    };
+  }
+
+  throw new Error(`Unsupported provider: ${config.provider}`);
+}
+
+/**
+ * Map capability name to prompt kind
+ */
+function mapCapabilityToPromptKind(capability: string): any {
+  const mapping: Record<string, any> = {
+    'fit_analysis': 'analyze',
+    'resume_improve': 'improve',
+    'skill_path': 'skillpath',
+    'recruiter_profile': 'persona',
+    'company_profile': 'persona',
+    'compare_runs': 'compare',
+  };
+
+  return mapping[capability] || 'analyze';
+}
+
+/**
+ * Build variables object for prompt template
+ */
+function buildPromptVariables(capability: string, inputs: any): any {
+  const common = {
+    jobTitle: inputs.jobTitle || inputs.title || 'Position',
+    company: inputs.company || inputs.companyName || 'Company',
+    jdText: inputs.jobDescription || inputs.jd || '',
+    resumeText: inputs.resume || '',
+    notesText: inputs.notes || '',
+  };
+
+  switch (capability) {
+    case 'fit_analysis':
+      return common;
+
+    case 'resume_improve':
+      return common;
+
+    case 'skill_path':
+      return {
+        ...common,
+        currentSkills: Array.isArray(inputs.currentSkills) 
+          ? inputs.currentSkills.join(', ') 
+          : inputs.currentSkills || '',
+        missingSkills: Array.isArray(inputs.missingSkills)
+          ? inputs.missingSkills.join(', ')
+          : inputs.missingSkills || '',
+      };
+
+    case 'recruiter_profile':
+    case 'company_profile':
+      return {
+        personType: capability === 'recruiter_profile' ? 'Recruiter' : 'Company',
+        personName: inputs.recruiterName || inputs.companyName || '',
+        linkedinUrl: inputs.linkedinUrl || '',
+        context: inputs.context || common.jdText,
+      };
+
+    case 'compare_runs':
+      return {
+        original: JSON.stringify(inputs.original || {}, null, 2),
+        updated: JSON.stringify(inputs.updated || {}, null, 2),
+      };
+
+    default:
+      return common;
+  }
+}
+
+/**
+ * Get max tokens for capability (cost control)
+ */
+function getMaxTokens(capability: string): number {
+  const limits: Record<string, number> = {
+    'company_profile': 500,
+    'recruiter_profile': 500,
+    'fit_analysis': 2000,  // Needs more for 25 params
+    'resume_improve': 1000,
+    'skill_path': 800,
+    'compare_runs': 600,
+  };
+
+  return limits[capability] || 1000;
+}
+

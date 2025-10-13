@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import StaleThreshold from "./components/StaleThreshold";
+import CoachAiSettings from "./components/CoachAiSettings";
 
 export default function SettingsPage() {
   const [enabled, setEnabled] = useState(false);
@@ -98,6 +99,11 @@ export default function SettingsPage() {
               you configure them otherwise.
             </p>
           </div>
+        </div>
+
+        {/* Coach Mode AI Settings */}
+        <div className="border-t pt-6 space-y-4">
+          <CoachAiSettings />
         </div>
 
         {/* Stale Threshold */}

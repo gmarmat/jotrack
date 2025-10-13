@@ -1,0 +1,93 @@
+{
+  "fit": {
+    "overall": 0.88,
+    "threshold": 0.75,
+    "breakdown": [
+      {
+        "param": "Years of Experience",
+        "weight": 0.10,
+        "jdEvidence": "5+ years of backend development experience",
+        "resumeEvidence": "Software Engineer, PaymentTech (2019-Present), CloudSystems (2017-2019)",
+        "score": 0.95,
+        "reasoning": "Candidate has 6+ years of backend engineering experience",
+        "sources": ["Job Description", "Resume"]
+      },
+      {
+        "param": "Domain Experience",
+        "weight": 0.15,
+        "jdEvidence": "Payment infrastructure, financial systems",
+        "resumeEvidence": "Built payment processing APIs handling 10M+ transactions/day",
+        "score": 0.95,
+        "reasoning": "Direct fintech/payment systems experience at PaymentTech",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Programming Languages",
+        "weight": 0.12,
+        "jdEvidence": "Proficiency in Go or Python",
+        "resumeEvidence": "Go, Python",
+        "score": 0.95,
+        "reasoning": "Strong proficiency in both Go and Python as required",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Distributed Systems",
+        "weight": 0.12,
+        "jdEvidence": "Experience with distributed systems, databases",
+        "resumeEvidence": "Architected event-driven microservices using Go, Kafka, PostgreSQL",
+        "score": 0.90,
+        "reasoning": "Hands-on distributed systems experience with microservices architecture",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Systems Design",
+        "weight": 0.12,
+        "jdEvidence": "Strong systems design skills",
+        "resumeEvidence": "Led migration from monolith to microservices, Reduced API latency from 300ms to 50ms",
+        "score": 0.85,
+        "reasoning": "Demonstrated systems design through architecture migration and performance optimization",
+        "sources": ["Resume"]
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "Go",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "PostgreSQL",
+      "inJD": true,
+      "inResume": true,
+      "importance": 2,
+      "action": "ok"
+    },
+    {
+      "term": "Microservices",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "PCI-DSS",
+      "inJD": true,
+      "inResume": false,
+      "importance": 2,
+      "action": "add"
+    },
+    {
+      "term": "Kafka",
+      "inJD": false,
+      "inResume": true,
+      "importance": 2,
+      "action": "ok"
+    }
+  ],
+  "profiles": [],
+  "sources": ["Job Description", "Resume"]
+}
+

@@ -35,3 +35,9 @@ data/backups/staging/
 logs/
 *.log
 
+.env
+.env.*
+*.keys
+*.pem
+*.sqlite
+storage/

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 
+export const dynamic = 'force-dynamic';
+
 function stripRtf(rt: string) {
   // minimal, safe-ish extraction
   return rt

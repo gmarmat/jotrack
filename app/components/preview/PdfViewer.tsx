@@ -24,7 +24,7 @@ export default function PdfViewer({ url }: { url: string }) {
               <span className="text-2xl">📄</span>
             </div>
             <p className="text-sm font-medium text-gray-700 mb-2">
-              Your browser doesn't support embedded PDFs
+              Your browser doesn&apos;t support embedded PDFs
             </p>
             <a 
               href={url} 

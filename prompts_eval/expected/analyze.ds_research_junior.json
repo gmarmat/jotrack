@@ -1,0 +1,93 @@
+{
+  "fit": {
+    "overall": 0.79,
+    "threshold": 0.75,
+    "breakdown": [
+      {
+        "param": "Education Level",
+        "weight": 0.15,
+        "jdEvidence": "MS or PhD in Data Science, Bioinformatics, Statistics",
+        "resumeEvidence": "MS Data Science, MIT (2023)",
+        "score": 0.95,
+        "reasoning": "Candidate has MS in Data Science from top institution, meets education requirement",
+        "sources": ["Job Description", "Resume"]
+      },
+      {
+        "param": "Domain Experience",
+        "weight": 0.15,
+        "jdEvidence": "Experience with biological datasets (genomics, proteomics, or clinical)",
+        "resumeEvidence": "Thesis: Machine Learning for Cancer Biomarker Discovery, Analyzed gene expression data, RNA-seq",
+        "score": 0.85,
+        "reasoning": "Strong genomics and clinical data experience through thesis and research work",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Programming Skills",
+        "weight": 0.12,
+        "jdEvidence": "Proficiency in Python (pandas, scikit-learn, numpy) or R",
+        "resumeEvidence": "Python (pandas, scikit-learn, numpy), R (tidyverse, ggplot2)",
+        "score": 0.90,
+        "reasoning": "Proficient in both Python and R with all required libraries",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Machine Learning",
+        "weight": 0.12,
+        "jdEvidence": "Strong foundation in statistics and machine learning",
+        "resumeEvidence": "Built predictive model (AUC 0.82), Coursework: Statistical Learning, Deep Learning",
+        "score": 0.80,
+        "reasoning": "Academic and practical ML experience, though limited production experience",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Communication Skills",
+        "weight": 0.10,
+        "jdEvidence": "Present findings at lab meetings and conferences",
+        "resumeEvidence": "Co-authored 2 publications in peer-reviewed journals",
+        "score": 0.75,
+        "reasoning": "Academic publication experience demonstrates scientific communication ability",
+        "sources": ["Resume"]
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "Genomics",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "Python",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "Machine Learning",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "RNA-seq",
+      "inJD": false,
+      "inResume": true,
+      "importance": 2,
+      "action": "ok"
+    },
+    {
+      "term": "Clinical datasets",
+      "inJD": true,
+      "inResume": true,
+      "importance": 2,
+      "action": "emphasize"
+    }
+  ],
+  "profiles": [],
+  "sources": ["Job Description", "Resume"]
+}
+

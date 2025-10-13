@@ -64,6 +64,142 @@ export const appSettings = sqliteTable('app_settings', {
   value: text('value').notNull(),
 });
 
+// Coach Mode: Knowledge Tables (reusable across jobs)
+export const companies = sqliteTable('companies', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  website: text('website'),
+  industry: text('industry'),
+  subindustry: text('subindustry'),
+  hqCity: text('hq_city'),
+  hqState: text('hq_state'),
+  hqCountry: text('hq_country'),
+  sizeBucket: text('size_bucket'), // e.g., "1-10", "11-50", "51-200", etc.
+  revenueBucket: text('revenue_bucket'),
+  principles: text('principles').notNull().default('[]'), // JSON array of strings
+  linkedinUrl: text('linkedin_url'),
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const peopleProfiles = sqliteTable('people_profiles', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  title: text('title'),
+  companyId: text('company_id').references(() => companies.id, { onDelete: 'set null' }),
+  linkedinUrl: text('linkedin_url'),
+  location: text('location'),
+  tenureMonths: integer('tenure_months', { mode: 'number' }),
+  techDepth: text('tech_depth'), // e.g., "high", "medium", "low"
+  summary: text('summary'),
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const rolesCatalog = sqliteTable('roles_catalog', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  seniority: text('seniority'), // e.g., "entry", "mid", "senior", "staff", "principal"
+  archetype: text('archetype'), // e.g., "IC", "Manager", "Executive"
+  keySkills: text('key_skills').notNull().default('[]'), // JSON array of strings
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const skillsTaxonomy = sqliteTable('skills_taxonomy', {
+  id: text('id').primaryKey(),
+  label: text('label').notNull(),
+  category: text('category'), // e.g., "technical", "soft", "domain"
+  aliases: text('aliases').notNull().default('[]'), // JSON array of strings
+});
+
+export const sourcesCache = sqliteTable('sources_cache', {
+  id: text('id').primaryKey(),
+  url: text('url').notNull().unique(),
+  sourceType: text('source_type').notNull(), // e.g., "linkedin", "company_website", "jd", "resume"
+  title: text('title'),
+  publishedAt: integer('published_at', { mode: 'number' }),
+  text: text('text').notNull(),
+  metadata: text('metadata').notNull().default('{}'), // JSON object
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const salaryBenchmarks = sqliteTable('salary_benchmarks', {
+  id: text('id').primaryKey(),
+  roleId: text('role_id').references(() => rolesCatalog.id, { onDelete: 'cascade' }),
+  geo: text('geo').notNull(), // e.g., "US-SF", "US-NYC", "US-Remote"
+  companySize: text('company_size'),
+  baseMin: integer('base_min', { mode: 'number' }),
+  baseMid: integer('base_mid', { mode: 'number' }),
+  baseMax: integer('base_max', { mode: 'number' }),
+  tcMin: integer('tc_min', { mode: 'number' }),
+  tcMid: integer('tc_mid', { mode: 'number' }),
+  tcMax: integer('tc_max', { mode: 'number' }),
+  sources: text('sources').notNull().default('[]'), // JSON array of source URLs/citations
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const learningCatalog = sqliteTable('learning_catalog', {
+  id: text('id').primaryKey(),
+  provider: text('provider').notNull(), // e.g., "Coursera", "Udemy", "YouTube"
+  title: text('title').notNull(),
+  url: text('url').notNull(),
+  durationHours: integer('duration_hours', { mode: 'number' }),
+  skillIds: text('skill_ids').notNull().default('[]'), // JSON array of skill IDs
+  level: text('level'), // e.g., "beginner", "intermediate", "advanced"
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+// Coach Mode: Job-scoped tables
+export const jobCompanyRefs = sqliteTable('job_company_refs', {
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  companyId: text('company_id').notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  roleId: text('role_id').references(() => rolesCatalog.id, { onDelete: 'set null' }),
+  relevance: text('relevance'), // e.g., "primary", "competitor", "similar"
+});
+
+export const jobPeopleRefs = sqliteTable('job_people_refs', {
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  personId: text('person_id').notNull().references(() => peopleProfiles.id, { onDelete: 'cascade' }),
+  relType: text('rel_type').notNull(), // e.g., "recruiter", "hiring_manager", "peer", "interviewer"
+});
+
+export const jobSkillSnapshots = sqliteTable('job_skill_snapshots', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  skillId: text('skill_id').notNull().references(() => skillsTaxonomy.id, { onDelete: 'cascade' }),
+  source: text('source').notNull(), // e.g., "jd", "resume", "inferred"
+  weight: integer('weight', { mode: 'number' }).notNull().default(1),
+});
+
+export const aiSessions = sqliteTable('ai_sessions', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  capability: text('capability').notNull(), // e.g., "fit_analysis", "resume_improve", "skill_path"
+  startedAt: integer('started_at', { mode: 'number' }).notNull(),
+  endedAt: integer('ended_at', { mode: 'number' }),
+  targetThreshold: integer('target_threshold', { mode: 'number' }),
+  outcome: text('outcome'), // e.g., "achieved", "applied_anyway", "abandoned"
+});
+
+export const aiRuns = sqliteTable('ai_runs', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').references(() => aiSessions.id, { onDelete: 'set null' }),
+  capability: text('capability').notNull(),
+  promptVersion: text('prompt_version').notNull(),
+  provider: text('provider'), // e.g., "openai", "local_dry_run"
+  inputsHash: text('inputs_hash').notNull(),
+  resultJson: text('result_json').notNull(), // JSON object with structured results
+  metaJson: text('meta_json').notNull().default('{}'), // JSON object with metadata
+  label: text('label'), // User-assigned label
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+});
+
+export const knowledgeStaleness = sqliteTable('knowledge_staleness', {
+  key: text('key').primaryKey(), // e.g., "company:[companyId]", "person:[personId]"
+  value: text('value').notNull(), // JSON with {ttlDays, lastUpdated, source}
+});
+
 // Types
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
@@ -77,6 +213,34 @@ export type JobStatusEvent = typeof jobStatusEvents.$inferSelect;
 export type NewJobStatusEvent = typeof jobStatusEvents.$inferInsert;
 export type AppSetting = typeof appSettings.$inferSelect;
 export type NewAppSetting = typeof appSettings.$inferInsert;
+
+// Coach Mode types
+export type Company = typeof companies.$inferSelect;
+export type NewCompany = typeof companies.$inferInsert;
+export type PeopleProfile = typeof peopleProfiles.$inferSelect;
+export type NewPeopleProfile = typeof peopleProfiles.$inferInsert;
+export type RoleCatalog = typeof rolesCatalog.$inferSelect;
+export type NewRoleCatalog = typeof rolesCatalog.$inferInsert;
+export type SkillTaxonomy = typeof skillsTaxonomy.$inferSelect;
+export type NewSkillTaxonomy = typeof skillsTaxonomy.$inferInsert;
+export type SourceCache = typeof sourcesCache.$inferSelect;
+export type NewSourceCache = typeof sourcesCache.$inferInsert;
+export type SalaryBenchmark = typeof salaryBenchmarks.$inferSelect;
+export type NewSalaryBenchmark = typeof salaryBenchmarks.$inferInsert;
+export type LearningCatalog = typeof learningCatalog.$inferSelect;
+export type NewLearningCatalog = typeof learningCatalog.$inferInsert;
+export type JobCompanyRef = typeof jobCompanyRefs.$inferSelect;
+export type NewJobCompanyRef = typeof jobCompanyRefs.$inferInsert;
+export type JobPeopleRef = typeof jobPeopleRefs.$inferSelect;
+export type NewJobPeopleRef = typeof jobPeopleRefs.$inferInsert;
+export type JobSkillSnapshot = typeof jobSkillSnapshots.$inferSelect;
+export type NewJobSkillSnapshot = typeof jobSkillSnapshots.$inferInsert;
+export type AiSession = typeof aiSessions.$inferSelect;
+export type NewAiSession = typeof aiSessions.$inferInsert;
+export type AiRun = typeof aiRuns.$inferSelect;
+export type NewAiRun = typeof aiRuns.$inferInsert;
+export type KnowledgeStaleness = typeof knowledgeStaleness.$inferSelect;
+export type NewKnowledgeStaleness = typeof knowledgeStaleness.$inferInsert;
 
 // Typed structures for JSON columns
 export type InterviewerBlock = {

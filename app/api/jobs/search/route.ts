@@ -3,6 +3,8 @@ import { db } from '@/db/client';
 import { jobs, attachments } from '@/db/schema';
 import { sql, inArray, like, or, and, isNotNull, desc } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;

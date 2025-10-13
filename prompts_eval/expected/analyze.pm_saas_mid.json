@@ -1,0 +1,93 @@
+{
+  "fit": {
+    "overall": 0.82,
+    "threshold": 0.75,
+    "breakdown": [
+      {
+        "param": "Years of Experience",
+        "weight": 0.10,
+        "jdEvidence": "3-5 years of product management experience",
+        "resumeEvidence": "Product Manager, TechCorp (2020-2023), Associate PM (2018-2020)",
+        "score": 0.95,
+        "reasoning": "Candidate has 5+ years total PM experience, exceeding the 3-5 year requirement",
+        "sources": ["Job Description", "Resume"]
+      },
+      {
+        "param": "Domain Experience",
+        "weight": 0.15,
+        "jdEvidence": "B2B SaaS platform",
+        "resumeEvidence": "SaaS analytics platform serving 500+ customers",
+        "score": 0.90,
+        "reasoning": "Direct B2B SaaS experience at TechCorp with customer-facing role",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Technical Skills",
+        "weight": 0.12,
+        "jdEvidence": "Understanding of SaaS metrics (MRR, churn, CAC)",
+        "resumeEvidence": "Tracked key metrics: MRR growth, customer acquisition cost, Reduced churn by 15%",
+        "score": 0.85,
+        "reasoning": "Demonstrates hands-on experience with SaaS metrics mentioned in JD",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Agile Experience",
+        "weight": 0.10,
+        "jdEvidence": "Experience with agile development processes",
+        "resumeEvidence": "Implemented agile sprint planning and improved velocity by 25%",
+        "score": 0.90,
+        "reasoning": "Strong agile background with measurable impact on team velocity",
+        "sources": ["Resume"]
+      },
+      {
+        "param": "Stakeholder Management",
+        "weight": 0.12,
+        "jdEvidence": "Excellent stakeholder management skills",
+        "resumeEvidence": "Managed cross-functional team of 8 engineers, 2 designers",
+        "score": 0.80,
+        "reasoning": "Led cross-functional team, indicating stakeholder coordination ability",
+        "sources": ["Resume"]
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "Product roadmap",
+      "inJD": true,
+      "inResume": false,
+      "importance": 2,
+      "action": "add"
+    },
+    {
+      "term": "SaaS",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    },
+    {
+      "term": "Enterprise customers",
+      "inJD": true,
+      "inResume": false,
+      "importance": 2,
+      "action": "add"
+    },
+    {
+      "term": "Agile",
+      "inJD": true,
+      "inResume": true,
+      "importance": 2,
+      "action": "ok"
+    },
+    {
+      "term": "Churn",
+      "inJD": true,
+      "inResume": true,
+      "importance": 3,
+      "action": "emphasize"
+    }
+  ],
+  "profiles": [],
+  "sources": ["Job Description", "Resume"]
+}
+

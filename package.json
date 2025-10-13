@@ -16,7 +16,8 @@
     "db:seed": "tsx db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "restore:apply": "node scripts/apply-restore.mjs",
-    "release:tag": "git tag v0.2 -m 'v0.2' && git push origin v0.2"
+    "release:tag": "git tag v0.2 -m 'v0.2' && git push origin v0.2",
+    "eval:prompts": "tsx scripts/eval-prompts.ts"
   },
   "dependencies": {
     "@types/dompurify": "^3.0.5",

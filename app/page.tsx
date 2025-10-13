@@ -25,7 +25,7 @@ interface Job {
   attachmentSummary?: Record<string, { count: number; latest: number | null }>;
 }
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -365,6 +365,14 @@ export default function Home() {
         onClose={handleCloseHistory}
       />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 flex items-center justify-center"><p className="text-gray-600">Loading...</p></div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
 
