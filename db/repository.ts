@@ -38,8 +38,25 @@ export async function createJob(input: CreateJobInput): Promise<Job> {
   return newJob as Job;
 }
 
-export async function listJobs(): Promise<Job[]> {
-  return db.select().from(jobs).orderBy(desc(jobs.updatedAt));
+export async function listJobs(options?: { includeDeleted?: boolean; includeArchived?: boolean }): Promise<Job[]> {
+  const { includeDeleted = false, includeArchived = false } = options || {};
+  
+  // Use raw SQL for easier filtering
+  let sql = 'SELECT * FROM jobs WHERE 1=1';
+  const params: any[] = [];
+  
+  if (!includeDeleted) {
+    sql += ' AND deleted_at IS NULL';
+  }
+  
+  if (!includeArchived) {
+    sql += ' AND archived_at IS NULL';
+  }
+  
+  sql += ' ORDER BY updated_at DESC';
+  
+  const stmt = sqlite.prepare(sql);
+  return stmt.all(...params) as Job[];
 }
 
 export interface SearchJobsResult {
@@ -58,6 +75,8 @@ export function searchJobs(query: string): SearchJobsResult[] {
     FROM jobs j
     INNER JOIN job_search js ON j.id = js.job_id
     WHERE job_search MATCH ?
+      AND j.deleted_at IS NULL
+      AND j.archived_at IS NULL
     ORDER BY j.updated_at DESC
   `);
   

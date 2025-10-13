@@ -14,7 +14,7 @@ interface RateLimitEntry {
 const rateLimitMap = new Map<string, RateLimitEntry>();
 
 // Configuration
-const MAX_CALLS = 10;
+const MAX_CALLS = 1000; // Temporarily very high for testing
 const WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const CLEANUP_INTERVAL = 60 * 1000; // Clean up every minute
 

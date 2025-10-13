@@ -33,16 +33,20 @@ export default function FitStep({ jobId, data, onUpdate, onComplete, onBack }: F
       const settings = await settingsResponse.json();
       const useDryRun = !settings.networkEnabled || !settings.hasApiKey;
 
-      const response = await fetch(`/api/ai/analyze?dryRun=${useDryRun ? '1' : '0'}`, {
+      const response = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jobId,
-          capability: 'fit_analysis',
+          capability: 'compare',
           inputs: {
-            jobDescription: data.jobDescription,
-            resume: data.resume,
+            jobTitle: extractJobTitle(data.jobDescription),
+            company: extractCompanyName(data.jobDescription),
+            jdText: data.jobDescription,
+            resumeText: data.resume,
+            notesText: '',
           },
+          dryRun: useDryRun,
           promptVersion: 'v1',
         }),
       });
@@ -89,6 +93,35 @@ export default function FitStep({ jobId, data, onUpdate, onComplete, onBack }: F
     );
   }
 
+  const extractCompanyName = (jd: string): string => {
+    // Simple extraction - could be enhanced
+    const lines = jd.split('\n');
+    for (const line of lines) {
+      if (line.toLowerCase().includes('company') || line.toLowerCase().includes('about us')) {
+        return line.split(':')[1]?.trim() || 'Company';
+      }
+    }
+    return 'Company';
+  };
+
+  const extractJobTitle = (jd: string): string => {
+    // Simple extraction - look for job title patterns
+    const patterns = [
+      /(?:Position|Role|Job):\s*([A-Za-z\s]+)/i,
+      /We're\s+hiring\s+a\s+([A-Za-z\s]+)/i,
+      /Looking\s+for\s+a\s+([A-Za-z\s]+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = jd.match(pattern);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    
+    return 'Position';
+  };
+
   const getScoreLevelColor = (level: string) => {
     switch (level) {
       case 'Great':
@@ -115,26 +148,26 @@ export default function FitStep({ jobId, data, onUpdate, onComplete, onBack }: F
         </p>
       </div>
 
-      {/* v1.1: New table-based UI */}
-      {hasBreakdown ? (
-        <>
-          <FitTable
-            overall={fitAnalysis.fit.overall}
-            threshold={fitAnalysis.fit.threshold || 0.75}
-            breakdown={fitAnalysis.fit.breakdown}
-            sources={fitAnalysis.sources || []}
-            dryRun={fitAnalysis.meta?.dryRun !== false}
-            rawJson={fitAnalysis} // v1.3: Pass full response for debugging
-            onRefresh={analyzeFit}
-            refreshing={loading}
-          />
+      {/* v1.3.1: Always render evidence tables */}
+      <FitTable
+        overall={fitAnalysis.fit?.overall || 0}
+        threshold={fitAnalysis.fit?.threshold || 0.75}
+        breakdown={fitAnalysis.fit?.breakdown || []}
+        sources={fitAnalysis.sources || []}
+        dryRun={fitAnalysis.meta?.dryRun !== false}
+        rawJson={fitAnalysis} // v1.3: Pass full response for debugging
+        onRefresh={analyzeFit}
+        refreshing={loading}
+        data-testid="fit-table"
+      />
 
-          {hasKeywords && fitAnalysis.keywords.length > 0 && (
-            <HeatmapTable keywords={fitAnalysis.keywords} />
-          )}
-        </>
-      ) : (
-        /* Fallback to old UI for backwards compatibility */
+      <HeatmapTable 
+        keywords={fitAnalysis.keywords || []} 
+        data-testid="heatmap-table"
+      />
+
+      {/* Fallback UI for backwards compatibility */}
+      {!hasBreakdown && (
         <>
           {/* Overall Score */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">

@@ -70,6 +70,24 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
         <p className="text-gray-600">
           Provide the job description, your resume, and optional LinkedIn links for context.
         </p>
+        
+        {/* AI Setup Callout */}
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-blue-900">For real AI analysis</h4>
+              <p className="text-sm text-blue-700">
+                Turn Network ON and add your API key in Settings to get personalized insights.
+              </p>
+            </div>
+            <a
+              href="/settings/ai"
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+            >
+              Set up AI key
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Job Description */}

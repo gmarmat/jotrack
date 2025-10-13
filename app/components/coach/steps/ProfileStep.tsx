@@ -32,16 +32,24 @@ export default function ProfileStep({ jobId, data, onUpdate, onComplete, onBack 
 
     try {
       // Analyze company profile
-      const companyResponse = await fetch('/api/ai/analyze?dryRun=1', {
+      const companyResponse = await fetch('/api/ai/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jobId,
-          capability: 'company_profile',
+          capability: 'persona',
           inputs: {
-            companyName: extractCompanyName(data.jobDescription),
-            context: data.jobDescription,
+            jobTitle: extractJobTitle(data.jobDescription),
+            company: extractCompanyName(data.jobDescription),
+            jdText: data.jobDescription,
+            resumeText: data.resume,
+            notesText: '',
+            recruiterLinks: data.recruiterUrl ? [data.recruiterUrl] : [],
+            peerLinks: data.peerUrls?.map((p: any) => p.url) || [],
+            skipLevelLinks: data.skipLevelUrls || [],
+            otherCompanyLinks: data.otherCompanyUrls || [],
           },
+          dryRun: false, // Let the API decide based on settings
           promptVersion: 'v1',
         }),
       });
@@ -106,6 +114,24 @@ export default function ProfileStep({ jobId, data, onUpdate, onComplete, onBack 
       }
     }
     return 'Company';
+  };
+
+  const extractJobTitle = (jd: string): string => {
+    // Simple extraction - look for job title patterns
+    const patterns = [
+      /(?:Position|Role|Job):\s*([A-Za-z\s]+)/i,
+      /We're\s+hiring\s+a\s+([A-Za-z\s]+)/i,
+      /Looking\s+for\s+a\s+([A-Za-z\s]+)/i,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = jd.match(pattern);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    
+    return 'Position';
   };
 
   if (loading) {
@@ -183,10 +209,12 @@ export default function ProfileStep({ jobId, data, onUpdate, onComplete, onBack 
         )}
       </div>
 
-      {/* v1.1: Use ProfileTable if we have structured data */}
-      {useTableView && (
-        <ProfileTable profiles={profileEntities} dryRun={true} />
-      )}
+      {/* v1.3.1: Always render ProfileTable */}
+      <ProfileTable 
+        profiles={profileEntities} 
+        dryRun={true} 
+        data-testid="profile-table"
+      />
 
       {/* Company Profile */}
       {companyProfile && (

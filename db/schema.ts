@@ -14,6 +14,10 @@ export const jobs = sqliteTable('jobs', {
   notes: text('notes').default(''),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+  // v2.0: Delete & Archive system
+  deletedAt: integer('deleted_at', { mode: 'number' }).$type<number | null>().default(null),
+  archivedAt: integer('archived_at', { mode: 'number' }).$type<number | null>().default(null),
+  permanentDeleteAt: integer('permanent_delete_at', { mode: 'number' }).$type<number | null>().default(null),
 });
 
 export const statusHistory = sqliteTable('status_history', {

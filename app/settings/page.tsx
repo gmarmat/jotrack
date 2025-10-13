@@ -103,6 +103,15 @@ export default function SettingsPage() {
 
         {/* Coach Mode AI Settings */}
         <div className="border-t pt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Coach Mode AI</h2>
+            <a
+              href="/settings/ai"
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            >
+              Advanced AI Settings →
+            </a>
+          </div>
           <CoachAiSettings />
         </div>
 

@@ -165,13 +165,18 @@ export default function StatusDetailPanel({
   // AI refresh
   const refreshAI = async () => {
     try {
+      // v1.3.1: Check AI settings to determine if we should use remote or dry-run
+      const settingsRes = await fetch('/api/ai/keyvault/status');
+      const settings = await settingsRes.json();
+      const useRemote = settings.networkEnabled && settings.hasApiKey;
+      
       const res = await fetch(`/api/ai/insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           jobId, 
           status,
-          mode: "dry-run" // Always dry-run for now
+          mode: useRemote ? "remote" : "dry-run" // v1.3.1: Respect AI settings
         }),
       });
       const data = await res.json();

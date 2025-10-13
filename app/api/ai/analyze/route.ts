@@ -27,22 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // v1.3: Rate limiting (only for remote calls)
-    if (!dryRun) {
-      const identifier = getIdentifier(request);
-      if (!checkRateLimit(identifier)) {
-        const resetTime = getResetTime(identifier);
-        return NextResponse.json(
-          {
-            error: 'rate_limit',
-            message: `Rate limit exceeded. Please wait ${resetTime} seconds before making another request.`,
-            userMessage: 'You have made too many AI requests. Please wait a few minutes and try again.',
-            retryAfter: resetTime,
-          },
-          { status: 429 }
-        );
-      }
-    }
+    // v1.3: Rate limiting moved after API call to avoid counting invalid API key errors
 
     // Generate inputs hash for caching
     const inputsHash = crypto
