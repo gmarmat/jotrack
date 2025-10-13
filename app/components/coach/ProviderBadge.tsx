@@ -1,6 +1,6 @@
 'use client';
 
-import { Cloud, Laptop } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface ProviderBadgeProps {
   provider: 'local' | 'remote';
@@ -8,27 +8,28 @@ interface ProviderBadgeProps {
 }
 
 export default function ProviderBadge({ provider, className = '' }: ProviderBadgeProps) {
-  const isLocal = provider === 'local';
+  const isAiPowered = provider === 'remote';
 
   return (
     <div
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-        isLocal
-          ? 'bg-gray-100 text-gray-700 border border-gray-300'
-          : 'bg-blue-100 text-blue-700 border border-blue-300'
+        isAiPowered
+          ? 'bg-green-100 text-green-800 border border-green-300'
+          : 'bg-gray-100 text-gray-700 border border-gray-300'
       } ${className}`}
       data-testid="provider-badge"
-      title={isLocal ? 'Running in local dry-run mode' : 'Using remote AI provider'}
+      title={isAiPowered ? 'AI-powered analysis using OpenAI' : 'Local analysis without AI'}
     >
-      {isLocal ? (
+      {isAiPowered ? (
         <>
-          <Laptop className="w-3 h-3" />
-          <span>Local (Dry-run)</span>
+          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+          <Sparkles className="w-3 h-3" />
+          <span>AI Powered</span>
         </>
       ) : (
         <>
-          <Cloud className="w-3 h-3" />
-          <span>AI (Remote)</span>
+          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+          <span>Non-AI Powered</span>
         </>
       )}
     </div>

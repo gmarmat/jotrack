@@ -3,27 +3,25 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import StatusSelect from '@/app/components/StatusSelect';
-import StatusBadge from '@/app/components/StatusBadge';
-import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
-import JobDetailsPanel from '@/app/components/JobDetailsPanel';
-import JobActionsBar from '@/app/components/JobActionsBar';
-import TrashPanel from '@/app/components/attachments/TrashPanel';
 import HorizontalTimeline from '@/app/components/timeline/HorizontalTimeline';
 import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import HeaderMeta from '@/app/components/timeline/HeaderMeta';
-import UtilityRail from '@/app/components/timeline/UtilityRail';
-import ExportButtons from '@/app/components/ExportButtons';
+import JobHeader from '@/app/components/jobs/JobHeader';
+import JobNotesCard from '@/app/components/jobs/JobNotesCard';
+import AiShowcase from '@/app/components/jobs/AiShowcase';
+import AttachmentsModal from '@/app/components/AttachmentsModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
-  const [showTrash, setShowTrash] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [job, setJob] = useState<any>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
+  const [jdAttachmentId, setJdAttachmentId] = useState<string | null>(null);
   const [currentStatusEnteredAt, setCurrentStatusEnteredAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+  const [aiData, setAiData] = useState<any>(null);
   const router = useRouter();
   const id = params.id;
 
@@ -38,10 +36,17 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         const data = await res.json();
         setJob(data);
         
-        // Fetch attachment count
+        // Fetch attachments
         const attRes = await fetch(`/api/jobs/${id}/attachments`);
         const attData = await attRes.json();
-        setAttachmentCount(attData.attachments?.filter((a: any) => !a.deletedAt).length ?? 0);
+        const attachments = attData.attachments?.filter((a: any) => !a.deletedAt) ?? [];
+        setAttachmentCount(attachments.length);
+        
+        // Find JD attachment
+        const jdAttachment = attachments.find((a: any) => a.kind === 'jd');
+        if (jdAttachment) {
+          setJdAttachmentId(jdAttachment.id);
+        }
         
         // Fetch status events for delta calculation
         try {
@@ -63,6 +68,21 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     };
     fetchJob();
   }, [id, router]);
+
+  const handleStatusChange = (newStatus: JobStatus) => {
+    setJob((prev: any) => ({ ...prev, status: newStatus }));
+    // Optionally refetch to get updated data
+    window.location.reload();
+  };
+
+  const handleRefreshAI = async () => {
+    // TODO: Implement AI refresh logic
+    console.log('Refreshing AI insights...');
+  };
+
+  const handleViewJd = () => {
+    setShowAttachmentsModal(true);
+  };
 
   if (loading) {
     return (
@@ -88,43 +108,17 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         currentStatusDelta={delta?.label}
       />
 
-      {/* Header Meta - Delta chip, posting link */}
+      {/* Header Meta - Delta chip, posting link, JD link */}
       <HeaderMeta
         postingUrl={job.posting_url || job.postingUrl}
         createdAt={job.created_at || job.createdAt}
         updatedAt={job.updated_at || job.updatedAt}
         currentStatusEnteredAt={currentStatusEnteredAt || undefined}
+        jdAttachmentId={jdAttachmentId}
+        onViewJd={handleViewJd}
       />
 
-      <div className="max-w-4xl mx-auto px-4 space-y-6 mt-6">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-gray-900" data-testid="job-title">{job.title}</h1>
-                <StatusBadge status={currentStatus} />
-                <JobActionsBar job={job} attachmentCount={attachmentCount} />
-              </div>
-              <p className="text-lg text-gray-600 mt-1" data-testid="job-company">{job.company}</p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <ExportButtons jobId={job.id} />
-              <button
-                onClick={() => setShowTrash(true)}
-                className="px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
-                data-testid="open-trash"
-              >
-                🗑️ Trash
-              </button>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 font-medium">Status:</span>
-                <StatusSelect jobId={job.id} initialStatus={currentStatus} />
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className="max-w-6xl mx-auto px-4 space-y-6 mt-6 pb-8">
         {/* Back link */}
         <div className="text-sm">
           <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium">
@@ -132,10 +126,30 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </Link>
         </div>
 
-               {/* Details section - full width */}
-               <JobDetailsPanel job={job} currentStatus={currentStatus} />
+        {/* 1. Header: Title, Company, StatusChip, QuickActions */}
+        <JobHeader 
+          job={job} 
+          currentStatus={currentStatus}
+          onStatusChange={handleStatusChange}
+          onJumpToStatus={setSelectedStatus}
+        />
 
-        {/* Timeline Detail Panel - shown when status clicked */}
+        {/* 2. Notes Card: Global notes + Attachments link */}
+        <JobNotesCard
+          jobId={job.id}
+          initialNotes={job.notes || ''}
+          attachmentCount={attachmentCount}
+          onOpenAttachments={() => setShowAttachmentsModal(true)}
+        />
+
+        {/* 3. AI Showcase: Full-width grid */}
+        <AiShowcase
+          jobId={job.id}
+          aiData={aiData}
+          onRefresh={handleRefreshAI}
+        />
+
+        {/* 4. Timeline Detail (conditional) */}
         {selectedStatus && (
           <div className="relative" data-testid="timeline-detail-wrapper">
             <button
@@ -148,27 +162,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             <StatusDetailPanel jobId={job.id} status={selectedStatus} />
           </div>
         )}
-
-        {/* Attachments section - full width */}
-        <section id="attachments" className="bg-white rounded-xl border shadow p-6 scroll-mt-24 max-w-screen-lg mx-auto">
-          <h2 className="font-semibold text-lg mb-4 text-gray-900">Attachments</h2>
-          <AttachmentsSection jobId={job.id} />
-        </section>
-
       </div>
 
-      {/* Utility Rail */}
-      <UtilityRail 
-        jobId={job.id} 
-        job={job} 
-        onJumpToStatus={setSelectedStatus}
-      />
-
-      {/* Trash Panel */}
-      {showTrash && (
-        <TrashPanel jobId={job.id} onClose={() => setShowTrash(false)} />
+      {/* Attachments Modal */}
+      {showAttachmentsModal && (
+        <AttachmentsModal 
+          jobId={job.id} 
+          onClose={() => setShowAttachmentsModal(false)} 
+        />
       )}
     </main>
   );
 }
-

@@ -1,0 +1,7 @@
+{
+  "version": "0020",
+  "name": "coach_sessions",
+  "description": "Add coach_sessions table to store Coach Mode progress and auto-save data",
+  "timestamp": 1760381000000
+}
+

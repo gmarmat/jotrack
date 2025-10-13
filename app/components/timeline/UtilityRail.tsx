@@ -6,10 +6,9 @@ import { useVersions } from "@/app/hooks/useVersions";
 import { formatFileSize } from "@/lib/files";
 import { formatDateTime } from "@/lib/timeDelta";
 import GlobalNotesHub from "@/app/components/jobs/GlobalNotesHub";
-import UnifiedAiPanel from "@/app/components/ai/UnifiedAiPanel";
 import type { JobStatus } from "@/lib/status";
 
-type Tab = "files" | "meta" | "notes" | "ai";
+type Tab = "files" | "meta" | "notes";
 
 interface UtilityRailProps {
   jobId: string;
@@ -43,10 +42,6 @@ export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailP
       } else if (e.key === "g") {
         e.preventDefault();
         setActiveTab("notes");
-        setCollapsed(false);
-      } else if (e.key === "a" && e.ctrlKey) {
-        e.preventDefault();
-        setActiveTab("ai");
         setCollapsed(false);
       } else if (e.key === "Escape" && !collapsed) {
         e.preventDefault();
@@ -165,14 +160,6 @@ export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailP
           >
             <StickyNote size={20} className="text-gray-700" />
           </button>
-          <button
-            onClick={() => { setActiveTab("ai"); setCollapsed(false); }}
-            className="p-2 hover:bg-blue-50 rounded transition-colors"
-            title="AI Analysis (Ctrl+A)"
-            aria-label="Open AI analysis"
-          >
-            <span className="text-lg">🤖</span>
-          </button>
         </div>
       )}
 
@@ -188,7 +175,6 @@ export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailP
               {activeTab === "files" && "Files"}
               {activeTab === "meta" && "Job Metadata"}
               {activeTab === "notes" && "Global Notes"}
-              {activeTab === "ai" && "🤖 AI Analysis"}
             </h2>
             <button
               onClick={() => setCollapsed(true)}
@@ -237,17 +223,6 @@ export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailP
               <StickyNote size={16} className="inline mr-1" />
               Notes
             </button>
-            <button
-              onClick={() => setActiveTab("ai")}
-              className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === "ai"
-                  ? "bg-white border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-              data-testid="tab-ai"
-            >
-              🤖 AI
-            </button>
           </div>
 
           {/* Content */}
@@ -255,7 +230,6 @@ export default function UtilityRail({ jobId, job, onJumpToStatus }: UtilityRailP
             {activeTab === "files" && renderFiles()}
             {activeTab === "meta" && renderMeta()}
             {activeTab === "notes" && renderGlobalNotes()}
-            {activeTab === "ai" && <UnifiedAiPanel jobId={jobId} job={job} />}
           </div>
 
           {/* Footer Hint */}

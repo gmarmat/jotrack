@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona';
+export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people';
 
 interface PromptVariables {
   jobTitle?: string;
@@ -22,6 +22,15 @@ interface PromptVariables {
   context?: string;
   original?: string;
   updated?: string;
+  // New variables for company/people analysis
+  jobDescription?: string;
+  companyName?: string;
+  companyUrls?: string;
+  additionalContext?: string;
+  recruiterUrl?: string;
+  peerUrls?: string;
+  skipLevelUrls?: string;
+  [key: string]: string | undefined; // Allow dynamic properties
 }
 
 /**
@@ -127,6 +136,23 @@ Original: {{original}}
 Updated: {{updated}}
 
 Return JSON with improvements array, regressions array, unchanged array, recommendation string.`,
+
+    company: `Analyze this company based on the job description.
+
+Company: {{companyName}}
+JD: {{jobDescription}}
+URLs: {{companyUrls}}
+
+Return JSON with company object (name, founded, employees, funding, description, keyFacts, culture, leadership, competitors) and ecosystem array.`,
+
+    people: `Analyze the people involved in this hiring process.
+
+JD: {{jobDescription}}
+Recruiter: {{recruiterUrl}}
+Peers: {{peerUrls}}
+Skip-levels: {{skipLevelUrls}}
+
+Return JSON with profiles array (name, role, background, expertise, communicationStyle, whatThisMeans) and overallInsights object.`,
   };
 
   return defaults[kind] || `Analyze {{jdText}} and {{resumeText}}`;

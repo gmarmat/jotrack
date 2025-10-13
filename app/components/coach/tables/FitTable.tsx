@@ -29,6 +29,7 @@ interface FitTableProps {
 export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson }: FitTableProps) {
   const [showExplain, setShowExplain] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false); // v1.3: JSON debug toggle
+  const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
 
   const scoreLevel = overall >= threshold ? 'Great' : overall >= threshold * 0.8 ? 'Medium' : 'Low';
   const scoreColor = overall >= threshold ? 'text-green-600' : overall >= threshold * 0.8 ? 'text-yellow-600' : 'text-red-600';
@@ -37,6 +38,10 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
     .sort((a, b) => (b.weight * b.score) - (a.weight * a.score))
     .slice(0, 3);
 
+  const toggleExpandAll = () => {
+    setAllExpanded(!allExpanded);
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6" data-testid="fit-table">
       {/* Header */}
@@ -44,7 +49,7 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-lg font-semibold text-gray-900">
-              Fit Matrix (25 Parameters)
+              Match Matrix
             </h3>
             <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
             {onRefresh && (
@@ -103,6 +108,18 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
         </div>
       )}
 
+      {/* Expand All Button */}
+      <div className="mb-3 flex justify-end">
+        <button
+          onClick={toggleExpandAll}
+          className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+          data-testid="expand-all-button"
+        >
+          {allExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {allExpanded ? 'Collapse All' : 'Expand All'}
+        </button>
+      </div>
+
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -121,10 +138,10 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
               <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{item.param}</td>
                 <td className="px-4 py-3 text-center text-gray-600">{(item.weight * 100).toFixed(0)}%</td>
-                <td className="px-4 py-3 text-gray-700 max-w-xs truncate" title={item.jdEvidence}>
+                <td className={`px-4 py-3 text-gray-700 max-w-xs ${allExpanded ? '' : 'truncate'}`} title={item.jdEvidence}>
                   {item.jdEvidence}
                 </td>
-                <td className="px-4 py-3 text-gray-700 max-w-xs truncate" title={item.resumeEvidence}>
+                <td className={`px-4 py-3 text-gray-700 max-w-xs ${allExpanded ? '' : 'truncate'}`} title={item.resumeEvidence}>
                   {item.resumeEvidence}
                 </td>
                 <td className="px-4 py-3 text-center">

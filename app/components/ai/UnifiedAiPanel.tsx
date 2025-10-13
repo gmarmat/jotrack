@@ -7,7 +7,7 @@ import HeatmapTable from '../coach/tables/HeatmapTable';
 import ProfileTable from '../coach/tables/ProfileTable';
 import ProviderBadge from '../coach/ProviderBadge';
 import AiSources from '../coach/AiSources';
-import FitScoreGauge from './FitScoreGauge';
+import MatchScoreGauge from './MatchScoreGauge';
 import SkillsMatchChart from './SkillsMatchChart';
 
 interface UnifiedAiPanelProps {
@@ -168,9 +168,8 @@ export default function UnifiedAiPanel({ jobId, job }: UnifiedAiPanelProps) {
         quickInsights?.insights ? (
           <div className="space-y-4">
             <div className="flex items-center gap-6">
-              <FitScoreGauge 
+              <MatchScoreGauge 
                 score={quickInsights.insights.score || 0} 
-                threshold={0.75}
                 size={100}
               />
               <div className="flex-1">

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { FileText, Link as LinkIcon, Upload, User, Users, Building2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileText, Link as LinkIcon, Upload, User, Users, Building2, Sparkles } from 'lucide-react';
+import ResumeJdPreview from '../ResumeJdPreview';
 
 interface GatherStepProps {
   jobId: string;
@@ -23,6 +24,25 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
   const [currentPeerRole, setCurrentPeerRole] = useState('');
   const [currentSkipUrl, setCurrentSkipUrl] = useState('');
   const [currentOtherCoUrl, setCurrentOtherCoUrl] = useState('');
+  
+  const [aiConfigured, setAiConfigured] = useState(false);
+  const [checkingAiStatus, setCheckingAiStatus] = useState(true);
+
+  // Check AI configuration status
+  useEffect(() => {
+    const checkAiStatus = async () => {
+      try {
+        const res = await fetch('/api/ai/keyvault/status');
+        const data = await res.json();
+        setAiConfigured(data.configured);
+      } catch (error) {
+        console.error('Failed to check AI status:', error);
+      } finally {
+        setCheckingAiStatus(false);
+      }
+    };
+    checkAiStatus();
+  }, []);
 
   const handleAnalyze = () => {
     if (!jobDescription.trim() || !resume.trim()) {
@@ -71,92 +91,93 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
           Provide the job description, your resume, and optional LinkedIn links for context.
         </p>
         
-        {/* AI Setup Callout */}
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-semibold text-blue-900">For real AI analysis</h4>
-              <p className="text-sm text-blue-700">
-                Turn Network ON and add your API key in Settings to get personalized insights.
-              </p>
+        {/* Conditional AI Status Indicator */}
+        {!checkingAiStatus && (
+          <div className={`mt-4 p-4 border rounded-lg ${
+            aiConfigured 
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-blue-50 border-blue-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className={`w-5 h-5 ${aiConfigured ? 'text-green-600' : 'text-blue-600'}`} />
+                <div>
+                  {aiConfigured ? (
+                    <>
+                      <h4 className="text-sm font-semibold text-green-900">AI Powered Analysis</h4>
+                      <p className="text-sm text-green-700">
+                        Your insights will use advanced AI for personalized recommendations.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="text-sm font-semibold text-blue-900">Enable AI for Best Results</h4>
+                      <p className="text-sm text-blue-700">
+                        Get AI-powered insights by configuring your API key in Settings.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              {!aiConfigured && (
+                <a
+                  href="/settings/ai"
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 whitespace-nowrap"
+                  data-testid="enable-ai-link"
+                >
+                  Enable AI
+                </a>
+              )}
             </div>
-            <a
-              href="/settings/ai"
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-            >
-              Set up AI key
-            </a>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Job Description */}
+      {/* Job Description - Smart Pre-fill */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Job Description</h3>
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Paste JD or enter URL
-            </label>
-            <input
-              type="text"
-              placeholder="https://company.com/job-posting"
-              value={jdUrl}
-              onChange={e => setJdUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              data-testid="jd-url-input"
-            />
-          </div>
+        <ResumeJdPreview
+          label="Job Description"
+          jobId={jobId}
+          kind="jd"
+          value={jobDescription}
+          onChange={setJobDescription}
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Or paste text directly
-            </label>
-            <textarea
-              value={jobDescription}
-              onChange={e => setJobDescription(e.target.value)}
-              rows={8}
-              placeholder="Paste the job description here..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-              data-testid="jd-textarea"
-            />
-          </div>
-        </div>
-
-        <details className="mt-3">
-          <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-900">
-            Why this matters
-          </summary>
-          <p className="text-sm text-gray-600 mt-2">
+        <div className="mt-3 text-sm text-gray-600">
+          <p className="font-medium mb-1">Why this matters:</p>
+          <p>
             We analyze the job description to extract key skills, requirements, and company culture
             signals to help you tailor your application.
           </p>
-        </details>
+        </div>
       </div>
 
-      {/* Resume */}
+      {/* Resume - Smart Pre-fill */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-4">
           <Upload className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Your Resume</h3>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Paste resume text
-          </label>
-          <textarea
-            value={resume}
-            onChange={e => setResume(e.target.value)}
-            rows={10}
-            placeholder="Paste your resume here..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-            data-testid="resume-textarea"
-          />
+        <ResumeJdPreview
+          label="Resume"
+          jobId={jobId}
+          kind="resume"
+          value={resume}
+          onChange={setResume}
+        />
+
+        <div className="mt-3 text-sm text-gray-600">
+          <p className="font-medium mb-1">Why this matters:</p>
+          <p>
+            We compare your resume against the job description to identify strengths, gaps, and
+            improvement opportunities.
+          </p>
         </div>
       </div>
 

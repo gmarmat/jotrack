@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import { calculateDelta, formatDateTime } from "@/lib/timeDelta";
 
 interface HeaderMetaProps {
@@ -8,6 +8,8 @@ interface HeaderMetaProps {
   createdAt: number;
   updatedAt: number;
   currentStatusEnteredAt?: number;
+  jdAttachmentId?: string | null;
+  onViewJd?: () => void;
 }
 
 export default function HeaderMeta({
@@ -15,6 +17,8 @@ export default function HeaderMeta({
   createdAt,
   updatedAt,
   currentStatusEnteredAt,
+  jdAttachmentId,
+  onViewJd,
 }: HeaderMetaProps) {
   const delta = currentStatusEnteredAt
     ? calculateDelta(currentStatusEnteredAt)
@@ -22,18 +26,29 @@ export default function HeaderMeta({
 
   return (
     <div 
-      className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 px-6 py-3"
+      className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg px-6 py-3"
       data-testid="header-meta"
     >
       <div className="flex items-center justify-between max-w-7xl mx-auto flex-wrap gap-3">
-        {/* Left: Posting Link */}
-        <div className="flex items-center gap-4">
+        {/* Left: Quick Links */}
+        <div className="flex items-center gap-3">
+          {jdAttachmentId && onViewJd && (
+            <button
+              onClick={onViewJd}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+              data-testid="view-jd-link"
+            >
+              <FileText size={14} />
+              View JD
+            </button>
+          )}
+          
           {postingUrl && (
             <a
               href={postingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors"
               data-testid="posting-link"
             >
               <ExternalLink size={14} />

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Save, TestTube, Check, AlertCircle, Loader2, Key, Globe, Shield } from 'lucide-react';
+import Breadcrumb, { type BreadcrumbItem } from '@/app/components/Breadcrumb';
 
-export default function AiSettingsPage() {
+function AiSettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -113,17 +115,50 @@ export default function AiSettingsPage() {
     );
   }
 
+  // Get origin from query params
+  const from = searchParams?.get('from');
+  
+  const getBreadcrumbItems = (): BreadcrumbItem[] => {
+    const items: BreadcrumbItem[] = [{ label: 'Home', href: '/' }];
+    
+    if (from) {
+      // If coming from a job page
+      if (from.startsWith('/jobs/')) {
+        items.push({ label: 'Job', href: from });
+      } else if (from.startsWith('/coach/')) {
+        items.push({ label: 'Coach Mode', href: from });
+      }
+    } else {
+      items.push({ label: 'Settings', href: '/settings' });
+    }
+    
+    items.push({ label: 'AI & Privacy' });
+    return items;
+  };
+  
+  const handleBack = () => {
+    if (from) {
+      router.push(from);
+    } else {
+      router.push('/settings');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4" data-testid="ai-settings-page">
       <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb */}
+        <Breadcrumb items={getBreadcrumbItems()} />
+        
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => router.push('/settings')}
+            onClick={handleBack}
             className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+            data-testid="back-button"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Settings
+            {from ? `Back to ${from.startsWith('/jobs/') ? 'Job' : 'Coach Mode'}` : 'Back to Settings'}
           </button>
           
           <div className="flex items-center gap-3 mb-2">
@@ -336,5 +371,23 @@ export default function AiSettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AiSettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <AiSettingsContent />
+    </Suspense>
   );
 }
