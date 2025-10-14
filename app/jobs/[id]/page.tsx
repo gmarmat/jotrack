@@ -120,9 +120,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const delta = currentStatusEnteredAt ? calculateDelta(currentStatusEnteredAt) : null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Global Settings Button */}
-      <GlobalSettingsButton />
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Global Settings Button moved to HeaderMeta ribbon */}
       
       {/* Timeline - Full width above everything */}
       <HorizontalTimeline 
