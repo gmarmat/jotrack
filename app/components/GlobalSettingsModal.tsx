@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { X, Key, Database, Sliders, Code, Sparkles, Download, Upload, Trash2, Clock } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const PromptEditor = dynamic(() => import('./ai/PromptEditor'), { ssr: false });
 
 type SettingsTab = 'ai' | 'data' | 'preferences' | 'developer';
 
@@ -480,6 +483,23 @@ function PreferencesTab() {
 
 // Developer Tab
 function DeveloperTab() {
+  const [showPromptEditor, setShowPromptEditor] = useState(false);
+  const [selectedPromptKind, setSelectedPromptKind] = useState('');
+
+  const prompts = [
+    { kind: 'analyze', label: 'Job Analysis' },
+    { kind: 'compare', label: 'Resume Comparison' },
+    { kind: 'improve', label: 'Resume Improvement' },
+    { kind: 'company', label: 'Company Intelligence' },
+    { kind: 'people', label: 'People Profiles' },
+    { kind: 'matchSignals', label: 'Match Signals (50)' },
+  ];
+
+  const handleOpenPromptEditor = (kind: string) => {
+    setSelectedPromptKind(kind);
+    setShowPromptEditor(true);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -496,14 +516,19 @@ function DeveloperTab() {
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <h4 className="text-sm font-semibold text-gray-900 mb-2">Prompt Editor</h4>
           <p className="text-xs text-gray-600 mb-3">
-            Edit AI prompts with version control (Coming soon)
+            Edit AI prompts with Monaco Editor, version control, and live testing
           </p>
-          <button
-            disabled
-            className="px-4 py-2 bg-gray-300 text-gray-500 rounded-md text-sm cursor-not-allowed"
-          >
-            Open Prompt Editor
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            {prompts.map(({ kind, label }) => (
+              <button
+                key={kind}
+                onClick={() => handleOpenPromptEditor(kind)}
+                className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm text-left"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
@@ -524,6 +549,15 @@ function DeveloperTab() {
           </label>
         </div>
       </div>
+
+      {/* Prompt Editor Modal */}
+      {showPromptEditor && selectedPromptKind && (
+        <PromptEditor
+          isOpen={showPromptEditor}
+          onClose={() => setShowPromptEditor(false)}
+          promptKind={selectedPromptKind}
+        />
+      )}
     </div>
   );
 }
