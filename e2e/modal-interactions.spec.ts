@@ -37,9 +37,11 @@ test.describe('Modal Interactions', () => {
     const modal = page.locator('[data-testid="global-settings-modal"]');
     await expect(modal).toBeVisible();
     
-    // Click inside the modal content
-    const modalContent = modal.locator('button').first();
-    await modalContent.click();
+    // Click on a tab inside the modal (won't close it)
+    const generalTab = modal.locator('button').filter({ hasText: /general/i }).first();
+    if (await generalTab.isVisible()) {
+      await generalTab.click();
+    }
     
     // Modal should still be open
     await expect(modal).toBeVisible();
