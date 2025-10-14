@@ -8,6 +8,7 @@ import StatusBadge from './components/StatusBadge';
 import HistoryModal from './components/HistoryModal';
 import AttachmentsButton from './components/AttachmentsButton';
 import AttachmentPresence from './components/AttachmentPresence';
+import AttachmentQuickPreview from './components/AttachmentQuickPreview';
 import BackupRestorePanel from './components/BackupRestorePanel';
 import FilterChips from './components/FilterChips';
 import { SelectionBar } from './components/SelectionBar';
@@ -258,7 +259,7 @@ function HomeContent() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-8">
       {/* Global Settings Button */}
       <GlobalSettingsButton />
       
@@ -266,19 +267,19 @@ function HomeContent() {
         <header className="flex items-center justify-between mb-8">
           <div className="flex-1"></div>
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900">🎯 Jotrack</h1>
-            <p className="text-gray-600 mt-2">Track your job applications</p>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">🎯 Jotrack</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Track your job applications</p>
           </div>
           <div className="flex-1"></div>
         </header>
 
         {/* Create Job Form */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Add New Job Application</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border dark:border-gray-700">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Add New Job Application</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Job Title *
                 </label>
                 <input
@@ -286,7 +287,7 @@ function HomeContent() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="e.g., Senior React Developer"
                 />
               </div>
@@ -422,7 +423,7 @@ function HomeContent() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                   <tr>
                     <th className="px-4 py-3 text-center w-12">
                       <input
@@ -433,17 +434,17 @@ function HomeContent() {
                         data-testid="row-select-all"
                       />
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Company</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Updated</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Attachments</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Title</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Company</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Updated</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Attachments</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedJobs.map((job, index) => (
-                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-testid="job-row">
                       <td className="px-4 py-3 text-center">
                         <input
                           type="checkbox"
@@ -504,10 +505,16 @@ function HomeContent() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <AttachmentPresence 
-                          summary={job.attachmentSummary || {}} 
-                          jobId={job.id} 
-                        />
+                        <div className="flex items-center gap-3">
+                          <AttachmentQuickPreview
+                            jobId={job.id}
+                            attachmentSummary={job.attachmentSummary || {}}
+                          />
+                          <AttachmentPresence 
+                            summary={job.attachmentSummary || {}} 
+                            jobId={job.id} 
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}
