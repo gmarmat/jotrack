@@ -30,6 +30,7 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
   const [showExplain, setShowExplain] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false); // v1.3: JSON debug toggle
   const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const scoreLevel = overall >= threshold ? 'Great' : overall >= threshold * 0.8 ? 'Medium' : 'Low';
   const scoreColor = overall >= threshold ? 'text-green-600' : overall >= threshold * 0.8 ? 'text-yellow-600' : 'text-red-600';
@@ -38,8 +39,57 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
     .sort((a, b) => (b.weight * b.score) - (a.weight * a.score))
     .slice(0, 3);
 
+  // Categorize parameters
+  const categories = {
+    technical: {
+      name: 'Technical Skills & Expertise',
+      params: breakdown.filter(p => 
+        p.param.toLowerCase().includes('skill') ||
+        p.param.toLowerCase().includes('technical') ||
+        p.param.toLowerCase().includes('technology') ||
+        p.param.toLowerCase().includes('programming') ||
+        p.param.toLowerCase().includes('tool') ||
+        p.param.toLowerCase().includes('framework')
+      )
+    },
+    experience: {
+      name: 'Experience & Background',
+      params: breakdown.filter(p => 
+        p.param.toLowerCase().includes('experience') ||
+        p.param.toLowerCase().includes('year') ||
+        p.param.toLowerCase().includes('background') ||
+        p.param.toLowerCase().includes('industry') ||
+        p.param.toLowerCase().includes('domain') ||
+        p.param.toLowerCase().includes('education')
+      )
+    },
+    soft: {
+      name: 'Soft Skills & Culture Fit',
+      params: breakdown.filter(p => 
+        !p.param.toLowerCase().match(/skill|technical|technology|programming|tool|framework/) &&
+        !p.param.toLowerCase().match(/experience|year|background|industry|domain|education/)
+      )
+    }
+  };
+
   const toggleExpandAll = () => {
+    if (allExpanded) {
+      setExpandedCategories(new Set());
+    } else {
+      setExpandedCategories(new Set(['technical', 'experience', 'soft']));
+    }
     setAllExpanded(!allExpanded);
+  };
+
+  const toggleCategory = (categoryKey: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryKey)) {
+      newExpanded.delete(categoryKey);
+    } else {
+      newExpanded.add(categoryKey);
+    }
+    setExpandedCategories(newExpanded);
+    setAllExpanded(newExpanded.size === 3);
   };
 
   return (
@@ -120,48 +170,78 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
         </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-4 py-3 text-left font-semibold text-gray-900">Parameter</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-900">Weight</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-900">JD Evidence</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-900">Resume Evidence</th>
-              <th className="px-4 py-3 text-center font-semibold text-gray-900">Score</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-900">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {breakdown.map((item, i) => (
-              <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{item.param}</td>
-                <td className="px-4 py-3 text-center text-gray-600">{(item.weight * 100).toFixed(0)}%</td>
-                <td className={`px-4 py-3 text-gray-700 max-w-xs ${allExpanded ? '' : 'truncate'}`} title={item.jdEvidence}>
-                  {item.jdEvidence}
-                </td>
-                <td className={`px-4 py-3 text-gray-700 max-w-xs ${allExpanded ? '' : 'truncate'}`} title={item.resumeEvidence}>
-                  {item.resumeEvidence}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-600 rounded-full"
-                        style={{ width: `${item.score * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-gray-900 font-medium">{(item.score * 100).toFixed(0)}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-gray-600 text-xs">
-                  {item.reasoning}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Categorized Parameters */}
+      <div className="space-y-4">
+        {Object.entries(categories).map(([key, category]) => {
+          if (category.params.length === 0) return null;
+          
+          return (
+            <div key={key} className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* Category Header */}
+              <button
+                onClick={() => toggleCategory(key)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                data-testid={`category-${key}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">{category.name}</span>
+                  <span className="text-xs text-gray-600">({category.params.length} params)</span>
+                </div>
+                {expandedCategories.has(key) ? (
+                  <ChevronUp className="w-4 h-4 text-gray-600" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                )}
+              </button>
+
+              {/* Category Content */}
+              {expandedCategories.has(key) && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Parameter</th>
+                        <th className="px-4 py-3 text-center font-semibold text-gray-900">Weight</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-900">JD Evidence</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Resume Evidence</th>
+                        <th className="px-4 py-3 text-center font-semibold text-gray-900">Score</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {category.params.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 font-medium text-gray-900">{item.param}</td>
+                          <td className="px-4 py-3 text-center text-gray-600">{(item.weight * 100).toFixed(0)}%</td>
+                          <td className="px-4 py-3 text-gray-700 max-w-xs" title={item.jdEvidence}>
+                            {item.jdEvidence}
+                          </td>
+                          <td className="px-4 py-3 text-gray-700 max-w-xs" title={item.resumeEvidence}>
+                            {item.resumeEvidence}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-blue-600 rounded-full"
+                                  style={{ width: `${item.score * 100}%` }}
+                                />
+                              </div>
+                              <span className="text-gray-900 font-medium">{(item.score * 100).toFixed(0)}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">
+                            {item.reasoning}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Sources */}

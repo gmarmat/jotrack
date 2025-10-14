@@ -28,6 +28,8 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
   
   const [aiConfigured, setAiConfigured] = useState(false);
   const [checkingAiStatus, setCheckingAiStatus] = useState(true);
+  const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   // Sync local state changes to parent (for auto-save)
   useEffect(() => {
@@ -56,6 +58,46 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
     };
     checkAiStatus();
   }, []);
+
+  const handleAnalyzeAll = async () => {
+    if (!jobDescription.trim() || !resume.trim()) {
+      setAnalyzeError('Please fill in both Job Description and Resume');
+      return;
+    }
+
+    setIsAnalyzingAll(true);
+    setAnalyzeError(null);
+
+    try {
+      const res = await fetch('/api/ai/analyze-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId,
+          jobDescription,
+          resume,
+          companyName: data.companyName || '',
+          companyUrls: otherCompanyUrls, // Already string[]
+          recruiterUrl,
+          peerUrls: peerUrls.map(p => p.url),
+          skipLevelUrls, // Already string[]
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Analysis failed');
+      }
+
+      const result = await res.json();
+      alert('All analyses complete! Navigate through the wizard to see results.');
+      onComplete(); // Move to next step
+    } catch (error: any) {
+      setAnalyzeError(error.message || 'Failed to analyze. Please try again.');
+    } finally {
+      setIsAnalyzingAll(false);
+    }
+  };
 
   const handleAnalyze = () => {
     if (!jobDescription.trim() || !resume.trim()) {
@@ -143,12 +185,13 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
               )}
               {aiConfigured && (
                 <button
-                  onClick={() => {/* TODO: Trigger all AI analyses */}}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-md hover:from-purple-700 hover:to-blue-700 font-semibold flex items-center gap-2"
+                  onClick={handleAnalyzeAll}
+                  disabled={isAnalyzingAll}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-md hover:from-purple-700 hover:to-blue-700 font-semibold flex items-center gap-2 disabled:opacity-50"
                   data-testid="analyze-all-now-button"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  Analyze All Now
+                  <Sparkles className={`w-4 h-4 ${isAnalyzingAll ? 'animate-pulse' : ''}`} />
+                  {isAnalyzingAll ? 'Analyzing...' : 'Analyze All Now'}
                 </button>
               )}
             </div>
@@ -159,17 +202,20 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
         {!checkingAiStatus && aiConfigured && (
           <div className="mt-4">
             <button
-              onClick={() => {/* TODO: Trigger all analyses */}}
-              disabled={!jobDescription.trim() || !resume.trim()}
+              onClick={handleAnalyzeAll}
+              disabled={!jobDescription.trim() || !resume.trim() || isAnalyzingAll}
               className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-base font-bold flex items-center justify-center gap-2"
               data-testid="quick-analyze-all"
             >
-              <Sparkles className="w-5 h-5" />
-              ✨ Run AI Analysis on All Data
+              <Sparkles className={`w-5 h-5 ${isAnalyzingAll ? 'animate-pulse' : ''}`} />
+              {isAnalyzingAll ? 'Analyzing All Data...' : '✨ Run AI Analysis on All Data'}
             </button>
             <p className="text-xs text-gray-500 text-center mt-2">
               Analyzes company, people, match score, and skills in one go
             </p>
+            {analyzeError && (
+              <p className="text-sm text-red-600 text-center mt-2">{analyzeError}</p>
+            )}
           </div>
         )}
       </div>

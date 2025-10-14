@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
 import StatusSelect from './components/StatusSelect';
 import StatusBadge from './components/StatusBadge';
 import HistoryModal from './components/HistoryModal';
@@ -14,6 +13,8 @@ import FilterChips from './components/FilterChips';
 import { SelectionBar } from './components/SelectionBar';
 import ReloadDataButton from './components/ReloadDataButton';
 import GlobalSettingsModal from './components/GlobalSettingsModal';
+import GlobalSettingsButton from './components/GlobalSettingsButton';
+import PaginationControls from './components/PaginationControls';
 import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
@@ -44,11 +45,15 @@ function HomeContent() {
     jobTitle: '',
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showSettings, setShowSettings] = useState(false);
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const [showTrash, setShowTrash] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [trashJobs, setTrashJobs] = useState<Job[]>([]);
   const [archivedJobs, setArchivedJobs] = useState<Job[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Client-side filtering based on status URL param
   const filteredJobs = useMemo(() => {
@@ -58,6 +63,20 @@ function HomeContent() {
     }
     return jobs.filter((job) => job.status === statusParam);
   }, [jobs, searchParams]);
+
+  // Paginated jobs
+  const paginatedJobs = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredJobs.slice(startIndex, endIndex);
+  }, [filteredJobs, currentPage, rowsPerPage]);
+
+  const totalPages = Math.ceil(filteredJobs.length / rowsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchParams, searchQuery]);
 
   const fetchJobs = async (query = '') => {
     try {
@@ -192,10 +211,28 @@ function HomeContent() {
     setHistoryModal({ isOpen: false, jobId: '', jobTitle: '' });
   };
 
-  const toggleSelection = (jobId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
-    );
+  const toggleSelection = (jobId: string, event?: React.MouseEvent, index?: number) => {
+    if (event?.shiftKey && lastClickedIndex !== null && index !== undefined) {
+      // Shift+Click: select range
+      const start = Math.min(lastClickedIndex, index);
+      const end = Math.max(lastClickedIndex, index);
+      const rangeIds = paginatedJobs.slice(start, end + 1).map(job => job.id);
+      
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev);
+        rangeIds.forEach(id => newSet.add(id));
+        return Array.from(newSet);
+      });
+      setLastClickedIndex(index);
+    } else {
+      // Regular click: toggle single
+      setSelectedIds((prev) =>
+        prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+      );
+      if (index !== undefined) {
+        setLastClickedIndex(index);
+      }
+    }
   };
 
   const toggleSelectAll = () => {
@@ -221,6 +258,9 @@ function HomeContent() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+      {/* Global Settings Button */}
+      <GlobalSettingsButton />
+      
       <div className="max-w-6xl mx-auto px-4 space-y-8">
         <header className="flex items-center justify-between mb-8">
           <div className="flex-1"></div>
@@ -228,20 +268,8 @@ function HomeContent() {
             <h1 className="text-4xl font-bold text-gray-900">🎯 Jotrack</h1>
             <p className="text-gray-600 mt-2">Track your job applications</p>
           </div>
-          <div className="flex-1 flex justify-end">
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 hover:bg-white hover:bg-opacity-50 rounded-lg transition-colors"
-              aria-label="Settings"
-              data-testid="settings-button"
-            >
-              <Settings className="w-6 h-6 text-gray-700" />
-            </button>
-          </div>
+          <div className="flex-1"></div>
         </header>
-
-        {/* Settings Modal */}
-        <GlobalSettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
         {/* Create Job Form */}
         <div className="bg-white rounded-lg shadow-lg p-6">
@@ -411,13 +439,13 @@ function HomeContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredJobs.map((job) => (
+                  {paginatedJobs.map((job, index) => (
                     <tr key={job.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-center">
                         <input
                           type="checkbox"
                           checked={selectedIds.includes(job.id)}
-                          onChange={() => toggleSelection(job.id)}
+                          onChange={(e) => toggleSelection(job.id, e as any, index)}
                           className="cursor-pointer"
                           data-testid={`row-select-${job.id}`}
                         />
@@ -482,6 +510,19 @@ function HomeContent() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination Controls */}
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                rowsPerPage={rowsPerPage}
+                totalItems={filteredJobs.length}
+                onPageChange={setCurrentPage}
+                onRowsPerPageChange={(rows) => {
+                  setRowsPerPage(rows);
+                  setCurrentPage(1); // Reset to first page when changing rows per page
+                }}
+              />
             </div>
           )}
         </div>

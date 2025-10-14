@@ -101,7 +101,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data });
+    // Format as readable text
+    const text = [
+      data.name ? `Name: ${data.name}` : '',
+      data.title ? `Title: ${data.title}` : '',
+      data.company ? `Company: ${data.company}` : '',
+      data.summary || data.about || '',
+    ].filter(Boolean).join('\n');
+
+    return NextResponse.json({ 
+      success: true, 
+      data,
+      text, // Formatted text for easy insertion
+      title: data.title || data.name,
+      description: data.summary || data.about,
+    });
   } catch (error) {
     console.error('Scrape API error:', error);
     return NextResponse.json(

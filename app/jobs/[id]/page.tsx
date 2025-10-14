@@ -10,6 +10,7 @@ import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
+import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 
@@ -120,6 +121,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Global Settings Button */}
+      <GlobalSettingsButton />
+      
       {/* Timeline - Full width above everything */}
       <HorizontalTimeline 
         currentStatus={currentStatus} 

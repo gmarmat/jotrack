@@ -2,10 +2,10 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, X, Settings } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import Breadcrumb from '@/app/components/Breadcrumb';
 import SaveStatusBanner from '@/app/components/SaveStatusBanner';
-import GlobalSettingsModal from '@/app/components/GlobalSettingsModal';
+import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import Stepper, { Step, StepStatus } from '@/app/components/coach/Stepper';
 import GatherStep from '@/app/components/coach/steps/GatherStep';
 import ProfileStep from '@/app/components/coach/steps/ProfileStep';
@@ -45,7 +45,6 @@ export default function CoachPage({ params }: CoachPageProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastSaved, setLastSaved] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [showSettings, setShowSettings] = useState(false); // v2.4: Global settings
 
   const steps: Step[] = [
     { id: 'gather', label: 'Gather', status: stepStatuses.gather },
@@ -139,6 +138,9 @@ export default function CoachPage({ params }: CoachPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="coach-wizard">
+      {/* Global Settings Button */}
+      <GlobalSettingsButton />
+      
       {/* Header with Breadcrumb and Exit */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-6 py-4">
@@ -156,15 +158,6 @@ export default function CoachPage({ params }: CoachPageProps) {
             >
               <ArrowLeft size={18} />
               Exit Coach Mode
-            </button>
-            
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Settings"
-              data-testid="coach-settings-button"
-            >
-              <Settings size={20} className="text-gray-600" />
             </button>
           </div>
         </div>
@@ -217,11 +210,6 @@ export default function CoachPage({ params }: CoachPageProps) {
         )}
       </div>
 
-      {/* Global Settings Modal */}
-      <GlobalSettingsModal 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
-      />
     </div>
   );
 }
