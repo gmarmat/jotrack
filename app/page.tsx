@@ -293,7 +293,7 @@ function HomeContent() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Company *
                 </label>
                 <input
@@ -301,7 +301,7 @@ function HomeContent() {
                   required
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="e.g., TechCorp"
                 />
               </div>
@@ -444,7 +444,7 @@ function HomeContent() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedJobs.map((job, index) => (
-                    <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-testid="job-row">
+                    <tr key={job.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="job-row">
                       <td className="px-4 py-3 text-center">
                         <input
                           type="checkbox"
@@ -466,7 +466,7 @@ function HomeContent() {
                           <StatusBadge status={job.status} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{job.company}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">{job.company}</td>
                       <td className="px-4 py-3">
                         <StatusSelect
                           jobId={job.id}
@@ -474,7 +474,7 @@ function HomeContent() {
                           onStatusChange={handleStatusChange}
                         />
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{formatDate(job.updatedAt)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{formatDate(job.updatedAt)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button

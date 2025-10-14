@@ -20,7 +20,9 @@ export default function FilterChips() {
       <button
         onClick={() => setStatus("ALL")}
         className={`px-1.5 py-1 text-xs rounded-full border transition-colors ${
-          active === "ALL" ? "bg-gray-900 text-white border-gray-900" : "bg-white hover:bg-gray-50"
+          active === "ALL" 
+            ? "bg-gray-900 dark:bg-blue-600 text-white border-gray-900 dark:border-blue-600" 
+            : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
         }`}
         data-testid="chip-ALL"
       >
@@ -31,7 +33,9 @@ export default function FilterChips() {
           key={s}
           onClick={() => setStatus(s)}
           className={`px-1.5 py-1 text-xs rounded-full border transition-colors ${
-            active === s ? "bg-gray-900 text-white border-gray-900" : "bg-white hover:bg-gray-50"
+            active === s 
+              ? "bg-gray-900 dark:bg-blue-600 text-white border-gray-900 dark:border-blue-600" 
+              : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
           }`}
           data-testid={`chip-${s}`}
           title={STATUS_LABELS[s]}

@@ -62,14 +62,14 @@ export default function PaginationControls({
   };
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-white">
+    <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       {/* Left: Rows per page */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700">Rows per page:</span>
+        <span className="text-sm text-gray-700 dark:text-gray-300">Rows per page:</span>
         <select
           value={rowsPerPage}
           onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
-          className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           data-testid="rows-per-page-select"
         >
           <option value={10}>10</option>
@@ -77,7 +77,7 @@ export default function PaginationControls({
           <option value={50}>50</option>
           <option value={100}>100</option>
         </select>
-        <span className="text-sm text-gray-600 ml-4">
+        <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
           Showing {startItem}-{endItem} of {totalItems} jobs
         </span>
       </div>
@@ -87,7 +87,7 @@ export default function PaginationControls({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
           aria-label="Previous page"
           data-testid="prev-page-button"
         >
@@ -102,10 +102,10 @@ export default function PaginationControls({
             className={`
               min-w-[40px] h-10 px-3 rounded-md text-sm font-medium
               ${page === currentPage
-                ? 'bg-blue-600 text-white'
+                ? 'bg-blue-600 dark:bg-blue-500 text-white'
                 : page === '...'
-                ? 'cursor-default text-gray-400'
-                : 'hover:bg-gray-100 text-gray-700'
+                ? 'cursor-default text-gray-400 dark:text-gray-500'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
               }
               disabled:cursor-default
             `}
@@ -118,7 +118,7 @@ export default function PaginationControls({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300"
           aria-label="Next page"
           data-testid="next-page-button"
         >
