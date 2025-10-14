@@ -29,12 +29,12 @@ export default function JobHeader({
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-lg p-6" data-testid="job-header">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border dark:border-gray-700" data-testid="job-header">
         <div className="flex items-start justify-between gap-4">
           {/* Left: Title, Company, Status */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-900 truncate" data-testid="job-title">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 truncate" data-testid="job-title">
                 {job.title}
               </h1>
               <StatusChipDropdown 
@@ -46,14 +46,14 @@ export default function JobHeader({
               {/* Job Info Button */}
               <button
                 onClick={() => setShowSettingsModal(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 title="Job Details"
                 data-testid="open-job-info"
               >
-                <Info size={20} className="text-gray-600" />
+                <Info size={20} className="text-gray-600 dark:text-gray-400" />
               </button>
             </div>
-            <p className="text-lg text-gray-600" data-testid="job-company">
+            <p className="text-lg text-gray-600 dark:text-gray-400" data-testid="job-company">
               {job.company}
             </p>
           </div>
