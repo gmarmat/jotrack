@@ -123,7 +123,8 @@ export default function JobSettingsModal({
             </Link>
             
             <Link
-              href={`/settings/ai?from=/jobs/${jobId}`}
+              href="#"
+              onClick={(e) => { e.preventDefault(); /* settings modal handled by GlobalSettingsButton */ }}
               className="block w-full px-4 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-center font-medium"
             >
               ⚙️ AI Settings

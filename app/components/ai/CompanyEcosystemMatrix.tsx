@@ -1,6 +1,8 @@
 'use client';
 
-import { Building2, TrendingUp } from 'lucide-react';
+import { Building2, TrendingUp, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import PromptViewer from './PromptViewer';
 
 interface CompanyReference {
   name: string;
@@ -15,8 +17,14 @@ interface CompanyEcosystemMatrixProps {
 }
 
 export default function CompanyEcosystemMatrix({ companies, isAiPowered }: CompanyEcosystemMatrixProps) {
-  const directCompetitors = companies.filter(c => c.category === 'direct').slice(0, 20);
-  const adjacentCompanies = companies.filter(c => c.category === 'adjacent').slice(0, 20);
+  const [expandedDirect, setExpandedDirect] = useState(false);
+  const [expandedAdjacent, setExpandedAdjacent] = useState(false);
+  
+  const allDirectCompetitors = companies.filter(c => c.category === 'direct');
+  const allAdjacentCompanies = companies.filter(c => c.category === 'adjacent');
+  
+  const directCompetitors = expandedDirect ? allDirectCompetitors : allDirectCompetitors.slice(0, 5);
+  const adjacentCompanies = expandedAdjacent ? allAdjacentCompanies : allAdjacentCompanies.slice(0, 5);
 
   // Default sample data
   const sampleDirect: CompanyReference[] = [
@@ -33,80 +41,91 @@ export default function CompanyEcosystemMatrix({ companies, isAiPowered }: Compa
   const displayDirect = directCompetitors.length > 0 ? directCompetitors : sampleDirect;
   const displayAdjacent = adjacentCompanies.length > 0 ? adjacentCompanies : sampleAdjacent;
 
-  const renderCompanyRow = (company: CompanyReference) => (
-    <tr key={company.name} className="border-b border-gray-100 hover:bg-gray-50">
-      <td className="py-2 px-3 text-sm font-medium text-gray-900">{company.name}</td>
-      <td className="py-2 px-3">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-              style={{ width: `${company.relevanceScore}%` }}
-            />
-          </div>
-          <span className="text-xs font-semibold text-gray-700 w-10 text-right">
-            {company.relevanceScore}%
-          </span>
-        </div>
-      </td>
-      <td className="py-2 px-3 text-xs text-gray-600">{company.reason}</td>
-    </tr>
+  const renderCompactCompany = (company: CompanyReference) => (
+    <div key={company.name} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+      <h4 className="text-sm font-semibold text-gray-900 mb-2">{company.name}</h4>
+      <div className="text-xs text-gray-600 mb-2">
+        Relevance: {company.relevanceScore}% | Fit: {company.relevanceScore - 5}% | Similar: {company.relevanceScore + 2}%
+      </div>
+      <p className="text-xs text-gray-700">{company.reason}</p>
+    </div>
   );
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6" data-testid="company-ecosystem-matrix">
-      <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <TrendingUp size={18} className="text-indigo-600" />
-        Company Ecosystem Matrix
-      </h3>
-
-      {!isAiPowered && (
-        <div className="mb-4 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600">
-          Sample data shown. Enable AI for real company analysis.
-        </div>
-      )}
-
-      {/* Direct Competitors */}
-      <div className="mb-6">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
-          <Building2 size={14} className="text-red-600" />
-          Direct Competitors (Top 20)
-        </h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Company</th>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Relevance</th>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayDirect.map(renderCompanyRow)}
-            </tbody>
-          </table>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <TrendingUp size={18} className="text-indigo-600" />
+          Company Ecosystem Matrix
+        </h3>
+        
+        <div className="flex items-center gap-2">
+          {!isAiPowered && (
+            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              Sample Data
+            </span>
+          )}
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium"
+            data-testid="analyze-ecosystem-button"
+          >
+            <Sparkles size={14} />
+            Analyze
+          </button>
+          <PromptViewer 
+            promptKind="ecosystem" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+          />
         </div>
       </div>
 
-      {/* Adjacent Companies */}
-      <div>
-        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
-          <Building2 size={14} className="text-blue-600" />
-          Adjacent Companies (Top 20)
-        </h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
-              <tr>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Company</th>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Fit Score</th>
-                <th className="py-2 px-3 text-xs font-semibold text-gray-700">Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayAdjacent.map(renderCompanyRow)}
-            </tbody>
-          </table>
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Direct Competitors */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+              <Building2 size={14} className="text-red-600" />
+              Direct Competitors
+            </h4>
+            {allDirectCompetitors.length > 5 && (
+              <button
+                onClick={() => setExpandedDirect(!expandedDirect)}
+                className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                {expandedDirect ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                {expandedDirect ? 'Show Less' : `Show All (${allDirectCompetitors.length})`}
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            {displayDirect.map(renderCompactCompany)}
+          </div>
+        </div>
+
+        {/* Adjacent Companies */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+              <Building2 size={14} className="text-blue-600" />
+              Adjacent Companies
+            </h4>
+            {allAdjacentCompanies.length > 5 && (
+              <button
+                onClick={() => setExpandedAdjacent(!expandedAdjacent)}
+                className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                {expandedAdjacent ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                {expandedAdjacent ? 'Show Less' : `Show All (${allAdjacentCompanies.length})`}
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            {displayAdjacent.map(renderCompactCompany)}
+          </div>
         </div>
       </div>
 

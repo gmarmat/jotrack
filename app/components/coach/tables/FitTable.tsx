@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Info, RefreshCw, Code, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Code, AlertCircle, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
+import PromptViewer from '../ai/PromptViewer';
 
 interface FitDimension {
   param: string;
@@ -102,20 +103,29 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
               Match Matrix
             </h3>
             <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
-            {onRefresh && (
-              <button
-                onClick={onRefresh}
-                disabled={refreshing}
-                className="ml-auto flex items-center gap-1 px-3 py-1 text-xs border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                title="Refresh analysis"
-              >
-                <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+              {onRefresh && (
+                <button
+                  onClick={onRefresh}
+                  disabled={refreshing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
+                  title="Analyze with AI"
+                  data-testid="analyze-matrix-button"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${refreshing ? 'animate-pulse' : ''}`} />
+                  {refreshing ? 'Analyzing...' : 'Analyze with AI'}
+                </button>
+              )}
+              <PromptViewer 
+                promptKind="match-signals" 
+                version="v1"
+                buttonLabel=""
+                className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              />
+            </div>
           </div>
           <p className="text-sm text-gray-600">
-            Fit (estimate): {(overall * 100).toFixed(0)}%. Calculated from 25 job-relevant signals found <strong>only in your JD/Resume</strong>.
+            Fit (estimate): {(overall * 100).toFixed(0)}%. Calculated from {breakdown.length} job-relevant signals (20 ATS standard + {Math.max(0, breakdown.length - 20)} dynamic).
             {' '}See &apos;Explain&apos; for details.
           </p>
         </div>
@@ -287,10 +297,10 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       {/* Why This Matters */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <p className="text-sm font-semibold text-gray-700 mb-1">Why this matters:</p>
-        <p className="text-sm text-gray-600">
-          The fit matrix evaluates your profile against 25 job-relevant dimensions, weighted by importance. 
-          Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
-        </p>
+          <p className="text-sm text-gray-600">
+            The fit matrix evaluates your profile against up to 50 job-relevant signals: 20 standard ATS parameters plus up to 30 dynamically generated signals specific to this role. 
+            Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
+          </p>
       </div>
     </div>
   );

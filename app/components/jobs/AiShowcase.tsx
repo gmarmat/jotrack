@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles, RefreshCw, Settings, TrendingUp, Target, Lightbulb, Users, Zap, Building2, Clock } from 'lucide-react';
-import Link from 'next/link';
+import { Sparkles, RefreshCw, TrendingUp, Target, Lightbulb, Users, Zap, Building2, Clock } from 'lucide-react';
 import LoadingPulse from '../LoadingPulse';
 import { calculatePreliminaryScore } from '@/lib/preliminaryScore';
 import { checkAnalysisGuardrails, recordAnalysis, getCooldownRemaining, type AnalysisInputs } from '@/lib/coach/analysisGuardrails';
 import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
-import SkillThreeLevelChart from '@/app/components/ai/SkillThreeLevelChart';
 import CompanyIntelligenceCard from '@/app/components/ai/CompanyIntelligenceCard';
 import CompanyEcosystemMatrix from '@/app/components/ai/CompanyEcosystemMatrix';
 import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
@@ -246,14 +244,6 @@ export default function AiShowcase({
             buttonLabel="View Prompt"
             className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
           />
-          
-          <Link
-            href={`/settings/ai?from=/jobs/${jobId}`}
-            className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
-            data-testid="ai-settings-link"
-          >
-            <Settings size={16} />
-          </Link>
         </div>
       </div>
 

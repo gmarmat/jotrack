@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { type Job } from '@/db/schema';
 import { type JobStatus } from '@/lib/status';
 import StatusChipDropdown from './StatusChipDropdown';
@@ -43,14 +43,14 @@ export default function JobHeader({
                 onStatusChange={onStatusChange}
               />
               
-              {/* Job Settings Button */}
+              {/* Job Info Button */}
               <button
                 onClick={() => setShowSettingsModal(true)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Job Settings"
-                data-testid="open-job-settings"
+                title="Job Details"
+                data-testid="open-job-info"
               >
-                <Settings size={20} className="text-gray-600" />
+                <Info size={20} className="text-gray-600" />
               </button>
             </div>
             <p className="text-lg text-gray-600" data-testid="job-company">

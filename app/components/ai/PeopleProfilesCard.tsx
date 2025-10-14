@@ -171,7 +171,7 @@ export default function PeopleProfilesCard({
       {/* Content */}
       {(!isAnalyzing || profiles || localProfiles) && (<>
       {/* Individual Profiles */}
-      <div className="space-y-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {displayProfiles.map((person, idx) => (
           <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex items-start gap-3 mb-3">

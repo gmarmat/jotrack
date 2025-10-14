@@ -18,19 +18,17 @@ interface CategoryScore {
   totalScore: number;
 }
 
-interface SkillsMatchChartProps {
+interface SkillsMatchChartUnifiedProps {
   skills: Skill[];
   categoryScores?: CategoryScore[];
-  maxSkills?: number;
   maxKeywords?: number;
 }
 
-export default function SkillsMatchChart({ 
+export default function SkillsMatchChartUnified({ 
   skills, 
   categoryScores,
-  maxSkills = 10,
   maxKeywords = 50 
-}: SkillsMatchChartProps) {
+}: SkillsMatchChartUnifiedProps) {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [selectedKeyword, setSelectedKeyword] = useState<Skill | null>(null);
 
@@ -103,7 +101,7 @@ export default function SkillsMatchChart({
   const topKeywords = skills.slice(0, maxKeywords);
 
   return (
-    <div className="space-y-6" data-testid="skills-match-chart">
+    <div className="space-y-6" data-testid="skills-match-chart-unified">
       {/* Category-Level Bars */}
       <div className="space-y-4">
         <h4 className="text-sm font-semibold text-gray-900">Match by Category</h4>
@@ -301,3 +299,4 @@ export default function SkillsMatchChart({
     </div>
   );
 }
+

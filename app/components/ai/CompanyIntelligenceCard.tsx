@@ -174,89 +174,116 @@ export default function CompanyIntelligenceCard({
         </div>
       </div>
 
-      {/* What They Do */}
-      {displayCompany.description && (
-        <div className="mb-4">
-          <h5 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
-            <Target size={14} className="text-indigo-600" />
-            What They Do
-          </h5>
-          <p className="text-sm text-gray-700">{displayCompany.description}</p>
-        </div>
-      )}
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT COLUMN: TL;DR + Spend Analysis */}
+        <div className="space-y-4">
+          {/* What They Do */}
+          {displayCompany.description && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+                <Target size={14} className="text-indigo-600" />
+                What They Do
+              </h5>
+              <p className="text-sm text-gray-700">{displayCompany.description}</p>
+            </div>
+          )}
 
-      {/* Key Facts */}
-      {displayCompany.keyFacts && displayCompany.keyFacts.length > 0 && (
-        <div className="mb-4">
-          <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-            <DollarSign size={14} className="text-green-600" />
-            Key Facts
-          </h5>
-          <ul className="space-y-1">
-            {displayCompany.keyFacts.map((fact, idx) => (
-              <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                <span className="text-green-500">•</span>
-                <span>{fact}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+          {/* Key Facts */}
+          {displayCompany.keyFacts && displayCompany.keyFacts.length > 0 && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                <DollarSign size={14} className="text-green-600" />
+                Key Facts
+              </h5>
+              <ul className="space-y-1">
+                {displayCompany.keyFacts.map((fact, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                    <span className="text-green-500">•</span>
+                    <span>{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-      {/* Culture & Values */}
-      {displayCompany.culture && displayCompany.culture.length > 0 && (
-        <div className="mb-4">
-          <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-            <Heart size={14} className="text-pink-600" />
-            Culture & Values
-          </h5>
-          <ul className="space-y-1">
-            {displayCompany.culture.map((value, idx) => (
-              <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                <span className="text-pink-500">•</span>
-                <span>{value}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Leadership */}
+          {displayCompany.leadership && displayCompany.leadership.length > 0 && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                <Users size={14} className="text-blue-600" />
+                Leadership
+              </h5>
+              <ul className="space-y-2">
+                {displayCompany.leadership.map((leader, idx) => (
+                  <li key={idx} className="text-sm text-gray-700">
+                    <span className="font-medium">{leader.name}</span> ({leader.role})
+                    {leader.background && (
+                      <span className="text-gray-600"> - {leader.background}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Leadership */}
-      {displayCompany.leadership && displayCompany.leadership.length > 0 && (
-        <div className="mb-4">
-          <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-            <Users size={14} className="text-blue-600" />
-            Leadership
-          </h5>
-          <ul className="space-y-2">
-            {displayCompany.leadership.map((leader, idx) => (
-              <li key={idx} className="text-sm text-gray-700">
-                <span className="font-medium">{leader.name}</span> ({leader.role})
-                {leader.background && (
-                  <span className="text-gray-600"> - {leader.background}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* RIGHT COLUMN: New sections */}
+        <div className="space-y-4">
+          {/* Culture & Values */}
+          {displayCompany.culture && displayCompany.culture.length > 0 && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                <Heart size={14} className="text-pink-600" />
+                Culture & Values
+              </h5>
+              <ul className="space-y-1">
+                {displayCompany.culture.map((value, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                    <span className="text-pink-500">•</span>
+                    <span>{value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-      {/* Competitors */}
-      {displayCompany.competitors && displayCompany.competitors.length > 0 && (
-        <div>
-          <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-            <TrendingUp size={14} className="text-amber-600" />
-            Key Competitors
-          </h5>
-          <div className="flex flex-wrap gap-2">
-            {displayCompany.competitors.map((competitor, idx) => (
-              <span key={idx} className="px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded-md border border-amber-200">
-                {competitor}
-              </span>
-            ))}
+          {/* Company Principles (New) */}
+          <div>
+            <h5 className="text-sm font-semibold text-gray-900 mb-2">Company Principles</h5>
+            <p className="text-xs text-gray-500 italic">Not enough info available</p>
           </div>
+
+          {/* Recent News (New) */}
+          <div>
+            <h5 className="text-sm font-semibold text-gray-900 mb-2">Recent News (Last 30 days)</h5>
+            <p className="text-xs text-gray-500 italic">Not enough info available</p>
+          </div>
+
+          {/* Glassdoor/Culture Keywords (New) */}
+          <div>
+            <h5 className="text-sm font-semibold text-gray-900 mb-2">Culture Keywords</h5>
+            <p className="text-xs text-gray-500 italic">Not enough info available</p>
+          </div>
+
+          {/* Competitors */}
+          {displayCompany.competitors && displayCompany.competitors.length > 0 && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                <TrendingUp size={14} className="text-amber-600" />
+                Key Competitors
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {displayCompany.competitors.map((competitor, idx) => (
+                  <span key={idx} className="px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded-md border border-amber-200">
+                    {competitor}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Why This Matters (always expanded) */}
       <div className="mt-4 pt-4 border-t border-gray-200">

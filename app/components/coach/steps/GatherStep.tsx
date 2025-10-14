@@ -158,7 +158,8 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
               </div>
               {!aiConfigured && (
                 <a
-                  href="/settings/ai"
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); /* settings modal handled by GlobalSettingsButton */ }}
                   className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 whitespace-nowrap"
                   data-testid="enable-ai-link"
                 >

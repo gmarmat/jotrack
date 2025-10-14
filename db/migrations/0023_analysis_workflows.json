@@ -1,0 +1,9 @@
+{
+  "version": "0023",
+  "name": "analysis_workflows",
+  "description": "Add analysis_workflows table for multi-step AI analysis orchestration",
+  "timestamp": "2025-01-14T00:00:00.000Z",
+  "author": "V2.6 Migration",
+  "idempotent": true
+}
+

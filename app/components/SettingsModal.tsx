@@ -83,15 +83,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Configuration</h3>
                 <CoachAiSettings />
               </div>
-              <div className="pt-4 border-t">
-                <a
-                  href="/settings/ai"
-                  target="_blank"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
-                  Advanced AI Settings →
-                </a>
-              </div>
             </div>
           )}
 
