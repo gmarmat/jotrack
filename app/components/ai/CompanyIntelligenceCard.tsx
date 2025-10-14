@@ -3,6 +3,8 @@
 import { Building2, Users, DollarSign, TrendingUp, Target, Heart, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
+import { LoadingShimmerCard } from '../LoadingShimmer';
+import LoadingPulse from '../LoadingPulse';
 
 interface CompanyIntelligence {
   name: string;
@@ -149,6 +151,13 @@ export default function CompanyIntelligenceCard({
         </div>
       )}
 
+      {/* Loading State */}
+      {isAnalyzing && !company && !localCompany && (
+        <LoadingShimmerCard />
+      )}
+
+      {/* Content */}
+      {(!isAnalyzing || company || localCompany) && (<>
       {/* Company Name & Quick Stats */}
       <div className="mb-4 pb-4 border-b border-gray-200">
         <h4 className="text-xl font-bold text-gray-900 mb-2">{displayCompany.name}</h4>
@@ -257,6 +266,7 @@ export default function CompanyIntelligenceCard({
           your application, prepare better interview questions, and assess cultural fit.
         </p>
       </div>
+      </>)}
     </div>
   );
 }

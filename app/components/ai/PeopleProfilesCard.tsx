@@ -3,6 +3,7 @@
 import { Users, Sparkles, User } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
+import { LoadingShimmerCard } from '../LoadingShimmer';
 
 interface PersonProfile {
   name: string;
@@ -162,6 +163,13 @@ export default function PeopleProfilesCard({
         </div>
       )}
 
+      {/* Loading State */}
+      {isAnalyzing && !profiles && !localProfiles && (
+        <LoadingShimmerCard />
+      )}
+
+      {/* Content */}
+      {(!isAnalyzing || profiles || localProfiles) && (<>
       {/* Individual Profiles */}
       <div className="space-y-4 mb-6">
         {displayProfiles.map((person, idx) => (
@@ -253,6 +261,7 @@ export default function PeopleProfilesCard({
           prepare relevant questions, and build rapport based on their background and interests.
         </p>
       </div>
+      </>)}
     </div>
   );
 }

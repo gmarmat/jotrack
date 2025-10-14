@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sparkles, RefreshCw, Settings, TrendingUp, Target, Lightbulb, Users, Zap, Building2 } from 'lucide-react';
 import Link from 'next/link';
+import LoadingPulse from '../LoadingPulse';
 import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
 import SkillThreeLevelChart from '@/app/components/ai/SkillThreeLevelChart';
