@@ -96,51 +96,52 @@ export default function SourcesModal({ isOpen, onClose, title, sources }: Source
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {sources.length === 0 ? (
-            <p className="text-sm text-gray-600 text-center py-8">
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-8">
               No sources available for this analysis.
             </p>
           ) : (
             <div className="space-y-6">
               {Object.entries(groupedSources).map(([type, typeSources]) => (
                 <div key={type}>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                     {typeLabels[type] || 'Other Sources'}
-                    <span className="text-xs text-gray-500 font-normal">({typeSources.length})</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">({typeSources.length})</span>
                   </h3>
                   
                   <div className="space-y-3">
-                    {typeSources.map((source, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-2">
+                    {typeSources.map((source, idx) => {
+                      // Extract domain from URL
+                      const domain = new URL(source.url).hostname.replace('www.', '');
+                      
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                        >
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {source.title}
                             </h4>
-                            <a
-                              href={source.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 mb-1"
-                            >
-                              <ExternalLink size={12} />
-                              <span className="truncate">{source.url}</span>
-                            </a>
-                            <p className="text-xs text-gray-600">
-                              Accessed: {new Date(source.dateAccessed).toLocaleDateString()}
-                            </p>
                             {source.relevance && (
-                              <p className="text-xs text-gray-700 mt-2 italic">
-                                <strong>Why:</strong> {source.relevance}
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                                {source.relevance}
                               </p>
                             )}
                           </div>
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline whitespace-nowrap"
+                            title={source.url}
+                          >
+                            <span>{domain}</span>
+                            <ExternalLink size={12} />
+                          </a>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -149,8 +150,8 @@ export default function SourcesModal({ isOpen, onClose, title, sources }: Source
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50">
-          <p className="text-xs text-gray-600">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Total sources: {sources.length} | Click links to view in new tab
           </p>
         </div>

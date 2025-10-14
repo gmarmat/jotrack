@@ -117,6 +117,12 @@ export default function PeopleProfilesCard({
   const displayInsights = localInsights || overallInsights || defaultInsights;
 
   const handleAnalyze = async () => {
+    // Validate required data
+    if (!jobDescription || jobDescription.trim() === '') {
+      setError('Job Description is required for people analysis. Please add it in Coach Mode or upload a JD attachment.');
+      return;
+    }
+    
     setIsAnalyzing(true);
     setError(null);
     try {

@@ -67,6 +67,17 @@ export default function CompanyIntelligenceCard({
       return;
     }
 
+    // Validate required data
+    if (!jobDescription || jobDescription.trim() === '') {
+      setError('Job Description is required. Please add it in Coach Mode or upload a JD attachment.');
+      return;
+    }
+    
+    if (!companyName || companyName.trim() === '') {
+      setError('Company name is required. Please add it to the job details.');
+      return;
+    }
+
     // Default analysis logic
     setInternalIsAnalyzing(true);
     setError(null);

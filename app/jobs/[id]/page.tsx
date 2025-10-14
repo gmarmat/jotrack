@@ -10,6 +10,7 @@ import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
+import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
@@ -22,6 +23,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [currentStatusEnteredAt, setCurrentStatusEnteredAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+  
+  // ESC key handler for attachments modal
+  useEffect(() => {
+    if (!showAttachmentsModal) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowAttachmentsModal(false);
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showAttachmentsModal]);
   const [aiData, setAiData] = useState<any>(null);
   const [analysisData, setAnalysisData] = useState<any>(null); // v2.4: Data for AiShowcase
   const router = useRouter();
@@ -200,12 +213,30 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         )}
       </div>
 
-      {/* Attachments Modal */}
+      {/* Attachments Modal with Full Drop Zones */}
       {showAttachmentsModal && (
-        <AttachmentsModal 
-          jobId={job.id} 
-          onClose={() => setShowAttachmentsModal(false)} 
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAttachmentsModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attachments</h2>
+              <button
+                onClick={() => setShowAttachmentsModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <AttachmentsSection jobId={job.id} />
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
