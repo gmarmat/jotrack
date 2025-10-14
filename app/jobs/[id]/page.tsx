@@ -169,6 +169,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         <AiShowcase
           jobId={job.id}
           jobDescription={analysisData?.jobDescription || ''}
+          resume={analysisData?.resume || ''}
           companyName={analysisData?.companyName || job.company}
           companyUrls={analysisData?.companyUrls || []}
           recruiterUrl={analysisData?.recruiterUrl || ''}

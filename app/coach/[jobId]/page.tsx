@@ -163,13 +163,15 @@ export default function CoachPage({ params }: CoachPageProps) {
         </div>
       </div>
 
-      {/* Save Status Banner */}
-      <SaveStatusBanner 
-        status={saveStatus} 
-        lastSaved={lastSaved} 
-        error={saveError}
-        onRetry={handleRetrySave}
-      />
+      {/* Save Status Banner - Sticky */}
+      <div className="sticky top-0 z-30 bg-white shadow-sm">
+        <SaveStatusBanner 
+          status={saveStatus} 
+          lastSaved={lastSaved} 
+          error={saveError}
+          onRetry={handleRetrySave}
+        />
+      </div>
 
       <Stepper steps={steps} currentStepId={currentStepId} onStepClick={handleStepClick} />
 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, RefreshCw, Settings, TrendingUp, Target, Lightbulb, Users, Zap, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import LoadingPulse from '../LoadingPulse';
+import { calculatePreliminaryScore } from '@/lib/preliminaryScore';
 import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
 import SkillThreeLevelChart from '@/app/components/ai/SkillThreeLevelChart';
@@ -17,6 +18,7 @@ import { getMatchScoreCategory } from '@/lib/matchScoreCategories';
 interface AiShowcaseProps {
   jobId: string;
   jobDescription?: string;
+  resume?: string;
   companyName?: string;
   companyUrls?: string[];
   recruiterUrl?: string;
@@ -44,6 +46,7 @@ interface AiShowcaseProps {
 export default function AiShowcase({ 
   jobId, 
   jobDescription = '',
+  resume = '',
   companyName = '',
   companyUrls = [],
   recruiterUrl = '',
@@ -54,6 +57,21 @@ export default function AiShowcase({
 }: AiShowcaseProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['all']));
+  const [preliminaryScore, setPreliminaryScore] = useState<number | null>(null);
+  const [showPreliminary, setShowPreliminary] = useState(true);
+
+  // Calculate preliminary score on mount
+  useEffect(() => {
+    if (jobDescription && resume) {
+      const result = calculatePreliminaryScore(jobDescription, resume);
+      setPreliminaryScore(result.score);
+      
+      // Hide preliminary when AI score available
+      if (aiData?.matchScore !== undefined) {
+        setShowPreliminary(false);
+      }
+    }
+  }, [jobDescription, resume, aiData?.matchScore]);
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -69,6 +87,7 @@ export default function AiShowcase({
     setIsRefreshing(true);
     await onRefresh?.();
     setIsRefreshing(false);
+    setShowPreliminary(false); // Hide preliminary after AI refresh
   };
 
   const matchScore = aiData?.matchScore || 0.72;
@@ -145,10 +164,21 @@ export default function AiShowcase({
               Match Score
             </h3>
             
+            {/* Preliminary Score Badge */}
+            {showPreliminary && preliminaryScore !== null && (
+              <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md text-xs text-yellow-800 flex items-center gap-2">
+                <Zap size={14} />
+                <span>
+                  <strong>Preliminary Score:</strong> {preliminaryScore}% 
+                  <span className="ml-1 text-yellow-600">(Local calculation - Click &quot;Analyze with AI&quot; for full analysis)</span>
+                </span>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4 mb-4">
               {/* Left: Gauge */}
               <div className="flex items-center justify-center">
-                <MatchScoreGauge score={matchScore} size={140} showInsights={true} />
+                <MatchScoreGauge score={showPreliminary && preliminaryScore !== null ? preliminaryScore : matchScore} size={140} showInsights={true} />
               </div>
               
               {/* Right: Category Insights */}
