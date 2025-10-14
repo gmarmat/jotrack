@@ -95,9 +95,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     window.location.reload();
   };
 
-  const handleRefreshAI = async () => {
-    // TODO: Implement AI refresh logic
-    console.log('Refreshing AI insights...');
+  const handleRefreshAI = async (analysisType?: 'company' | 'people' | 'match' | 'skills' | 'ecosystem' | 'all') => {
+    try {
+      console.log('Refreshing AI insights...', analysisType || 'all');
+      
+      // For now, just refresh the page to show updated data
+      // TODO: Implement specific API calls for each analysis type
+      window.location.reload();
+    } catch (error) {
+      console.error('Error refreshing AI insights:', error);
+    }
   };
 
   const handleViewJd = () => {

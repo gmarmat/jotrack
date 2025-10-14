@@ -274,7 +274,7 @@ function HomeContent() {
         </header>
 
         {/* Create Job Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border dark:border-gray-700">
+        <div className="bg-blue-50 dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-300 dark:border-gray-700">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Add New Job Application</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,7 +287,7 @@ function HomeContent() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="form-field"
                   placeholder="e.g., Senior React Developer"
                 />
               </div>
@@ -301,20 +301,20 @@ function HomeContent() {
                   required
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="form-field"
                   placeholder="e.g., TechCorp"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Status *
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as JobStatus })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-field"
               >
                 {ORDERED_STATUSES.map((key) => (
                   <option key={key} value={key}>{STATUS_LABELS[key]}</option>
@@ -323,13 +323,13 @@ function HomeContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Notes
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-field"
                 rows={3}
                 placeholder="Any additional notes..."
               />
@@ -345,10 +345,10 @@ function HomeContent() {
         </div>
 
         {/* Search and List */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-blue-50 dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-300 dark:border-gray-700">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800">Your Applications</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Your Applications</h2>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
@@ -385,7 +385,7 @@ function HomeContent() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search jobs by title, company, or notes..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 form-field"
               />
               <button
                 type="submit"
@@ -458,7 +458,7 @@ function HomeContent() {
                         <div className="flex items-center gap-2">
                           <Link 
                             href={`/jobs/${job.id}`} 
-                            className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                            className="text-blue-600 hover:text-blue-800 font-medium hover:underline break-words"
                             data-testid={`job-link-${job.id}`}
                           >
                             {job.title}
@@ -466,7 +466,7 @@ function HomeContent() {
                           <StatusBadge status={job.status} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">{job.company}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{job.company}</td>
                       <td className="px-4 py-3">
                         <StatusSelect
                           jobId={job.id}
@@ -549,7 +549,7 @@ function HomeContent() {
       {/* Trash Modal */}
       {showTrash && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" data-testid="trash-modal">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-blue-50 dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-2xl font-bold text-gray-900">🗑️ Trash</h2>
               <button
@@ -569,7 +569,7 @@ function HomeContent() {
                     <div key={job.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                          <h3 className="font-semibold text-gray-900 break-words">{job.title}</h3>
                           <p className="text-sm text-gray-600">{job.company}</p>
                           {job.daysUntilPurge !== null && job.daysUntilPurge >= 0 && (
                             <p className="text-xs text-red-600 mt-2">
@@ -619,7 +619,7 @@ function HomeContent() {
       {/* Archived Modal */}
       {showArchived && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" data-testid="archived-modal">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-blue-50 dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-2xl font-bold text-gray-900">📁 Archived Jobs</h2>
               <button
@@ -639,7 +639,7 @@ function HomeContent() {
                     <div key={job.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                          <h3 className="font-semibold text-gray-900 break-words">{job.title}</h3>
                           <p className="text-sm text-gray-600">{job.company}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             Archived {new Date(job.archivedAt).toLocaleDateString()}

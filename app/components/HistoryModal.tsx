@@ -29,6 +29,18 @@ export default function HistoryModal({ jobId, jobTitle, isOpen, onClose }: Histo
     }
   }, [isOpen, jobId]);
 
+  // ESC key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
   const fetchHistory = async () => {
     setIsLoading(true);
     setError(null);

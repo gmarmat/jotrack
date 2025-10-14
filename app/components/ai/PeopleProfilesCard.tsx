@@ -1,10 +1,11 @@
 'use client';
 
-import { Users, Sparkles, User, ExternalLink } from 'lucide-react';
+import { Users, User, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
 import SourcesModal, { type Source } from './SourcesModal';
+import AnalyzeButton from './AnalyzeButton';
 
 interface PersonProfile {
   name: string;
@@ -164,15 +165,11 @@ export default function PeopleProfilesCard({
             </span>
           )}
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
-              data-testid="analyze-people-button"
-            >
-              <Sparkles size={14} className={isAnalyzing ? 'animate-pulse' : ''} />
-              {isAnalyzing ? 'Analyzing...' : 'Analyze'}
-            </button>
+            <AnalyzeButton
+              onAnalyze={handleAnalyze}
+              isAnalyzing={isAnalyzing}
+              label="Analyze People Profiles"
+            />
             <PromptViewer 
               promptKind="people" 
               version="v1"
@@ -181,7 +178,7 @@ export default function PeopleProfilesCard({
             />
             <button
               onClick={() => setShowSourcesModal(true)}
-              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
               title="View Sources"
               data-testid="sources-button"
             >

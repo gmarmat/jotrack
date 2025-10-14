@@ -1,7 +1,7 @@
 'use client';
 
 import { X, ExternalLink, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface Source {
   url: string;
@@ -20,6 +20,18 @@ interface SourcesModalProps {
 
 export default function SourcesModal({ isOpen, onClose, title, sources }: SourcesModalProps) {
   const [copied, setCopied] = useState(false);
+
+  // ESC key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -50,15 +62,22 @@ export default function SourcesModal({ isOpen, onClose, title, sources }: Source
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" data-testid="sources-modal">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" 
+      onClick={onClose}
+      data-testid="sources-modal"
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyAll}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
               title="Copy all sources"
             >
               {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
@@ -66,7 +85,7 @@ export default function SourcesModal({ isOpen, onClose, title, sources }: Source
             </button>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-100 rounded-md"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-700 dark:text-gray-300"
               aria-label="Close"
             >
               <X size={20} />

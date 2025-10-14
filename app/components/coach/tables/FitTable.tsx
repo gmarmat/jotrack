@@ -1,10 +1,11 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Info, Code, AlertCircle, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Code, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
 import PromptViewer from '@/app/components/ai/PromptViewer';
+import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 
 interface FitDimension {
   param: string;
@@ -105,16 +106,11 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
             <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
             <div className="ml-auto flex items-center gap-2">
               {onRefresh && (
-                <button
-                  onClick={onRefresh}
-                  disabled={refreshing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
-                  title="Analyze with AI"
-                  data-testid="analyze-matrix-button"
-                >
-                  <Sparkles className={`w-3.5 h-3.5 ${refreshing ? 'animate-pulse' : ''}`} />
-                  {refreshing ? 'Analyzing...' : 'Analyze with AI'}
-                </button>
+                <AnalyzeButton
+                  onAnalyze={onRefresh}
+                  isAnalyzing={refreshing}
+                  label="Analyze Match Matrix"
+                />
               )}
               <PromptViewer 
                 promptKind="match-signals" 

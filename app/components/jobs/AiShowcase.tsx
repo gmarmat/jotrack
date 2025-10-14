@@ -12,6 +12,7 @@ import CompanyEcosystemMatrix from '@/app/components/ai/CompanyEcosystemMatrix';
 import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
 import FitTable from '@/app/components/coach/tables/FitTable';
 import PromptViewer from '@/app/components/ai/PromptViewer';
+import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import { getMatchScoreCategory } from '@/lib/matchScoreCategories';
 
 interface AiShowcaseProps {
@@ -39,7 +40,7 @@ interface AiShowcaseProps {
     provider?: 'local' | 'remote';
     timestamp?: number;
   };
-  onRefresh?: () => void;
+  onRefresh?: (analysisType?: 'company' | 'people' | 'match' | 'skills' | 'ecosystem' | 'all') => void;
 }
 
 export default function AiShowcase({ 
@@ -112,7 +113,7 @@ export default function AiShowcase({
     setExpandedSections(newExpanded);
   };
 
-  const handleRefresh = async (override: boolean = false) => {
+  const handleRefresh = async (override: boolean = false, analysisType?: 'company' | 'people' | 'match' | 'skills' | 'ecosystem' | 'all') => {
     // Check guardrails before proceeding
     const inputs: AnalysisInputs = {
       jdText: jobDescription,
@@ -137,7 +138,7 @@ export default function AiShowcase({
     setGuardrailMessage(null);
     
     try {
-      await onRefresh?.();
+      await onRefresh?.(analysisType);
       // Record successful analysis
       recordAnalysis(jobId, inputs);
       setShowPreliminary(false); // Hide preliminary after AI refresh
@@ -241,7 +242,7 @@ export default function AiShowcase({
           <PromptViewer 
             promptKind="compare" 
             version="v1"
-            buttonLabel="View Prompt"
+            buttonLabel=""
             className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
           />
         </div>
@@ -253,10 +254,17 @@ export default function AiShowcase({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Match Score Card - Reorganized Layout */}
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2 mb-4">
-              <Target size={18} className="text-purple-600" />
-              Match Score
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <Target size={18} className="text-purple-600" />
+                Match Score
+              </h3>
+              <AnalyzeButton
+                onAnalyze={() => handleRefresh(false, 'match')}
+                isAnalyzing={isRefreshing}
+                label="Analyze Match Score"
+              />
+            </div>
             
             {/* Preliminary Score Badge */}
             {showPreliminary && preliminaryScore !== null && (
@@ -333,10 +341,17 @@ export default function AiShowcase({
 
           {/* Skill Match Card */}
           <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2 mb-4">
-              <Lightbulb size={18} className="text-amber-600" />
-              Skill Match
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <Lightbulb size={18} className="text-amber-600" />
+                Skill Match
+              </h3>
+              <AnalyzeButton
+                onAnalyze={() => handleRefresh(false, 'skills')}
+                isAnalyzing={isRefreshing}
+                label="Analyze Skills Match"
+              />
+            </div>
             
             <SkillsMatchChart skills={skills} maxSkills={6} />
             

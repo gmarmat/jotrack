@@ -31,7 +31,6 @@ export default function SkillsMatchChart({
   maxSkills = 10,
   maxKeywords = 50 
 }: SkillsMatchChartProps) {
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [selectedKeyword, setSelectedKeyword] = useState<Skill | null>(null);
 
   // Default category scores if not provided
@@ -88,9 +87,9 @@ export default function SkillsMatchChart({
   // Get keyword color based on match status
   const getKeywordColor = (skill: Skill): string => {
     const total = skill.resumeCount + (skill.fullProfileCount || 0);
-    if (total >= skill.jdCount) return 'text-green-600 hover:text-green-700';
-    if (skill.fullProfileCount && skill.fullProfileCount > 0) return 'text-yellow-600 hover:text-yellow-700';
-    return 'text-red-600 hover:text-red-700';
+    if (total >= skill.jdCount) return 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300';
+    if (skill.fullProfileCount && skill.fullProfileCount > 0) return 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300';
+    return 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300';
   };
 
   const getKeywordStatus = (skill: Skill): string => {
@@ -105,24 +104,17 @@ export default function SkillsMatchChart({
   return (
     <div className="space-y-6" data-testid="skills-match-chart">
       {/* Category-Level Bars */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-gray-900">Match by Category</h4>
+      <div className="space-y-5">
+        <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Match by Category</h4>
         
         {defaultCategories.map((category, idx) => (
           <div 
             key={idx}
-            className="space-y-1"
-            onMouseEnter={() => setHoveredCategory(category.name)}
-            onMouseLeave={() => setHoveredCategory(null)}
+            className="space-y-2"
           >
-            {/* Category name and score */}
+            {/* Category name and total score */}
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-gray-900">{category.name}</span>
-              {hoveredCategory === category.name && (
-                <span className="text-xs text-gray-600 animate-fade-in">
-                  Resume: {category.resumeCoverage}% + Profile: +{category.profileBonus}% = {category.totalScore}%
-                </span>
-              )}
+              <span className="font-medium text-gray-600 dark:text-gray-400">{category.name}</span>
               <span className={`text-sm font-bold ${getFitColor(category.totalScore)}`}>
                 {category.totalScore}%
               </span>
@@ -133,23 +125,23 @@ export default function SkillsMatchChart({
               {/* Bar container with inner shadow for depth */}
               <div className="relative h-10 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden shadow-inner">
                 {/* Fit level background zones (subtle) */}
-                <div className="absolute inset-0 flex opacity-30">
-                  <div className="w-[40%] bg-red-100 border-r border-red-300"></div>
-                  <div className="w-[35%] bg-yellow-100 border-r border-yellow-300"></div>
-                  <div className="w-[25%] bg-green-100"></div>
+                <div className="absolute inset-0 flex opacity-20">
+                  <div className="w-[40%] bg-red-100 dark:bg-red-900 border-r border-red-300 dark:border-red-700"></div>
+                  <div className="w-[35%] bg-yellow-100 dark:bg-yellow-900 border-r border-yellow-300 dark:border-yellow-700"></div>
+                  <div className="w-[25%] bg-green-100 dark:bg-green-900"></div>
                 </div>
                 
                 {/* Resume Coverage (green) - 100% stacked */}
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-b from-green-400 to-green-600 transition-all duration-500 border-r-2 border-green-700"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-b from-green-400 to-green-600 dark:from-green-500 dark:to-green-700 transition-all duration-500 border-r-2 border-green-700 dark:border-green-800"
                   style={{ width: `${category.resumeCoverage}%` }}
                   title={`Resume: ${category.resumeCoverage}%`}
                 />
 
-                {/* Profile Bonus (purple) - stacked on top of resume */}
+                {/* Profile Bonus (purple) - stacked on top of resume with pulse animation */}
                 {category.profileBonus > 0 && (
                   <div
-                    className="absolute top-0 h-full bg-gradient-to-b from-purple-400 to-purple-600 transition-all duration-500 border-r-2 border-purple-700"
+                    className="absolute top-0 h-full bg-gradient-to-b from-purple-400 to-purple-600 dark:from-purple-500 dark:to-purple-700 transition-all duration-500 animate-pulse-bonus"
                     style={{ 
                       left: `${category.resumeCoverage}%`,
                       width: `${category.profileBonus}%` 
@@ -158,141 +150,102 @@ export default function SkillsMatchChart({
                   />
                 )}
               </div>
+            </div>
 
-              {/* Labels OUTSIDE bar (below) */}
-              <div className="flex items-center justify-between mt-1 text-xs">
-                <div className="flex items-center gap-3">
-                  <span className="text-green-700 dark:text-green-400 font-medium">
-                    Resume: {category.resumeCoverage}%
-                  </span>
-                  {category.profileBonus > 0 && (
-                    <span className="text-purple-700 dark:text-purple-400 font-medium">
-                      Profile: +{category.profileBonus}%
-                    </span>
-                  )}
-                </div>
-                <span className={`font-semibold ${getFitColor(category.totalScore)}`}>
-                  {getFitLevel(category.totalScore)}
+            {/* Permanent breakdown labels (below bar, color-matched) */}
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-3">
+                <span className="text-green-700 dark:text-green-400 font-medium">
+                  Resume: {category.resumeCoverage}%
                 </span>
-              </div>
-
-              {/* Fit axis below */}
-              <div className="flex items-center justify-between mt-1 text-[10px] text-gray-500 dark:text-gray-400">
-                <span>← Low Fit (0%)</span>
-                <span>Med Fit (40-75%)</span>
-                <span>High Fit (75%+) →</span>
+                <span className="text-purple-700 dark:text-purple-400 font-medium">
+                  Profile: +{category.profileBonus}%
+                </span>
               </div>
             </div>
           </div>
         ))}
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-4 text-xs text-gray-600 pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-blue-400 opacity-20 rounded"></div>
-            <span>JD Required</span>
+        {/* Unified Horizontal Axis (ONE for all 3 bars) */}
+        <div className="mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
+          <div className="relative">
+            {/* Axis line */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+            
+            {/* Axis labels */}
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 pt-2">
+              <span className="font-medium">Low Fit (0%)</span>
+              <span className="font-medium">Med Fit (40-75%)</span>
+              <span className="font-medium">High Fit (75%+)</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
-            <span>Resume</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-purple-500 opacity-80 rounded"></div>
-            <span>Profile Bonus</span>
+
+          {/* Unified Legend */}
+          <div className="flex items-center justify-center gap-4 mt-3 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-3 bg-gradient-to-b from-green-400 to-green-600 dark:from-green-500 dark:to-green-700 rounded"></div>
+              <span className="text-gray-700 dark:text-gray-300">Resume</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-3 bg-gradient-to-b from-purple-400 to-purple-600 dark:from-purple-500 dark:to-purple-700 rounded"></div>
+              <span className="text-gray-700 dark:text-gray-300">Profile Bonus</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Keyword-Level Word Cloud */}
-      <div className="pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">Top Keywords from Job Description</h4>
-        
-        <div className="flex flex-wrap gap-3 items-center justify-center p-4 bg-gray-50 rounded-lg min-h-[200px]">
-          {topKeywords.map((skill, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedKeyword(skill)}
-              className={`font-semibold transition-all cursor-pointer hover:scale-110 ${getKeywordSize(skill.jdCount)} ${getKeywordColor(skill)}`}
-              title={`Click for details: ${skill.term}`}
-            >
-              {skill.term}
-            </button>
-          ))}
-        </div>
+      {topKeywords.length > 0 && (
+        <div className="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Keyword Match</h4>
+            <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+              <Info size={14} />
+              <span>Size = JD importance | Color = match status</span>
+            </div>
+          </div>
 
-        {/* Color legend */}
-        <div className="flex items-center justify-center gap-4 text-xs text-gray-600 mt-3">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-green-600 rounded-full"></div>
-            <span>Have it</span>
+          {/* Word cloud */}
+          <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            {topKeywords.map((skill, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedKeyword(skill)}
+                className={`${getKeywordSize(skill.jdCount)} ${getKeywordColor(skill)} font-medium transition-all hover:scale-110 cursor-pointer`}
+                title={`${skill.term}: JD requires ${skill.jdCount}, You have ${skill.resumeCount} (resume) + ${skill.fullProfileCount || 0} (profile)`}
+              >
+                {skill.term}
+              </button>
+            ))}
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-yellow-600 rounded-full"></div>
-            <span>Partial/Profile</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-            <span>Missing</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Info size={12} />
-            <span>Size = importance in JD</span>
-          </div>
-        </div>
-      </div>
 
-      {/* Keyword Detail Modal */}
-      {selectedKeyword && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={() => setSelectedKeyword(null)}
-        >
-          <div 
-            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-gray-900 mb-4">{selectedKeyword.term}</h3>
-            
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Status:</span>
-                <span className={`font-semibold ${getKeywordColor(selectedKeyword)}`}>
-                  {getKeywordStatus(selectedKeyword)}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">JD Count:</span>
-                <span className="font-medium text-gray-900">{selectedKeyword.jdCount}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Resume Count:</span>
-                <span className="font-medium text-gray-900">{selectedKeyword.resumeCount}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Profile Count:</span>
-                <span className="font-medium text-gray-900">{selectedKeyword.fullProfileCount || 0}</span>
-              </div>
-
-              <div className="pt-3 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Total Match:</span>
-                  <span className="font-bold text-purple-600">
-                    {selectedKeyword.resumeCount + (selectedKeyword.fullProfileCount || 0)} / {selectedKeyword.jdCount}
-                  </span>
+          {/* Selected keyword details */}
+          {selectedKeyword && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">{selectedKeyword.term}</div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium">Status:</span> {getKeywordStatus(selectedKeyword)}
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-400 text-xs space-y-0.5">
+                    <div>• JD requires: {selectedKeyword.jdCount} mentions</div>
+                    <div>• Resume has: {selectedKeyword.resumeCount} mentions</div>
+                    {selectedKeyword.fullProfileCount !== undefined && (
+                      <div>• Full profile has: {selectedKeyword.fullProfileCount} additional mentions</div>
+                    )}
+                  </div>
                 </div>
+                <button
+                  onClick={() => setSelectedKeyword(null)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
               </div>
             </div>
-
-            <button
-              onClick={() => setSelectedKeyword(null)}
-              className="mt-6 w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium text-gray-900"
-            >
-              Close
-            </button>
-          </div>
+          )}
         </div>
       )}
     </div>

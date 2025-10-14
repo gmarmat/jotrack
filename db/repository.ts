@@ -151,6 +151,8 @@ export function getAttachmentSummaries(jobIds: string[]): AttachmentSummary[] {
       MAX(created_at) as latest
     FROM attachments
     WHERE job_id IN (${placeholders})
+      AND deleted_at IS NULL
+      AND is_active = 1
     GROUP BY job_id, kind
   `);
   

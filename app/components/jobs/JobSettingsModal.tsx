@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, FileText, Info, StickyNote, Zap } from 'lucide-react';
 import { useVersions } from '@/app/hooks/useVersions';
 import { formatFileSize } from '@/lib/files';
@@ -29,6 +29,16 @@ export default function JobSettingsModal({
   onArchive
 }: JobSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('files');
+
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
 
   const resume = useVersions(jobId, 'resume');
   const jd = useVersions(jobId, 'jd');

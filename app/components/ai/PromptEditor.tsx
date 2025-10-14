@@ -48,6 +48,18 @@ export default function PromptEditor({
   const [saveDescription, setSaveDescription] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   
+  // ESC key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+  
   // Test playground state
   const [testData, setTestData] = useState({
     jobDescription: 'Sample job description...',
@@ -194,8 +206,14 @@ export default function PromptEditor({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full h-[95vh] max-w-[95vw] flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-xl shadow-2xl w-full h-[95vh] max-w-[95vw] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
           <div className="flex items-center gap-3">

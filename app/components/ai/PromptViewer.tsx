@@ -46,11 +46,11 @@ export default function PromptViewer({
     return (
       <button
         onClick={handleOpen}
-        className={`text-sm text-gray-600 hover:text-purple-600 flex items-center gap-1 ${className}`}
+        className={`text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center gap-1 ${className}`}
         title="View the AI prompt being used"
       >
         <Eye className="w-4 h-4" />
-        {buttonLabel}
+        {buttonLabel && <span>{buttonLabel}</span>}
       </button>
     );
   }

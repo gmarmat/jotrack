@@ -1,9 +1,10 @@
 'use client';
 
-import { Building2, TrendingUp, Sparkles, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Building2, TrendingUp, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import SourcesModal, { type Source } from './SourcesModal';
+import AnalyzeButton from './AnalyzeButton';
 
 interface CompanyReference {
   name: string;
@@ -79,13 +80,11 @@ export default function CompanyEcosystemMatrix({ companies, isAiPowered }: Compa
               Sample Data
             </span>
           )}
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium"
-            data-testid="analyze-ecosystem-button"
-          >
-            <Sparkles size={14} />
-            Analyze
-          </button>
+          <AnalyzeButton
+            onAnalyze={() => {}}
+            isAnalyzing={false}
+            label="Analyze Company Ecosystem"
+          />
           <PromptViewer 
             promptKind="ecosystem" 
             version="v1"
@@ -94,7 +93,7 @@ export default function CompanyEcosystemMatrix({ companies, isAiPowered }: Compa
           />
           <button
             onClick={() => setShowSourcesModal(true)}
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             title="View Sources"
             data-testid="sources-button"
           >

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Key, Database, Sliders, Code, Sparkles, Download, Upload, Trash2, Clock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -16,6 +16,18 @@ interface GlobalSettingsModalProps {
 
 export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai' }: GlobalSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+
+  // ESC key handler
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

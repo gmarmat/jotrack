@@ -40,6 +40,16 @@ export default function AttachmentsModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
+  // ESC key handler
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
   const hasImages = useMemo(
     () => (list || []).some((a) => /\.(png|jpg|jpeg|webp)$/i.test(a.filename)),
     [list]

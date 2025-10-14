@@ -56,7 +56,7 @@ export default function JobNotesCard({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm" data-testid="job-notes-card">
+    <div className="bg-blue-50 dark:bg-gray-800 rounded-xl border border-gray-300 dark:border-gray-700 shadow-sm" data-testid="job-notes-card">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function JobNotesCard({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add your notes about this application..."
-              className="w-full min-h-[200px] px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full min-h-[200px] form-field resize-y"
               data-testid="notes-textarea"
             />
             
