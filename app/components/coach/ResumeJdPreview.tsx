@@ -36,12 +36,16 @@ export default function ResumeJdPreview({
         const res = await fetch(`/api/jobs/${jobId}/attachments`);
         const data = await res.json();
         const attachments = data.attachments || [];
-        const attachment = attachments.find((a: any) => a.kind === kind && !a.deletedAt);
+        const attachment = attachments.find((a: any) => a.kind === kind && a.deletedAt === null && a.isActive);
 
         if (attachment) {
           setHasAttachment(true);
           // Extract text from attachment
-          const textRes = await fetch(`/api/files/extract?path=${encodeURIComponent(attachment.path)}`);
+          const textRes = await fetch(`/api/files/extract`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: attachment.path })
+          });
           if (textRes.ok) {
             const textData = await textRes.json();
             const extractedText = textData.text || '';

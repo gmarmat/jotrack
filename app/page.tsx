@@ -13,7 +13,7 @@ import BackupRestorePanel from './components/BackupRestorePanel';
 import FilterChips from './components/FilterChips';
 import { SelectionBar } from './components/SelectionBar';
 import ReloadDataButton from './components/ReloadDataButton';
-import SettingsModal from './components/SettingsModal';
+import GlobalSettingsModal from './components/GlobalSettingsModal';
 import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
@@ -241,7 +241,7 @@ function HomeContent() {
         </header>
 
         {/* Settings Modal */}
-        <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+        <GlobalSettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
         {/* Create Job Form */}
         <div className="bg-white rounded-lg shadow-lg p-6">

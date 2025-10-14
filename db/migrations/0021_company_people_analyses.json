@@ -1,0 +1,7 @@
+{
+  "version": "0021",
+  "when": 1697212800000,
+  "tag": "company_people_analyses",
+  "description": "Add company_analyses and people_analyses tables for caching AI results"
+}
+

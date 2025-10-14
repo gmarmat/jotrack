@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { loadPrompt, renderTemplate } from '@/core/ai/promptLoader';
 import { callAiProvider } from '@/lib/coach/aiProvider';
 import { checkRateLimit, getResetTime, getIdentifier } from '@/lib/coach/rateLimiter';
+import { sqlite } from '@/db/client';
 
 export const dynamic = 'force-dynamic';
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,12 +26,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { 
+      jobId,
       jobDescription, 
       recruiterUrl = '', 
       peerUrls = [], 
       skipLevelUrls = [],
       additionalContext = '',
-      dryRun = false 
+      dryRun = false,
+      forceRefresh = false
     } = body;
 
     // Validation
@@ -37,6 +42,28 @@ export async function POST(request: NextRequest) {
         { error: 'jobDescription is required' },
         { status: 400 }
       );
+    }
+
+    // Check cache if jobId provided and not force refresh
+    if (jobId && !forceRefresh) {
+      try {
+        const cached = sqlite.prepare(
+          'SELECT result_json, created_at FROM people_analyses WHERE job_id = ? ORDER BY created_at DESC LIMIT 1'
+        ).get(jobId) as any;
+
+        if (cached) {
+          const age = Date.now() - cached.created_at;
+          if (age < CACHE_TTL_MS) {
+            const result = JSON.parse(cached.result_json);
+            result.cached = true;
+            result.cacheAge = age;
+            return NextResponse.json(result);
+          }
+        }
+      } catch (error) {
+        console.error('Cache lookup error:', error);
+        // Continue to fresh analysis
+      }
     }
 
     // Dry-run mode (local fixture)
@@ -112,6 +139,19 @@ export async function POST(request: NextRequest) {
       result.provider = 'remote';
       result.timestamp = Date.now();
       result.sources = result.sources || [];
+
+      // Save to DB cache if jobId provided
+      if (jobId) {
+        try {
+          sqlite.prepare(`
+            INSERT OR REPLACE INTO people_analyses (job_id, result_json, created_at)
+            VALUES (?, ?, ?)
+          `).run(jobId, JSON.stringify(result), Date.now());
+        } catch (error) {
+          console.error('Failed to cache people analysis:', error);
+          // Continue anyway - caching failure shouldn't block response
+        }
+      }
 
       return NextResponse.json(result);
     } catch (error: any) {

@@ -12,6 +12,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+node_modules/.cache/
+.turbo/
 
 # Playwright
 test-results/
@@ -41,3 +43,60 @@ logs/
 *.pem
 *.sqlite
 storage/
+
+# ========================================
+# Planning, Progress & Internal Documentation
+# Keep these files LOCAL ONLY (not on GitHub)
+# ========================================
+
+# Session notes and planning docs
+*_PLAN.md
+*_COMPLETE.md
+*_STATUS.md
+*_SUMMARY.md
+*_PROGRESS.md
+*_GUIDE.md
+*_IMPLEMENTATION*.md
+*_EXECUTION*.md
+*_SESSION*.md
+*_FIXES*.md
+*_NOTE.md
+
+# Version-specific planning
+V[0-9]*.md
+
+# CSS troubleshooting notes
+CSS_*.md
+
+# Coach Mode implementation notes
+COACH_*.md
+
+# Testing and verification docs
+START_HERE*.md
+READ_ME_FIRST.md
+READY_TO_TEST*.md
+TEST_RESULTS*.md
+BUILD_AND_TEST*.md
+
+# Other internal docs
+HARDENING*.md
+FINAL_STATUS*.md
+SIMPLE_TEST_GUIDE*.md
+REMAINING_WORK.md
+FIXES_APPLIED.md
+RATE_LIMIT_FIX.md
+ALL_DONE*.md
+
+# Prompt development files (keep prompts in core/ai/prompts/)
+prompts/*.md
+
+# ========================================
+# Keep only PUBLIC-FACING documentation
+# ========================================
+!README.md
+!CHANGELOG.md
+!ARCHITECTURE.md
+!PREVIEW_SYSTEM_GUIDE.md
+!UI_DESIGN_SPEC.md
+!KNOWN_ISSUES.md
+!RELEASE_NOTES*.md

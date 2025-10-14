@@ -205,15 +205,13 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       )}
 
       {/* Why This Matters */}
-      <details className="mt-4">
-        <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-900">
-          Why this matters
-        </summary>
-        <p className="text-sm text-gray-600 mt-2">
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <p className="text-sm font-semibold text-gray-700 mb-1">Why this matters:</p>
+        <p className="text-sm text-gray-600">
           The fit matrix evaluates your profile against 25 job-relevant dimensions, weighted by importance. 
           Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
         </p>
-      </details>
+      </div>
     </div>
   );
 }

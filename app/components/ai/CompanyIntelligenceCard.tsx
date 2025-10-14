@@ -2,6 +2,7 @@
 
 import { Building2, Users, DollarSign, TrendingUp, Target, Heart, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import PromptViewer from './PromptViewer';
 
 interface CompanyIntelligence {
   name: string;
@@ -58,6 +59,7 @@ export default function CompanyIntelligenceCard({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          jobId,
           jobDescription,
           companyName,
           companyUrls,
@@ -120,15 +122,23 @@ export default function CompanyIntelligenceCard({
               Sample Data
             </span>
           )}
-          <button
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
-            data-testid="analyze-company-button"
-          >
-            <Sparkles size={14} className={isAnalyzing ? 'animate-pulse' : ''} />
-            {isAnalyzing ? 'Analyzing...' : 'Analyze'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAnalyze}
+              disabled={isAnalyzing}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
+              data-testid="analyze-company-button"
+            >
+              <Sparkles size={14} className={isAnalyzing ? 'animate-pulse' : ''} />
+              {isAnalyzing ? 'Analyzing...' : 'Analyze'}
+            </button>
+            <PromptViewer 
+              promptKind="company" 
+              version="v1"
+              buttonLabel=""
+              className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+            />
+          </div>
         </div>
       </div>
 

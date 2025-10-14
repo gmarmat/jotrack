@@ -10,6 +10,7 @@ import CompanyIntelligenceCard from '@/app/components/ai/CompanyIntelligenceCard
 import CompanyEcosystemMatrix from '@/app/components/ai/CompanyEcosystemMatrix';
 import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
 import FitTable from '@/app/components/coach/tables/FitTable';
+import PromptViewer from '@/app/components/ai/PromptViewer';
 import { getMatchScoreCategory } from '@/lib/matchScoreCategories';
 
 interface AiShowcaseProps {
@@ -114,6 +115,13 @@ export default function AiShowcase({
             <Sparkles size={18} className={isRefreshing ? 'animate-pulse' : ''} />
             {isRefreshing ? 'Analyzing...' : 'Analyze with AI'}
           </button>
+
+          <PromptViewer 
+            promptKind="compare" 
+            version="v1"
+            buttonLabel="View Prompt"
+            className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50"
+          />
           
           <Link
             href={`/settings/ai?from=/jobs/${jobId}`}

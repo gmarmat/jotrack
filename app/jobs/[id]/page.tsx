@@ -22,6 +22,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
   const [aiData, setAiData] = useState<any>(null);
+  const [analysisData, setAnalysisData] = useState<any>(null); // v2.4: Data for AiShowcase
   const router = useRouter();
   const id = params.id;
 
@@ -68,6 +69,24 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     };
     fetchJob();
   }, [id, router]);
+
+  // v2.4: Fetch analysis data for AiShowcase
+  useEffect(() => {
+    const fetchAnalysisData = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${id}/analysis-data`);
+        if (res.ok) {
+          const data = await res.json();
+          setAnalysisData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch analysis data:', error);
+      }
+    };
+    if (id) {
+      fetchAnalysisData();
+    }
+  }, [id]);
 
   const handleStatusChange = (newStatus: JobStatus) => {
     setJob((prev: any) => ({ ...prev, status: newStatus }));
@@ -145,6 +164,12 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         {/* 3. AI Showcase: Full-width grid */}
         <AiShowcase
           jobId={job.id}
+          jobDescription={analysisData?.jobDescription || ''}
+          companyName={analysisData?.companyName || job.company}
+          companyUrls={analysisData?.companyUrls || []}
+          recruiterUrl={analysisData?.recruiterUrl || ''}
+          peerUrls={analysisData?.peerUrls || []}
+          skipLevelUrls={analysisData?.skipLevelUrls || []}
           aiData={aiData}
           onRefresh={handleRefreshAI}
         />

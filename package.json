@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next node_modules/.cache .turbo && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "clean": "rm -rf .next node_modules/.cache .turbo",
     "test": "echo 'Unit tests skipped due to tinypool path resolution issue. Run e2e tests with: npm run e2e' && exit 0",
     "test:vitest": "vitest run --reporter=basic",
     "test:watch": "vitest",

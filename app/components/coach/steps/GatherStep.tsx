@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Link as LinkIcon, Upload, User, Users, Building2, Sparkles } from 'lucide-react';
 import ResumeJdPreview from '../ResumeJdPreview';
+import TokenOptimizer from '../TokenOptimizer';
 
 interface GatherStepProps {
   jobId: string;
@@ -28,13 +29,25 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
   const [aiConfigured, setAiConfigured] = useState(false);
   const [checkingAiStatus, setCheckingAiStatus] = useState(true);
 
+  // Sync local state changes to parent (for auto-save)
+  useEffect(() => {
+    onUpdate({
+      jobDescription,
+      resume,
+      recruiterUrl,
+      peerUrls,
+      skipLevelUrls,
+      otherCompanyUrls,
+    });
+  }, [jobDescription, resume, recruiterUrl, peerUrls, skipLevelUrls, otherCompanyUrls]);
+
   // Check AI configuration status
   useEffect(() => {
     const checkAiStatus = async () => {
       try {
-        const res = await fetch('/api/ai/keyvault/status');
-        const data = await res.json();
-        setAiConfigured(data.configured);
+      const res = await fetch('/api/ai/keyvault/status');
+      const data = await res.json();
+      setAiConfigured(data.hasApiKey && data.networkEnabled);
       } catch (error) {
         console.error('Failed to check AI status:', error);
       } finally {
@@ -125,10 +138,38 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
                   className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 whitespace-nowrap"
                   data-testid="enable-ai-link"
                 >
-                  Enable AI
+                  Configure AI
                 </a>
               )}
+              {aiConfigured && (
+                <button
+                  onClick={() => {/* TODO: Trigger all AI analyses */}}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-md hover:from-purple-700 hover:to-blue-700 font-semibold flex items-center gap-2"
+                  data-testid="analyze-all-now-button"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Analyze All Now
+                </button>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Quick Analyze All Button (when AI is ready) */}
+        {!checkingAiStatus && aiConfigured && (
+          <div className="mt-4">
+            <button
+              onClick={() => {/* TODO: Trigger all analyses */}}
+              disabled={!jobDescription.trim() || !resume.trim()}
+              className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-base font-bold flex items-center justify-center gap-2"
+              data-testid="quick-analyze-all"
+            >
+              <Sparkles className="w-5 h-5" />
+              ✨ Run AI Analysis on All Data
+            </button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              Analyzes company, people, match score, and skills in one go
+            </p>
           </div>
         )}
       </div>
@@ -147,6 +188,16 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
           value={jobDescription}
           onChange={setJobDescription}
         />
+
+        {jobDescription.trim() && (
+          <div className="mt-4">
+            <TokenOptimizer
+              originalText={jobDescription}
+              onOptimize={setJobDescription}
+              label="Job Description"
+            />
+          </div>
+        )}
 
         <div className="mt-3 text-sm text-gray-600">
           <p className="font-medium mb-1">Why this matters:</p>
@@ -171,6 +222,16 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
           value={resume}
           onChange={setResume}
         />
+
+        {resume.trim() && (
+          <div className="mt-4">
+            <TokenOptimizer
+              originalText={resume}
+              onOptimize={setResume}
+              label="Resume"
+            />
+          </div>
+        )}
 
         <div className="mt-3 text-sm text-gray-600">
           <p className="font-medium mb-1">Why this matters:</p>
