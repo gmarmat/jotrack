@@ -45,6 +45,7 @@ export default function CoachPage({ params }: CoachPageProps) {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastSaved, setLastSaved] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [autoLoadStatus, setAutoLoadStatus] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
 
   const steps: Step[] = [
     { id: 'gather', label: 'Gather', status: stepStatuses.gather },
@@ -106,6 +107,70 @@ export default function CoachPage({ params }: CoachPageProps) {
   const handleRetrySave = () => {
     updateCoachData({});
   };
+
+  // Auto-load attachments (JD and Resume)
+  useEffect(() => {
+    const autoLoadAttachments = async () => {
+      setAutoLoadStatus('loading');
+      try {
+        const res = await fetch(`/api/jobs/${jobId}/attachments`);
+        if (!res.ok) {
+          setAutoLoadStatus('error');
+          return;
+        }
+
+        const data = await res.json();
+        const attachments = data.attachments || [];
+
+        // Find JD and Resume attachments (active, not deleted)
+        const jdAttachment = attachments.find((a: any) => 
+          a.kind === 'jd' && !a.deletedAt && a.isActive
+        );
+        const resumeAttachment = attachments.find((a: any) => 
+          a.kind === 'resume' && !a.deletedAt && a.isActive
+        );
+
+        // Extract text content from attachments
+        const updates: any = {};
+
+        if (jdAttachment) {
+          const extractRes = await fetch('/api/files/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: jdAttachment.path })
+          });
+          if (extractRes.ok) {
+            const extractData = await extractRes.json();
+            updates.jobDescription = extractData.text || '';
+          }
+        }
+
+        if (resumeAttachment) {
+          const extractRes = await fetch('/api/files/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: resumeAttachment.path })
+          });
+          if (extractRes.ok) {
+            const extractData = await extractRes.json();
+            updates.resume = extractData.text || '';
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          setCoachData(prev => ({ ...prev, ...updates }));
+          setAutoLoadStatus('loaded');
+        } else {
+          setAutoLoadStatus('idle');
+        }
+      } catch (error) {
+        console.error('Error auto-loading attachments:', error);
+        setAutoLoadStatus('error');
+      }
+    };
+
+    autoLoadAttachments();
+  }, [jobId]);
 
   // Keyboard navigation
   useEffect(() => {

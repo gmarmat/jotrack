@@ -33,6 +33,54 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
   const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
+  const [autoLoaded, setAutoLoaded] = useState({ jd: false, resume: false });
+
+  // Auto-load from attachments on mount
+  useEffect(() => {
+    const loadFromAttachments = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${jobId}/attachments`);
+        if (!res.ok) return;
+
+        const attachData = await res.json();
+        const attachments = attachData.attachments || [];
+
+        const jd = attachments.find((a: any) => a.kind === 'jd' && !a.deletedAt && a.isActive);
+        const resumeAttachment = attachments.find((a: any) => a.kind === 'resume' && !a.deletedAt && a.isActive);
+
+        if (jd && !data.jobDescription) {
+          const extractRes = await fetch('/api/files/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: jd.path })
+          });
+          if (extractRes.ok) {
+            const extractData = await extractRes.json();
+            setJobDescription(extractData.text || '');
+            setAutoLoaded(prev => ({ ...prev, jd: true }));
+          }
+        }
+
+        if (resumeAttachment && !data.resume) {
+          const extractRes = await fetch('/api/files/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: resumeAttachment.path })
+          });
+          if (extractRes.ok) {
+            const extractData = await extractRes.json();
+            setResume(extractData.text || '');
+            setAutoLoaded(prev => ({ ...prev, resume: true }));
+          }
+        }
+      } catch (error) {
+        console.error('Error auto-loading attachments:', error);
+      }
+    };
+
+    loadFromAttachments();
+  }, [jobId]);
+
   // Sync local state changes to parent (for auto-save)
   useEffect(() => {
     onUpdate({
@@ -208,6 +256,11 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
         <div className="flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Job Description</h3>
+          {autoLoaded.jd && (
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+              📎 Auto-loaded from attachments
+            </span>
+          )}
         </div>
 
         <ResumeJdPreview
@@ -242,6 +295,11 @@ export default function GatherStep({ jobId, data, onUpdate, onComplete }: Gather
         <div className="flex items-center gap-2 mb-4">
           <Upload className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-semibold text-gray-900">Your Resume</h3>
+          {autoLoaded.resume && (
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+              📎 Auto-loaded from attachments
+            </span>
+          )}
         </div>
 
         <ResumeJdPreview

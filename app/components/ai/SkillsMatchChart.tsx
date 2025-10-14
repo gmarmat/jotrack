@@ -128,63 +128,60 @@ export default function SkillsMatchChart({
               </span>
             </div>
 
-            {/* Stacked bar with fit zones */}
-            <div className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
-              {/* Fit level background zones */}
-              <div className="absolute inset-0 flex">
-                <div className="w-[40%] bg-red-50 border-r border-red-200"></div>
-                <div className="w-[35%] bg-yellow-50 border-r border-yellow-200"></div>
-                <div className="w-[25%] bg-green-50"></div>
-              </div>
-              
-              {/* Fit level markers */}
-              <div className="absolute inset-0 flex text-[10px] text-gray-400 pointer-events-none">
-                <div className="w-[40%] flex items-center justify-center">Low Fit</div>
-                <div className="w-[35%] flex items-center justify-center">Med Fit</div>
-                <div className="w-[25%] flex items-center justify-center">High Fit</div>
-              </div>
-
-              {/* JD Required (light blue background) */}
-              <div
-                className="absolute left-0 top-0 h-full bg-blue-400 opacity-20"
-                style={{ width: `${category.jdRequired}%` }}
-                title={`JD Required: ${category.jdRequired}%`}
-              />
-
-              {/* Resume Coverage (green) */}
-              <div
-                className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-500"
-                style={{ width: `${category.resumeCoverage}%` }}
-                title={`Resume: ${category.resumeCoverage}%`}
-              />
-
-              {/* Profile Bonus (purple overlay - additive) */}
-              {category.profileBonus > 0 && (
+            {/* 100% Stacked Bar with shadow effect */}
+            <div className="relative">
+              {/* Bar container with inner shadow for depth */}
+              <div className="relative h-10 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden shadow-inner">
+                {/* Fit level background zones (subtle) */}
+                <div className="absolute inset-0 flex opacity-30">
+                  <div className="w-[40%] bg-red-100 border-r border-red-300"></div>
+                  <div className="w-[35%] bg-yellow-100 border-r border-yellow-300"></div>
+                  <div className="w-[25%] bg-green-100"></div>
+                </div>
+                
+                {/* Resume Coverage (green) - 100% stacked */}
                 <div
-                  className="absolute top-0 h-full bg-purple-500 transition-all duration-500 opacity-80"
-                  style={{ 
-                    left: `${category.resumeCoverage}%`,
-                    width: `${category.profileBonus}%` 
-                  }}
-                  title={`Profile Bonus: +${category.profileBonus}%`}
+                  className="absolute left-0 top-0 h-full bg-gradient-to-b from-green-400 to-green-600 transition-all duration-500 border-r-2 border-green-700"
+                  style={{ width: `${category.resumeCoverage}%` }}
+                  title={`Resume: ${category.resumeCoverage}%`}
                 />
-              )}
 
-              {/* Score label inside bar */}
-              <div className="relative h-full flex items-center px-3">
-                {category.totalScore > 15 && (
-                  <span className="text-sm font-bold text-white drop-shadow relative z-10">
-                    {category.totalScore}%
-                  </span>
+                {/* Profile Bonus (purple) - stacked on top of resume */}
+                {category.profileBonus > 0 && (
+                  <div
+                    className="absolute top-0 h-full bg-gradient-to-b from-purple-400 to-purple-600 transition-all duration-500 border-r-2 border-purple-700"
+                    style={{ 
+                      left: `${category.resumeCoverage}%`,
+                      width: `${category.profileBonus}%` 
+                    }}
+                    title={`Profile Bonus: +${category.profileBonus}%`}
+                  />
                 )}
               </div>
-            </div>
 
-            {/* Fit level indicator */}
-            <div className="flex items-center justify-between text-xs">
-              <span className={getFitColor(category.totalScore)}>
-                {getFitLevel(category.totalScore)}
-              </span>
+              {/* Labels OUTSIDE bar (below) */}
+              <div className="flex items-center justify-between mt-1 text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="text-green-700 dark:text-green-400 font-medium">
+                    Resume: {category.resumeCoverage}%
+                  </span>
+                  {category.profileBonus > 0 && (
+                    <span className="text-purple-700 dark:text-purple-400 font-medium">
+                      Profile: +{category.profileBonus}%
+                    </span>
+                  )}
+                </div>
+                <span className={`font-semibold ${getFitColor(category.totalScore)}`}>
+                  {getFitLevel(category.totalScore)}
+                </span>
+              </div>
+
+              {/* Fit axis below */}
+              <div className="flex items-center justify-between mt-1 text-[10px] text-gray-500 dark:text-gray-400">
+                <span>← Low Fit (0%)</span>
+                <span>Med Fit (40-75%)</span>
+                <span>High Fit (75%+) →</span>
+              </div>
             </div>
           </div>
         ))}
