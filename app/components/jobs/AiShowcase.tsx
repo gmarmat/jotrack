@@ -340,24 +340,7 @@ export default function AiShowcase({
             
             <SkillsMatchChart skills={skills} maxSkills={6} />
             
-            {/* 3-Level Skills Visualization */}
-            {skills && skills.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Target size={16} className="text-purple-600" />
-                  Detailed Skill Proficiency
-                </h4>
-                <SkillThreeLevelChart 
-                  skills={skills.map((s: any) => ({
-                    skill: s.skill || s.name || 'Unknown',
-                    jdLevel: s.required ? 100 : 50,
-                    resumeLevel: s.level || s.proficiency || 0,
-                    fullProfileLevel: (s.level || s.proficiency || 0) + 10, // Placeholder: would come from full profile analysis
-                  }))}
-                  maxSkills={6}
-                />
-              </div>
-            )}
+            {/* Detailed skill proficiency now integrated into unified chart above */}
           </div>
         </div>
 

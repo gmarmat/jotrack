@@ -56,7 +56,9 @@ export default function SkillAssessmentCard({ assessments, maxSkills = 10 }: Ski
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold text-gray-900">{assessment.skill}</h4>
                   {showDiscrepancy && (
-                    <AlertTriangle size={14} className="text-orange-600" title="Large discrepancy detected" />
+                    <span title="Large discrepancy detected">
+                      <AlertTriangle size={14} className="text-orange-600" />
+                    </span>
                   )}
                 </div>
                 <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${confidenceColor}`}>

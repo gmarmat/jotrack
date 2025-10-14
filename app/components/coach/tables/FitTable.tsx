@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, Info, Code, AlertCircle, Sparkles } from 'lucid
 import { useState } from 'react';
 import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
-import PromptViewer from '../ai/PromptViewer';
+import PromptViewer from '@/app/components/ai/PromptViewer';
 
 interface FitDimension {
   param: string;

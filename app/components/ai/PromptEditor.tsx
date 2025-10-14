@@ -175,7 +175,7 @@ export default function PromptEditor({
 
   const extractVariables = (text: string): string[] => {
     const matches = text.match(/\{\{(\w+)\}\}/g);
-    return matches ? [...new Set(matches.map(m => m.slice(2, -2)))] : [];
+    return matches ? Array.from(new Set(matches.map(m => m.slice(2, -2)))) : [];
   };
 
   const renderPreview = () => {
