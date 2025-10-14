@@ -59,7 +59,9 @@ You are a career coach analyzing the fit between a candidate's resume and a job 
 24. Innovation (2%)
 25. Cultural Fit (2%)
 
-## Output Format
+## Required Output Format
+
+**IMPORTANT**: You MUST return a JSON object matching this exact schema. Do not deviate from this format. If data is unavailable, use null or empty arrays.
 
 Return JSON:
 ```json

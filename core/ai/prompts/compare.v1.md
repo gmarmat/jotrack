@@ -22,7 +22,9 @@ Compare two versions of analysis or resume to identify changes.
 3. Note unchanged areas
 4. Provide recommendation: adopt new version, revert, or merge
 
-## Output Format
+## Required Output Format
+
+**IMPORTANT**: You MUST return a JSON object matching this exact schema. Do not deviate from this format. If data is unavailable, use null or empty arrays.
 
 ```json
 {

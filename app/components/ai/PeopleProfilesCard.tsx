@@ -1,9 +1,10 @@
 'use client';
 
-import { Users, Sparkles, User } from 'lucide-react';
+import { Users, Sparkles, User, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
+import SourcesModal, { type Source } from './SourcesModal';
 
 interface PersonProfile {
   name: string;
@@ -44,6 +45,32 @@ export default function PeopleProfilesCard({
   const [localProfiles, setLocalProfiles] = useState<PersonProfile[] | null>(profiles);
   const [localInsights, setLocalInsights] = useState(overallInsights);
   const [error, setError] = useState<string | null>(null);
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
+  
+  // Mock sources - in real implementation, from analysis data
+  const sources: Source[] = [
+    ...(recruiterUrl ? [{
+      url: recruiterUrl,
+      title: 'Recruiter LinkedIn Profile',
+      type: 'linkedin' as const,
+      dateAccessed: new Date().toISOString(),
+      relevance: 'Primary recruiter contact'
+    }] : []),
+    ...peerUrls.map((url, idx) => ({
+      url,
+      title: `Peer LinkedIn Profile ${idx + 1}`,
+      type: 'linkedin' as const,
+      dateAccessed: new Date().toISOString(),
+      relevance: 'Potential peer/teammate'
+    })),
+    ...skipLevelUrls.map((url, idx) => ({
+      url,
+      title: `Skip-Level Manager Profile ${idx + 1}`,
+      type: 'linkedin' as const,
+      dateAccessed: new Date().toISOString(),
+      relevance: 'Leadership/management chain'
+    }))
+  ];
 
   // Default sample data
   const defaultProfiles: PersonProfile[] = [
@@ -152,9 +179,25 @@ export default function PeopleProfilesCard({
               buttonLabel=""
               className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
             />
+            <button
+              onClick={() => setShowSourcesModal(true)}
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              title="View Sources"
+              data-testid="sources-button"
+            >
+              <ExternalLink size={14} />
+            </button>
           </div>
         </div>
       </div>
+      
+      {/* Sources Modal */}
+      <SourcesModal
+        isOpen={showSourcesModal}
+        onClose={() => setShowSourcesModal(false)}
+        title="People Profiles Sources"
+        sources={sources}
+      />
 
       {/* Error Display */}
       {error && (

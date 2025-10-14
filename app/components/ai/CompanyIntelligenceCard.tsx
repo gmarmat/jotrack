@@ -1,10 +1,11 @@
 'use client';
 
-import { Building2, Users, DollarSign, TrendingUp, Target, Heart, Sparkles } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, Target, Heart, Sparkles, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
 import LoadingPulse from '../LoadingPulse';
+import SourcesModal, { type Source } from './SourcesModal';
 
 interface CompanyIntelligence {
   name: string;
@@ -44,6 +45,18 @@ export default function CompanyIntelligenceCard({
   const [internalIsAnalyzing, setInternalIsAnalyzing] = useState(false);
   const [localCompany, setLocalCompany] = useState<CompanyIntelligence | null>(company);
   const [error, setError] = useState<string | null>(null);
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
+  
+  // Mock sources for now - in real implementation, this would come from analysis data
+  const sources: Source[] = [
+    {
+      url: 'https://example.com/company-profile',
+      title: `${companyName} Company Profile`,
+      type: 'other',
+      dateAccessed: new Date().toISOString(),
+      relevance: 'Primary source for company information'
+    }
+  ];
 
   const isAnalyzing = externalIsAnalyzing || internalIsAnalyzing;
 
@@ -140,9 +153,25 @@ export default function CompanyIntelligenceCard({
               buttonLabel=""
               className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
             />
+            <button
+              onClick={() => setShowSourcesModal(true)}
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              title="View Sources"
+              data-testid="sources-button"
+            >
+              <ExternalLink size={14} />
+            </button>
           </div>
         </div>
       </div>
+      
+      {/* Sources Modal */}
+      <SourcesModal
+        isOpen={showSourcesModal}
+        onClose={() => setShowSourcesModal(false)}
+        title="Company Intelligence Sources"
+        sources={sources}
+      />
 
       {/* Error Display */}
       {error && (

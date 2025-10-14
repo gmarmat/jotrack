@@ -1,8 +1,9 @@
 'use client';
 
-import { Building2, TrendingUp, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Building2, TrendingUp, Sparkles, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
+import SourcesModal, { type Source } from './SourcesModal';
 
 interface CompanyReference {
   name: string;
@@ -19,12 +20,24 @@ interface CompanyEcosystemMatrixProps {
 export default function CompanyEcosystemMatrix({ companies, isAiPowered }: CompanyEcosystemMatrixProps) {
   const [expandedDirect, setExpandedDirect] = useState(false);
   const [expandedAdjacent, setExpandedAdjacent] = useState(false);
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
   
   const allDirectCompetitors = companies.filter(c => c.category === 'direct');
   const allAdjacentCompanies = companies.filter(c => c.category === 'adjacent');
   
   const directCompetitors = expandedDirect ? allDirectCompetitors : allDirectCompetitors.slice(0, 5);
   const adjacentCompanies = expandedAdjacent ? allAdjacentCompanies : allAdjacentCompanies.slice(0, 5);
+  
+  // Mock sources
+  const sources: Source[] = [
+    {
+      url: 'https://example.com/market-research',
+      title: 'Market Research Report',
+      type: 'other',
+      dateAccessed: new Date().toISOString(),
+      relevance: 'Competitive landscape analysis'
+    }
+  ];
 
   // Default sample data
   const sampleDirect: CompanyReference[] = [
@@ -79,8 +92,24 @@ export default function CompanyEcosystemMatrix({ companies, isAiPowered }: Compa
             buttonLabel=""
             className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
           />
+          <button
+            onClick={() => setShowSourcesModal(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+            title="View Sources"
+            data-testid="sources-button"
+          >
+            <ExternalLink size={14} />
+          </button>
         </div>
       </div>
+      
+      {/* Sources Modal */}
+      <SourcesModal
+        isOpen={showSourcesModal}
+        onClose={() => setShowSourcesModal(false)}
+        title="Company Ecosystem Sources"
+        sources={sources}
+      />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

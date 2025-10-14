@@ -29,7 +29,9 @@ You are a career coach helping improve a resume to better match a job descriptio
 4. List missing keywords from JD that should be added
 5. Estimate new fit score after improvements
 
-## Output Format
+## Required Output Format
+
+**IMPORTANT**: You MUST return a JSON object matching this exact schema. Do not deviate from this format. If data is unavailable, use null or empty arrays.
 
 ```json
 {
