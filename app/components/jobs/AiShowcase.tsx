@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Sparkles, RefreshCw, Settings, TrendingUp, Target, Lightbulb, Users, Zap, Building2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Sparkles, RefreshCw, Settings, TrendingUp, Target, Lightbulb, Users, Zap, Building2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import LoadingPulse from '../LoadingPulse';
 import { calculatePreliminaryScore } from '@/lib/preliminaryScore';
+import { checkAnalysisGuardrails, recordAnalysis, getCooldownRemaining, type AnalysisInputs } from '@/lib/coach/analysisGuardrails';
 import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
 import SkillThreeLevelChart from '@/app/components/ai/SkillThreeLevelChart';
@@ -59,6 +60,9 @@ export default function AiShowcase({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['all']));
   const [preliminaryScore, setPreliminaryScore] = useState<number | null>(null);
   const [showPreliminary, setShowPreliminary] = useState(true);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [showCooldownWarning, setShowCooldownWarning] = useState(false);
+  const [guardrailMessage, setGuardrailMessage] = useState<string | null>(null);
 
   // Calculate preliminary score on mount
   useEffect(() => {
@@ -73,6 +77,33 @@ export default function AiShowcase({
     }
   }, [jobDescription, resume, aiData?.matchScore]);
 
+  // Check cooldown periodically
+  useEffect(() => {
+    const checkCooldown = () => {
+      const remaining = getCooldownRemaining(jobId);
+      setCooldownRemaining(remaining);
+      
+      if (remaining > 0) {
+        setShowCooldownWarning(true);
+      } else {
+        setShowCooldownWarning(false);
+      }
+    };
+
+    // Check immediately
+    checkCooldown();
+
+    // Check every second while in cooldown
+    const interval = setInterval(checkCooldown, 1000);
+    return () => clearInterval(interval);
+  }, [jobId]);
+
+  const formatCooldownTime = useCallback((seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}m ${secs}s`;
+  }, []);
+
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(section)) {
@@ -83,11 +114,40 @@ export default function AiShowcase({
     setExpandedSections(newExpanded);
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (override: boolean = false) => {
+    // Check guardrails before proceeding
+    const inputs: AnalysisInputs = {
+      jdText: jobDescription,
+      resumeText: resume,
+      peopleUrls: [...peerUrls, ...skipLevelUrls],
+      companyUrls: companyUrls,
+    };
+
+    const guardrailCheck = checkAnalysisGuardrails(jobId, inputs, override);
+
+    if (!guardrailCheck.canProceed && !override) {
+      setGuardrailMessage(guardrailCheck.warningMessage || 'Cannot proceed with analysis');
+      
+      if (guardrailCheck.reason === 'cooldown') {
+        setShowCooldownWarning(true);
+      }
+      
+      return;
+    }
+
     setIsRefreshing(true);
-    await onRefresh?.();
-    setIsRefreshing(false);
-    setShowPreliminary(false); // Hide preliminary after AI refresh
+    setGuardrailMessage(null);
+    
+    try {
+      await onRefresh?.();
+      // Record successful analysis
+      recordAnalysis(jobId, inputs);
+      setShowPreliminary(false); // Hide preliminary after AI refresh
+    } catch (error) {
+      console.error('Analysis failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const matchScore = aiData?.matchScore || 0.72;
@@ -125,16 +185,60 @@ export default function AiShowcase({
         </div>
         
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 text-sm font-bold transition-all shadow-sm"
-            data-testid="analyze-with-ai-button"
-            title="Run AI analysis on your resume and job description"
-          >
-            <Sparkles size={18} className={isRefreshing ? 'animate-pulse' : ''} />
-            {isRefreshing ? 'Analyzing...' : 'Analyze with AI'}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => handleRefresh(false)}
+              disabled={isRefreshing || cooldownRemaining > 0}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 text-sm font-bold transition-all shadow-sm"
+              data-testid="analyze-with-ai-button"
+              title={cooldownRemaining > 0 ? `Cooldown active: ${formatCooldownTime(cooldownRemaining)} remaining` : "Run AI analysis on your resume and job description"}
+            >
+              {isRefreshing ? (
+                <LoadingPulse size={18} />
+              ) : cooldownRemaining > 0 ? (
+                <Clock size={18} />
+              ) : (
+                <Sparkles size={18} />
+              )}
+              {isRefreshing ? 'Analyzing...' : cooldownRemaining > 0 ? `Wait ${formatCooldownTime(cooldownRemaining)}` : 'Analyze with AI'}
+            </button>
+
+            {/* Cooldown Warning */}
+            {showCooldownWarning && cooldownRemaining > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-md text-sm">
+                <Clock size={16} className="text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-orange-800 font-medium">Analysis cooldown active</p>
+                  <p className="text-orange-700 text-xs mt-1">
+                    Please wait {formatCooldownTime(cooldownRemaining)} before running another analysis. 
+                    This prevents excessive API usage.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRefresh(true)}
+                  className="text-orange-700 hover:text-orange-900 text-xs font-medium whitespace-nowrap"
+                >
+                  Override
+                </button>
+              </div>
+            )}
+
+            {/* No Changes Warning */}
+            {guardrailMessage && !showCooldownWarning && (
+              <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
+                <Zap size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-blue-800 text-xs">{guardrailMessage}</p>
+                </div>
+                <button
+                  onClick={() => handleRefresh(true)}
+                  className="text-blue-700 hover:text-blue-900 text-xs font-medium whitespace-nowrap"
+                >
+                  Run Anyway
+                </button>
+              </div>
+            )}
+          </div>
 
           <PromptViewer 
             promptKind="compare" 
