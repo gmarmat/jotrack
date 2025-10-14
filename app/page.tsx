@@ -15,6 +15,7 @@ import ReloadDataButton from './components/ReloadDataButton';
 import GlobalSettingsModal from './components/GlobalSettingsModal';
 import GlobalSettingsButton from './components/GlobalSettingsButton';
 import PaginationControls from './components/PaginationControls';
+import { LoadingShimmerTable } from './components/LoadingShimmer';
 import { ORDERED_STATUSES, STATUS_LABELS, type JobStatus, isJobStatus } from '@/lib/status';
 
 interface Job {
@@ -411,7 +412,9 @@ function HomeContent() {
           )}
 
           {isLoading ? (
-            <p className="text-center text-gray-500">Loading...</p>
+            <div className="py-4">
+              <LoadingShimmerTable rows={5} />
+            </div>
           ) : filteredJobs.length === 0 ? (
             <p className="text-center text-gray-500">
               {jobs.length === 0 ? 'No job applications yet. Add one above!' : 'No jobs match the selected filter.'}
