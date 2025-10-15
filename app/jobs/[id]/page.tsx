@@ -35,6 +35,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [analyzeSuccess, setAnalyzeSuccess] = useState(false);
   
+  // v2.7: Refresh Data (new two-button system)
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
+  const [changelog, setChangelog] = useState<{
+    kind: string;
+    filename: string;
+    similarity?: number;
+    changes?: Array<{ type: string; category: string; value: string }>;
+    significance?: 'none' | 'minor' | 'major';
+  }[] | null>(null);
+  
   // ESC key handler for attachments modal
   useEffect(() => {
     if (!showAttachmentsModal) return;
@@ -205,6 +217,49 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     }
   };
 
+  // v2.7: Handle refresh variants (new two-button system)
+  const handleRefreshVariants = async () => {
+    setRefreshing(true);
+    setRefreshError(null);
+    setRefreshSuccess(false);
+    setChangelog(null);
+
+    try {
+      const res = await fetch(`/api/jobs/${id}/refresh-variants`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setRefreshError(data.error || 'Refresh failed');
+        return;
+      }
+
+      // Success! Show changelog
+      setRefreshSuccess(true);
+      setChangelog(data.processed || []);
+
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        setRefreshSuccess(false);
+        setChangelog(null);
+      }, 5000);
+
+      // Refresh staleness info
+      const stalenessRes = await fetch(`/api/jobs/${id}/check-staleness`);
+      if (stalenessRes.ok) {
+        const stalenessData = await stalenessRes.json();
+        setStalenessInfo(stalenessData);
+      }
+    } catch (error) {
+      console.error('Error refreshing variants:', error);
+      setRefreshError(error instanceof Error ? error.message : 'Refresh failed');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
@@ -266,6 +321,71 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
+        {/* v2.7: Refresh Success Message + Changelog */}
+        {refreshSuccess && changelog && (
+          <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 dark:border-purple-600">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">✨</span>
+              <div>
+                <p className="font-semibold text-purple-900 dark:text-purple-300">
+                  Data Refreshed!
+                </p>
+                <p className="text-sm text-purple-700 dark:text-purple-400">
+                  AI-optimized variants created from your documents
+                </p>
+              </div>
+            </div>
+            
+            {/* Changelog */}
+            {changelog.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {changelog.map((item, idx) => (
+                  <div key={idx} className="bg-white dark:bg-gray-800 p-3 rounded border border-purple-200 dark:border-purple-800">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                        {item.filename}
+                      </span>
+                      {item.similarity !== undefined && (
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                          {Math.round(item.similarity * 100)}% similar
+                        </span>
+                      )}
+                    </div>
+                    {item.changes && item.changes.length > 0 && (
+                      <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                        {item.changes.slice(0, 3).map((change, cidx) => (
+                          <li key={cidx}>
+                            {change.type === 'added' && '➕ '}
+                            {change.type === 'removed' && '➖ '}
+                            {change.type === 'updated' && '🔄 '}
+                            {change.value}
+                          </li>
+                        ))}
+                        {item.changes.length > 3 && (
+                          <li className="text-gray-500 dark:text-gray-500">
+                            ...and {item.changes.length - 3} more changes
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                    {item.significance && (
+                      <span className={`inline-block mt-2 px-2 py-1 text-xs rounded ${
+                        item.significance === 'major' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' :
+                        item.significance === 'minor' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                        'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {item.significance === 'major' ? 'Major changes' :
+                         item.significance === 'minor' ? 'Minor changes' :
+                         'No significant changes'}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* v2.7: Staleness Detection Banner */}
         {!analyzeSuccess && stalenessInfo && stalenessInfo.isStale && (
           <div
@@ -299,31 +419,72 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </p>
                 )}
               </div>
-              <button
-                onClick={handleGlobalAnalyze}
-                disabled={analyzing}
-                className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                  analyzing
-                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
-                {analyzing ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Analyzing...
-                  </span>
-                ) : (
-                  'Analyze Now'
-                )}
-              </button>
+              
+              {/* v2.7: Two-button system based on state */}
+              <div className="flex gap-2">
+                {/* Show Refresh Data for new uploads */}
+                <button
+                  onClick={handleRefreshVariants}
+                  disabled={refreshing}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                    refreshing
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                  }`}
+                >
+                  {refreshing ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Refreshing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      Refresh Data
+                      <span className="text-xs opacity-75">~$0.02</span>
+                    </span>
+                  )}
+                </button>
+
+                {/* Show Analyze All when variants exist */}
+                <button
+                  onClick={handleGlobalAnalyze}
+                  disabled={analyzing}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                    analyzing
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  {analyzing ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analyzing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      Analyze All
+                      <span className="text-xs opacity-75">~$0.20</span>
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
+            
+            {/* Error messages */}
+            {refreshError && (
+              <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded text-sm text-red-800 dark:text-red-300">
+                Refresh Error: {refreshError}
+              </div>
+            )}
             {analyzeError && (
               <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded text-sm text-red-800 dark:text-red-300">
-                {analyzeError}
+                Analysis Error: {analyzeError}
               </div>
             )}
           </div>
