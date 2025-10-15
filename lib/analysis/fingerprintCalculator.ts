@@ -60,10 +60,33 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
   }
 
   const currentJob = job[0];
-  const currentFingerprint = await calculateAnalysisFingerprint(jobId);
-
+  
+  // Check analysis_state column first (set by triggers)
+  if (currentJob.analysisState === 'stale') {
+    // Determine if this is major or minor based on what changed
+    const changes = currentJob.analysisFingerprint 
+      ? await detectChanges(jobId, currentJob.analysisFingerprint, await calculateAnalysisFingerprint(jobId))
+      : ['resume', 'jd']; // Assume major if no fingerprint
+    
+    if (changes.includes('resume') || changes.includes('jd')) {
+      return {
+        isStale: true,
+        severity: 'major',
+        message: 'Key documents changed - re-analysis strongly recommended',
+        changedArtifacts: changes,
+      };
+    }
+    
+    return {
+      isStale: true,
+      severity: 'minor',
+      message: 'Minor updates detected - consider re-analyzing',
+      changedArtifacts: changes,
+    };
+  }
+  
   // Never analyzed before
-  if (!currentJob.analysis_fingerprint) {
+  if (!currentJob.analysisFingerprint || currentJob.analysisState === 'pending') {
     return {
       isStale: true,
       severity: 'never_analyzed',
@@ -71,32 +94,11 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
     };
   }
 
-  // Fingerprints match - analysis is fresh
-  if (currentJob.analysis_fingerprint === currentFingerprint) {
-    return {
-      isStale: false,
-      severity: 'fresh',
-      message: 'Analysis is up to date',
-    };
-  }
-
-  // Fingerprints differ - determine severity
-  const changes = await detectChanges(jobId, currentJob.analysis_fingerprint, currentFingerprint);
-
-  if (changes.includes('resume') || changes.includes('jd')) {
-    return {
-      isStale: true,
-      severity: 'major',
-      message: 'Key documents changed - re-analysis strongly recommended',
-      changedArtifacts: changes,
-    };
-  }
-
+  // State is 'fresh' - analysis is up to date
   return {
-    isStale: true,
-    severity: 'minor',
-    message: 'Minor updates detected - consider re-analyzing',
-    changedArtifacts: changes,
+    isStale: false,
+    severity: 'fresh',
+    message: 'Analysis is up to date',
   };
 }
 
@@ -137,9 +139,9 @@ export async function updateAnalysisFingerprint(jobId: string): Promise<void> {
   await db
     .update(jobs)
     .set({
-      analysis_fingerprint: fingerprint,
-      analysis_state: 'fresh',
-      last_full_analysis_at: now,
+      analysisFingerprint: fingerprint,
+      analysisState: 'fresh',
+      lastFullAnalysisAt: now,
       updatedAt: now,
     })
     .where(eq(jobs.id, jobId));
@@ -152,7 +154,7 @@ export async function markJobStale(jobId: string): Promise<void> {
   await db
     .update(jobs)
     .set({
-      analysis_state: 'stale',
+      analysisState: 'stale',
       updatedAt: Date.now(),
     })
     .where(eq(jobs.id, jobId));
@@ -165,7 +167,7 @@ export async function markJobAnalyzing(jobId: string): Promise<void> {
   await db
     .update(jobs)
     .set({
-      analysis_state: 'analyzing',
+      analysisState: 'analyzing',
       updatedAt: Date.now(),
     })
     .where(eq(jobs.id, jobId));

@@ -72,7 +72,7 @@ export async function runGlobalAnalysis(jobId: string): Promise<AnalysisResult> 
     await db
       .update(jobs)
       .set({
-        analysis_state: 'stale',
+        analysisState: 'stale',
         updatedAt: Date.now(),
       })
       .where(eq(jobs.id, jobId));
