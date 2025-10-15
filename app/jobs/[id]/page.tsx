@@ -114,22 +114,35 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   }, [id]);
 
   // v2.7: Check staleness on mount and after changes
-  useEffect(() => {
-    const checkStaleness = async () => {
-      try {
-        const res = await fetch(`/api/jobs/${id}/check-staleness`);
-        if (res.ok) {
-          const data = await res.json();
-          setStalenessInfo(data);
-        }
-      } catch (error) {
-        console.error('Failed to check staleness:', error);
+  const checkStaleness = async () => {
+    try {
+      const res = await fetch(`/api/jobs/${id}/check-staleness`);
+      if (res.ok) {
+        const data = await res.json();
+        setStalenessInfo(data);
       }
-    };
+    } catch (error) {
+      console.error('Failed to check staleness:', error);
+    }
+  };
+  
+  useEffect(() => {
     if (id) {
       checkStaleness();
     }
   }, [id, attachmentCount]); // Re-check when attachments change
+  
+  // Also recheck when returning to the page (after toggling versions in modal)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && id) {
+        checkStaleness();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [id]);
 
   const handleStatusChange = (newStatus: JobStatus) => {
     setJob((prev: any) => ({ ...prev, status: newStatus }));
@@ -363,13 +376,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
       {/* Attachments Modal with Full Drop Zones */}
       {showAttachmentsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAttachmentsModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => {
+          setShowAttachmentsModal(false);
+          // Re-check staleness when modal closes (in case versions were toggled)
+          setTimeout(() => checkStaleness(), 100);
+        }}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Attachments</h2>
               <button
-                onClick={() => setShowAttachmentsModal(false)}
+                onClick={() => {
+                  setShowAttachmentsModal(false);
+                  setTimeout(() => checkStaleness(), 100);
+                }}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 aria-label="Close"
               >
@@ -388,6 +408,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   const res = await fetch(`/api/jobs/${job.id}`);
                   const data = await res.json();
                   setJob(data);
+                  // Also recheck staleness
+                  await checkStaleness();
                 }}
               />
             </div>
