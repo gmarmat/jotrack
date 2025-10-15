@@ -47,16 +47,16 @@ export async function evaluateSignalsForJob(
   const evaluations = await evaluateAllSignals(allSignals, jdContent, resumeContent);
 
   // 6. Save evaluations to database
-  const evaluationRecords = evaluations.map(eval => ({
-    signalId: eval.signalId,
+  const evaluationRecords = evaluations.map(evaluation => ({
+    signalId: evaluation.signalId,
     resumeVersion,
     jdVersion,
-    jdScore: eval.jdScore,
-    resumeScore: eval.resumeScore,
-    overallScore: eval.overallScore,
-    jdEvidence: eval.jdEvidence,
-    resumeEvidence: eval.resumeEvidence,
-    aiReasoning: eval.aiReasoning
+    jdScore: evaluation.jdScore,
+    resumeScore: evaluation.resumeScore,
+    overallScore: evaluation.overallScore,
+    jdEvidence: evaluation.jdEvidence,
+    resumeEvidence: evaluation.resumeEvidence,
+    aiReasoning: evaluation.aiReasoning
   }));
 
   saveSignalEvaluations(jobId, evaluationRecords);

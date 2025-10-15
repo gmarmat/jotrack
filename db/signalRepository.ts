@@ -224,19 +224,19 @@ export function saveSignalEvaluations(jobId: string, evaluations: Array<{
     ) VALUES (?, ?, ?, ?, ?, unixepoch(), ?, ?, ?, ?, ?, ?, unixepoch())
   `);
 
-  for (const eval of evaluations) {
+  for (const evaluation of evaluations) {
     insert.run(
       randomUUID(),
       jobId,
-      eval.signalId,
-      eval.resumeVersion || null,
-      eval.jdVersion || null,
-      eval.jdScore || null,
-      eval.resumeScore || null,
-      eval.overallScore || null,
-      eval.jdEvidence || null,
-      eval.resumeEvidence || null,
-      eval.aiReasoning || null
+      evaluation.signalId,
+      evaluation.resumeVersion || null,
+      evaluation.jdVersion || null,
+      evaluation.jdScore || null,
+      evaluation.resumeScore || null,
+      evaluation.overallScore || null,
+      evaluation.jdEvidence || null,
+      evaluation.resumeEvidence || null,
+      evaluation.aiReasoning || null
     );
   }
 }
