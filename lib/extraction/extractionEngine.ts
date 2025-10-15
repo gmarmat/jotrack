@@ -12,6 +12,7 @@ import type {
   ExtractionOptions,
   IExtractor,
 } from './types';
+import { extractText } from './textExtractor';
 
 // Registry of extractors
 const extractors = new Map<SourceType, IExtractor>();
@@ -243,5 +244,83 @@ export async function getAllVariants(
 function estimateTokens(text: string): number {
   // Rough estimate: 1 token ≈ 4 characters
   return Math.ceil(text.length / 4);
+}
+
+/**
+ * Save raw text variant (local extraction, no AI)
+ * This is called immediately after file upload
+ */
+export async function saveRawVariant(params: {
+  sourceId: string;
+  sourceType: SourceType;
+  filePath: string;
+}): Promise<{ success: boolean; variantId?: string; error?: string }> {
+  try {
+    console.log(`📄 Extracting raw text from ${params.filePath}...`);
+    
+    // Extract text locally (free, fast)
+    const result = await extractText(params.filePath);
+    
+    if (!result.success) {
+      console.error(`❌ Text extraction failed: ${result.error}`);
+      return {
+        success: false,
+        error: result.error,
+      };
+    }
+    
+    // Calculate content hash
+    const contentHash = createHash('sha256').update(result.text).digest('hex');
+    
+    // Check if raw variant already exists with same hash
+    const existing = await db
+      .select()
+      .from(artifactVariants)
+      .where(
+        and(
+          eq(artifactVariants.sourceId, params.sourceId),
+          eq(artifactVariants.sourceType, params.sourceType),
+          eq(artifactVariants.variantType, 'raw'),
+          eq(artifactVariants.contentHash, contentHash),
+          eq(artifactVariants.isActive, true)
+        )
+      )
+      .limit(1);
+    
+    if (existing.length > 0) {
+      console.log(`✅ Raw variant already exists with same content`);
+      return {
+        success: true,
+        variantId: existing[0].id,
+      };
+    }
+    
+    // Save raw variant
+    const variantId = await saveVariant({
+      sourceId: params.sourceId,
+      sourceType: params.sourceType,
+      variantType: 'raw',
+      content: {
+        text: result.text,
+        metadata: result.metadata,
+      },
+      contentHash,
+      tokenCount: estimateTokens(result.text),
+      extractionModel: 'local', // Not AI, just local extraction
+    });
+    
+    console.log(`✅ Saved raw variant (${result.metadata?.wordCount || 0} words)`);
+    
+    return {
+      success: true,
+      variantId,
+    };
+  } catch (error: any) {
+    console.error('❌ Failed to save raw variant:', error);
+    return {
+      success: false,
+      error: error.message || 'Unknown error',
+    };
+  }
 }
 

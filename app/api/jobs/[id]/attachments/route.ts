@@ -21,6 +21,8 @@ import {
   MAX_GLOBAL_BYTES,
   MAX_GLOBAL_MB,
 } from '@/lib/attachments';
+import { saveRawVariant } from '@/lib/extraction/extractionEngine';
+import { isTextExtractable } from '@/lib/extraction/textExtractor';
 
 export const dynamic = 'force-dynamic';
 
@@ -228,6 +230,35 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       createdAt: now,
       deletedAt: null,
     });
+
+    // v2.7: Extract raw text variant (local, free, fast)
+    // Only for text-extractable files (DOCX, PDF, TXT)
+    if (isTextExtractable(path.basename(candidate))) {
+      console.log(`🔄 Starting raw text extraction for ${path.basename(candidate)}...`);
+      
+      // Run extraction in background (don't block response)
+      // Source type based on kind
+      const sourceType = kind === 'resume' ? 'resume' : 
+                        kind === 'jd' ? 'job_description' : 
+                        kind === 'cover_letter' ? 'cover_letter' : 'other';
+      
+      // Fire and forget - extraction happens async
+      saveRawVariant({
+        sourceId: attId,
+        sourceType,
+        filePath: candidate,
+      }).then(result => {
+        if (result.success) {
+          console.log(`✅ Raw variant extracted for ${path.basename(candidate)}`);
+        } else {
+          console.error(`❌ Raw extraction failed: ${result.error}`);
+        }
+      }).catch(err => {
+        console.error('❌ Raw extraction error:', err);
+      });
+    } else {
+      console.log(`⏭️  Skipping text extraction for ${path.basename(candidate)} (unsupported type)`);
+    }
 
     return NextResponse.json({
       id: attId,
