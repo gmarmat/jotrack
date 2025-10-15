@@ -33,6 +33,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [analyzeSuccess, setAnalyzeSuccess] = useState(false);
   
   // ESC key handler for attachments modal
   useEffect(() => {
@@ -156,6 +157,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const handleGlobalAnalyze = async () => {
     setAnalyzing(true);
     setAnalyzeError(null);
+    setAnalyzeSuccess(false);
 
     try {
       const res = await fetch(`/api/jobs/${id}/analyze-all`, {
@@ -169,7 +171,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         return;
       }
 
-      // Success! Refresh staleness info
+      // Success! Show success message for 3 seconds
+      setAnalyzeSuccess(true);
+      setTimeout(() => setAnalyzeSuccess(false), 3000);
+
+      // Refresh staleness info
       const stalenessRes = await fetch(`/api/jobs/${id}/check-staleness`);
       if (stalenessRes.ok) {
         const stalenessData = await stalenessRes.json();
@@ -230,8 +236,25 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </Link>
         </div>
 
+        {/* v2.7: Success Message (shows for 3 seconds after analysis) */}
+        {analyzeSuccess && (
+          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 dark:border-green-600">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">✅</span>
+              <div>
+                <p className="font-semibold text-green-900 dark:text-green-300">
+                  Analysis Complete!
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  Extracted variants from your documents and created analysis fingerprint
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* v2.7: Staleness Detection Banner */}
-        {stalenessInfo && stalenessInfo.isStale && (
+        {!analyzeSuccess && stalenessInfo && stalenessInfo.isStale && (
           <div
             className={`p-4 rounded-lg border-l-4 ${
               stalenessInfo.severity === 'major'
