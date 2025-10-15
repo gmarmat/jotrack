@@ -14,6 +14,8 @@ export interface StalenessCheck {
 
 /**
  * Calculate fingerprint hash from all analysis inputs
+ * v2.7.1: Uses CONTENT hash from variants (not attachment ID/version)
+ * This prevents false positives when toggling between identical versions
  */
 export async function calculateAnalysisFingerprint(jobId: string): Promise<string> {
   // Gather all input sources
@@ -38,11 +40,35 @@ export async function calculateAnalysisFingerprint(jobId: string): Promise<strin
     console.log('User profile not available, using version 0');
   }
 
-  // Create fingerprint string from all inputs
-  const parts = [
-    ...activeAttachments.map((a) => `${a.kind}:${a.id}:v${a.version}`),
-    `profile:v${profileVersion}`,
-  ].sort(); // Sort for consistency
+  // Get content hashes from variants (content-based, not ID-based!)
+  const parts: string[] = [];
+  
+  for (const attachment of activeAttachments) {
+    // Try to get the ai_optimized variant's content hash
+    const variant = await db
+      .select()
+      .from(artifactVariants)
+      .where(
+        and(
+          eq(artifactVariants.sourceId, attachment.id),
+          eq(artifactVariants.sourceType, 'attachment'),
+          eq(artifactVariants.variantType, 'ai_optimized'),
+          eq(artifactVariants.isActive, true)
+        )
+      )
+      .limit(1);
+    
+    if (variant.length > 0) {
+      // Use content hash (detects actual changes)
+      parts.push(`${attachment.kind}:${variant[0].contentHash.substring(0, 16)}`);
+    } else {
+      // Fallback: use attachment ID if variant doesn't exist yet
+      parts.push(`${attachment.kind}:${attachment.id}`);
+    }
+  }
+  
+  parts.push(`profile:v${profileVersion}`);
+  parts.sort(); // Sort for consistency
 
   const fingerprint = createHash('sha256').update(parts.join('|')).digest('hex');
 
