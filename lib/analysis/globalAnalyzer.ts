@@ -55,11 +55,18 @@ export async function runGlobalAnalysis(jobId: string): Promise<AnalysisResult> 
     };
 
     // 6. Update fingerprint
-    await updateAnalysisFingerprint(jobId);
+    console.log('🔄 Updating analysis fingerprint...');
+    try {
+      await updateAnalysisFingerprint(jobId);
+      console.log('✅ Fingerprint updated successfully');
+    } catch (fingerprintError) {
+      console.error('❌ Failed to update fingerprint:', fingerprintError);
+      // Don't fail the whole analysis, just log it
+    }
 
     return { success: true, message: 'Analysis completed successfully', results };
   } catch (error) {
-    console.error('Global analysis error:', error);
+    console.error('❌ Global analysis error:', error);
     
     // Mark as stale on failure
     await db

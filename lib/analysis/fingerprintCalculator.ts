@@ -28,8 +28,15 @@ export async function calculateAnalysisFingerprint(jobId: string): Promise<strin
       )
     );
 
-  const profile = await db.select().from(userProfile).limit(1);
-  const profileVersion = profile[0]?.version || 0;
+  // Get user profile version (with error handling for new table)
+  let profileVersion = 0;
+  try {
+    const profile = await db.select().from(userProfile).limit(1);
+    profileVersion = profile[0]?.version || 0;
+  } catch (error) {
+    // User profile table might not exist or might not be in Drizzle schema yet
+    console.log('User profile not available, using version 0');
+  }
 
   // Create fingerprint string from all inputs
   const parts = [
