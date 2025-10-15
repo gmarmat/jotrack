@@ -1,48 +1,89 @@
 'use client';
 
-import { useState } from 'react';
-import { Paperclip, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Paperclip, FileText, FileSearch, FileSignature } from 'lucide-react';
 import AttachmentsModal from './AttachmentsModal';
 
 interface AttachmentQuickPreviewProps {
   jobId: string;
-  attachmentSummary: Record<string, { count: number; latest: number | null }>;
 }
 
-export default function AttachmentQuickPreview({ jobId, attachmentSummary }: AttachmentQuickPreviewProps) {
+interface AttachmentPresence {
+  jd: boolean;
+  resume: boolean;
+  cover_letter: boolean;
+  total: number;
+}
+
+export default function AttachmentQuickPreview({ jobId }: AttachmentQuickPreviewProps) {
   const [showModal, setShowModal] = useState(false);
+  const [presence, setPresence] = useState<AttachmentPresence>({ jd: false, resume: false, cover_letter: false, total: 0 });
+  const [loading, setLoading] = useState(true);
 
-  // Calculate total count
-  const totalCount = Object.values(attachmentSummary).reduce((sum, info) => sum + (info?.count || 0), 0);
+  useEffect(() => {
+    const fetchAttachmentPresence = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/jobs/${jobId}/attachments`);
+        if (response.ok) {
+          const attachments = await response.json();
+          const activeAttachments = attachments.filter((att: any) => att.isActive && !att.deletedAt);
+          
+          const presenceData = {
+            jd: activeAttachments.some((att: any) => att.kind === 'jd'),
+            resume: activeAttachments.some((att: any) => att.kind === 'resume'),
+            cover_letter: activeAttachments.some((att: any) => att.kind === 'cover_letter'),
+            total: activeAttachments.length
+          };
 
-  // Get list of attachment types
-  const kinds = Object.keys(attachmentSummary).filter(k => attachmentSummary[k]?.count > 0);
-  const kindLabels = kinds.map(k => {
-    if (k === 'resume') return 'Resume';
-    if (k === 'jd') return 'JD';
-    if (k === 'cover_letter') return 'Cover Letter';
-    return k;
-  });
+          setPresence(presenceData);
+        }
+      } catch (error) {
+        console.error('Error fetching attachments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (totalCount === 0) {
-    return (
-      <span className="text-xs text-gray-400">No files</span>
-    );
+    fetchAttachmentPresence();
+  }, [jobId]);
+
+  if (loading) {
+    return <span className="text-xs text-gray-400">Loading...</span>;
   }
 
   return (
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-1.5 text-xs text-gray-700 hover:text-blue-600 transition-colors"
-        title={`Click to view: ${kindLabels.join(', ')}`}
+        className="flex items-center gap-2 text-xs text-gray-700 hover:text-blue-600 transition-colors"
+        title="Click to view attachments"
       >
-        <Paperclip size={14} />
-        <span className="font-medium">{totalCount} file{totalCount !== 1 ? 's' : ''}</span>
-        {kindLabels.length > 0 && (
-          <span className="text-gray-500">({kindLabels.join(', ')})</span>
-        )}
-        <ExternalLink size={12} className="text-gray-400" />
+        <span className="font-medium">Attachments</span>
+        
+        {/* Presence Indicators */}
+        <div className="flex items-center gap-1">
+          <span 
+            className={`${presence.jd ? 'text-gray-700' : 'text-gray-300'}`}
+            title={presence.jd ? 'Job Description present' : 'No Job Description'}
+          >
+            <FileSearch size={12} />
+          </span>
+          <span 
+            className={`${presence.resume ? 'text-gray-700' : 'text-gray-300'}`}
+            title={presence.resume ? 'Resume present' : 'No Resume'}
+          >
+            <FileText size={12} />
+          </span>
+          <span 
+            className={`${presence.cover_letter ? 'text-gray-700' : 'text-gray-300'}`}
+            title={presence.cover_letter ? 'Cover Letter present' : 'No Cover Letter'}
+          >
+            <FileSignature size={12} />
+          </span>
+        </div>
+        
+        <Paperclip size={12} className="text-gray-400" />
       </button>
 
       {showModal && (

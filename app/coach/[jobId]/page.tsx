@@ -158,7 +158,7 @@ export default function CoachPage({ params }: CoachPageProps) {
         }
 
         if (Object.keys(updates).length > 0) {
-          setCoachData(prev => ({ ...prev, ...updates }));
+          setCoachData((prev: any) => ({ ...prev, ...updates }));
           setAutoLoadStatus('loaded');
         } else {
           setAutoLoadStatus('idle');

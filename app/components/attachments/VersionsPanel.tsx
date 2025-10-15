@@ -38,7 +38,7 @@ export default function VersionsPanel({
     const head = order.map((id) => byId.get(id)).filter(Boolean) as VersionRec[];
     const tail = data
       .filter((d) => !order.includes(d.id))
-      .sort((a, b) => b.version - a.version);
+      .sort((a, b) => b.createdAt - a.createdAt); // Sort by createdAt DESC (newest first)
     return [...head, ...tail];
   }, [data, read]);
 
@@ -76,7 +76,11 @@ export default function VersionsPanel({
             onDragOver(rec.id);
           }}
           onDrop={onDrop}
-          className={`flex items-center justify-between border rounded-lg p-3 my-2 cursor-move hover:bg-gray-50 ${
+          className={`flex items-center justify-between border rounded-lg p-3 my-2 cursor-move 
+            hover:bg-blue-50/50 dark:hover:bg-gray-700/30 
+            bg-white dark:bg-gray-800 
+            border-gray-200 dark:border-gray-700
+            transition-colors ${
             drag.over === rec.id ? "ring-2 ring-blue-300 bg-blue-50" : ""
           }`}
           data-testid={`version-row-${rec.version}`}

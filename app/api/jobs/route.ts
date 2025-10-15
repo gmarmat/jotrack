@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { createJob, listJobs, searchJobs, getAttachmentSummaries } from '@/db/repository';
 import { ORDERED_STATUSES } from '@/lib/status';
 
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const createJobSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   company: z.string().min(1, 'Company is required'),
@@ -64,7 +68,14 @@ export async function GET(request: NextRequest) {
       attachmentSummary: summaryMap.get(job.id) || {},
     }));
     
-    return NextResponse.json({ success: true, jobs: jobsWithAttachments });
+    const response = NextResponse.json({ success: true, jobs: jobsWithAttachments });
+    
+    // Force no caching for attachment counts
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error('Error fetching jobs:', error);
     return NextResponse.json(

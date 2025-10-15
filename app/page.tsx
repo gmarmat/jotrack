@@ -506,14 +506,7 @@ function HomeContent() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <AttachmentQuickPreview
-                            jobId={job.id}
-                            attachmentSummary={job.attachmentSummary || {}}
-                          />
-                          <AttachmentPresence 
-                            summary={job.attachmentSummary || {}} 
-                            jobId={job.id} 
-                          />
+                          <AttachmentQuickPreview jobId={job.id} />
                         </div>
                       </td>
                     </tr>

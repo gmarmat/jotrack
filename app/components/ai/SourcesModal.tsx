@@ -125,7 +125,7 @@ export default function SourcesModal({ isOpen, onClose, title, sources }: Source
                             </h4>
                             {source.relevance && (
                               <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 truncate">
-                                {source.relevance}
+                                Why: {source.relevance}
                               </p>
                             )}
                           </div>

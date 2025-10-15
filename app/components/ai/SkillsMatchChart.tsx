@@ -105,16 +105,21 @@ export default function SkillsMatchChart({
     <div className="space-y-6" data-testid="skills-match-chart">
       {/* Category-Level Bars */}
       <div className="space-y-5">
-        <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Match by Category</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Match by Category</h4>
         
         {defaultCategories.map((category, idx) => (
           <div 
             key={idx}
             className="space-y-2"
           >
-            {/* Category name and total score */}
+            {/* Category name, breakdown, and total score */}
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-gray-600 dark:text-gray-400">{category.name}</span>
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-gray-700 dark:text-gray-300">{category.name}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  Resume: {category.resumeCoverage}% + Profile: +{category.profileBonus}%
+                </span>
+              </div>
               <span className={`text-sm font-bold ${getFitColor(category.totalScore)}`}>
                 {category.totalScore}%
               </span>
@@ -123,7 +128,7 @@ export default function SkillsMatchChart({
             {/* 100% Stacked Bar with shadow effect */}
             <div className="relative">
               {/* Bar container with inner shadow for depth */}
-              <div className="relative h-10 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden shadow-inner">
+              <div className="relative h-10 bg-gray-300/30 dark:bg-gray-600/20 rounded-lg overflow-hidden shadow-inner border border-gray-300 dark:border-gray-600">
                 {/* Fit level background zones (subtle) */}
                 <div className="absolute inset-0 flex opacity-20">
                   <div className="w-[40%] bg-red-100 dark:bg-red-900 border-r border-red-300 dark:border-red-700"></div>
@@ -152,17 +157,6 @@ export default function SkillsMatchChart({
               </div>
             </div>
 
-            {/* Permanent breakdown labels (below bar, color-matched) */}
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <span className="text-green-700 dark:text-green-400 font-medium">
-                  Resume: {category.resumeCoverage}%
-                </span>
-                <span className="text-purple-700 dark:text-purple-400 font-medium">
-                  Profile: +{category.profileBonus}%
-                </span>
-              </div>
-            </div>
           </div>
         ))}
 
@@ -198,7 +192,7 @@ export default function SkillsMatchChart({
       {topKeywords.length > 0 && (
         <div className="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Keyword Match</h4>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Keyword Match</h4>
             <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
               <Info size={14} />
               <span>Size = JD importance | Color = match status</span>

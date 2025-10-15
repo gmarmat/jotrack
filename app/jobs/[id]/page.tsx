@@ -233,7 +233,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <AttachmentsSection jobId={job.id} />
+              <AttachmentsSection 
+                jobId={job.id} 
+                onAttachmentChange={async () => {
+                  // Refresh job data to update attachment count
+                  const res = await fetch(`/api/jobs/${job.id}`);
+                  const data = await res.json();
+                  setJob(data);
+                }}
+              />
             </div>
           </div>
         </div>

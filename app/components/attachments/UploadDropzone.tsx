@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { Upload } from 'lucide-react';
 
 type Kind = "resume" | "jd" | "cover_letter" | "other";
 
@@ -77,16 +78,14 @@ export default function UploadDropzone({
     >
       <div className="flex items-center gap-2">
         <button
-          className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+          className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
           onClick={() => inputRef.current?.click()}
           type="button"
           data-testid={`btn-select-${kind}`}
         >
-          Select files…
+          <Upload size={18} />
+          <span className="text-sm font-medium">Upload</span>
         </button>
-        <span className="text-xs text-gray-600">
-          or drag and drop (multiple files supported)
-        </span>
       </div>
       <input
         ref={inputRef}

@@ -1,13 +1,53 @@
 # 🤖 AI Analysis Data Requirements Strategy
 
 **Last Updated**: October 14, 2025  
-**Version**: 1.0
+**Version**: 1.1
 
 ---
 
 ## 📋 **Overview**
 
 This document defines the data requirements for each AI analysis section, ensuring users know what information is needed before running analysis and preventing token waste on incomplete data.
+
+---
+
+## 🔬 **Feature Request: Signal Research Tool**
+
+**Status**: PENDING  
+**Priority**: MEDIUM  
+**Requested**: October 14, 2025
+
+### Description
+Add a Settings modal option that allows users to research and discover the top 30 ATS standard signals and top 10 dynamic signals based on their specific JD + Resume combination.
+
+### Implementation Strategy
+1. **Location**: Global Settings Modal → New "Signal Research" tab
+2. **Trigger**: Button labeled "Research My Signals" or "Discover Match Signals"
+3. **Process**:
+   - Takes current job's JD + Resume as input
+   - Calls AI to analyze and identify:
+     - Top 30 ATS standard signals most relevant to this role
+     - Top 10 dynamic signals specific to this JD/company/industry
+   - Returns structured list with:
+     - Signal name
+     - Category (technical/experience/soft)
+     - Importance score
+     - Brief description
+     - Evidence from JD/Resume
+4. **Display**: Show results in a modal table or downloadable report
+5. **Persistence**: Option to save results to job notes or export as PDF
+
+### Technical Notes
+- Use existing `lib/matchSignals.ts` as reference for signal structure
+- Integrate with `/api/ai/analyze` endpoint (new capability: "signal_research")
+- Store results in `ai_runs` table for future reference
+- Token cost: ~2000-3000 tokens per research run
+
+### User Value
+- Transparency into what signals are being evaluated
+- Ability to optimize resume for specific signals
+- Understanding of ATS evaluation criteria
+- Actionable insights for improving match score
 
 ---
 

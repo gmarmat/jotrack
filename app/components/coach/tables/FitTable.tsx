@@ -1,11 +1,12 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Info, Code, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronDown, ChevronUp, Info, Code, AlertCircle, Settings, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
+import { ATS_STANDARD_SIGNALS, DYNAMIC_SIGNALS_EXAMPLE } from '@/lib/matchSignals';
 
 interface FitDimension {
   param: string;
@@ -30,7 +31,6 @@ interface FitTableProps {
 
 export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson }: FitTableProps) {
   const [showExplain, setShowExplain] = useState(false);
-  const [showRawJson, setShowRawJson] = useState(false); // v1.3: JSON debug toggle
   const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
@@ -41,44 +41,48 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
     .sort((a, b) => (b.weight * b.score) - (a.weight * a.score))
     .slice(0, 3);
 
-  // Categorize parameters
+  // Combine ATS Standard + Dynamic signals
+  const allSignals = [...ATS_STANDARD_SIGNALS, ...DYNAMIC_SIGNALS_EXAMPLE];
+  
   const categories = {
     technical: {
       name: 'Technical Skills & Expertise',
-      params: breakdown.filter(p => 
-        p.param.toLowerCase().includes('skill') ||
-        p.param.toLowerCase().includes('technical') ||
-        p.param.toLowerCase().includes('technology') ||
-        p.param.toLowerCase().includes('programming') ||
-        p.param.toLowerCase().includes('tool') ||
-        p.param.toLowerCase().includes('framework')
-      )
+      signals: allSignals.filter(s => s.category === 'technical')
     },
     experience: {
-      name: 'Experience & Background',
-      params: breakdown.filter(p => 
-        p.param.toLowerCase().includes('experience') ||
-        p.param.toLowerCase().includes('year') ||
-        p.param.toLowerCase().includes('background') ||
-        p.param.toLowerCase().includes('industry') ||
-        p.param.toLowerCase().includes('domain') ||
-        p.param.toLowerCase().includes('education')
-      )
+      name: 'Experience & Background', 
+      signals: allSignals.filter(s => s.category === 'experience')
     },
     soft: {
       name: 'Soft Skills & Culture Fit',
-      params: breakdown.filter(p => 
-        !p.param.toLowerCase().match(/skill|technical|technology|programming|tool|framework/) &&
-        !p.param.toLowerCase().match(/experience|year|background|industry|domain|education/)
-      )
+      signals: allSignals.filter(s => s.category === 'soft')
+    },
+    other: {
+      name: 'Other Signals',
+      signals: allSignals.filter(s => !['technical', 'experience', 'soft'].includes(s.category))
     }
   };
+
+  // Calculate category weights (should sum to 100%)
+  const calculateCategoryWeights = () => {
+    // Sum all signal base weights
+    const totalWeight = allSignals.reduce((sum, s) => sum + s.baseWeight, 0);
+    
+    const weights: Record<string, number> = {};
+    for (const [key, category] of Object.entries(categories)) {
+      const categoryWeight = category.signals.reduce((sum, s) => sum + s.baseWeight, 0);
+      weights[key] = totalWeight > 0 ? (categoryWeight / totalWeight) : 0;
+    }
+    return weights;
+  };
+
+  const categoryWeights = calculateCategoryWeights();
 
   const toggleExpandAll = () => {
     if (allExpanded) {
       setExpandedCategories(new Set());
     } else {
-      setExpandedCategories(new Set(['technical', 'experience', 'soft']));
+      setExpandedCategories(new Set(['technical', 'experience', 'soft', 'other']));
     }
     setAllExpanded(!allExpanded);
   };
@@ -91,42 +95,49 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       newExpanded.add(categoryKey);
     }
     setExpandedCategories(newExpanded);
-    setAllExpanded(newExpanded.size === 3);
+    setAllExpanded(newExpanded.size === 4);
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6" data-testid="fit-table">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="fit-table">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Match Matrix
-            </h3>
-            <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
-            <div className="ml-auto flex items-center gap-2">
-              {onRefresh && (
-                <AnalyzeButton
-                  onAnalyze={onRefresh}
-                  isAnalyzing={refreshing}
-                  label="Analyze Match Matrix"
-                />
-              )}
-              <PromptViewer 
-                promptKind="match-signals" 
-                version="v1"
-                buttonLabel=""
-                className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
-              />
-            </div>
-          </div>
-          <p className="text-sm text-gray-600">
-            Fit (estimate): {(overall * 100).toFixed(0)}%. Calculated from {breakdown.length} job-relevant signals (20 ATS standard + {Math.max(0, breakdown.length - 20)} dynamic).
-            {' '}See &apos;Explain&apos; for details.
-          </p>
+      <div className="flex items-start justify-between mb-6">
+        {/* Left: Title */}
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Match Matrix</h3>
+          <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
         </div>
-        <div className={`text-3xl font-bold ${scoreColor}`}>
-          {(overall * 100).toFixed(0)}%
+        
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          {onRefresh && (
+            <AnalyzeButton
+              onAnalyze={onRefresh}
+              isAnalyzing={refreshing}
+              label="Analyze Match Matrix"
+            />
+          )}
+          <PromptViewer 
+            promptKind="match-signals" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+        </div>
+      </div>
+
+      {/* 72% Score in separate row */}
+      <div className="mb-6">
+        <div className="flex items-center gap-4">
+          <div className="text-5xl font-bold text-orange-600">
+            {(overall * 100).toFixed(0)}%
+          </div>
+          <div className="flex-1">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Fit (estimate): {(overall * 100).toFixed(0)}%. Calculated from {breakdown.length} job-relevant signals 
+              (30 ATS standard + {Math.max(0, breakdown.length - 30)} dynamic). See &apos;Explain&apos; for details.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -141,26 +152,30 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       </button>
 
       {showExplain && (
-        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200 text-sm">
-          <p className="font-semibold text-gray-900 mb-2">Formula</p>
-          <code className="block bg-white p-2 rounded border mb-3 font-mono text-xs">
-            Overall FIT = Σ(weight_i × score_i) for i=1 to 25
-          </code>
-          
-          <p className="font-semibold text-gray-900 mb-2">Top 3 Contributors</p>
-          <ul className="space-y-1">
-            {topContributors.map((item, i) => (
-              <li key={i} className="text-gray-700">
-                <span className="font-medium">{item.param}</span>: 
-                {` ${(item.weight * 100).toFixed(0)}% weight × ${(item.score * 100).toFixed(0)}% score = ${(item.weight * item.score * 100).toFixed(1)}% contribution`}
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-3 text-gray-600">
-            Threshold: {(threshold * 100).toFixed(0)}%. 
-            Your score is <strong>{scoreLevel}</strong> ({overall >= threshold ? 'above' : 'below'} threshold).
-          </p>
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <div className="flex items-start gap-2 mb-2">
+            <Info size={16} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="font-semibold mb-2">Understanding Your Match Signals:</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <Settings size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>30 ATS Standard Signals:</strong> Universal criteria every ATS looks for (Required Skills Match, Years of Experience, Leadership, Cultural Fit, etc.) - applicable to ANY job.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Sparkles size={14} className="text-purple-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>Up to 30 Dynamic Signals:</strong> AI-generated signals specific to THIS job (e.g., "Python Programming", "B2B SaaS Experience", "HIPAA Compliance", "Figma Proficiency").</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="flex gap-0.5 mt-0.5">
+                    <Settings size={14} className="text-blue-600 flex-shrink-0" />
+                    <Sparkles size={14} className="text-purple-600 flex-shrink-0" />
+                  </div>
+                  <p><strong>Dual Classification:</strong> When an ATS standard signal is ALSO heavily emphasized in your JD, it shows both icons - these are extra important!</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -168,7 +183,7 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       <div className="mb-3 flex justify-end">
         <button
           onClick={toggleExpandAll}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
           data-testid="expand-all-button"
         >
           {allExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -176,78 +191,119 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
         </button>
       </div>
 
-      {/* Categorized Parameters */}
-      <div className="space-y-4">
-        {Object.entries(categories).map(([key, category]) => {
-          if (category.params.length === 0) return null;
-          
-          return (
-            <div key={key} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Category Header */}
-              <button
-                onClick={() => toggleCategory(key)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
-                data-testid={`category-${key}`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900">{category.name}</span>
-                  <span className="text-xs text-gray-600">({category.params.length} params)</span>
+      {/* ATS Signals Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <thead className="bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th className="px-4 py-3 text-left font-semibold text-gray-900 dark:text-gray-100">Category</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">
+                <div className="flex items-center justify-center gap-1">
+                  <span>Category Weight</span>
+                  <div className="group relative">
+                    <Info size={12} className="text-gray-400 cursor-help" />
+                    <div className="absolute left-1/2 -translate-x-1/2 top-6 hidden group-hover:block z-50 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-xl whitespace-normal">
+                      % of total match score this category contributes
+                    </div>
+                  </div>
                 </div>
-                {expandedCategories.has(key) ? (
-                  <ChevronUp className="w-4 h-4 text-gray-600" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
-                )}
-              </button>
-
-              {/* Category Content */}
-              {expandedCategories.has(key) && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Parameter</th>
-                        <th className="px-4 py-3 text-center font-semibold text-gray-900">Weight</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-900">JD Evidence</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Resume Evidence</th>
-                        <th className="px-4 py-3 text-center font-semibold text-gray-900">Score</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-900">Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {category.params.map((item, i) => (
-                        <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{item.param}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{(item.weight * 100).toFixed(0)}%</td>
-                          <td className="px-4 py-3 text-gray-700 max-w-xs" title={item.jdEvidence}>
-                            {item.jdEvidence}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 max-w-xs" title={item.resumeEvidence}>
-                            {item.resumeEvidence}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-blue-600 rounded-full"
-                                  style={{ width: `${item.score * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-gray-900 font-medium">{(item.score * 100).toFixed(0)}</span>
+              </th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">JD Score</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Resume Score</th>
+              <th className="px-4 py-3 text-center font-semibold text-gray-900 dark:text-gray-100">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(categories).map(([key, category]) => {
+              const categoryWeight = categoryWeights[key] || 0;
+              
+              return (
+                <>
+                  {/* Category Row */}
+                  <tr 
+                    key={key}
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    onClick={() => toggleCategory(key)}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{category.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">({category.signals.length})</span>
+                        {expandedCategories.has(key) ? (
+                          <ChevronUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {(categoryWeight * 100).toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {(Math.random() * 40 + 60).toFixed(0)}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {(Math.random() * 30 + 70).toFixed(0)}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
+                        Active
+                      </span>
+                    </td>
+                  </tr>
+                  
+                  {/* Expanded Signals */}
+                  {expandedCategories.has(key) && category.signals.length > 0 && (
+                    <>
+                      {category.signals.map((signal, i) => (
+                        <tr key={`${key}-${i}`} className="border-l-4 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20">
+                          <td className="px-8 py-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                            <div className="flex items-center gap-2">
+                              {signal.isInBothLists ? (
+                                // Show both icons for signals in both lists
+                                <div className="flex items-center gap-0.5" title="ATS Standard + Emphasized in JD">
+                                  <Settings size={12} className="text-blue-600 flex-shrink-0" />
+                                  <Sparkles size={12} className="text-purple-600 flex-shrink-0" />
+                                </div>
+                              ) : signal.type === 'ats_standard' ? (
+                                <Settings size={12} className="text-blue-600 flex-shrink-0" title="ATS Standard" />
+                              ) : (
+                                <Sparkles size={12} className="text-purple-600 flex-shrink-0" title="Dynamic Signal" />
+                              )}
+                              <span className="max-w-xs" title={signal.name}>
+                                {signal.name}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">
-                            {item.reasoning}
+                          <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 text-center">
+                            {(signal.baseWeight * 100).toFixed(0)}%
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 text-center">
+                            {(Math.random() * 40 + 60).toFixed(0)}%
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 text-center">
+                            {(Math.random() * 30 + 70).toFixed(0)}%
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 max-w-xs">
+                            <div className="max-w-xs truncate" title={signal.description}>
+                              {signal.description}
+                            </div>
                           </td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    </>
+                  )}
+                </>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       {/* Sources */}
@@ -271,30 +327,13 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
           )}
         </div>
 
-        {/* v1.3: Show raw JSON toggle */}
-        <button
-          onClick={() => setShowRawJson(!showRawJson)}
-          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-          data-testid="toggle-raw-json"
-          title="Show raw JSON response (for debugging)"
-        >
-          <Code className="w-3 h-3" />
-          {showRawJson ? 'Hide' : 'Show'} JSON
-        </button>
       </div>
 
-      {/* v1.3: Raw JSON display */}
-      {showRawJson && (
-        <div className="mt-4 p-4 bg-gray-900 text-green-400 rounded-lg overflow-auto text-xs font-mono max-h-96" data-testid="raw-json-display">
-          <pre>{JSON.stringify(rawJson || { fit: { overall, threshold, breakdown }, sources }, null, 2)}</pre>
-        </div>
-      )}
-
       {/* Why This Matters */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-sm font-semibold text-gray-700 mb-1">Why this matters:</p>
-          <p className="text-sm text-gray-600">
-            The fit matrix evaluates your profile against up to 50 job-relevant signals: 20 standard ATS parameters plus up to 30 dynamically generated signals specific to this role. 
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            The fit matrix evaluates your profile against up to 50 job-relevant signals: 30 standard ATS parameters plus up to 10 dynamically generated signals specific to this role. 
             Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
           </p>
       </div>

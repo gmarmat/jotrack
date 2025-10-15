@@ -394,8 +394,8 @@ export default function AttachmentViewerModal({
         }
         return (
           <div className="overflow-auto h-full p-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
-              <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 leading-relaxed">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-sm p-8">
+              <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-100 leading-relaxed">
                 {content}
               </pre>
             </div>
@@ -405,7 +405,7 @@ export default function AttachmentViewerModal({
       case 'docx':
         return (
           <div className="overflow-auto h-full p-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-sm p-8">
               <DocxViewer url={src} />
             </div>
           </div>
@@ -414,9 +414,9 @@ export default function AttachmentViewerModal({
       case 'rtf':
         return (
           <div className="overflow-auto h-full p-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-sm p-8">
               <div 
-                className="prose prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900"
+                className="prose prose-base max-w-none prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-gray-100"
                 style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
                 dangerouslySetInnerHTML={{ __html: rtfContent || '' }}
               />
@@ -467,13 +467,13 @@ export default function AttachmentViewerModal({
       />
       
       {/* Modal - Apple QuickLook inspired */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-5xl w-full h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         {/* Header - Clean and minimal */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <span className="font-semibold text-base text-gray-900 truncate">{filename}</span>
+            <span className="font-semibold text-base text-gray-900 dark:text-gray-100 truncate">{filename}</span>
             {fileType !== 'unsupported' && (
-              <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full">
                 {Math.round(zoom * 100)}%
               </span>
             )}
@@ -543,7 +543,7 @@ export default function AttachmentViewerModal({
         </div>
         
         {/* Content - Light background like QuickLook */}
-        <div className="flex-1 overflow-hidden bg-gray-50" ref={containerRef} data-testid="viewer-modal">
+        <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900" ref={containerRef} data-testid="viewer-modal">
           {renderContent()}
         </div>
       </div>

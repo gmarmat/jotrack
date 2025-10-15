@@ -9,7 +9,20 @@ import { getMimeType } from "@/lib/mime";
 import { useState } from "react";
 import AttachmentViewerModal from "@/app/components/AttachmentViewerModal";
 
-export default function AttachmentsSection({ jobId }: { jobId: string }) {
+const formatTimestamp = (ms: number): string => {
+  const date = new Date(ms);
+  const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const dateStr = date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
+  return `${time} ${dateStr}`;
+};
+
+export default function AttachmentsSection({ 
+  jobId,
+  onAttachmentChange 
+}: { 
+  jobId: string;
+  onAttachmentChange?: () => void;
+}) {
   const resume = useVersions(jobId, "resume");
   const jd = useVersions(jobId, "jd");
   const cover = useVersions(jobId, "cover_letter");
@@ -55,6 +68,7 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
       
       hook.upsertLocal(versionRec);
       hook.refresh();
+      onAttachmentChange?.(); // Trigger callback to refresh attachment count
     };
 
   const openPreview = (path: string, filename: string) => {
@@ -75,6 +89,7 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
         const hooks = { resume, jd, cover_letter: cover };
         hooks[kind].removeLocal(id);
         hooks[kind].refresh();
+        onAttachmentChange?.(); // Trigger callback to refresh attachment count
       }
     } catch (error) {
       console.error("Failed to delete:", error);
@@ -89,6 +104,7 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
       if (response.ok) {
         const hooks = { resume, jd, cover_letter: cover };
         hooks[kind].refresh();
+        onAttachmentChange?.(); // Trigger callback to refresh attachment count
       }
     } catch (error) {
       console.error("Failed to restore:", error);
@@ -129,14 +145,13 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
     return (
       <>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-900 truncate">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
             {rec.filename}
           </div>
-          <div className="text-xs text-gray-600">
-            v{rec.version}
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            v{rec.version} • {formatFileSize(rec.size)} • {formatTimestamp(rec.createdAt)}
             {rec.isActive && " • active"}
             {rec.deletedAt && " • deleted"}
-            {rec.size && ` • ${formatFileSize(rec.size)}`}
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -201,9 +216,17 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
   return (
     <>
       <section data-testid="attachments-section" className="space-y-4">
+        {/* Common instructions above all dropzones */}
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            <strong>Upload Instructions:</strong> Drag and drop files or click Upload. 
+            Multiple files supported. Formats: PDF, DOCX, RTF, TXT, MD, images.
+          </p>
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-3">
           <div data-testid="zone-resume">
-            <h3 className="text-sm font-semibold mb-2 text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-3">
               Resume
             </h3>
             <UploadDropzone
@@ -221,7 +244,7 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
           </div>
 
           <div data-testid="zone-jd">
-            <h3 className="text-sm font-semibold mb-2 text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-3">
               Job Description
             </h3>
             <UploadDropzone
@@ -239,7 +262,7 @@ export default function AttachmentsSection({ jobId }: { jobId: string }) {
           </div>
 
           <div data-testid="zone-cover">
-            <h3 className="text-sm font-semibold mb-2 text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-3">
               Cover Letter
             </h3>
             <UploadDropzone
