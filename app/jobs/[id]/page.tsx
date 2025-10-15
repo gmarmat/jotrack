@@ -24,6 +24,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
   
+  // v2.7: Staleness detection
+  const [stalenessInfo, setStalenessInfo] = useState<{
+    isStale: boolean;
+    severity: 'fresh' | 'never_analyzed' | 'minor' | 'major';
+    message: string;
+    changedArtifacts?: string[];
+  } | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  
   // ESC key handler for attachments modal
   useEffect(() => {
     if (!showAttachmentsModal) return;
@@ -102,6 +112,24 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     }
   }, [id]);
 
+  // v2.7: Check staleness on mount and after changes
+  useEffect(() => {
+    const checkStaleness = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${id}/check-staleness`);
+        if (res.ok) {
+          const data = await res.json();
+          setStalenessInfo(data);
+        }
+      } catch (error) {
+        console.error('Failed to check staleness:', error);
+      }
+    };
+    if (id) {
+      checkStaleness();
+    }
+  }, [id, attachmentCount]); // Re-check when attachments change
+
   const handleStatusChange = (newStatus: JobStatus) => {
     setJob((prev: any) => ({ ...prev, status: newStatus }));
     // Optionally refetch to get updated data
@@ -122,6 +150,40 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   const handleViewJd = () => {
     setShowAttachmentsModal(true);
+  };
+
+  // v2.7: Handle global analyze all
+  const handleGlobalAnalyze = async () => {
+    setAnalyzing(true);
+    setAnalyzeError(null);
+
+    try {
+      const res = await fetch(`/api/jobs/${id}/analyze-all`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setAnalyzeError(data.message || 'Analysis failed');
+        return;
+      }
+
+      // Success! Refresh staleness info
+      const stalenessRes = await fetch(`/api/jobs/${id}/check-staleness`);
+      if (stalenessRes.ok) {
+        const stalenessData = await stalenessRes.json();
+        setStalenessInfo(stalenessData);
+      }
+
+      // Optionally refresh the page to show updated analysis
+      // window.location.reload();
+    } catch (error) {
+      console.error('Error running global analysis:', error);
+      setAnalyzeError(error instanceof Error ? error.message : 'Analysis failed');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   if (loading) {
@@ -167,6 +229,69 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             ← Back to list
           </Link>
         </div>
+
+        {/* v2.7: Staleness Detection Banner */}
+        {stalenessInfo && stalenessInfo.isStale && (
+          <div
+            className={`p-4 rounded-lg border-l-4 ${
+              stalenessInfo.severity === 'major'
+                ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500 dark:border-orange-600'
+                : stalenessInfo.severity === 'never_analyzed'
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600'
+                : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 dark:border-yellow-600'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">
+                    {stalenessInfo.severity === 'major' ? '⚠️' : 
+                     stalenessInfo.severity === 'never_analyzed' ? '🌟' : 'ℹ️'}
+                  </span>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    {stalenessInfo.severity === 'major' ? 'Major Changes Detected' :
+                     stalenessInfo.severity === 'never_analyzed' ? 'Ready to Analyze' :
+                     'Updates Available'}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {stalenessInfo.message}
+                </p>
+                {stalenessInfo.changedArtifacts && stalenessInfo.changedArtifacts.length > 0 && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Changed: {stalenessInfo.changedArtifacts.join(', ')}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={handleGlobalAnalyze}
+                disabled={analyzing}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  analyzing
+                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {analyzing ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Analyzing...
+                  </span>
+                ) : (
+                  'Analyze Now'
+                )}
+              </button>
+            </div>
+            {analyzeError && (
+              <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded text-sm text-red-800 dark:text-red-300">
+                {analyzeError}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 1. Header: Title, Company, StatusChip, QuickActions */}
         <JobHeader 
