@@ -1,0 +1,166 @@
+// v2.7: Analysis fingerprint calculation for change detection
+
+import { createHash } from 'crypto';
+import { db } from '@/db/client';
+import { jobs, attachments, userProfile } from '@/db/schema';
+import { eq, and, isNull } from 'drizzle-orm';
+
+export interface StalenessCheck {
+  isStale: boolean;
+  severity: 'fresh' | 'never_analyzed' | 'minor' | 'major';
+  message: string;
+  changedArtifacts?: string[];
+}
+
+/**
+ * Calculate fingerprint hash from all analysis inputs
+ */
+export async function calculateAnalysisFingerprint(jobId: string): Promise<string> {
+  // Gather all input sources
+  const activeAttachments = await db
+    .select()
+    .from(attachments)
+    .where(
+      and(
+        eq(attachments.jobId, jobId),
+        eq(attachments.isActive, true),
+        isNull(attachments.deletedAt)
+      )
+    );
+
+  const profile = await db.select().from(userProfile).limit(1);
+  const profileVersion = profile[0]?.version || 0;
+
+  // Create fingerprint string from all inputs
+  const parts = [
+    ...activeAttachments.map((a) => `${a.kind}:${a.id}:v${a.version}`),
+    `profile:v${profileVersion}`,
+  ].sort(); // Sort for consistency
+
+  const fingerprint = createHash('sha256').update(parts.join('|')).digest('hex');
+
+  return fingerprint;
+}
+
+/**
+ * Check if analysis is stale (needs re-running)
+ */
+export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCheck> {
+  const job = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+
+  if (job.length === 0) {
+    throw new Error(`Job not found: ${jobId}`);
+  }
+
+  const currentJob = job[0];
+  const currentFingerprint = await calculateAnalysisFingerprint(jobId);
+
+  // Never analyzed before
+  if (!currentJob.analysis_fingerprint) {
+    return {
+      isStale: true,
+      severity: 'never_analyzed',
+      message: 'No analysis run yet - click Analyze to get started',
+    };
+  }
+
+  // Fingerprints match - analysis is fresh
+  if (currentJob.analysis_fingerprint === currentFingerprint) {
+    return {
+      isStale: false,
+      severity: 'fresh',
+      message: 'Analysis is up to date',
+    };
+  }
+
+  // Fingerprints differ - determine severity
+  const changes = await detectChanges(jobId, currentJob.analysis_fingerprint, currentFingerprint);
+
+  if (changes.includes('resume') || changes.includes('jd')) {
+    return {
+      isStale: true,
+      severity: 'major',
+      message: 'Key documents changed - re-analysis strongly recommended',
+      changedArtifacts: changes,
+    };
+  }
+
+  return {
+    isStale: true,
+    severity: 'minor',
+    message: 'Minor updates detected - consider re-analyzing',
+    changedArtifacts: changes,
+  };
+}
+
+/**
+ * Detect which artifacts changed between two fingerprints
+ */
+async function detectChanges(
+  jobId: string,
+  oldFingerprint: string,
+  newFingerprint: string
+): Promise<string[]> {
+  // Get current attachments
+  const currentAttachments = await db
+    .select()
+    .from(attachments)
+    .where(
+      and(
+        eq(attachments.jobId, jobId),
+        eq(attachments.isActive, true),
+        isNull(attachments.deletedAt)
+      )
+    );
+
+  // For now, return all attachment kinds as changed
+  // (More sophisticated diff would require storing old fingerprint components)
+  const changes = currentAttachments.map((a) => a.kind);
+
+  return [...new Set(changes)]; // Dedupe
+}
+
+/**
+ * Update job analysis state and fingerprint after successful analysis
+ */
+export async function updateAnalysisFingerprint(jobId: string): Promise<void> {
+  const fingerprint = await calculateAnalysisFingerprint(jobId);
+  const now = Date.now();
+
+  await db
+    .update(jobs)
+    .set({
+      analysis_fingerprint: fingerprint,
+      analysis_state: 'fresh',
+      last_full_analysis_at: now,
+      updatedAt: now,
+    })
+    .where(eq(jobs.id, jobId));
+}
+
+/**
+ * Mark job as stale (analysis needs refresh)
+ */
+export async function markJobStale(jobId: string): Promise<void> {
+  await db
+    .update(jobs)
+    .set({
+      analysis_state: 'stale',
+      updatedAt: Date.now(),
+    })
+    .where(eq(jobs.id, jobId));
+}
+
+/**
+ * Mark job as analyzing (in progress)
+ */
+export async function markJobAnalyzing(jobId: string): Promise<void> {
+  await db
+    .update(jobs)
+    .set({
+      analysis_state: 'analyzing',
+      updatedAt: Date.now(),
+    })
+    .where(eq(jobs.id, jobId));
+}
+

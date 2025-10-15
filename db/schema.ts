@@ -204,6 +204,63 @@ export const knowledgeStaleness = sqliteTable('knowledge_staleness', {
   value: text('value').notNull(), // JSON with {ttlDays, lastUpdated, source}
 });
 
+// v2.7: Data Strategy Tables
+export const userProfile = sqliteTable('user_profile', {
+  id: text('id').primaryKey().default('singleton'),
+  profileData: text('profile_data').notNull().default('{}'),
+  skillsAccumulated: text('skills_accumulated').notNull().default('[]'),
+  experiencesAccumulated: text('experiences_accumulated').notNull().default('[]'),
+  version: integer('version', { mode: 'number' }).notNull().default(1),
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const VARIANT_TYPES = ['raw', 'ui', 'ai_optimized', 'detailed'] as const;
+export type VariantType = typeof VARIANT_TYPES[number];
+
+export const SOURCE_TYPES = ['attachment', 'company_intel', 'profile', 'ecosystem', 'signals'] as const;
+export type SourceType = typeof SOURCE_TYPES[number];
+
+export const artifactVariants = sqliteTable('artifact_variants', {
+  id: text('id').primaryKey(),
+  sourceId: text('source_id').notNull(),
+  sourceType: text('source_type').$type<SourceType>().notNull(),
+  variantType: text('variant_type').$type<VariantType>().notNull(),
+  version: integer('version', { mode: 'number' }).notNull().default(1),
+  content: text('content').notNull(),
+  contentHash: text('content_hash').notNull(),
+  tokenCount: integer('token_count', { mode: 'number' }),
+  extractionModel: text('extraction_model'),
+  extractionPromptVersion: text('extraction_prompt_version'),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+});
+
+export const analysisDependencies = sqliteTable('analysis_dependencies', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  analysisType: text('analysis_type').notNull(),
+  dependsOn: text('depends_on').notNull(), // JSON array of variant IDs
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  isValid: integer('is_valid', { mode: 'boolean' }).notNull().default(true),
+});
+
+export const EXTRACTION_STATUSES = ['queued', 'processing', 'completed', 'failed'] as const;
+export type ExtractionStatus = typeof EXTRACTION_STATUSES[number];
+
+export const extractionQueue = sqliteTable('extraction_queue', {
+  id: text('id').primaryKey(),
+  sourceId: text('source_id').notNull(),
+  sourceType: text('source_type').$type<SourceType>().notNull(),
+  variantType: text('variant_type').$type<VariantType>().notNull(),
+  priority: integer('priority', { mode: 'number' }).notNull().default(5),
+  status: text('status').$type<ExtractionStatus>().notNull().default('queued'),
+  attempts: integer('attempts', { mode: 'number' }).notNull().default(0),
+  errorMessage: text('error_message'),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  startedAt: integer('started_at', { mode: 'number' }),
+  completedAt: integer('completed_at', { mode: 'number' }),
+});
+
 // Types
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = typeof jobs.$inferInsert;
@@ -245,6 +302,16 @@ export type AiRun = typeof aiRuns.$inferSelect;
 export type NewAiRun = typeof aiRuns.$inferInsert;
 export type KnowledgeStaleness = typeof knowledgeStaleness.$inferSelect;
 export type NewKnowledgeStaleness = typeof knowledgeStaleness.$inferInsert;
+
+// v2.7: Data Strategy types
+export type UserProfile = typeof userProfile.$inferSelect;
+export type NewUserProfile = typeof userProfile.$inferInsert;
+export type ArtifactVariant = typeof artifactVariants.$inferSelect;
+export type NewArtifactVariant = typeof artifactVariants.$inferInsert;
+export type AnalysisDependency = typeof analysisDependencies.$inferSelect;
+export type NewAnalysisDependency = typeof analysisDependencies.$inferInsert;
+export type ExtractionQueueItem = typeof extractionQueue.$inferSelect;
+export type NewExtractionQueueItem = typeof extractionQueue.$inferInsert;
 
 // Typed structures for JSON columns
 export type InterviewerBlock = {
