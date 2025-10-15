@@ -27,9 +27,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   // v2.7: Staleness detection
   const [stalenessInfo, setStalenessInfo] = useState<{
     isStale: boolean;
-    severity: 'fresh' | 'never_analyzed' | 'minor' | 'major';
+    severity: 'fresh' | 'never_analyzed' | 'minor' | 'major' | 'no_variants' | 'variants_fresh';
     message: string;
     changedArtifacts?: string[];
+    hasVariants?: boolean;
+    hasAnalysis?: boolean;
   } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);

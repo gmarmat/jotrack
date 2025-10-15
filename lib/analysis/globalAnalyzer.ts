@@ -109,15 +109,15 @@ async function checkRateLimit(jobId: string): Promise<{
 
   const currentJob = job[0];
 
-  if (!currentJob.last_full_analysis_at) {
+  if (!currentJob.lastFullAnalysisAt) {
     return { blocked: false }; // First analysis, allow
   }
 
-  const timeSince = Date.now() - currentJob.last_full_analysis_at;
+  const timeSince = Date.now() - currentJob.lastFullAnalysisAt;
   const COOLDOWN_MS = 30 * 1000; // 30 seconds
 
   if (timeSince < COOLDOWN_MS) {
-    const nextAllowedAt = currentJob.last_full_analysis_at + COOLDOWN_MS;
+    const nextAllowedAt = currentJob.lastFullAnalysisAt + COOLDOWN_MS;
     const secondsRemaining = Math.ceil((COOLDOWN_MS - timeSince) / 1000);
     return {
       blocked: true,

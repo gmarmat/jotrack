@@ -8,7 +8,7 @@ import { db } from '@/db/client';
 import { jobs, attachments, artifactVariants } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import { getVariant } from '@/lib/extraction/extractionEngine';
-import { callAI } from '@/lib/coach/aiProvider';
+import { callAiProvider } from '@/lib/coach/aiProvider';
 import { createHash } from 'crypto';
 import { v4 as uuid } from 'uuid';
 
@@ -111,10 +111,17 @@ ${rawText}
 `;
   }
   
-  const response = await callAI(prompt);
+  const { result } = await callAiProvider('extract_structured_data', {
+    prompt,
+    sourceType,
+  }, false, 'v1');
   
-  // Parse JSON from response (handle potential markdown wrapping)
-  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  // Parse JSON from result (handle potential markdown wrapping or direct object)
+  if (typeof result === 'object') {
+    return result; // Already parsed
+  }
+  
+  const jsonMatch = result.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('AI did not return valid JSON');
   }
@@ -157,10 +164,17 @@ New variant:
 ${JSON.stringify(newVariant, null, 2)}
 `;
 
-  const response = await callAI(prompt);
+  const { result } = await callAiProvider('compare_variants', {
+    prompt,
+    sourceType,
+  }, false, 'v1');
   
-  // Parse JSON from response
-  const jsonMatch = response.match(/\{[\s\S]*\}/);
+  // Parse JSON from result (handle potential markdown wrapping or direct object)
+  if (typeof result === 'object') {
+    return result; // Already parsed
+  }
+  
+  const jsonMatch = result.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('AI did not return valid JSON');
   }

@@ -221,7 +221,16 @@ export const userProfile = sqliteTable('user_profile', {
 export const VARIANT_TYPES = ['raw', 'ui', 'ai_optimized', 'detailed'] as const;
 export type VariantType = typeof VARIANT_TYPES[number];
 
-export const SOURCE_TYPES = ['attachment', 'company_intel', 'profile', 'ecosystem', 'signals'] as const;
+export const SOURCE_TYPES = [
+  'attachment', 
+  'resume', 
+  'job_description', 
+  'cover_letter', 
+  'company_intel', 
+  'profile', 
+  'ecosystem', 
+  'signals'
+] as const;
 export type SourceType = typeof SOURCE_TYPES[number];
 
 export const artifactVariants = sqliteTable('artifact_variants', {
