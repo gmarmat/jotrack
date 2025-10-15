@@ -142,23 +142,22 @@ async function ensureAllVariantsExist(jobId: string): Promise<void> {
     const existing = await getVariant(attachment.id, sourceType, 'ai_optimized');
     
     if (!existing) {
-      console.log(`📝 Extracting variants for ${attachment.kind}: ${attachment.filename}`);
-      
-      // Read file content
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const filePath = path.join(process.cwd(), attachment.path);
+      console.log(`📝 Creating mock variants for ${attachment.kind}: ${attachment.filename}`);
       
       try {
-        // Extract text from file
-        const fileContent = await fs.readFile(filePath, 'utf-8');
+        // TODO v2.9: Replace with real text extraction from DOCX/PDF
+        // For now, create mock variants to test the flow
+        const mockContent = `Mock ${attachment.kind} content from ${attachment.filename}. 
+This is placeholder text until real text extraction is implemented in v2.9.
+File: ${attachment.path}
+Kind: ${attachment.kind}`;
         
         // Extract variants (synchronously for now)
-        await extractVariants(attachment.id, sourceType, fileContent, { async: false });
+        await extractVariants(attachment.id, sourceType, mockContent, { async: false });
         
-        console.log(`✅ Extracted variants for ${attachment.filename}`);
+        console.log(`✅ Created mock variants for ${attachment.filename}`);
       } catch (error) {
-        console.error(`❌ Failed to extract ${attachment.filename}:`, error);
+        console.error(`❌ Failed to create variants for ${attachment.filename}:`, error);
         // Continue with other attachments
       }
     } else {
