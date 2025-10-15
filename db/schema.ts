@@ -19,7 +19,7 @@ export const jobs = sqliteTable('jobs', {
   archivedAt: integer('archived_at', { mode: 'number' }).$type<number | null>().default(null),
   permanentDeleteAt: integer('permanent_delete_at', { mode: 'number' }).$type<number | null>().default(null),
   // v2.7: Analysis state tracking
-  analysisState: text('analysis_state').$type<'pending' | 'fresh' | 'stale' | 'analyzing'>().default('pending'),
+  analysisState: text('analysis_state').$type<'pending' | 'variants_fresh' | 'variants_stale' | 'analyzing' | 'fresh' | 'stale'>().default('pending'),
   analysisFingerprint: text('analysis_fingerprint'),
   lastFullAnalysisAt: integer('last_full_analysis_at', { mode: 'number' }),
 });
