@@ -2,8 +2,9 @@
 
 import { createHash } from 'crypto';
 import { db } from '@/db/client';
-import { jobs, attachments, userProfile } from '@/db/schema';
+import { jobs, attachments, userProfile, artifactVariants } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
+import { calculateTextSimilarity, assessChangeSignificance } from './similarityCalculator';
 
 export interface StalenessCheck {
   isStale: boolean;
