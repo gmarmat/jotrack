@@ -38,18 +38,18 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
       data-testid="global-settings-modal"
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <Sliders className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
+            <Sliders className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-600 dark:text-gray-400"
             aria-label="Close settings"
             data-testid="close-global-settings"
           >
@@ -58,12 +58,12 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-6">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 px-6">
           <button
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'ai'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
             onClick={() => setActiveTab('ai')}
             data-testid="settings-tab-ai"
@@ -77,8 +77,8 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
           <button
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'data'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
             onClick={() => setActiveTab('data')}
             data-testid="settings-tab-data"
@@ -92,8 +92,8 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
           <button
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'preferences'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
             onClick={() => setActiveTab('preferences')}
             data-testid="settings-tab-preferences"
@@ -107,8 +107,8 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
           <button
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'developer'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
             onClick={() => setActiveTab('developer')}
             data-testid="settings-tab-developer"
@@ -138,20 +138,48 @@ function AITab() {
   const [provider, setProvider] = useState('openai');
   const [model, setModel] = useState('gpt-4o-mini');
   const [apiKey, setApiKey] = useState('');
+  const [hasExistingKey, setHasExistingKey] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load existing settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/ai/keyvault/get');
+        if (res.ok) {
+          const data = await res.json();
+          setNetworkEnabled(data.networkEnabled || false);
+          setProvider(data.provider || 'openai');
+          setModel(data.model || 'gpt-4o-mini');
+          setHasExistingKey(!!data.hasApiKey);
+          // Don't set the actual API key for security
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      }
+    };
+    loadSettings();
+  }, []);
 
   const handleSave = async () => {
-    // Save logic (reuse from existing settings page)
+    setIsSaving(true);
     try {
       await fetch('/api/ai/keyvault/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model, apiKey, networkEnabled }),
+        body: JSON.stringify({ provider, model, apiKey: apiKey || undefined, networkEnabled }),
       });
-      alert('Settings saved successfully!');
+      if (apiKey) {
+        setHasExistingKey(true);
+        setApiKey(''); // Clear input after saving
+      }
+      setTestResult({ success: true, message: 'Settings saved successfully!' });
     } catch (error) {
-      alert('Failed to save settings');
+      setTestResult({ success: false, message: 'Failed to save settings' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -180,20 +208,20 @@ function AITab() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-600" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           AI Configuration
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Configure AI analysis for Coach Mode. Keys are stored securely and never sent to the browser.
         </p>
       </div>
 
       {/* Network Toggle */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
         <div>
-          <label className="text-sm font-medium text-gray-900">Enable AI Analysis</label>
-          <p className="text-xs text-gray-600">Use AI for advanced insights</p>
+          <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Enable AI Analysis</label>
+          <p className="text-xs text-gray-600 dark:text-gray-400">Use AI for advanced insights</p>
         </div>
         <button
           onClick={() => setNetworkEnabled(!networkEnabled)}
@@ -214,11 +242,11 @@ function AITab() {
         <>
           {/* Provider */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Provider</label>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               data-testid="ai-provider"
             >
               <option value="openai">OpenAI</option>
@@ -227,32 +255,52 @@ function AITab() {
 
           {/* Model */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Model</label>
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Model</label>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               data-testid="ai-model"
             >
-              <option value="gpt-4o-mini">GPT-4o Mini (Recommended)</option>
-              <option value="gpt-4o">GPT-4o</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              <option value="gpt-4o-mini">GPT-4o Mini (Recommended - Fast & Cheap)</option>
+              <option value="gpt-4o">GPT-4o (Balanced)</option>
+              <option value="o1-preview">GPT-o1 Preview (Best Reasoning)</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo (Legacy)</option>
             </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              GPT-4o Mini is recommended for best cost/performance ratio
+            </p>
           </div>
 
           {/* API Key */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              data-testid="ai-key"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Your API key is encrypted and stored securely on the server
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">API Key</label>
+            {hasExistingKey && !apiKey ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
+                  ••••••••••••••••••••••••••
+                </div>
+                <button
+                  onClick={() => setApiKey('')}
+                  className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder={hasExistingKey ? "Enter new API key to update" : "sk-..."}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                data-testid="ai-key"
+              />
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {hasExistingKey 
+                ? '✓ API key is saved and encrypted. You can test the connection anytime.' 
+                : 'Your API key is encrypted and stored securely on the server'}
             </p>
           </div>
 
@@ -260,21 +308,28 @@ function AITab() {
           <div className="flex gap-3">
             <button
               onClick={handleTest}
-              disabled={isTesting || !apiKey}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              disabled={isTesting || (!apiKey && !hasExistingKey)}
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              data-testid="test-connection-btn"
             >
               {isTesting ? 'Testing...' : 'Test Connection'}
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              disabled={isSaving}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              data-testid="save-settings-btn"
             >
-              Save Settings
+              {isSaving ? 'Saving...' : 'Save Settings'}
             </button>
           </div>
 
           {testResult && (
-            <div className={`p-3 rounded-md ${testResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+            <div className={`p-3 rounded-md ${
+              testResult.success 
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700' 
+                : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700'
+            }`}>
               {testResult.message}
             </div>
           )}
@@ -282,25 +337,28 @@ function AITab() {
       )}
 
       {/* Usage Dashboard */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">Usage Monitor</h4>
+      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Usage Monitor</h4>
         <div className="grid grid-cols-3 gap-4">
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-700">Today</p>
-            <p className="text-lg font-bold text-blue-900">2,340</p>
-            <p className="text-xs text-blue-600">tokens</p>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-xs text-blue-700 dark:text-blue-400">Today</p>
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-300">2,340</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">tokens</p>
           </div>
-          <div className="p-3 bg-purple-50 rounded-lg">
-            <p className="text-xs text-purple-700">This Month</p>
-            <p className="text-lg font-bold text-purple-900">45,678</p>
-            <p className="text-xs text-purple-600">tokens</p>
+          <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <p className="text-xs text-purple-700 dark:text-purple-400">This Month</p>
+            <p className="text-lg font-bold text-purple-900 dark:text-purple-300">45,678</p>
+            <p className="text-xs text-purple-600 dark:text-purple-400">tokens</p>
           </div>
-          <div className="p-3 bg-green-50 rounded-lg">
-            <p className="text-xs text-green-700">Est. Cost</p>
-            <p className="text-lg font-bold text-green-900">$2.34</p>
-            <p className="text-xs text-green-600">this month</p>
+          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <p className="text-xs text-green-700 dark:text-green-400">Est. Cost</p>
+            <p className="text-lg font-bold text-green-900 dark:text-green-300">$2.34</p>
+            <p className="text-xs text-green-600 dark:text-green-400">this month</p>
           </div>
         </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+          Note: Usage tracking will be implemented in v2.8. These are sample values.
+        </p>
       </div>
     </div>
   );
