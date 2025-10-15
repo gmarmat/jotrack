@@ -428,27 +428,27 @@ function DataTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
-          <Database className="w-5 h-5 text-blue-600" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+          <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           Backup & Restore
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Protect your data with backups and restore from previous versions.
         </p>
       </div>
 
       {/* Backup */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-semibold text-blue-900">Create Backup</h4>
-            <p className="text-xs text-blue-700 mt-1">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300">Create Backup</h4>
+            <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
               Download a complete backup of your database and attachments
             </p>
           </div>
           <button
             onClick={handleBackup}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             data-testid="backup-button"
           >
             <Download size={16} />
@@ -458,17 +458,17 @@ function DataTab() {
       </div>
 
       {/* Restore */}
-      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-semibold text-purple-900">Restore from Backup</h4>
-            <p className="text-xs text-purple-700 mt-1">
+            <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-300">Restore from Backup</h4>
+            <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
               Upload a backup file to restore your data
             </p>
           </div>
           <button
             onClick={handleRestore}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
             data-testid="restore-button"
           >
             <Upload size={16} />
@@ -478,17 +478,17 @@ function DataTab() {
       </div>
 
       {/* Export */}
-      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+      <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-semibold text-green-900">Export to CSV</h4>
-            <p className="text-xs text-green-700 mt-1">
+            <h4 className="text-sm font-semibold text-green-900 dark:text-green-300">Export to CSV</h4>
+            <p className="text-xs text-green-700 dark:text-green-400 mt-1">
               Export all jobs and metadata to a CSV file
             </p>
           </div>
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             data-testid="export-csv-button"
           >
             <Download size={16} />
@@ -498,14 +498,14 @@ function DataTab() {
       </div>
 
       {/* Stale Threshold */}
-      <div className="pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <Clock size={16} />
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+          <Clock size={16} className="text-gray-600 dark:text-gray-400" />
           Staleness Settings
         </h4>
         <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-700">Mark jobs as stale after:</label>
-          <select className="px-3 py-2 border border-gray-300 rounded-md text-sm">
+          <label className="text-sm text-gray-700 dark:text-gray-300">Mark jobs as stale after:</label>
+          <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="7">7 days</option>
             <option value="14">14 days</option>
             <option value="30">30 days</option>
@@ -515,16 +515,16 @@ function DataTab() {
       </div>
 
       {/* Danger Zone */}
-      <div className="pt-6 border-t border-red-200">
-        <h4 className="text-sm font-semibold text-red-900 mb-3 flex items-center gap-2">
+      <div className="pt-6 border-t border-red-200 dark:border-red-800">
+        <h4 className="text-sm font-semibold text-red-900 dark:text-red-300 mb-3 flex items-center gap-2">
           <Trash2 size={16} />
           Danger Zone
         </h4>
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-800 mb-3">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-800 dark:text-red-300 mb-3">
             Permanently delete all jobs in trash (5+ days old)
           </p>
-          <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">
+          <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm transition-colors">
             Purge Trash
           </button>
         </div>
@@ -538,14 +538,19 @@ function PreferencesTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Preferences</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+          <Sliders className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          Preferences
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Customize your JoTrack experience
         </p>
       </div>
 
-      <div className="text-sm text-gray-500 italic">
-        Theme settings, notifications, and other preferences coming soon...
+      <div className="p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+          Theme settings, notifications, and other preferences coming soon...
+        </p>
       </div>
     </div>
   );
@@ -573,19 +578,19 @@ function DeveloperTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
-          <Code className="w-5 h-5 text-gray-700" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+          <Code className="w-5 h-5 text-gray-700 dark:text-gray-400" />
           Developer Tools
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Advanced settings for debugging and prompt management
         </p>
       </div>
 
       <div className="space-y-4">
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-2">Prompt Editor</h4>
-          <p className="text-xs text-gray-600 mb-3">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Prompt Editor</h4>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
             Edit AI prompts with Monaco Editor, version control, and live testing
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -593,7 +598,7 @@ function DeveloperTab() {
               <button
                 key={kind}
                 onClick={() => handleOpenPromptEditor(kind)}
-                className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm text-left"
+                className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-left transition-colors"
               >
                 {label}
               </button>
@@ -601,21 +606,21 @@ function DeveloperTab() {
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-2">Rate Limits</h4>
-          <p className="text-xs text-gray-600">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Rate Limits</h4>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Current: 1000 AI calls per 5 minutes
           </p>
         </div>
 
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-2">Debug Mode</h4>
-          <p className="text-xs text-gray-600 mb-3">
+        <div className="p-4 bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Debug Mode</h4>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
             Show raw JSON responses from AI (for troubleshooting)
           </p>
           <label className="flex items-center gap-2">
-            <input type="checkbox" className="rounded" />
-            <span className="text-sm text-gray-700">Enable debug logging</span>
+            <input type="checkbox" className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-2 focus:ring-blue-500" />
+            <span className="text-sm text-gray-700 dark:text-gray-300">Enable debug logging</span>
           </label>
         </div>
       </div>
