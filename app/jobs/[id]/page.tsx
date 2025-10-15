@@ -386,11 +386,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* v2.7: Staleness Detection Banner */}
+        {/* v2.7: Smart 4-State Banner System */}
         {!analyzeSuccess && stalenessInfo && stalenessInfo.isStale && (
           <div
             className={`p-4 rounded-lg border-l-4 ${
-              stalenessInfo.severity === 'major'
+              stalenessInfo.severity === 'no_variants'
+                ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-500 dark:border-purple-600'
+                : stalenessInfo.severity === 'variants_fresh'
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600'
+                : stalenessInfo.severity === 'major'
                 ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500 dark:border-orange-600'
                 : stalenessInfo.severity === 'never_analyzed'
                 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600'
@@ -401,11 +405,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">
-                    {stalenessInfo.severity === 'major' ? '⚠️' : 
+                    {stalenessInfo.severity === 'no_variants' ? '📄' :
+                     stalenessInfo.severity === 'variants_fresh' ? '🌟' :
+                     stalenessInfo.severity === 'major' ? '⚠️' : 
                      stalenessInfo.severity === 'never_analyzed' ? '🌟' : 'ℹ️'}
                   </span>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
-                    {stalenessInfo.severity === 'major' ? 'Major Changes Detected' :
+                    {stalenessInfo.severity === 'no_variants' ? 'Extract Data First' :
+                     stalenessInfo.severity === 'variants_fresh' ? 'Ready to Analyze' :
+                     stalenessInfo.severity === 'major' ? 'Major Changes Detected' :
                      stalenessInfo.severity === 'never_analyzed' ? 'Ready to Analyze' :
                      'Updates Available'}
                   </p>
@@ -420,59 +428,118 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 )}
               </div>
               
-              {/* v2.7: Two-button system based on state */}
+              {/* v2.7: Smart two-button system based on state */}
               <div className="flex gap-2">
-                {/* Show Refresh Data for new uploads */}
-                <button
-                  onClick={handleRefreshVariants}
-                  disabled={refreshing}
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                    refreshing
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-600 hover:bg-purple-700 text-white'
-                  }`}
-                >
-                  {refreshing ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Refreshing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      Refresh Data
-                      <span className="text-xs opacity-75">~$0.02</span>
-                    </span>
-                  )}
-                </button>
+                {/* State 1 (NO_VARIANTS): Show ONLY Refresh Data */}
+                {stalenessInfo.severity === 'no_variants' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                      refreshing
+                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                        : 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg'
+                    }`}
+                  >
+                    {refreshing ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Refreshing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        Refresh Data
+                        <span className="text-xs opacity-75">~$0.02</span>
+                      </span>
+                    )}
+                  </button>
+                )}
 
-                {/* Show Analyze All when variants exist */}
-                <button
-                  onClick={handleGlobalAnalyze}
-                  disabled={analyzing}
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                    analyzing
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {analyzing ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Analyzing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      Analyze All
-                      <span className="text-xs opacity-75">~$0.20</span>
-                    </span>
-                  )}
-                </button>
+                {/* State 2 (VARIANTS_FRESH): Show ONLY Analyze All */}
+                {stalenessInfo.severity === 'variants_fresh' && (
+                  <button
+                    onClick={handleGlobalAnalyze}
+                    disabled={analyzing}
+                    className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                      analyzing
+                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
+                    }`}
+                  >
+                    {analyzing ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        Analyze All
+                        <span className="text-xs opacity-75">~$0.20</span>
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {/* State 3 (STALE/MAJOR): Show BOTH, highlight Refresh */}
+                {(stalenessInfo.severity === 'major' || stalenessInfo.severity === 'minor' || stalenessInfo.severity === 'never_analyzed') && (
+                  <>
+                    <button
+                      onClick={handleRefreshVariants}
+                      disabled={refreshing}
+                      className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                        refreshing
+                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg'
+                      }`}
+                    >
+                      {refreshing ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Refreshing...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          Refresh Data
+                          <span className="text-xs opacity-75">~$0.02</span>
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleGlobalAnalyze}
+                      disabled={analyzing}
+                      className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                        analyzing
+                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white opacity-75 hover:opacity-100'
+                      }`}
+                    >
+                      {analyzing ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Analyzing...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          Analyze All
+                          <span className="text-xs opacity-75">~$0.20</span>
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
             

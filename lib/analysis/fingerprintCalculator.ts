@@ -8,9 +8,11 @@ import { calculateTextSimilarity, assessChangeSignificance } from './similarityC
 
 export interface StalenessCheck {
   isStale: boolean;
-  severity: 'fresh' | 'never_analyzed' | 'minor' | 'major';
+  severity: 'fresh' | 'never_analyzed' | 'minor' | 'major' | 'no_variants' | 'variants_fresh';
   message: string;
   changedArtifacts?: string[];
+  hasVariants?: boolean; // Whether AI-optimized variants exist
+  hasAnalysis?: boolean; // Whether full analysis has been run
 }
 
 /**
@@ -88,7 +90,45 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
 
   const currentJob = job[0];
   
-  // Check analysis_state column first (set by triggers)
+  // Check if attachments exist
+  const activeAttachments = await db
+    .select()
+    .from(attachments)
+    .where(
+      and(
+        eq(attachments.jobId, jobId),
+        eq(attachments.isActive, true),
+        isNull(attachments.deletedAt)
+      )
+    );
+  
+  // State 1: NO_VARIANTS - Attachments exist but no AI variants
+  if (activeAttachments.length > 0) {
+    const hasVariants = await checkIfVariantsExist(jobId, activeAttachments);
+    
+    if (!hasVariants) {
+      return {
+        isStale: true,
+        severity: 'no_variants',
+        message: 'Documents uploaded - click "Refresh Data" to extract AI-optimized data (~$0.02)',
+        hasVariants: false,
+        hasAnalysis: false,
+      };
+    }
+    
+    // State 2: VARIANTS_FRESH - Variants exist but no full analysis
+    if (!currentJob.analysisFingerprint || currentJob.analysisState === 'pending') {
+      return {
+        isStale: true,
+        severity: 'variants_fresh',
+        message: 'AI data ready - click "Analyze All" to generate insights (~$0.20)',
+        hasVariants: true,
+        hasAnalysis: false,
+      };
+    }
+  }
+  
+  // Check analysis_state column (set by triggers)
   if (currentJob.analysisState === 'stale') {
     // Determine if this is major or minor based on what changed
     const changes = currentJob.analysisFingerprint 
@@ -126,7 +166,38 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
     isStale: false,
     severity: 'fresh',
     message: 'Analysis is up to date',
+    hasVariants: true,
+    hasAnalysis: true,
   };
+}
+
+/**
+ * Check if AI-optimized variants exist for all attachments
+ */
+async function checkIfVariantsExist(
+  jobId: string,
+  activeAttachments: any[]
+): Promise<boolean> {
+  for (const attachment of activeAttachments) {
+    // Check if ai_optimized variant exists
+    const variant = await db
+      .select()
+      .from(artifactVariants)
+      .where(
+        and(
+          eq(artifactVariants.sourceId, attachment.id),
+          eq(artifactVariants.variantType, 'ai_optimized'),
+          eq(artifactVariants.isActive, true)
+        )
+      )
+      .limit(1);
+    
+    if (variant.length === 0) {
+      return false; // At least one attachment is missing variants
+    }
+  }
+  
+  return true; // All attachments have variants
 }
 
 /**
