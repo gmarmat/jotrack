@@ -18,7 +18,8 @@ const ENCRYPTION_KEY = process.env.AI_ENCRYPTION_KEY || 'default-key-change-in-p
 const ALGORITHM = 'aes-256-cbc';
 
 // v1.3: Model allowlist for safety
-const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'];
+// v2.7: Added o1-preview for advanced reasoning
+const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4o', 'o1-preview', 'gpt-4-turbo', 'gpt-3.5-turbo'];
 
 export interface AiSettings {
   networkEnabled: boolean;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadAiSettings } from '@/lib/coach/aiProvider';
+import { getAiSettings } from '@/lib/coach/aiProvider';
 
 /**
  * GET /api/ai/keyvault/get
@@ -7,7 +7,7 @@ import { loadAiSettings } from '@/lib/coach/aiProvider';
  */
 export async function GET(request: NextRequest) {
   try {
-    const settings = await loadAiSettings();
+    const settings = await getAiSettings();
 
     return NextResponse.json({
       networkEnabled: settings.networkEnabled || false,
