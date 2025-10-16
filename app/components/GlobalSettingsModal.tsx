@@ -344,13 +344,13 @@ function AITab() {
                 {/* Claude API Key */}
                 <div>
                   <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude API Key</label>
-                  {hasExistingClaudeKey && !claudeKey ? (
+                  {hasExistingClaudeKey && claudeKey.trim() === '' ? (
                     <div className="flex items-center gap-2">
                       <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                         ••••••••••••••••••••••••••
                       </div>
                       <button
-                        onClick={() => setClaudeKey('')}
+                        onClick={() => setClaudeKey(' ')}
                         className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         Update
@@ -359,7 +359,7 @@ function AITab() {
                   ) : (
                     <input
                       type="password"
-                      value={claudeKey}
+                      value={claudeKey.trim()}
                       onChange={(e) => setClaudeKey(e.target.value)}
                       placeholder="sk-ant-..."
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -476,7 +476,7 @@ function AITab() {
 
             <div>
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Tavily API Key</label>
-              {hasExistingTavilyKey && tavilyKey === '' ? (
+              {hasExistingTavilyKey && tavilyKey.trim() === '' ? (
                 <div className="flex items-center gap-2">
                   <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                     ••••••••••••••••••••••••••
