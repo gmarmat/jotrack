@@ -441,12 +441,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </span>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {stalenessInfo.severity === 'no_variants' ? 'Extract Data First' :
-                     stalenessInfo.severity === 'variants_fresh' ? 'Data Ready - Trigger Analysis in Each Section' :
-                     stalenessInfo.severity === 'major' ? 'Major Changes - Re-extract Data' :
-                     stalenessInfo.severity === 'never_analyzed' ? 'Upload Documents to Start' :
-                     stalenessInfo.severity === 'fresh' ? 'All Data Current' :
+                     stalenessInfo.severity === 'variants_fresh' ? 'Data Ready' :
+                     stalenessInfo.severity === 'major' ? 'Data Changed' :
+                     stalenessInfo.severity === 'never_analyzed' ? 'Ready to Start' :
+                     stalenessInfo.severity === 'fresh' ? 'All Current' :
                      'Updates Available'}
                   </p>
+                  <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
+                    {stalenessInfo.severity === 'no_variants' ? '· Upload docs, then click "Refresh Data" to create AI-ready versions (~$0.02)' :
+                     stalenessInfo.severity === 'variants_fresh' ? '· AI data extracted · Scroll to sections and click "Analyze" buttons' :
+                     stalenessInfo.severity === 'major' ? '· Documents updated · Click "Refresh Data" to re-extract before analyzing' :
+                     stalenessInfo.severity === 'never_analyzed' ? '· Upload Resume + JD, then click "Refresh Data" to begin' :
+                     stalenessInfo.severity === 'fresh' ? '· Variants and analysis up-to-date · Re-analyze anytime for latest insights' :
+                     '· Minor updates detected · Consider refreshing data'}
+                  </span>
                 </div>
                 {stalenessInfo.changedArtifacts && stalenessInfo.changedArtifacts.length > 0 && (
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
