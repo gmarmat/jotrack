@@ -216,7 +216,7 @@ company_ecosystem_cache    ✅ Caching ready (7-day)
 
 ## 🎯 **Feature Completeness**
 
-### Match Matrix (90% Complete)
+### Match Matrix (100% Complete ✅)
 
 **What Works:**
 - ✅ UI with 4 expandable categories
@@ -225,19 +225,19 @@ company_ecosystem_cache    ✅ Caching ready (7-day)
 - ✅ Evidence display (JD + Resume)
 - ✅ AnalysisExplanation section
 - ✅ Trend indicators (🔼🔽↔️)
+- ✅ **WIRED TO REAL API!** `/api/jobs/[id]/evaluate-signals`
+- ✅ Transforms evaluations → FitDimension[] for UI
+- ✅ Calculates overall match score (weighted average)
 
-**What's Missing:**
-- ❌ Not connected to `/api/jobs/[id]/evaluate-signals`
-- ❌ Showing 3 sample signals instead of real analysis
-
-**To Complete:**
-1. Wire UI to API endpoint
-2. Test with real resume + JD
-3. Verify 30 ATS + dynamic signals appear
+**Ready to Test:**
+1. Add API key via Settings
+2. Upload Resume + JD
+3. Click "Refresh Data" → variants extracted
+4. Click "Analyze Match Matrix" → real AI evaluation!
 
 ---
 
-### Company Ecosystem (95% Complete)
+### Company Ecosystem (100% Complete ✅)
 
 **What Works:**
 - ✅ Compact 5-column table
@@ -247,39 +247,39 @@ company_ecosystem_cache    ✅ Caching ready (7-day)
 - ✅ Cache metadata display
 - ✅ API endpoint functional
 - ✅ Prompt template (ecosystem.v1.md)
+- ✅ **WIRED TO REAL API!** `/api/jobs/[id]/analyze-ecosystem`
+- ✅ Updates state with real companies (no page reload!)
+- ✅ Shows cache status and cost in console
 
-**What's Missing:**
-- ❌ UI not connected to API (shows sample data)
-- ❌ "Analyze Ecosystem" button doesn't call real API
-
-**To Complete:**
-1. Wire CompanyEcosystemTableCompact onRefresh to API
-2. Test with real company name
-3. Verify 10 companies appear with real data
+**Ready to Test:**
+1. Add API key via Settings
+2. Enter company name in job
+3. Upload JD
+4. Click "Analyze Ecosystem" → real company research!
 
 ---
 
-### Company Intelligence (80% Complete)
+### Company Intelligence (100% Complete ✅)
 
 **What Works:**
 - ✅ Two-column card layout
 - ✅ Sections: What They Do, Key Facts, Leadership, Culture, Competitors
 - ✅ AnalysisExplanation section
 - ✅ Prompt template (company.v1.md)
+- ✅ **WIRED TO REAL API!** `/api/jobs/[id]/analyze-company`
+- ✅ Updates companyIntelligence in state
+- ✅ Uses web search for real-time data
+- ✅ Shows cost and web search usage in console
 
-**What's Missing:**
-- ❌ No API endpoint exists
-- ❌ UI shows sample "TechCorp" data
-- ❌ "Analyze Company Intelligence" button not functional
-
-**To Complete:**
-1. Create `/api/jobs/[id]/analyze-company` endpoint
-2. Wire UI to API
-3. Test with real company
+**Ready to Test:**
+1. Add API key via Settings
+2. Enter company name
+3. Upload JD
+4. Click "Analyze Company Intelligence" → real web research!
 
 ---
 
-### People Profiles (85% Complete)
+### People Profiles (95% Complete)
 
 **What Works:**
 - ✅ Grid layout (2 columns)
@@ -287,18 +287,20 @@ company_ecosystem_cache    ✅ Caching ready (7-day)
 - ✅ Profile sections: Background, Expertise, What This Means
 - ✅ Overall insights: Team Dynamics, Cultural Fit, Prep Tips
 - ✅ Prompt template (people.v1.md)
+- ✅ **WIRED TO REAL API!** `/api/jobs/[id]/analyze-user-profile`
+- ✅ Updates peopleProfiles + peopleInsights in state
+- ✅ Shows cost in console
 
 **What's Missing:**
-- ❌ No API endpoint exists
-- ❌ UI shows sample profiles
-- ❌ LinkedIn URL input not implemented
-- ❌ "Analyze People Profiles" button not functional
+- ⚠️ LinkedIn URL input not yet implemented (coming soon)
 
-**To Complete:**
-1. Add LinkedIn URL input UI
-2. Create `/api/jobs/[id]/analyze-profiles` endpoint
-3. Wire UI to API
-4. Test with real LinkedIn URLs
+**To Test NOW:**
+1. Add API key via Settings
+2. Upload Resume + JD
+3. Click "Analyze People Profiles" → builds your profile!
+
+**Future Enhancement:**
+- Add LinkedIn URL input for recruiter/peer/skip-level profiles
 
 ---
 
