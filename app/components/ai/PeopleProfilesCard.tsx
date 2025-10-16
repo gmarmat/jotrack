@@ -157,17 +157,17 @@ export default function PeopleProfilesCard({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6" data-testid="people-profiles-card">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="people-profiles-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <Users size={18} className="text-indigo-600" />
           People Profiles
         </h3>
         
         <div className="flex items-center gap-2">
           {!isAiPowered && (
-            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
           )}
@@ -181,7 +181,7 @@ export default function PeopleProfilesCard({
               promptKind="people" 
               version="v1"
               buttonLabel=""
-              className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
             />
             <button
               onClick={() => setShowSourcesModal(true)}
@@ -220,14 +220,14 @@ export default function PeopleProfilesCard({
       {/* Individual Profiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {displayProfiles.map((person, idx) => (
-          <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div key={idx} className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-start gap-3 mb-3">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <User size={20} className="text-indigo-600" />
               </div>
               <div className="flex-1">
-                <h4 className="text-sm font-bold text-gray-900">{person.name}</h4>
-                <p className="text-xs text-gray-600">{person.role}</p>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100">{person.name}</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{person.role}</p>
               </div>
               {person.communicationStyle && (
                 <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
@@ -239,10 +239,10 @@ export default function PeopleProfilesCard({
             {/* Background */}
             {person.background.length > 0 && (
               <div className="mb-3">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Background:</p>
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Background:</p>
                 <ul className="space-y-0.5">
                   {person.background.map((item, i) => (
-                    <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                    <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
                       <span className="text-indigo-400">•</span>
                       <span>{item}</span>
                     </li>
@@ -254,7 +254,7 @@ export default function PeopleProfilesCard({
             {/* Expertise */}
             {person.expertise.length > 0 && (
               <div className="mb-3">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Expertise:</p>
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Expertise:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {person.expertise.map((skill, i) => (
                     <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">
@@ -268,7 +268,7 @@ export default function PeopleProfilesCard({
             {/* What This Means */}
             <div className="pt-3 border-t border-gray-200">
               <p className="text-xs font-semibold text-purple-700 mb-1">💡 What this means for you:</p>
-              <p className="text-xs text-gray-700 italic">{person.whatThisMeans}</p>
+              <p className="text-xs text-gray-700 dark:text-gray-300 italic">{person.whatThisMeans}</p>
             </div>
           </div>
         ))}
@@ -278,21 +278,21 @@ export default function PeopleProfilesCard({
       {displayInsights && (
         <div className="pt-4 border-t border-gray-200 space-y-3">
           <div>
-            <p className="text-xs font-semibold text-gray-900 mb-1">Team Dynamics:</p>
-            <p className="text-xs text-gray-700">{displayInsights.teamDynamics}</p>
+            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-1">Team Dynamics:</p>
+            <p className="text-xs text-gray-700 dark:text-gray-300">{displayInsights.teamDynamics}</p>
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-gray-900 mb-1">Cultural Fit:</p>
-            <p className="text-xs text-gray-700">{displayInsights.culturalFit}</p>
+            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-1">Cultural Fit:</p>
+            <p className="text-xs text-gray-700 dark:text-gray-300">{displayInsights.culturalFit}</p>
           </div>
 
           {displayInsights.preparationTips && displayInsights.preparationTips.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-900 mb-2">Preparation Tips:</p>
+              <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">Preparation Tips:</p>
               <ol className="list-decimal list-inside space-y-1">
                 {displayInsights.preparationTips.map((tip, idx) => (
-                  <li key={idx} className="text-xs text-gray-700">{tip}</li>
+                  <li key={idx} className="text-xs text-gray-700 dark:text-gray-300">{tip}</li>
                 ))}
               </ol>
             </div>
