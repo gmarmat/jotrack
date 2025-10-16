@@ -22,6 +22,13 @@ export const jobs = sqliteTable('jobs', {
   analysisState: text('analysis_state').$type<'pending' | 'variants_fresh' | 'variants_stale' | 'analyzing' | 'fresh' | 'stale'>().default('pending'),
   analysisFingerprint: text('analysis_fingerprint'),
   lastFullAnalysisAt: integer('last_full_analysis_at', { mode: 'number' }),
+  // v2.7: Analysis result caching
+  companyIntelligenceData: text('company_intelligence_data'),
+  companyIntelligenceAnalyzedAt: integer('company_intelligence_analyzed_at', { mode: 'number' }),
+  matchScoreData: text('match_score_data'),
+  matchScoreAnalyzedAt: integer('match_score_analyzed_at', { mode: 'number' }),
+  peopleProfilesData: text('people_profiles_data'),
+  peopleProfilesAnalyzedAt: integer('people_profiles_analyzed_at', { mode: 'number' }),
 });
 
 export const statusHistory = sqliteTable('status_history', {
