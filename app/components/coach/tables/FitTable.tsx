@@ -261,8 +261,8 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
                   {/* Expanded Signals */}
                   {expandedCategories.has(key) && category.signals.length > 0 && (
                     <>
-                      {category.signals.map((signal, i) => (
-                        <tr key={`${key}-${i}`} className="border-l-4 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20">
+                      {category.signals.map((signal) => (
+                        <tr key={`${key}-${signal.name}`} className="border-l-4 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20">
                           <td className="px-8 py-3 text-xs font-medium text-gray-700 dark:text-gray-300">
                             <div className="flex items-center gap-2">
                               {signal.isInBothLists ? (
