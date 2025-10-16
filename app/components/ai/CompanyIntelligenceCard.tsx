@@ -31,6 +31,11 @@ interface CompanyIntelligenceCardProps {
   isAiPowered: boolean;
   onAnalyze?: () => Promise<void>;
   isAnalyzing?: boolean;
+  metadata?: {
+    cached: boolean;
+    cacheAge: string;
+    analyzedAt: number;
+  };
 }
 
 export default function CompanyIntelligenceCard({ 
@@ -41,7 +46,8 @@ export default function CompanyIntelligenceCard({
   company, 
   isAiPowered, 
   onAnalyze,
-  isAnalyzing: externalIsAnalyzing = false 
+  isAnalyzing: externalIsAnalyzing = false,
+  metadata,
 }: CompanyIntelligenceCardProps) {
   const [showRaw, setShowRaw] = useState(false);
   const [internalIsAnalyzing, setInternalIsAnalyzing] = useState(false);
@@ -145,11 +151,15 @@ export default function CompanyIntelligenceCard({
         </h3>
         
         <div className="flex items-center gap-2">
-          {!isAiPowered && (
+          {metadata?.cached ? (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+              Analyzed {metadata.cacheAge}
+            </span>
+          ) : !isAiPowered && company ? (
             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
-          )}
+          ) : null}
           <div className="flex items-center gap-2">
             <AnalyzeButton
               onAnalyze={handleAnalyze}

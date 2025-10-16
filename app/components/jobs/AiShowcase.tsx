@@ -373,6 +373,7 @@ export default function AiShowcase({
           companyUrls={companyUrls}
           company={aiData?.companyIntelligence || null}
           isAiPowered={provider === 'remote'}
+          metadata={aiData?.companyIntelMetadata}
         />
 
         {/* Row 3: Company Ecosystem - Full Width */}
