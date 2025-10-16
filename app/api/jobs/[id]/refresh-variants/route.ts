@@ -308,7 +308,7 @@ export async function POST(
           console.log(`📄 No raw variant found, extracting from file: ${attachment.filename}`);
           
           // Extract raw text from file (for existing attachments uploaded before v2.7)
-          const filePath = path.join(process.cwd(), attachment.path);
+          const filePath = path.join(process.cwd(), 'data', 'attachments', attachment.path);
           const rawResult = await saveRawVariant({
             sourceId: attachment.id,
             sourceType,
