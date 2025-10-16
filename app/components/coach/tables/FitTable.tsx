@@ -180,10 +180,9 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
               const categoryWeight = categoryWeights[key] || 0;
               
               return (
-                <>
+                <React.Fragment key={key}>
                   {/* Category Row */}
                   <tr 
-                    key={key}
                     className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                     onClick={() => toggleCategory(key)}
                   >
@@ -261,7 +260,7 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
                       ))}
                     </>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
