@@ -23,8 +23,17 @@ const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4o', 'o1-preview', 'gpt-4-turbo', 'g
 
 export interface AiSettings {
   networkEnabled: boolean;
-  provider: string;
-  model: string;
+  provider: string; // 'claude' or 'openai'
+  // Claude settings
+  claudeModel?: string;
+  claudeKey?: string;
+  // OpenAI settings
+  openaiModel?: string;
+  openaiKey?: string;
+  // Tavily settings
+  tavilyKey?: string;
+  // Legacy support
+  model?: string;
   apiKey?: string;
 }
 
@@ -130,14 +139,30 @@ export async function saveAiSettings(settings: AiSettings): Promise<void> {
 export async function getAiProviderConfig(): Promise<AiProviderConfig | null> {
   const settings = await getAiSettings();
 
-  if (!settings.networkEnabled || !settings.apiKey) {
+  if (!settings.networkEnabled) {
+    return null;
+  }
+
+  // Get the appropriate API key based on provider
+  let apiKey: string | undefined;
+  let model: string | undefined;
+  
+  if (settings.provider === 'claude') {
+    apiKey = settings.claudeKey || settings.apiKey; // Fallback to legacy
+    model = settings.claudeModel || settings.model || 'claude-3-5-sonnet-20241022';
+  } else {
+    apiKey = settings.openaiKey || settings.apiKey; // Fallback to legacy
+    model = settings.openaiModel || settings.model || 'gpt-4o-mini';
+  }
+
+  if (!apiKey) {
     return null;
   }
 
   return {
     provider: settings.provider,
-    model: settings.model,
-    apiKey: settings.apiKey,
+    model,
+    apiKey,
   };
 }
 

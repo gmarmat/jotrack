@@ -8,21 +8,63 @@ import { saveAiSettings } from '@/lib/coach/aiProvider';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { networkEnabled, provider, model, apiKey } = body;
+    const { 
+      networkEnabled, 
+      provider, 
+      claudeModel,
+      claudeKey,
+      openaiModel,
+      openaiKey,
+      tavilyKey,
+      // Legacy support
+      model,
+      apiKey,
+    } = body;
 
-    if (typeof networkEnabled !== 'boolean') {
-      return NextResponse.json(
-        { error: 'networkEnabled must be a boolean' },
-        { status: 400 }
-      );
+    // Build settings object from new or legacy fields
+    const settings: any = {
+      networkEnabled: networkEnabled !== undefined ? networkEnabled : true,
+      provider: provider || 'claude',
+    };
+
+    // Handle Claude keys
+    if (claudeKey) {
+      settings.claudeKey = claudeKey;
+    }
+    if (claudeModel) {
+      settings.claudeModel = claudeModel;
     }
 
-    await saveAiSettings({
-      networkEnabled,
-      provider: provider || 'openai',
-      model: model || 'gpt-4o',
-      apiKey: apiKey || undefined,
-    });
+    // Handle OpenAI keys
+    if (openaiKey) {
+      settings.openaiKey = openaiKey;
+    }
+    if (openaiModel) {
+      settings.openaiModel = openaiModel;
+    }
+
+    // Handle Tavily keys
+    if (tavilyKey) {
+      settings.tavilyKey = tavilyKey;
+    }
+
+    // Legacy support for old apiKey field
+    if (apiKey && !claudeKey && !openaiKey) {
+      if (provider === 'claude') {
+        settings.claudeKey = apiKey;
+      } else {
+        settings.openaiKey = apiKey;
+      }
+    }
+    if (model) {
+      if (provider === 'claude') {
+        settings.claudeModel = model;
+      } else {
+        settings.openaiModel = model;
+      }
+    }
+
+    await saveAiSettings(settings);
 
     return NextResponse.json({ success: true });
   } catch (error) {
