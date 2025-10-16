@@ -11,18 +11,31 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       networkEnabled: settings.networkEnabled || false,
-      provider: settings.provider || 'openai',
-      model: settings.model || 'gpt-4o-mini',
-      hasApiKey: !!settings.apiKey, // Only indicate if key exists, don't expose it
+      provider: settings.provider || 'claude',
+      // Claude settings
+      claudeModel: settings.claudeModel || 'claude-3-5-sonnet-20241022',
+      hasClaudeKey: !!settings.claudeKey,
+      // OpenAI settings
+      openaiModel: settings.openaiModel || 'gpt-4o-mini',
+      hasOpenaiKey: !!settings.openaiKey,
+      // Tavily settings
+      hasTavilyKey: !!settings.tavilyKey,
+      // Legacy support
+      model: settings.model || settings.claudeModel || 'claude-3-5-sonnet-20241022',
+      hasApiKey: !!(settings.apiKey || settings.claudeKey || settings.openaiKey),
     });
   } catch (error) {
     console.error('Error loading AI settings:', error);
     return NextResponse.json(
       { 
         networkEnabled: false,
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        hasApiKey: false
+        provider: 'claude',
+        claudeModel: 'claude-3-5-sonnet-20241022',
+        hasClaudeKey: false,
+        openaiModel: 'gpt-4o-mini',
+        hasOpenaiKey: false,
+        hasTavilyKey: false,
+        hasApiKey: false,
       },
       { status: 200 } // Return defaults instead of error
     );
