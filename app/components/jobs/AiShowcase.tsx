@@ -170,16 +170,16 @@ export default function AiShowcase({
   const recommendations = aiData?.recommendations || categoryInfo.recommendations;
 
   return (
-    <div className="bg-white rounded-xl border shadow-sm" data-testid="ai-showcase">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" data-testid="ai-showcase">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <Sparkles size={20} className="text-purple-600" />
-          <h2 className="text-lg font-semibold text-gray-900">AI Analysis</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">AI Analysis</h2>
           <span className={`text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 font-medium ${
             provider === 'remote' 
-              ? 'bg-green-100 text-green-800 border border-green-300' 
-              : 'bg-gray-100 text-gray-700 border border-gray-300'
+              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border border-green-300 dark:border-green-700' 
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
           }`}>
             <span className={`w-2 h-2 rounded-full ${provider === 'remote' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
             {provider === 'remote' ? 'AI Powered' : 'Non-AI Powered'}
@@ -256,9 +256,9 @@ export default function AiShowcase({
         {/* Row 1: Match Score + Skill Match */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Match Score Card - Reorganized Layout */}
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
+          <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Target size={18} className="text-purple-600" />
                 Match Score
               </h3>
@@ -271,7 +271,7 @@ export default function AiShowcase({
             
             {/* Preliminary Score Badge */}
             {showPreliminary && preliminaryScore !== null && (
-              <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md text-xs text-yellow-800 flex items-center gap-2">
+              <div className="mb-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md text-xs text-yellow-800 dark:text-yellow-400 flex items-center gap-2">
                 <Zap size={14} />
                 <span>
                   <strong>Preliminary Score:</strong> {preliminaryScore}% 
@@ -293,7 +293,7 @@ export default function AiShowcase({
                   <p className="text-xs italic">&quot;{categoryInfo.description}&quot;</p>
                 </div>
                 
-                <div className="text-xs text-gray-600 space-y-1">
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                   {categoryInfo.insights.map((insight, idx) => (
                     <div key={idx} className="flex items-start gap-1">
                       <span>•</span>
@@ -305,10 +305,10 @@ export default function AiShowcase({
             </div>
             
             {/* Highlights and Gaps - Two Columns */}
-            <div className="grid grid-cols-2 gap-4 mb-4 pt-4 border-t border-purple-200">
+            <div className="grid grid-cols-2 gap-4 mb-4 pt-4 border-t border-purple-200 dark:border-purple-800">
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">✓ Highlights</div>
-                <ul className="text-xs text-gray-600 space-y-1">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">✓ Highlights</div>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                   {highlights.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className="text-green-500">●</span>
@@ -319,8 +319,8 @@ export default function AiShowcase({
               </div>
               
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">△ Gaps</div>
-                <ul className="text-xs text-gray-600 space-y-1">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">△ Gaps</div>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                   {gaps.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className="text-amber-500">●</span>
@@ -332,9 +332,9 @@ export default function AiShowcase({
             </div>
             
             {/* Top Recommendations */}
-            <div className="pt-4 border-t border-purple-200">
-              <div className="text-sm font-medium text-gray-900 mb-2">💡 Top Recommendations:</div>
-              <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
+            <div className="pt-4 border-t border-purple-200 dark:border-purple-800">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">💡 Top Recommendations:</div>
+              <ol className="text-xs text-gray-700 dark:text-gray-300 space-y-1 list-decimal list-inside">
                 {recommendations.slice(0, 3).map((rec, idx) => (
                   <li key={idx}>{rec}</li>
                 ))}
@@ -343,9 +343,9 @@ export default function AiShowcase({
           </div>
 
           {/* Skill Match Card */}
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Lightbulb size={18} className="text-amber-600" />
                 Skill Match
               </h3>
@@ -418,11 +418,11 @@ export default function AiShowcase({
 
         {/* Sources */}
         {provider === 'remote' && aiData?.sources && aiData.sources.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+          <div className="mt-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <span className="font-medium">Sources:</span>
             <div className="flex gap-2">
               {aiData.sources.map((source, idx) => (
-                <span key={idx} className="px-2 py-1 bg-blue-50 text-blue-700 rounded">
+                <span key={idx} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded">
                   {source}
                 </span>
               ))}
@@ -432,7 +432,7 @@ export default function AiShowcase({
 
         {provider === 'local' && (
           <div className="mt-4 text-center">
-            <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+            <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-sm">
               Local fixture (no sources)
             </span>
           </div>
