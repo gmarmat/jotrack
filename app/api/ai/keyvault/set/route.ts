@@ -64,7 +64,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('💾 Saving AI settings:', {
+      provider: settings.provider,
+      hasClaudeKey: !!settings.claudeKey,
+      hasTavilyKey: !!settings.tavilyKey,
+      hasOpenaiKey: !!settings.openaiKey,
+    });
+
     await saveAiSettings(settings);
+    
+    console.log('✅ AI settings saved successfully');
 
     return NextResponse.json({ success: true });
   } catch (error) {
