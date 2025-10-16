@@ -7,10 +7,11 @@ import { z } from 'zod';
 import { db } from '@/db/client';
 import { jobs, attachments, artifactVariants } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
-import { getVariant } from '@/lib/extraction/extractionEngine';
+import { getVariant, saveRawVariant } from '@/lib/extraction/extractionEngine';
 import { callAiProvider } from '@/lib/coach/aiProvider';
 import { createHash } from 'crypto';
 import { v4 as uuid } from 'uuid';
+import path from 'path';
 
 const paramsSchema = z.object({
   id: z.string().uuid('Invalid job id'),
@@ -296,21 +297,91 @@ export async function POST(
           continue;
         }
         
-        // Get raw variant
-        const rawVariant = await getVariant(
+        // Get raw variant (or extract on-the-fly for existing attachments)
+        let rawVariant = await getVariant(
           attachment.id,
           sourceType,
           'raw'
         );
         
         if (!rawVariant || !rawVariant.text) {
-          processed.push({
-            kind: attachment.kind,
-            filename: attachment.filename,
-            extracted: false,
-            error: 'No raw text found - upload file again',
+          console.log(`📄 No raw variant found, extracting from file: ${attachment.filename}`);
+          
+          // Extract raw text from file (for existing attachments uploaded before v2.7)
+          const filePath = path.join(process.cwd(), attachment.path);
+          const rawResult = await saveRawVariant({
+            sourceId: attachment.id,
+            sourceType,
+            filePath,
           });
-          continue;
+          
+          if (!rawResult.success) {
+            processed.push({
+              kind: attachment.kind,
+              filename: attachment.filename,
+              extracted: false,
+              error: rawResult.error || 'Failed to extract raw text',
+            });
+            continue;
+          }
+          
+          // Get the newly created raw variant
+          rawVariant = await getVariant(attachment.id, sourceType, 'raw');
+          
+          if (!rawVariant || !rawVariant.text) {
+            processed.push({
+              kind: attachment.kind,
+              filename: attachment.filename,
+              extracted: false,
+              error: 'Raw extraction succeeded but variant not found',
+            });
+            continue;
+          }
+        }
+        
+        // Check if ai_optimized variant already exists with same content
+        const existingAiVariant = await getVariant(
+          attachment.id,
+          sourceType,
+          'ai_optimized'
+        );
+        
+        // Calculate hash of raw content
+        const rawHash = createHash('sha256')
+          .update(rawVariant.text)
+          .digest('hex');
+        
+        // If ai_optimized exists and raw content hasn't changed, skip re-extraction
+        if (existingAiVariant) {
+          const existingRawHash = rawVariant.metadata?.contentHash || rawHash;
+          
+          // Check if the ai_optimized variant was created from the same raw content
+          const aiVariantRecord = await db
+            .select()
+            .from(artifactVariants)
+            .where(
+              and(
+                eq(artifactVariants.sourceId, attachment.id),
+                eq(artifactVariants.sourceType, sourceType as any),
+                eq(artifactVariants.variantType, 'ai_optimized'),
+                eq(artifactVariants.isActive, true)
+              )
+            )
+            .limit(1);
+          
+          // If variant exists and was created recently, assume it's up to date
+          if (aiVariantRecord.length > 0) {
+            console.log(`✓ AI variant already exists for ${attachment.filename}, skipping re-extraction`);
+            
+            processed.push({
+              kind: attachment.kind,
+              filename: attachment.filename,
+              extracted: true,
+              significance: 'none',
+              changes: [],
+            });
+            continue;
+          }
         }
         
         console.log(`🔄 Extracting structured data from ${attachment.filename}...`);
