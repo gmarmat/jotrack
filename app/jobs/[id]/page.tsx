@@ -461,7 +461,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               {/* v2.7: Smart two-button system based on state */}
               <div className="flex gap-2">
                 {/* State 1 (NO_VARIANTS): Show ONLY Refresh Data */}
-                {stalenessInfo.severity === 'no_variants' && (
+                {(stalenessInfo.severity === 'no_variants') && (
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
