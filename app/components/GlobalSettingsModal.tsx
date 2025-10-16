@@ -136,17 +136,22 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
 function AITab() {
   const [networkEnabled, setNetworkEnabled] = useState(false);
   const [provider, setProvider] = useState('claude');
-  const [model, setModel] = useState('claude-3-5-sonnet-20241022');
-  const [apiKey, setApiKey] = useState('');
+  const [claudeModel, setClaudeModel] = useState('claude-3-5-sonnet-20241022');
+  const [claudeKey, setClaudeKey] = useState('');
+  const [hasExistingClaudeKey, setHasExistingClaudeKey] = useState(false);
+  const [isSavingClaude, setIsSavingClaude] = useState(false);
+  const [claudeTestResult, setClaudeTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  
   const [tavilyKey, setTavilyKey] = useState('');
-  const [openaiKey, setOpenaiKey] = useState('');
-  const [openaiModel, setOpenaiModel] = useState('gpt-4o-mini');
-  const [hasExistingKey, setHasExistingKey] = useState(false);
   const [hasExistingTavilyKey, setHasExistingTavilyKey] = useState(false);
+  const [isSavingTavily, setIsSavingTavily] = useState(false);
+  const [tavilyTestResult, setTavilyTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  
+  const [openaiModel, setOpenaiModel] = useState('gpt-4o-mini');
+  const [openaiKey, setOpenaiKey] = useState('');
   const [hasExistingOpenaiKey, setHasExistingOpenaiKey] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingOpenai, setIsSavingOpenai] = useState(false);
+  const [openaiTestResult, setOpenaiTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Load existing settings on mount
   useEffect(() => {
@@ -157,9 +162,9 @@ function AITab() {
           const data = await res.json();
           setNetworkEnabled(data.networkEnabled || false);
           setProvider(data.provider || 'claude');
-          setModel(data.model || 'claude-3-5-sonnet-20241022');
+          setClaudeModel(data.claudeModel || 'claude-3-5-sonnet-20241022');
           setOpenaiModel(data.openaiModel || 'gpt-4o-mini');
-          setHasExistingKey(!!data.hasApiKey);
+          setHasExistingClaudeKey(!!data.hasClaudeKey);
           setHasExistingTavilyKey(!!data.hasTavilyKey);
           setHasExistingOpenaiKey(!!data.hasOpenaiKey);
           // Don't set the actual API keys for security
@@ -171,61 +176,78 @@ function AITab() {
     loadSettings();
   }, []);
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  // Save handlers for each service
+  const handleSaveClaude = async () => {
+    setIsSavingClaude(true);
+    setClaudeTestResult(null);
     try {
       await fetch('/api/ai/keyvault/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          provider, 
-          model, 
-          apiKey: apiKey || undefined,
-          tavilyKey: tavilyKey || undefined,
-          openaiKey: openaiKey || undefined,
-          openaiModel,
+          provider: 'claude',
+          claudeKey: claudeKey || undefined,
+          claudeModel,
           networkEnabled 
         }),
       });
-      if (apiKey) {
-        setHasExistingKey(true);
-        setApiKey(''); // Clear input after saving
+      if (claudeKey) {
+        setHasExistingClaudeKey(true);
+        setClaudeKey('');
       }
+      setClaudeTestResult({ success: true, message: 'Claude key saved!' });
+    } catch (error) {
+      setClaudeTestResult({ success: false, message: 'Failed to save' });
+    } finally {
+      setIsSavingClaude(false);
+    }
+  };
+
+  const handleSaveTavily = async () => {
+    setIsSavingTavily(true);
+    setTavilyTestResult(null);
+    try {
+      await fetch('/api/ai/keyvault/set', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          tavilyKey: tavilyKey || undefined,
+        }),
+      });
       if (tavilyKey) {
         setHasExistingTavilyKey(true);
         setTavilyKey('');
       }
+      setTavilyTestResult({ success: true, message: 'Tavily key saved!' });
+    } catch (error) {
+      setTavilyTestResult({ success: false, message: 'Failed to save' });
+    } finally {
+      setIsSavingTavily(false);
+    }
+  };
+
+  const handleSaveOpenai = async () => {
+    setIsSavingOpenai(true);
+    setOpenaiTestResult(null);
+    try {
+      await fetch('/api/ai/keyvault/set', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          provider: 'openai',
+          openaiKey: openaiKey || undefined,
+          openaiModel,
+        }),
+      });
       if (openaiKey) {
         setHasExistingOpenaiKey(true);
         setOpenaiKey('');
       }
-      setTestResult({ success: true, message: 'Settings saved successfully!' });
+      setOpenaiTestResult({ success: true, message: 'OpenAI key saved!' });
     } catch (error) {
-      setTestResult({ success: false, message: 'Failed to save settings' });
+      setOpenaiTestResult({ success: false, message: 'Failed to save' });
     } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleTest = async () => {
-    setIsTesting(true);
-    setTestResult(null);
-    try {
-      const res = await fetch('/api/ai/test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model, apiKey }),
-      });
-      
-      const data = await res.json();
-      setTestResult({
-        success: res.ok,
-        message: res.ok ? 'Connection successful!' : data.error || 'Connection failed'
-      });
-    } catch (error: any) {
-      setTestResult({ success: false, message: error.message || 'Test failed' });
-    } finally {
-      setIsTesting(false);
+      setIsSavingOpenai(false);
     }
   };
 
@@ -299,74 +321,144 @@ function AITab() {
 
             {/* Claude Model Selection */}
             {provider === 'claude' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude Model</label>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  data-testid="claude-model"
-                >
-                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommended) - ~$0.03/job ⭐</option>
-                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Budget) - ~$0.01/job 💰</option>
-                  <option value="claude-3-opus-20240229">Claude 3 Opus (Premium) - ~$0.15/job 💎</option>
-                </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Sonnet = Best balance of quality and cost. Haiku = Cheaper but less accurate.
-                </p>
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude Model</label>
+                  <select
+                    value={claudeModel}
+                    onChange={(e) => setClaudeModel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    data-testid="claude-model"
+                  >
+                    <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommended) - ~$0.03/job ⭐</option>
+                    <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Budget) - ~$0.01/job 💰</option>
+                    <option value="claude-3-opus-20240229">Claude 3 Opus (Premium) - ~$0.15/job 💎</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Sonnet = Best balance of quality and cost. Haiku = Cheaper but less accurate.
+                  </p>
+                </div>
+
+                {/* Claude API Key */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude API Key</label>
+                  {hasExistingClaudeKey && !claudeKey ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
+                        ••••••••••••••••••••••••••
+                      </div>
+                      <button
+                        onClick={() => setClaudeKey('')}
+                        className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        Update
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="password"
+                      value={claudeKey}
+                      onChange={(e) => setClaudeKey(e.target.value)}
+                      placeholder="sk-ant-..."
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      data-testid="claude-key"
+                    />
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Get your key at <span className="font-medium">console.anthropic.com</span> • Pay-as-you-go, no monthly fee
+                  </p>
+                </div>
+
+                {/* Claude Save Button */}
+                <div>
+                  <button
+                    onClick={handleSaveClaude}
+                    disabled={isSavingClaude || (!claudeKey && !hasExistingClaudeKey)}
+                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    {isSavingClaude ? 'Saving...' : hasExistingClaudeKey ? 'Update Claude Settings' : 'Save Claude Key'}
+                  </button>
+                  {claudeTestResult && (
+                    <div className={`mt-2 p-2 rounded text-xs ${
+                      claudeTestResult.success 
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
+                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                    }`}>
+                      {claudeTestResult.message}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* OpenAI Model Selection */}
             {provider === 'openai' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">OpenAI Model</label>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  data-testid="ai-model"
-                >
-                  <option value="gpt-4o-mini">GPT-4o Mini (Budget) - ~$0.02/job 💰</option>
-                  <option value="gpt-4o">GPT-4o (Balanced) - ~$0.10/job</option>
-                  <option value="o1-preview">GPT-o1 Preview (Reasoning) - ~$1.00/job</option>
-                </select>
-              </div>
-            )}
-
-            {/* API Key for Selected Provider */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
-                {provider === 'claude' ? 'Claude API Key' : 'OpenAI API Key'}
-              </label>
-              {hasExistingKey && !apiKey ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
-                    ••••••••••••••••••••••••••
-                  </div>
-                  <button
-                    onClick={() => setApiKey('')}
-                    className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">OpenAI Model</label>
+                  <select
+                    value={openaiModel}
+                    onChange={(e) => setOpenaiModel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    data-testid="openai-model"
                   >
-                    Change
-                  </button>
+                    <option value="gpt-4o-mini">GPT-4o Mini (Budget) - ~$0.02/job 💰</option>
+                    <option value="gpt-4o">GPT-4o (Balanced) - ~$0.10/job</option>
+                    <option value="o1-preview">GPT-o1 Preview (Reasoning) - ~$1.00/job</option>
+                  </select>
                 </div>
-              ) : (
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={provider === 'claude' ? 'sk-ant-...' : 'sk-proj-...'}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  data-testid="ai-key"
-                />
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {provider === 'claude' 
-                  ? 'Get your key at console.anthropic.com → Pay-as-you-go, no monthly fee'
-                  : 'Get your key at platform.openai.com/api-keys'}
-              </p>
-            </div>
+
+                {/* OpenAI API Key */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">OpenAI API Key</label>
+                  {hasExistingOpenaiKey && !openaiKey ? (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
+                        ••••••••••••••••••••••••••
+                      </div>
+                      <button
+                        onClick={() => setOpenaiKey('')}
+                        className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        Update
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="password"
+                      value={openaiKey}
+                      onChange={(e) => setOpenaiKey(e.target.value)}
+                      placeholder="sk-proj-..."
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      data-testid="openai-key"
+                    />
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Get your key at <span className="font-medium">platform.openai.com/api-keys</span>
+                  </p>
+                </div>
+
+                {/* OpenAI Save Button */}
+                <div>
+                  <button
+                    onClick={handleSaveOpenai}
+                    disabled={isSavingOpenai || (!openaiKey && !hasExistingOpenaiKey)}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    {isSavingOpenai ? 'Saving...' : hasExistingOpenaiKey ? 'Update OpenAI Settings' : 'Save OpenAI Key'}
+                  </button>
+                  {openaiTestResult && (
+                    <div className={`mt-2 p-2 rounded text-xs ${
+                      openaiTestResult.success 
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
+                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                    }`}>
+                      {openaiTestResult.message}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Section 2: Web Search Engine (Tavily) */}
@@ -408,6 +500,26 @@ function AITab() {
                 Get free key at <span className="font-medium">app.tavily.com</span> • Free tier: 1000 searches (200 jobs) • Cost after: ~$0.01/job
               </p>
             </div>
+
+            {/* Tavily Save Button */}
+            <div>
+              <button
+                onClick={handleSaveTavily}
+                disabled={isSavingTavily || (!tavilyKey && !hasExistingTavilyKey)}
+                className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              >
+                {isSavingTavily ? 'Saving...' : hasExistingTavilyKey ? 'Update Tavily Key' : 'Save Tavily Key'}
+              </button>
+              {tavilyTestResult && (
+                <div className={`mt-2 p-2 rounded text-xs ${
+                  tavilyTestResult.success 
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                }`}>
+                  {tavilyTestResult.message}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Cost Estimate */}
@@ -418,8 +530,8 @@ function AITab() {
                 <p className="text-gray-600 dark:text-gray-400">Analysis Engine:</p>
                 <p className="font-semibold text-gray-900 dark:text-gray-100">
                   {provider === 'claude' 
-                    ? model.includes('sonnet') ? '~$0.03' : model.includes('haiku') ? '~$0.01' : '~$0.15'
-                    : model.includes('mini') ? '~$0.02' : '~$0.10'
+                    ? claudeModel.includes('sonnet') ? '~$0.03' : claudeModel.includes('haiku') ? '~$0.01' : '~$0.15'
+                    : openaiModel.includes('mini') ? '~$0.02' : openaiModel.includes('gpt-4o') ? '~$0.10' : '~$1.00'
                   }
                 </p>
               </div>
@@ -434,44 +546,22 @@ function AITab() {
                 <p className="text-lg font-bold text-purple-900 dark:text-purple-300">
                   ~${(
                     (provider === 'claude' 
-                      ? model.includes('sonnet') ? 0.03 : model.includes('haiku') ? 0.01 : 0.15
-                      : model.includes('mini') ? 0.02 : 0.10) +
+                      ? claudeModel.includes('sonnet') ? 0.03 : claudeModel.includes('haiku') ? 0.01 : 0.15
+                      : openaiModel.includes('mini') ? 0.02 : openaiModel.includes('gpt-4o') ? 0.10 : 1.00) +
                     (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
                   ).toFixed(2)}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   50 jobs/year = ${(
                     ((provider === 'claude' 
-                      ? model.includes('sonnet') ? 0.03 : model.includes('haiku') ? 0.01 : 0.15
-                      : model.includes('mini') ? 0.02 : 0.10) +
+                      ? claudeModel.includes('sonnet') ? 0.03 : claudeModel.includes('haiku') ? 0.01 : 0.15
+                      : openaiModel.includes('mini') ? 0.02 : openaiModel.includes('gpt-4o') ? 0.10 : 1.00) +
                     (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
                   ) * 50).toFixed(2)} (vs $500+ interview coach!)
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Test & Save */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-              data-testid="save-settings-btn"
-            >
-              {isSaving ? 'Saving...' : 'Save All Settings'}
-            </button>
-          </div>
-
-          {testResult && (
-            <div className={`p-3 rounded-md ${
-              testResult.success 
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-700' 
-                : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-700'
-            }`}>
-              {testResult.message}
-            </div>
-          )}
         </>
       )}
 
