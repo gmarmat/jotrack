@@ -237,11 +237,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         console.log('✅ Company intelligence complete:', {
           cost: data.metadata?.cost,
           webSearchUsed: data.metadata?.webSearchUsed,
+          companyName: data.analysis?.company?.name,
         });
         
+        // Extract the 'company' object from the analysis response
         setAiData((prev: any) => ({
           ...prev,
-          companyIntelligence: data.analysis || {},
+          companyIntelligence: data.analysis?.company || {},
         }));
         
         if (analysisType === 'company') {
