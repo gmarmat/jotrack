@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { Info, Paperclip } from 'lucide-react';
 import { type Job } from '@/db/schema';
 import { type JobStatus } from '@/lib/status';
 import StatusChipDropdown from './StatusChipDropdown';
@@ -15,6 +15,8 @@ interface JobHeaderProps {
   onDelete?: () => void;
   onArchive?: () => void;
   onJumpToStatus?: (status: JobStatus) => void;
+  attachmentCount?: number;
+  onOpenAttachments?: () => void;
 }
 
 export default function JobHeader({ 
@@ -23,7 +25,9 @@ export default function JobHeader({
   onStatusChange,
   onDelete,
   onArchive,
-  onJumpToStatus
+  onJumpToStatus,
+  attachmentCount = 0,
+  onOpenAttachments
 }: JobHeaderProps) {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -56,6 +60,25 @@ export default function JobHeader({
             <p className="text-lg text-gray-600 dark:text-gray-400" data-testid="job-company">
               {job.company}
             </p>
+            
+            {/* Second Row: Attachments Button */}
+            {onOpenAttachments && (
+              <div className="mt-3">
+                <button
+                  onClick={onOpenAttachments}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
+                  data-testid="attachments-button-header"
+                >
+                  <Paperclip size={16} />
+                  <span>Attachments</span>
+                  {attachmentCount > 0 && (
+                    <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                      {attachmentCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right: Quick Actions */}

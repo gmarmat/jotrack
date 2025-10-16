@@ -6,15 +6,11 @@ import { Edit3, Plus, FileText } from 'lucide-react';
 interface JobNotesCardProps {
   jobId: string;
   initialNotes?: string;
-  attachmentCount: number;
-  onOpenAttachments: () => void;
 }
 
 export default function JobNotesCard({ 
   jobId, 
-  initialNotes = '', 
-  attachmentCount,
-  onOpenAttachments 
+  initialNotes = ''
 }: JobNotesCardProps) {
   const [notes, setNotes] = useState(initialNotes);
   const [isEditing, setIsEditing] = useState(false);
@@ -134,23 +130,6 @@ export default function JobNotesCard({
                 No notes yet. Click &quot;Edit&quot; to add notes about this application.
               </p>
             )}
-
-            {/* Attachments Link */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={onOpenAttachments}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                data-testid="open-attachments-link"
-              >
-                <FileText size={18} />
-                <span>
-                  Attachments: {attachmentCount} file{attachmentCount !== 1 ? 's' : ''}
-                </span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
         )}
       </div>

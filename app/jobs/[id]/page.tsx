@@ -440,20 +440,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                      stalenessInfo.severity === 'fresh' ? '✅' : 'ℹ️'}
                   </span>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
-                    {stalenessInfo.severity === 'no_variants' ? 'Extract Data First' :
-                     stalenessInfo.severity === 'variants_fresh' ? 'Data Ready' :
-                     stalenessInfo.severity === 'major' ? 'Data Changed' :
-                     stalenessInfo.severity === 'never_analyzed' ? 'Ready to Start' :
-                     stalenessInfo.severity === 'fresh' ? 'All Current' :
+                    {stalenessInfo.severity === 'no_variants' ? 'Documents Ready' :
+                     stalenessInfo.severity === 'variants_fresh' ? 'Data Extracted - Start Analysis' :
+                     stalenessInfo.severity === 'major' ? 'Documents Changed' :
+                     stalenessInfo.severity === 'never_analyzed' ? 'Upload Documents' :
+                     stalenessInfo.severity === 'fresh' ? 'Analysis Complete' :
                      'Updates Available'}
                   </p>
                   <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
-                    {stalenessInfo.severity === 'no_variants' ? '· Upload docs, then click "Refresh Data" to create AI-ready versions (~$0.02)' :
-                     stalenessInfo.severity === 'variants_fresh' ? '· AI data extracted · Scroll to sections and click "Analyze" buttons' :
-                     stalenessInfo.severity === 'major' ? '· Documents updated · Click "Refresh Data" to re-extract before analyzing' :
-                     stalenessInfo.severity === 'never_analyzed' ? '· Upload Resume + JD, then click "Refresh Data" to begin' :
-                     stalenessInfo.severity === 'fresh' ? '· Variants and analysis up-to-date · Re-analyze anytime for latest insights' :
-                     '· Minor updates detected · Consider refreshing data'}
+                    {stalenessInfo.severity === 'no_variants' ? '· Click "Extract Data" to create AI-ready variants from your uploads (~$0.02)' :
+                     stalenessInfo.severity === 'variants_fresh' ? '· AI variants ready · Scroll to sections below and trigger analysis for each (~$0.05-0.10 per section)' :
+                     stalenessInfo.severity === 'major' ? '· Documents updated · Click "Extract Data" to refresh AI variants before analyzing' :
+                     stalenessInfo.severity === 'never_analyzed' ? '· Upload Resume + JD to begin · System will auto-detect when ready' :
+                     stalenessInfo.severity === 'fresh' ? '· All data and analysis current · System will alert when significant changes detected' :
+                     '· Minor updates detected · Consider extracting fresh data'}
                   </span>
                 </div>
                 {stalenessInfo.changedArtifacts && stalenessInfo.changedArtifacts.length > 0 && (
@@ -482,11 +482,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Refreshing...
+                        Extracting...
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
-                        Refresh Data
+                        Extract Data
                         <span className="text-xs opacity-75">~$0.02</span>
                       </span>
                     )}
@@ -539,7 +539,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Refreshing...
+                          Extracting...
                         </span>
                       ) : (
                         <span className="flex items-center gap-1">
@@ -665,16 +665,29 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                         <span>Company</span>
                       </button>
                       
-                      {/* People Profiles Badge */}
+                      {/* Ecosystem Matrix Badge */}
                       <button
                         onClick={() => {
                           document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 hover:from-orange-200 hover:to-yellow-200 dark:hover:from-orange-800/40 dark:hover:to-yellow-800/40 border border-orange-300 dark:border-orange-700 rounded-full text-xs font-medium text-orange-900 dark:text-orange-200 transition-all hover:shadow-md"
-                        title="Scroll to People Profiles section"
+                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 hover:from-cyan-200 hover:to-blue-200 dark:hover:from-cyan-800/40 dark:hover:to-blue-800/40 border border-cyan-300 dark:border-cyan-700 rounded-full text-xs font-medium text-cyan-900 dark:text-cyan-200 transition-all hover:shadow-md"
+                        title="Scroll to Company Ecosystem section"
                       >
-                        <span className="text-sm">👥</span>
-                        <span>Profiles</span>
+                        <span className="text-sm">🌐</span>
+                        <span>Ecosystem</span>
+                      </button>
+                      
+                      {/* User Profile Badge */}
+                      <button
+                        onClick={() => {
+                          // Scroll to profile section or navigate to /profile page
+                          document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 hover:from-orange-200 hover:to-yellow-200 dark:hover:from-orange-800/40 dark:hover:to-yellow-800/40 border border-orange-300 dark:border-orange-700 rounded-full text-xs font-medium text-orange-900 dark:text-orange-200 transition-all hover:shadow-md"
+                        title="Scroll to User Profile section"
+                      >
+                        <span className="text-sm">👤</span>
+                        <span>Profile</span>
                       </button>
                     </div>
                   </div>
@@ -697,20 +710,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* 1. Header: Title, Company, StatusChip, QuickActions */}
+        {/* 1. Header: Title, Company, StatusChip, Attachments, QuickActions */}
         <JobHeader 
           job={job} 
           currentStatus={currentStatus}
           onStatusChange={handleStatusChange}
           onJumpToStatus={setSelectedStatus}
+          attachmentCount={attachmentCount}
+          onOpenAttachments={() => setShowAttachmentsModal(true)}
         />
 
-        {/* 2. Notes Card: Global notes + Attachments link */}
+        {/* 2. Notes Card: Global notes */}
         <JobNotesCard
           jobId={job.id}
           initialNotes={job.notes || ''}
-          attachmentCount={attachmentCount}
-          onOpenAttachments={() => setShowAttachmentsModal(true)}
         />
 
         {/* 3. AI Showcase: Full-width grid */}
