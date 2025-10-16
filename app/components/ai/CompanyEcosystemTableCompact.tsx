@@ -1,10 +1,10 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Info, ExternalLink, Maximize2 } from 'lucide-react';
-import { useState } from 'react';
+import { ExternalLink, Maximize2 } from 'lucide-react';
 import { type EcosystemCompany } from './CompanyEcosystemTable';
 import PromptViewer from './PromptViewer';
 import AnalyzeButton from './AnalyzeButton';
+import ExplanationSection from '../ui/ExplanationSection';
 
 interface CompanyEcosystemTableCompactProps {
   companies: EcosystemCompany[];
@@ -21,7 +21,6 @@ export default function CompanyEcosystemTableCompact({
   refreshing = false,
   onViewFull
 }: CompanyEcosystemTableCompactProps) {
-  const [showExplain, setShowExplain] = useState(false);
   
   // Sample data (MVP)
   const sampleCompanies: EcosystemCompany[] = [
@@ -173,55 +172,38 @@ export default function CompanyEcosystemTableCompact({
         </div>
       </div>
 
-      {/* Explanation Section */}
-      <div className="mb-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <button
-          onClick={() => setShowExplain(!showExplain)}
-          className="w-full flex items-center justify-between p-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-lg"
-        >
-          <div className="flex items-center gap-2">
-            <Info size={16} className="text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              How We Analyze the Ecosystem
-            </span>
-          </div>
-          {showExplain ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
+      {/* Explanation Section - Using Standard Component */}
+      <ExplanationSection title="How We Analyze the Ecosystem">
+        <p>
+          We analyze companies across 15+ dimensions to help you understand the 
+          competitive landscape, identify career opportunities, and prepare for interviews.
+        </p>
         
-        {showExplain && (
-          <div className="px-4 pb-4 text-sm text-gray-700 dark:text-gray-300 space-y-3">
-            <p>
-              We analyze companies across 15+ dimensions to help you understand the 
-              competitive landscape, identify career opportunities, and prepare for interviews.
-            </p>
-            
-            <div>
-              <p className="font-medium mb-1">Our Analysis Methodology:</p>
-              <ul className="space-y-1 text-xs">
-                <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
-                <li>• 8 Data Sources: Company profiles, news, hiring trends, reviews, forums</li>
-                <li>• 15+ Signals: Size, growth, stability, culture, news, skills demand, hiring</li>
-                <li>• Updated: Every 7 days (auto-refresh when job description changes)</li>
-              </ul>
-            </div>
-            
-            <div>
-              <p className="font-medium mb-1">What Each Column Means:</p>
-              <ul className="space-y-1 text-xs">
-                <li>• News Signals: Positive/negative events in last 60 days (3⬆ 1⬇ format)</li>
-                <li>• Growth Score: Company expansion rate on 1-5 scale (●●●●● = rapid growth)</li>
-                <li>• Hiring Trend: Open roles + direction (↗growing, ↘declining, →stable)</li>
-                <li>• Confidence: Data quality based on source reliability (HIGH/MEDIUM/LOW)</li>
-              </ul>
-            </div>
-            
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Note: Analysis based on public data. We show sources so you can verify our 
-              research. Confidence scores reflect data quality and freshness.
-            </p>
-          </div>
-        )}
-      </div>
+        <div>
+          <p className="font-medium mb-1">Our Analysis Methodology:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
+            <li>• 8 Data Sources: Company profiles, news, hiring trends, reviews, forums</li>
+            <li>• 15+ Signals: Size, growth, stability, culture, news, skills demand, hiring</li>
+            <li>• Cached: 7 days (refreshes when "Analyze Ecosystem" button clicked)</li>
+          </ul>
+        </div>
+        
+        <div>
+          <p className="font-medium mb-1">What Each Column Means:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• <strong>News Signals</strong>: Positive/negative events in last 60 days (3⬆ 1⬇ format)</li>
+            <li>• <strong>Growth Score</strong>: Career growth opportunity within company (1-5 scale, based on promotions, tenure, reviews)</li>
+            <li>• <strong>Hiring Trend</strong>: Open roles + direction (↗growing, ↘declining, →stable)</li>
+            <li>• <strong>Confidence</strong>: Data quality based on source reliability (HIGH/MEDIUM/LOW)</li>
+          </ul>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Note: Data collected once and cached for 7 days to save costs. Sources shown 
+          in detailed view. Growth score = internal career growth opportunity (not company revenue growth).
+        </p>
+      </ExplanationSection>
 
       {/* Summary Stats */}
       <div className="mb-4">
@@ -238,7 +220,14 @@ export default function CompanyEcosystemTableCompact({
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[15%]">Company</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">Type</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[12%]">Size/Industry</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Growth</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">
+                <span 
+                  className="cursor-help border-b border-dotted border-gray-400" 
+                  title="Career growth opportunity within company (1-5 scale). Based on promotion rates, avg tenure, and employee reviews. NOT company revenue growth."
+                >
+                  Growth
+                </span>
+              </th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">News</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Hiring</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Confidence</th>
