@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Download, ExternalLink } from 'lucide-react';
+import { X, Download, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { type EcosystemCompany } from './CompanyEcosystemTable';
 
@@ -27,6 +27,9 @@ export default function FullEcosystemModal({
 }: FullEcosystemModalProps) {
   const [activeTab, setActiveTab] = useState<'intelligence' | 'sources' | 'insights'>('intelligence');
   const [selectedCompany, setSelectedCompany] = useState<EcosystemCompany | null>(null);
+  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const companiesPerPage = 10;
 
   if (!isOpen) return null;
 
@@ -91,6 +94,22 @@ export default function FullEcosystemModal({
   ];
 
   const displayCompanies = sampleCompanies;
+
+  // Pagination
+  const totalPages = Math.ceil(displayCompanies.length / companiesPerPage);
+  const startIdx = (currentPage - 1) * companiesPerPage;
+  const endIdx = startIdx + companiesPerPage;
+  const paginatedCompanies = displayCompanies.slice(startIdx, endIdx);
+
+  const toggleCompany = (companyName: string) => {
+    const newExpanded = new Set(expandedCompanies);
+    if (newExpanded.has(companyName)) {
+      newExpanded.delete(companyName);
+    } else {
+      newExpanded.add(companyName);
+    }
+    setExpandedCompanies(newExpanded);
+  };
 
   const renderStars = (score: number) => {
     return '●'.repeat(score) + '○'.repeat(5 - score);
@@ -270,7 +289,7 @@ export default function FullEcosystemModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {displayCompanies.map((company, idx) => (
+                  {paginatedCompanies.map((company, idx) => (
                     <tr 
                       key={`${company.name}-${idx}`}
                       className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
@@ -435,66 +454,120 @@ export default function FullEcosystemModal({
             </div>
           )}
 
-          {/* Tab 2: Sources - Organized by Category */}
+          {/* Tab 2: Sources - Collapsible per Company */}
           {activeTab === 'sources' && (
-            <div className="space-y-6">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                All sources used to gather company intelligence. Click to verify our research.
-              </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  All sources used to gather company intelligence. Click to verify our research.
+                </p>
+                <button
+                  onClick={() => {
+                    if (expandedCompanies.size > 0) {
+                      setExpandedCompanies(new Set());
+                    } else {
+                      setExpandedCompanies(new Set(paginatedCompanies.map(c => c.name)));
+                    }
+                  }}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {expandedCompanies.size > 0 ? 'Collapse All' : 'Expand All'}
+                </button>
+              </div>
 
-              {displayCompanies.map((company, idx) => (
-                <div key={`${company.name}-sources-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-                    {getCategoryIcon(company.category)} {company.name}
-                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
-                      ({company.sources.length} sources)
-                    </span>
-                  </h4>
-                  
-                  <div className="space-y-2">
-                    {company.sources.map((source, sidx) => (
-                      <div 
-                        key={`${company.name}-source-${sidx}`}
-                        className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-gray-900 rounded"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {source.name}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded ${
-                              source.confidence === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                              source.confidence === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                              'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400'
-                            }`}>
-                              {source.confidence}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {source.category}
-                            </span>
-                          </div>
-                          <a 
-                            href={source.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
-                          >
-                            {source.url}
-                            <ExternalLink size={12} />
-                          </a>
-                        </div>
+              {paginatedCompanies.map((company, idx) => {
+                const isExpanded = expandedCompanies.has(company.name);
+                
+                return (
+                  <div key={`${company.name}-sources-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    {/* Company Header - Clickable */}
+                    <button
+                      onClick={() => toggleCompany(company.name)}
+                      className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        {getCategoryIcon(company.category)}
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                          {company.name}
+                        </h4>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          ({company.sources.length} sources)
+                        </span>
                       </div>
-                    ))}
+                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                    
+                    {/* Sources List - Collapsible */}
+                    {isExpanded && (
+                      <div className="p-4 space-y-2">
+                        {company.sources.map((source, sidx) => (
+                          <div 
+                            key={`${company.name}-source-${sidx}`}
+                            className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {source.name}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded ${
+                                  source.confidence === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                  source.confidence === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                                  'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400'
+                                }`}>
+                                  {source.confidence}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {source.category}
+                                </span>
+                              </div>
+                              <a 
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
+                              >
+                                {source.url}
+                                <ExternalLink size={12} />
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+
+              {/* Pagination for Sources Tab */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    Next
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
 
           {/* Tab 3: Insights - Detailed Analysis */}
           {activeTab === 'insights' && (
             <div className="space-y-6">
-              {displayCompanies.map((company, idx) => (
+              {paginatedCompanies.map((company, idx) => (
                 <div key={`${company.name}-insights-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
@@ -593,6 +666,29 @@ export default function FullEcosystemModal({
                   </div>
                 </div>
               ))}
+
+              {/* Pagination for Insights Tab */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import { ExternalLink, Maximize2 } from 'lucide-react';
+import { ExternalLink, Maximize2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 import { type EcosystemCompany } from './CompanyEcosystemTable';
 import PromptViewer from './PromptViewer';
 import AnalyzeButton from './AnalyzeButton';
-import ExplanationSection from '../ui/ExplanationSection';
 
 interface CompanyEcosystemTableCompactProps {
   companies: EcosystemCompany[];
@@ -27,6 +27,7 @@ export default function CompanyEcosystemTableCompact({
   onViewFull,
   cacheMetadata
 }: CompanyEcosystemTableCompactProps) {
+  const [showExplain, setShowExplain] = useState(false);
   
   // Sample data (MVP)
   const sampleCompanies: EcosystemCompany[] = [
@@ -221,8 +222,8 @@ export default function CompanyEcosystemTableCompact({
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[15%]">Size/Industry</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">
                 <span 
-                  className="cursor-help border-b border-dotted border-gray-400 dark:border-gray-500" 
-                  title="Relevance to target company (0-100%). Higher = more similar product/market. Useful for understanding competitive context, not guaranteed interview topic."
+                  className="cursor-help" 
+                  title="Market similarity (0-100%). Higher = more similar product/market."
                 >
                   Relevance
                 </span>
@@ -285,40 +286,53 @@ export default function CompanyEcosystemTableCompact({
         </table>
       </div>
 
-      {/* Explanation Section - Interview Prep Focus */}
-      <ExplanationSection title="How We Analyze the Ecosystem">
-        <p>
-          We research the competitive landscape to help you understand the market, speak 
-          intelligently about industry trends, and demonstrate market awareness in your interviews.
-        </p>
-        
-        <div>
-          <p className="font-medium mb-1">Our Analysis Methodology:</p>
-          <ul className="space-y-1 text-xs">
-            <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
-            <li>• 15+ Signals: Size, industry, market momentum, recent news, skills trends, culture</li>
-            <li>• AI + Public Data: Company profiles, news, reviews, industry analysis</li>
-            <li>• Cached: 7 days (click "Analyze Ecosystem" to refresh)</li>
-          </ul>
+      {/* Explain Button - Match Matrix Style */}
+      <button
+        onClick={() => setShowExplain(!showExplain)}
+        className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4"
+        data-testid="ecosystem-explain"
+      >
+        {showExplain ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        <span>Explain: How we analyze the ecosystem</span>
+      </button>
+
+      {showExplain && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <div className="text-sm text-gray-700 dark:text-gray-300 space-y-3">
+            <p>
+              We research the competitive landscape to help you understand the market, speak 
+              intelligently about industry trends, and demonstrate market awareness in your interviews.
+            </p>
+            
+            <div>
+              <p className="font-semibold mb-2">Our Analysis Methodology:</p>
+              <ul className="space-y-1 text-xs">
+                <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
+                <li>• 15+ Signals: Size, industry, market momentum, recent news, skills trends, culture</li>
+                <li>• AI + Public Data: Company profiles, news, reviews, industry analysis</li>
+                <li>• Cached: 7 days (click "Analyze Ecosystem" to refresh)</li>
+              </ul>
+            </div>
+            
+            <div>
+              <p className="font-semibold mb-2">What Each Column Means:</p>
+              <ul className="space-y-1 text-xs">
+                <li>• <strong>Relevance</strong>: Market similarity (0-100%). Higher = more similar product/market.</li>
+                <li>• <strong>Why Relevant</strong>: Specific reason this company matters for interview prep.</li>
+                <li>• <strong>Quick Insights</strong>: Market position, culture, interview talking points (2-3 sentences).</li>
+              </ul>
+            </div>
+            
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+              Note: This helps you prepare for interviews at target company, not find other jobs. 
+              Full details in modal (click 🔍 in header).
+            </p>
+          </div>
         </div>
-        
-        <div>
-          <p className="font-medium mb-1">What Each Column Means:</p>
-          <ul className="space-y-1 text-xs">
-            <li>• <strong>Relevance</strong>: Similarity to target company (0-100%). Higher = more similar product/market. Helps you understand competitive context.</li>
-            <li>• <strong>Why Relevant</strong>: Specific reason this company matters for your interview preparation.</li>
-            <li>• <strong>Quick Insights</strong>: Market position, notable characteristics, and specific interview prep angles (2-3 sentences).</li>
-          </ul>
-        </div>
-        
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          Note: This section helps you prepare for interviews at the target company, not find other jobs. 
-          Full details (news, growth, hiring, skills, etc.) in modal. Click <span className="font-medium">View Full Analysis (🔍)</span> in header.
-        </p>
-      </ExplanationSection>
+      )}
 
       {/* Why This Matters */}
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters for interview prep:</p>
         <p className="text-xs text-gray-600 dark:text-gray-400">
           Understanding competitor strengths, market trends, and industry dynamics helps you speak 
