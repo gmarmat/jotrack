@@ -78,8 +78,10 @@ export async function GET(
     let companyEcosystem = null;
     let ecosystemMetadata = null;
     if (jobData.company) {
+      console.log(`🔍 Looking for cached ecosystem for company: "${jobData.company}"`);
       try {
         const cachedEcosystem = await getCachedEcosystemData(jobData.company);
+        console.log(`🔍 Cache lookup result:`, cachedEcosystem ? 'FOUND' : 'NOT FOUND');
         if (cachedEcosystem) {
           const researchData = JSON.parse(cachedEcosystem.researchData);
           companyEcosystem = researchData.companies || null;
