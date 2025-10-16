@@ -2,7 +2,7 @@
 // Runs locally (no AI), fast and free
 
 import mammoth from 'mammoth';
-import pdf from 'pdf-parse';
+import * as pdfParse from 'pdf-parse';
 import { readFileSync } from 'fs';
 import path from 'path';
 
@@ -57,7 +57,7 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     const buffer = readFileSync(absolutePath);
     
-    const data = await pdf(buffer);
+    const data = await (pdfParse as any).default(buffer);
     const text = data.text.trim();
     
     // Count words
