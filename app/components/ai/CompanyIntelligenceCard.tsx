@@ -136,7 +136,7 @@ export default function CompanyIntelligenceCard({
   const displayCompany = localCompany || company || defaultCompany;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="company-intelligence-card">
+    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800 p-6" data-testid="company-intelligence-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">

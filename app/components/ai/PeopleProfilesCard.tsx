@@ -157,7 +157,7 @@ export default function PeopleProfilesCard({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="people-profiles-card">
+    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg border border-cyan-200 dark:border-cyan-800 p-6" data-testid="people-profiles-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -219,8 +219,18 @@ export default function PeopleProfilesCard({
       {(!isAnalyzing || profiles || localProfiles) && (<>
       {/* Individual Profiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {displayProfiles.map((person, idx) => (
-          <div key={idx} className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+        {displayProfiles.map((person, idx) => {
+          // Rotate through subtle background colors for each profile
+          const bgColors = [
+            'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200 dark:border-blue-900/30',
+            'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 border-purple-200 dark:border-purple-900/30',
+            'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-900/30',
+            'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-900/30',
+          ];
+          const colorClass = bgColors[idx % bgColors.length];
+          
+          return (
+          <div key={idx} className={`p-4 ${colorClass} rounded-lg border`}>
             <div className="flex items-start gap-3 mb-3">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <User size={20} className="text-indigo-600" />
@@ -271,7 +281,8 @@ export default function PeopleProfilesCard({
               <p className="text-xs text-gray-700 dark:text-gray-300 italic">{person.whatThisMeans}</p>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* Overall Insights */}

@@ -343,7 +343,7 @@ export default function AiShowcase({
           </div>
 
           {/* Skill Match Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <Lightbulb size={18} className="text-amber-600" />
