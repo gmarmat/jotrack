@@ -74,7 +74,7 @@ export async function fetchVariantForAnalysis(
 }
 
 /**
- * Simple AI caller for analysis endpoints (bypasses coach mode)
+ * Simple AI caller for analysis endpoints (supports Claude + OpenAI)
  */
 async function callAnalysisAi(prompt: string): Promise<{
   success: boolean;
@@ -87,11 +87,97 @@ async function callAnalysisAi(prompt: string): Promise<{
     const config = await getAiProviderConfig();
     
     if (!config) {
-      throw new Error('No API key configured. Go to Settings → AI & Privacy to add your OpenAI key.');
+      throw new Error('No API key configured. Go to Settings → AI & Privacy to add your API key.');
     }
     
-    const { apiKey, model } = config;
+    const { provider, apiKey, model } = config;
     
+    // Route to correct API based on provider
+    if (provider === 'claude') {
+      return await callClaudeApi(prompt, apiKey, model);
+    } else {
+      return await callOpenAiApi(prompt, apiKey, model);
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'AI call failed',
+    };
+  }
+}
+
+/**
+ * Call Claude API
+ */
+async function callClaudeApi(prompt: string, apiKey: string, model: string): Promise<{
+  success: boolean;
+  content?: string;
+  tokensUsed?: number;
+  cost?: number;
+  error?: string;
+}> {
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: model || 'claude-3-5-sonnet-20241022',
+        max_tokens: 8000,
+        temperature: 0.3,
+        system: 'You are an expert career advisor and analyst. Follow the prompt instructions exactly and return only valid JSON.',
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Claude API error: ${response.status} - ${errorText}`);
+    }
+    
+    const data = await response.json();
+    const content = data.content[0]?.text;
+    const usage = data.usage;
+    
+    // Calculate cost (Claude 3.5 Sonnet pricing: $3/$15 per 1M tokens)
+    const inputTokens = usage?.input_tokens || 0;
+    const outputTokens = usage?.output_tokens || 0;
+    const totalTokens = inputTokens + outputTokens;
+    const cost = (inputTokens * 0.000003) + (outputTokens * 0.000015);
+    
+    return {
+      success: true,
+      content,
+      tokensUsed: totalTokens,
+      cost,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Claude API call failed',
+    };
+  }
+}
+
+/**
+ * Call OpenAI API
+ */
+async function callOpenAiApi(prompt: string, apiKey: string, model: string): Promise<{
+  success: boolean;
+  content?: string;
+  tokensUsed?: number;
+  cost?: number;
+  error?: string;
+}> {
+  try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -111,7 +197,7 @@ async function callAnalysisAi(prompt: string): Promise<{
           },
         ],
         temperature: 0.3,
-        max_tokens: 8000, // Increased for large ecosystem responses
+        max_tokens: 8000,
         response_format: { type: 'json_object' },
       }),
     });
@@ -129,7 +215,7 @@ async function callAnalysisAi(prompt: string): Promise<{
     const promptTokens = usage?.prompt_tokens || 0;
     const completionTokens = usage?.completion_tokens || 0;
     const totalTokens = usage?.total_tokens || 0;
-    const cost = (promptTokens * 0.00000015) + (completionTokens * 0.0000006); // $0.15/$0.60 per 1M tokens
+    const cost = (promptTokens * 0.00000015) + (completionTokens * 0.0000006);
     
     return {
       success: true,
@@ -140,7 +226,7 @@ async function callAnalysisAi(prompt: string): Promise<{
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || 'AI call failed',
+      error: error.message || 'OpenAI API call failed',
     };
   }
 }
