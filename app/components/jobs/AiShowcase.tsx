@@ -8,7 +8,7 @@ import { checkAnalysisGuardrails, recordAnalysis, getCooldownRemaining, type Ana
 import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
 import CompanyIntelligenceCard from '@/app/components/ai/CompanyIntelligenceCard';
-import CompanyEcosystemMatrix from '@/app/components/ai/CompanyEcosystemMatrix';
+import CompanyEcosystemTable from '@/app/components/ai/CompanyEcosystemTable';
 import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
 import FitTable from '@/app/components/coach/tables/FitTable';
 import PromptViewer from '@/app/components/ai/PromptViewer';
@@ -369,10 +369,13 @@ export default function AiShowcase({
           isAiPowered={provider === 'remote'}
         />
 
-        {/* Row 3: Company Ecosystem Matrix - Full Width */}
-        <CompanyEcosystemMatrix
+        {/* Row 3: Company Ecosystem - Full Width */}
+        <CompanyEcosystemTable
           companies={aiData?.companyEcosystem || []}
           isAiPowered={provider === 'remote'}
+          onRefresh={() => onRefresh?.('ecosystem')}
+          refreshing={isRefreshing}
+          sources={aiData?.sources}
         />
 
         {/* Row 4: Match Matrix - Full Width */}

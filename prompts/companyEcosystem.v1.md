@@ -15,26 +15,73 @@ Return a JSON object with this exact structure:
 
 ```json
 {
-  "ecosystem": [
+  "companies": [
     {
       "name": "CompanyName",
       "category": "direct" | "adjacent" | "upstream" | "downstream" | "complementary",
-      "relevanceScore": 85,
-      "reason": "One sentence explaining why this company is relevant",
-      "careerOpportunity": "high" | "medium" | "low",
-      "interviewRelevance": "Likely discussion topic in interview"
+      "size": {
+        "employees": "1,000-5,000",
+        "sizeCategory": "scaleup"
+      },
+      "industry": {
+        "broad": "Technology",
+        "specific": "SaaS"
+      },
+      "location": {
+        "headquarters": "San Francisco, CA, USA",
+        "region": "North America",
+        "isRemote": true
+      },
+      "leadership": {
+        "ceo": "Jane Doe",
+        "ceoBackground": "Ex-Google PM, Stanford MBA"
+      },
+      "careerMetrics": {
+        "growthScore": 5,
+        "stabilityScore": 4,
+        "retentionScore": 4,
+        "avgTenure": "3.2 years"
+      },
+      "recentNews": {
+        "positive": 3,
+        "negative": 1,
+        "highlights": [
+          "+ Series C funding ($275M)",
+          "+ 10M users milestone",
+          "+ Acquired competitor",
+          "- Layoffs rumor (unverified)"
+        ]
+      },
+      "skillsIntel": {
+        "currentHotSkills": ["React", "AWS", "Python"],
+        "futureSkills": ["AI/ML", "Kubernetes"],
+        "hiringTrend": "growing",
+        "openRoles": 47
+      },
+      "relevanceScore": 95,
+      "reason": "Direct competitor with similar product features",
+      "careerOpportunity": "high",
+      "interviewRelevance": "Very likely - main competitor comparison",
+      "confidence": {
+        "score": "high",
+        "percentage": 92
+      },
+      "insights": "Strong growth company with excellent market position. High hiring activity and competitive compensation. Great career opportunity with proven product-market fit.",
+      "sources": [
+        {
+          "name": "LinkedIn",
+          "url": "https://linkedin.com/company/example",
+          "category": "company",
+          "confidence": "high"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/example",
+          "category": "news",
+          "confidence": "high"
+        }
+      ]
     }
-  ],
-  "summary": {
-    "totalCompanies": 20,
-    "directCompetitors": 5,
-    "adjacentMarkets": 8,
-    "partnerEcosystem": 7
-  },
-  "insights": [
-    "This is a competitive market with 5 major players",
-    "Strong partner ecosystem suggests collaborative culture",
-    "Adjacent opportunities in fintech for career pivoting"
   ]
 }
 ```
@@ -106,66 +153,93 @@ Return a JSON object with this exact structure:
 4. **Career Focus**: Prioritize companies user might apply to next
 5. **Interview Prep**: Flag companies interviewer will likely mention
 
-## Example Output
+## Example Output (10 Companies for MVP)
+
+**IMPORTANT**: Return exactly 10 companies in this priority order:
+- 5 direct competitors
+- 3 adjacent markets  
+- 2 complementary products
 
 ```json
 {
-  "ecosystem": [
+  "companies": [
     {
       "name": "Notion",
       "category": "direct",
+      "size": {
+        "employees": "1,000-5,000",
+        "sizeCategory": "scaleup"
+      },
+      "industry": {
+        "broad": "Technology",
+        "specific": "SaaS"
+      },
+      "location": {
+        "headquarters": "San Francisco, CA, USA",
+        "region": "North America",
+        "isRemote": true
+      },
+      "leadership": {
+        "ceo": "Ivan Zhao",
+        "ceoBackground": "Ex-Inkling, Y Combinator"
+      },
+      "careerMetrics": {
+        "growthScore": 5,
+        "stabilityScore": 4,
+        "retentionScore": 4,
+        "avgTenure": "3.2 years"
+      },
+      "recentNews": {
+        "positive": 3,
+        "negative": 1,
+        "highlights": [
+          "+ Series C funding ($275M) - Oct 2024",
+          "+ 10M users milestone - Sept 2024",
+          "+ Acquired Cron Calendar - Aug 2024",
+          "- Layoffs rumor (unverified) - Sept 2024"
+        ]
+      },
+      "skillsIntel": {
+        "currentHotSkills": ["React", "TypeScript", "PostgreSQL"],
+        "futureSkills": ["AI/ML", "Real-time Collaboration"],
+        "hiringTrend": "growing",
+        "openRoles": 47
+      },
       "relevanceScore": 95,
-      "reason": "Direct competitor in collaborative workspace market with similar product features",
+      "reason": "Direct competitor in collaborative workspace market with similar product features and tech stack",
       "careerOpportunity": "high",
-      "interviewRelevance": "Very likely - main competitor comparison"
-    },
-    {
-      "name": "Asana",
-      "category": "direct",
-      "relevanceScore": 88,
-      "reason": "Project management focus with overlapping features and target market",
-      "careerOpportunity": "high",
-      "interviewRelevance": "Likely - another major competitor"
-    },
-    {
-      "name": "Slack",
-      "category": "complementary",
-      "relevanceScore": 72,
-      "reason": "Complementary communication tool, often used alongside collaboration platforms",
-      "careerOpportunity": "medium",
-      "interviewRelevance": "Possible - integration partner discussion"
-    },
-    {
-      "name": "AWS",
-      "category": "upstream",
-      "relevanceScore": 65,
-      "reason": "Infrastructure provider - likely hosting platform for this SaaS product",
-      "careerOpportunity": "medium",
-      "interviewRelevance": "Possible - technical infrastructure discussion"
-    },
-    {
-      "name": "Figma",
-      "category": "adjacent",
-      "relevanceScore": 68,
-      "reason": "Real-time collaboration technology in different product category (design vs docs)",
-      "careerOpportunity": "high",
-      "interviewRelevance": "Possible - similar tech stack discussion"
+      "interviewRelevance": "Very likely - main competitor comparison will be discussed",
+      "confidence": {
+        "score": "high",
+        "percentage": 92
+      },
+      "insights": "Strong growth company with excellent market position and $275M Series C. High hiring activity (47 roles) indicates expansion. Competitive compensation and strong technical culture with emphasis on design. Great career opportunity with proven product-market fit.",
+      "sources": [
+        {
+          "name": "LinkedIn",
+          "url": "https://linkedin.com/company/notion",
+          "category": "company",
+          "confidence": "high"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/notion-series-c",
+          "category": "news",
+          "confidence": "high"
+        },
+        {
+          "name": "Glassdoor",
+          "url": "https://glassdoor.com/notion",
+          "category": "reviews",
+          "confidence": "medium"
+        }
+      ]
     }
-  ],
-  "summary": {
-    "totalCompanies": 20,
-    "directCompetitors": 5,
-    "adjacentMarkets": 8,
-    "partnerEcosystem": 7
-  },
-  "insights": [
-    "Highly competitive market with strong direct competitors (Notion, Asana)",
-    "Rich partner ecosystem suggests collaborative, integration-friendly culture",
-    "Adjacent opportunities in design tools (Figma, Miro) for career pivoting",
-    "Strong upstream dependencies on AWS/cloud infrastructure"
   ]
 }
 ```
+
+**Note**: For 10 companies total (MVP), focus on quality over quantity. Each company should have rich, verified data.
 
 ## Remember
 
