@@ -629,85 +629,45 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
                 
-                {/* Generated Analysis Section */}
+                {/* Generated Analysis Section - Compact Tag Style */}
                 {stalenessInfo.hasAnalysis && (
                   <div>
                     <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      🤖 Generated Analysis
+                      🤖 Analysis Ready
                     </p>
-                    <div className="space-y-2">
-                      {/* Match Score & Matrix */}
-                      <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">🎯</span>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              Match Analysis
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Match score, signals breakdown, fit dimensions
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            // Scroll to AiShowcase section
-                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
-                        >
-                          <Eye size={16} />
-                          View Analysis
-                        </button>
-                      </div>
+                    <div className="flex flex-wrap gap-2">
+                      {/* Match Analysis Tag */}
+                      <button
+                        onClick={() => {
+                          document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 hover:from-purple-200 hover:to-blue-200 dark:hover:from-purple-800/40 dark:hover:to-blue-800/40 border border-purple-300 dark:border-purple-700 rounded-full text-xs font-medium text-purple-900 dark:text-purple-200 transition-all hover:shadow-md"
+                      >
+                        <span>🎯</span>
+                        <span>Match Analysis</span>
+                      </button>
                       
-                      {/* Company Intelligence */}
-                      <div className="flex items-center justify-between bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">🏢</span>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              Company Intelligence
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Company research, culture, ecosystem matrix
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
-                        >
-                          <Eye size={16} />
-                          View Intelligence
-                        </button>
-                      </div>
+                      {/* Company Intelligence Tag */}
+                      <button
+                        onClick={() => {
+                          document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 hover:from-green-200 hover:to-teal-200 dark:hover:from-green-800/40 dark:hover:to-teal-800/40 border border-green-300 dark:border-green-700 rounded-full text-xs font-medium text-green-900 dark:text-green-200 transition-all hover:shadow-md"
+                      >
+                        <span>🏢</span>
+                        <span>Company Intel</span>
+                      </button>
                       
-                      {/* Profiles */}
-                      <div className="flex items-center justify-between bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">👥</span>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              People Profiles
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              User, recruiter, hiring manager insights
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-md text-sm font-medium transition-colors"
-                        >
-                          <Eye size={16} />
-                          View Profiles
-                        </button>
-                      </div>
+                      {/* People Profiles Tag */}
+                      <button
+                        onClick={() => {
+                          document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 hover:from-orange-200 hover:to-yellow-200 dark:hover:from-orange-800/40 dark:hover:to-yellow-800/40 border border-orange-300 dark:border-orange-700 rounded-full text-xs font-medium text-orange-900 dark:text-orange-200 transition-all hover:shadow-md"
+                      >
+                        <span>👥</span>
+                        <span>People Profiles</span>
+                      </button>
                     </div>
                   </div>
                 )}
