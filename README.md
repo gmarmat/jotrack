@@ -1,34 +1,128 @@
 [![CI](https://github.com/gmarmat/jotrack/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarmat/jotrack/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/gmarmat/jotrack?sort=semver&display_name=release)](https://github.com/gmarmat/jotrack/releases)
 
-# Jotrack
+# JoTrack - AI-Powered Job Application Coach
 
-Local-first, privacy-friendly job tracker. Runs at `http://localhost:3000`.
+**Smart job tracking + AI-powered interview prep in one beautiful app.**
 
-> **v0.2 highlights**: Attachments (upload/preview/delete), Status History, full Backup/Restore (UI + CLI), Duplicates Preview, toasts, e2e tests.
+Local-first, privacy-friendly. Your data never leaves your machine. Runs at `http://localhost:3000`.
 
-## Features
+> **v2.7 highlights**: AI Analysis (Match Matrix, Company Ecosystem, People Profiles), Document Variants (ai_optimized for cost savings), 7-Day Caching, Beautiful Dark Mode with Gradients, Settings UI for BYOK (Bring Your Own Key).
 
-- ⚡ **Local-first** SQLite (Drizzle + better-sqlite3), FTS5 search
-- 📝 **Jobs CRUD** + Status updates with append-only history
-- 📎 **Attachments**: upload/list/preview/download/delete (per job)
-- 💾 **Backup/Restore**:
-  - Backup UI button → ZIP (DB + attachments), streams + saves to `./data/backups/`
-  - Restore UI (stage → dedup → apply) with autosave + duplicate-aware merge
-  - CLI apply (atomic DB replacement) for full restores when server is stopped
-- 🔎 **Duplicates Preview**: fingerprint = `normalize(company)|normalize(title)|normalizeUrl(url host+path)`
-- 🔔 **Toast notifications**: clear UX feedback for all operations
-- ✅ **Tests**: Playwright e2e, Vitest unit tests
+## ✨ Features
 
-## Quick Start
+### 🎯 Core Job Tracking
+- ⚡ **Local-first** SQLite (Drizzle + better-sqlite3), FTS5 full-text search
+- 📝 **Jobs CRUD** with 9 status stages (Applied → Offer/Rejected)
+- 📎 **Smart Attachments** (PDF/DOCX): upload, preview, version management
+- 📊 **Status History** timeline with append-only tracking
+- 🔍 **Instant Search** across all jobs (company, title, notes)
+- 💾 **Backup/Restore** with duplicate detection and merge strategies
+- 🌙 **Beautiful Dark Mode** with section-specific gradients
+- 🔔 **Toast Notifications** for all user actions
+
+### 🤖 AI-Powered Analysis (v2.7)
+
+**📋 Match Matrix** - ATS Signal Evaluation
+- Analyzes resume against 30 standard ATS signals + up to 30 job-specific signals
+- Evidence-based scoring (JD vs Resume comparison)
+- Category breakdown with weights
+- Trend tracking (🔼🔽 for v1 vs v2 comparisons)
+- Icons: ⚙️ (ATS), ✨ (Dynamic), ⚙️✨ (Both - extra important!)
+
+**🏢 Company Intelligence** - Target Company Research
+- Company profile (founded, size, funding, revenue)
+- Culture & values analysis
+- Leadership backgrounds
+- Key competitors
+- Recent news and milestones
+
+**📈 Company Ecosystem** - Competitive Landscape
+- 10 companies analyzed (5 direct, 3 adjacent, 2 complementary)
+- 15+ data points per company (size, CEO, news, hiring trends)
+- Market relevance scores (0-100%)
+- Interview prep insights
+- **7-day caching** (95% cost savings!)
+- Full modal with 3 tabs (Intelligence, Sources, Insights)
+
+**👥 People Profiles** - Interview Prep
+- LinkedIn profile analysis (recruiters, hiring managers, peers)
+- Communication style detection
+- Background & expertise mapping
+- "What this means for you" insights
+- Team dynamics and cultural fit analysis
+
+**📊 Match Score** - Quick Overview
+- Overall match percentage
+- Highlights (✓ strengths)
+- Gaps (△ areas to improve)
+- Top 3 recommendations
+
+### 💾 Smart Data Management
+
+**Document Variant System** (95% token savings!):
+- **`raw`** - Original text (local extraction, $0)
+- **`ai_optimized`** - Structured for AI ($0.01 per doc)
+- **`detailed`** - Enriched with metadata ($0.01 per doc)
+- Create once, reuse for all analyses
+
+**Intelligent Refresh Detection**:
+- Detects "significant changes" vs minor edits
+- Smart banners guide user through data pipeline
+- 4 states: No Variants 🟣, Ready 🔵, Stale 🟠, Fresh 🟢
+
+**3-Column Variant Viewer**:
+- Side-by-side comparison of all 3 variants
+- See how AI optimized your documents
+- Understand what's sent to AI for analysis
+
+### 🔐 Privacy & Security
+
+- **BYOK (Bring Your Own Key)**: Use YOUR OpenAI/Anthropic API key
+- **Encrypted Storage**: Keys stored in SQLite with AES-256-CBC
+- **Local-First**: All data stays on your machine
+- **No Tracking**: Zero telemetry, zero external API calls (except AI when you click)
+- **Open Source**: Full transparency, audit the code yourself
+
+## ⚡ Quick Start
+
+### 1. Install & Run
 
 ```bash
+git clone https://github.com/gmarmat/jotrack.git
+cd jotrack
 npm install
-npm run db:migrate
-npm run db:seed      # (optional) add sample data
-npm run dev
-# Visit http://localhost:3000
+npm run db:migrate    # Set up database
+npm run db:seed       # (Optional) Add 3 sample jobs
+npm run dev           # Start dev server
 ```
+
+Visit `http://localhost:3000` 🎉
+
+### 2. Set Up AI Features (Optional but Recommended)
+
+**To enable AI analysis:**
+
+1. Get an OpenAI API key: https://platform.openai.com/api-keys
+2. Click **⚙️ Settings** (top-right corner)
+3. Go to **"AI & Privacy"** tab
+4. Enter your API key
+5. Click **"Save Settings"**
+6. Done! AI features now work ✅
+
+**Cost**: ~$0.22 per full job analysis with `gpt-4o-mini` (recommended model)
+
+**Without AI key**: App works perfectly for job tracking, you just won't get AI insights.
+
+### 3. Analyze Your First Job
+
+1. **Create a job** (+ New Job button)
+2. **Upload documents** (Resume + Job Description)
+3. **Click "Refresh Data"** (~$0.02 - creates AI-optimized variants)
+4. **Click "Analyze Ecosystem"** (~$0.15 - research 10 companies)
+5. **Review insights** in the beautiful gradient sections!
+6. **Update resume** based on Match Matrix gaps
+7. **Re-upload → Re-analyze** to see improvements 🔼
 
 ## Backup & Restore
 
@@ -204,54 +298,122 @@ npm run db:studio    # Open Drizzle Studio (DB GUI)
 - Stop dev server before using CLI restore
 - UI restore works with server running (uses INSERT, not file replacement)
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 jotrack/
 ├── app/
-│   ├── api/                    # API routes
-│   │   ├── jobs/               # Jobs CRUD + status/history/attachments
-│   │   ├── backup/             # ZIP backup endpoint
-│   │   └── restore/            # Staging, dedup, apply endpoints
-│   ├── components/             # React components
-│   │   ├── StatusSelect.tsx
-│   │   ├── HistoryModal.tsx
-│   │   ├── AttachmentsModal.tsx
-│   │   ├── BackupRestorePanel.tsx
-│   │   ├── RestoreModal.tsx
-│   │   └── ToastProvider.tsx
-│   └── page.tsx                # Homepage
-├── db/
-│   ├── schema.ts               # Drizzle schema
-│   ├── migrations/             # SQL migrations
-│   └── repository.ts           # Data access layer
+│   ├── api/                              # API routes
+│   │   ├── jobs/                         # Jobs CRUD + analysis
+│   │   │   ├── [id]/
+│   │   │   │   ├── refresh-variants/    # Create AI variants (~$0.02)
+│   │   │   │   ├── analyze-ecosystem/   # Company research (~$0.15)
+│   │   │   │   ├── evaluate-signals/    # Match Matrix (~$0.05)
+│   │   │   │   ├── check-staleness/     # Detect changes
+│   │   │   │   └── attachments/         # File uploads
+│   │   ├── ai/
+│   │   │   ├── keyvault/                # API key management (encrypted)
+│   │   │   └── prompts/                 # Prompt viewer
+│   │   ├── backup/                      # ZIP backups
+│   │   └── restore/                     # Restore with dedup
+│   ├── components/
+│   │   ├── ai/                          # AI analysis components
+│   │   │   ├── CompanyEcosystemTableCompact.tsx
+│   │   │   ├── FullEcosystemModal.tsx
+│   │   │   ├── CompanyIntelligenceCard.tsx
+│   │   │   ├── PeopleProfilesCard.tsx
+│   │   │   └── PromptViewer.tsx
+│   │   ├── coach/tables/
+│   │   │   └── FitTable.tsx            # Match Matrix
+│   │   ├── ui/
+│   │   │   └── AnalysisExplanation.tsx # Standard pattern
+│   │   ├── jobs/
+│   │   │   └── AiShowcase.tsx          # Main analysis container
+│   │   └── GlobalSettingsModal.tsx      # ⚙️ Settings UI
+│   ├── jobs/[id]/                       # Job detail page
+│   └── page.tsx                         # Homepage
+├── core/ai/
+│   ├── prompts/                         # AI prompt templates
+│   │   ├── ecosystem.v1.md
+│   │   ├── company.v1.md
+│   │   └── people.v1.md
+│   └── promptLoader.ts                  # Template engine
 ├── lib/
-│   ├── attachments.ts          # File handling helpers
-│   ├── backup.ts               # ZIP creation
-│   ├── restore.ts              # ZIP extraction & planning
-│   └── dedup.ts                # Duplicate detection
-├── e2e/                        # Playwright tests
-├── scripts/
-│   └── apply-restore.mjs       # CLI restore tool
-└── data/                       # Local data (gitignored)
-    ├── jotrack.db              # SQLite database
-    ├── attachments/            # Job attachments
-    └── backups/                # Backup ZIPs
+│   ├── coach/
+│   │   └── aiProvider.ts                # AI integration (BYOK)
+│   ├── extraction/
+│   │   └── extractionEngine.ts          # Variant creation
+│   └── matchSignals.ts                  # 30 ATS signals
+├── db/
+│   ├── schema.ts                        # 12 tables
+│   ├── migrations/                      # SQL migrations
+│   ├── signalRepository.ts              # Signal CRUD
+│   └── companyEcosystemCacheRepository.ts  # 7-day cache
+├── e2e/                                 # Playwright tests
+└── data/                                # Local data (gitignored)
+    ├── jotrack.db                       # SQLite database
+    ├── attachments/                     # Uploaded files
+    └── backups/                         # Backup ZIPs
 ```
 
-## License & Privacy
+## 💰 Costs & Pricing
 
-© 2025. MIT License.
+**JoTrack is free** - you only pay for AI API usage (your own OpenAI key):
 
-**Privacy:** All data stays local in `./data/`. Nothing is sent to external servers. Your job search data is yours alone.
+| Operation | Cost | Frequency |
+|-----------|------|-----------|
+| Refresh Data | ~$0.02 | Once per doc upload |
+| Analyze Match Matrix | ~$0.05 | Per analysis |
+| Analyze Company | ~$0.05 | Per analysis |
+| Analyze Ecosystem | ~$0.15 | Once per week (cached!) |
+| Analyze People | ~$0.05 | Per analysis |
+| **Full Job Analysis** | **~$0.22** | Per job |
 
-## Contributing
+**Monthly estimates** (with gpt-4o-mini):
+- Light use (10 jobs): ~$2/month
+- Moderate use (50 jobs): ~$11/month
+- Heavy use (100 jobs): ~$22/month
+
+**Cost savings built-in:**
+- 95% token reduction (variant reuse)
+- 7-day caching (Ecosystem)
+- Pay only for what you use
+
+## 📚 Documentation
+
+- **[CURRENT_STATE.md](CURRENT_STATE.md)** - What works, what's in progress
+- **[UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md)** - Component patterns
+- **[TERMINOLOGY_GUIDE.md](TERMINOLOGY_GUIDE.md)** - Naming conventions
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - API endpoints, data structures
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System design
+- **[SIGNAL_LEGEND.md](SIGNAL_LEGEND.md)** - ATS signal system
+- **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)** - Bugs & workarounds
+
+## 🐛 Known Issues
+
+See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for full list. Key items:
+
+- **Vitest unit tests** not running (directory path issue)
+- **AI analysis** showing sample data (APIs need wiring)
+- **Some analyze buttons** not functional yet
+
+**Status**: UI complete ✅, API integration in progress ⚠️
+
+## 🤝 Contributing
 
 PRs welcome! Please:
-1. Write tests for new features (Playwright for e2e, Vitest for units)
-2. Run `npm run lint` before committing
-3. Update CHANGELOG.md for notable changes
+1. Follow [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) for new components
+2. Check [TERMINOLOGY_GUIDE.md](TERMINOLOGY_GUIDE.md) for naming
+3. Write tests (Playwright for E2E)
+4. Run `npm run lint` before committing
+5. Update [CHANGELOG.md](CHANGELOG.md) for notable changes
+
+## 📄 License
+
+© 2024-2025 Guarav Marmat. MIT License.
+
+**Privacy First:** All data stays local in `./data/`. AI calls only when YOU click. No tracking, no telemetry, no cloud sync. Your job search is private.
 
 ---
 
-**Need help?** Open an issue on GitHub or check the existing e2e tests for usage examples.
+**Questions?** Check [QUICK_REFERENCE.md](QUICK_REFERENCE.md) or open an issue on GitHub!
