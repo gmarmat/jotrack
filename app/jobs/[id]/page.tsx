@@ -420,7 +420,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setDataStatusExpanded(!dataStatusExpanded)}
                     className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
@@ -441,16 +441,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </span>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {stalenessInfo.severity === 'no_variants' ? 'Extract Data First' :
-                     stalenessInfo.severity === 'variants_fresh' ? 'Ready to Analyze' :
-                     stalenessInfo.severity === 'major' ? 'Major Changes Detected' :
-                     stalenessInfo.severity === 'never_analyzed' ? 'Ready to Analyze' :
-                     stalenessInfo.severity === 'fresh' ? 'Analysis Up to Date' :
+                     stalenessInfo.severity === 'variants_fresh' ? 'Data Ready - Trigger Analysis in Each Section' :
+                     stalenessInfo.severity === 'major' ? 'Major Changes - Re-extract Data' :
+                     stalenessInfo.severity === 'never_analyzed' ? 'Upload Documents to Start' :
+                     stalenessInfo.severity === 'fresh' ? 'All Data Current' :
                      'Updates Available'}
                   </p>
                 </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {stalenessInfo.message}
-                </p>
                 {stalenessInfo.changedArtifacts && stalenessInfo.changedArtifacts.length > 0 && (
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     Changed: {stalenessInfo.changedArtifacts.join(', ')}
@@ -629,44 +626,47 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
                 
-                {/* Generated Analysis Section - Compact Tag Style */}
-                {stalenessInfo.hasAnalysis && (
-                  <div>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                      🤖 Analysis Ready
-                    </p>
+                {/* Data Ready Badges - Single Line */}
+                {stalenessInfo.hasVariants && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                      Ready:
+                    </span>
                     <div className="flex flex-wrap gap-2">
-                      {/* Match Analysis Tag */}
+                      {/* Match Analysis Badge */}
                       <button
                         onClick={() => {
                           document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 hover:from-purple-200 hover:to-blue-200 dark:hover:from-purple-800/40 dark:hover:to-blue-800/40 border border-purple-300 dark:border-purple-700 rounded-full text-xs font-medium text-purple-900 dark:text-purple-200 transition-all hover:shadow-md"
+                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 hover:from-purple-200 hover:to-blue-200 dark:hover:from-purple-800/40 dark:hover:to-blue-800/40 border border-purple-300 dark:border-purple-700 rounded-full text-xs font-medium text-purple-900 dark:text-purple-200 transition-all hover:shadow-md"
+                        title="Scroll to Match Analysis section"
                       >
-                        <span>🎯</span>
-                        <span>Match Analysis</span>
+                        <span className="text-sm">🎯</span>
+                        <span>Match</span>
                       </button>
                       
-                      {/* Company Intelligence Tag */}
+                      {/* Company Intelligence Badge */}
                       <button
                         onClick={() => {
                           document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 hover:from-green-200 hover:to-teal-200 dark:hover:from-green-800/40 dark:hover:to-teal-800/40 border border-green-300 dark:border-green-700 rounded-full text-xs font-medium text-green-900 dark:text-green-200 transition-all hover:shadow-md"
+                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30 hover:from-green-200 hover:to-teal-200 dark:hover:from-green-800/40 dark:hover:to-teal-800/40 border border-green-300 dark:border-green-700 rounded-full text-xs font-medium text-green-900 dark:text-green-200 transition-all hover:shadow-md"
+                        title="Scroll to Company Intelligence section"
                       >
-                        <span>🏢</span>
-                        <span>Company Intel</span>
+                        <span className="text-sm">🏢</span>
+                        <span>Company</span>
                       </button>
                       
-                      {/* People Profiles Tag */}
+                      {/* People Profiles Badge */}
                       <button
                         onClick={() => {
                           document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 hover:from-orange-200 hover:to-yellow-200 dark:hover:from-orange-800/40 dark:hover:to-yellow-800/40 border border-orange-300 dark:border-orange-700 rounded-full text-xs font-medium text-orange-900 dark:text-orange-200 transition-all hover:shadow-md"
+                        className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/30 dark:to-yellow-900/30 hover:from-orange-200 hover:to-yellow-200 dark:hover:from-orange-800/40 dark:hover:to-yellow-800/40 border border-orange-300 dark:border-orange-700 rounded-full text-xs font-medium text-orange-900 dark:text-orange-200 transition-all hover:shadow-md"
+                        title="Scroll to People Profiles section"
                       >
-                        <span>👥</span>
-                        <span>People Profiles</span>
+                        <span className="text-sm">👥</span>
+                        <span>Profiles</span>
                       </button>
                     </div>
                   </div>
