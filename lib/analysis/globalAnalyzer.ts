@@ -1,7 +1,7 @@
 // v2.7: Global analysis orchestrator
 
 import { db } from '@/db/client';
-import { jobs, attachments } from '@/db/schema';
+import { jobs, attachments, artifactVariants } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import {
   checkAnalysisStaleness,
@@ -160,11 +160,20 @@ async function checkVariantsExist(jobId: string): Promise<{
   const missingVariants: string[] = [];
   
   for (const attachment of activeAttachments) {
-    let sourceType: SourceType = 'attachment';
+    // Check for variants by source_id only (don't filter by source_type for backward compat)
+    const variants = await db
+      .select()
+      .from(artifactVariants)
+      .where(
+        and(
+          eq(artifactVariants.sourceId, attachment.id),
+          eq(artifactVariants.variantType, 'ai_optimized'),
+          eq(artifactVariants.isActive, true)
+        )
+      )
+      .limit(1);
     
-    const variant = await getVariant(attachment.id, sourceType, 'ai_optimized');
-    
-    if (!variant) {
+    if (variants.length === 0) {
       missingVariants.push(attachment.filename);
     }
   }
