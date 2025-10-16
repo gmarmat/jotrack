@@ -374,6 +374,10 @@ export default function AiShowcase({
           company={aiData?.companyIntelligence || null}
           isAiPowered={provider === 'remote'}
           metadata={aiData?.companyIntelMetadata}
+          onAnalyze={async () => {
+            await onRefresh?.('company');
+          }}
+          isAnalyzing={isRefreshing}
         />
 
         {/* Row 3: Company Ecosystem - Full Width */}
