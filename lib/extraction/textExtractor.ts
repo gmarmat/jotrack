@@ -2,9 +2,11 @@
 // Runs locally (no AI), fast and free
 
 import mammoth from 'mammoth';
-import * as pdfParse from 'pdf-parse';
 import { readFileSync } from 'fs';
 import path from 'path';
+
+// Dynamic import for pdf-parse to avoid Next.js webpack issues
+let pdfParse: any = null;
 
 export interface ExtractionResult {
   success: boolean;
@@ -54,10 +56,16 @@ export async function extractFromDocx(filePath: string): Promise<ExtractionResul
  */
 export async function extractFromPdf(filePath: string): Promise<ExtractionResult> {
   try {
+    // Dynamically import pdf-parse to avoid Next.js webpack issues
+    if (!pdfParse) {
+      pdfParse = await import('pdf-parse');
+    }
+    
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     const buffer = readFileSync(absolutePath);
     
-    const data = await (pdfParse as any).default(buffer);
+    const parseFn = pdfParse.default || pdfParse;
+    const data = await parseFn(buffer);
     const text = data.text.trim();
     
     // Count words
