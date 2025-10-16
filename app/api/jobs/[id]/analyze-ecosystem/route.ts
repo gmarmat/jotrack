@@ -82,17 +82,27 @@ export async function POST(
     
     console.log(`🔬 Cache MISS - Performing research for ${companyName}...`);
     
-    // TODO: Fetch existing company intelligence if available
-    const companyIntel = null; // Will be populated from company_intel table later
+    // Step 1: Real-time web search via Tavily
+    const searchQuery = `${companyName} company competitors ecosystem latest news CEO funding 2025`;
+    const webSearchResults = await searchWeb(searchQuery, { 
+      maxResults: 5,
+      searchDepth: 'advanced' 
+    });
     
-    // Execute ecosystem prompt (EXPENSIVE!)
+    const webSearchData = webSearchResults.success 
+      ? formatSearchResultsForPrompt(webSearchResults.results || [])
+      : 'Web search unavailable - using AI knowledge only';
+    
+    console.log(`🌐 Web search: ${webSearchResults.success ? `${webSearchResults.results?.length || 0} results` : 'skipped (no Tavily key)'}`);
+    
+    // Step 2: Execute ecosystem prompt with web search results
     const result = await executePrompt({
       promptName: 'companyEcosystem',
       promptVersion: 'v1',
       variables: {
         jdVariant: JSON.stringify(jdVariant, null, 2),
         companyName,
-        companyIntel: companyIntel ? JSON.stringify(companyIntel, null, 2) : 'null',
+        webSearchResults: webSearchData,
       },
       jobId,
     });
