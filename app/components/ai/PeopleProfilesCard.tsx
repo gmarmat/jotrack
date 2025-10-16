@@ -6,6 +6,7 @@ import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
 import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
+import AnalysisExplanation from '../ui/AnalysisExplanation';
 
 interface PersonProfile {
   name: string;
@@ -299,11 +300,45 @@ export default function PeopleProfilesCard({
         </div>
       )}
 
-      {/* Why This Matters (always expanded) */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-xs font-semibold text-gray-700 mb-1">Why this matters:</p>
-        <p className="text-xs text-gray-600">
-          Understanding the people you&apos;ll interview with helps you tailor your communication style,
+      {/* Standard Analysis Explanation - 2nd Last Position */}
+      <AnalysisExplanation>
+        <p>
+          We analyze LinkedIn profiles of people you'll interview with (recruiters, hiring managers, 
+          peers, skip-levels) to help you understand their backgrounds, communication styles, 
+          and what they might value in a candidate.
+        </p>
+        
+        <div>
+          <p className="font-semibold mb-2">Our Analysis Methodology:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Profile Analysis: Education, career path, notable achievements from LinkedIn</li>
+            <li>• Communication Style: Tech depth, formality, preferred topics (from posts/articles)</li>
+            <li>• Common Ground: Shared schools, companies, interests, mutual connections</li>
+            <li>• What They Value: Patterns from their career choices, posts, endorsements</li>
+            <li>• Interview Prep: Suggested questions, talking points, topics to avoid</li>
+          </ul>
+        </div>
+        
+        <div>
+          <p className="font-semibold mb-2">How to Use This:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Add LinkedIn profile URLs for each person you'll interview with</li>
+            <li>• Review their background to find common ground</li>
+            <li>• Tailor your communication style to match theirs</li>
+            <li>• Prepare questions that align with their expertise and interests</li>
+          </ul>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          Note: Analysis is based on publicly available LinkedIn profile information.
+        </p>
+      </AnalysisExplanation>
+
+      {/* Why This Matters - Last Position */}
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Understanding the people you'll interview with helps you tailor your communication style,
           prepare relevant questions, and build rapport based on their background and interests.
         </p>
       </div>

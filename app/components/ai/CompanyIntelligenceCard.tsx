@@ -7,6 +7,7 @@ import { LoadingShimmerCard } from '../LoadingShimmer';
 import LoadingPulse from '../LoadingPulse';
 import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
+import AnalysisExplanation from '../ui/AnalysisExplanation';
 
 interface CompanyIntelligence {
   name: string;
@@ -322,11 +323,45 @@ export default function CompanyIntelligenceCard({
         </div>
       </div>
 
-      {/* Why This Matters (always expanded) */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-xs font-semibold text-gray-700 mb-1">Why this matters:</p>
-        <p className="text-xs text-gray-600">
-          Understanding the company&apos;s business, culture, and competitive landscape helps you tailor 
+      {/* Standard Analysis Explanation - 2nd Last Position */}
+      <AnalysisExplanation>
+        <p>
+          We research the target company to provide you with business context, culture insights, 
+          and competitive intelligence. This helps you speak knowledgeably during interviews 
+          and assess if the company aligns with your career goals.
+        </p>
+        
+        <div>
+          <p className="font-semibold mb-2">Our Analysis Methodology:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Company Profile: Founded, size, funding, revenue estimates from public sources</li>
+            <li>• Key Facts: Notable milestones, recent news, product launches</li>
+            <li>• Culture: Values, work environment, employee sentiment (reviews, social media)</li>
+            <li>• Leadership: CEO/CTO backgrounds, career paths, communication styles</li>
+            <li>• Competitors: Direct and adjacent competitors for market context</li>
+          </ul>
+        </div>
+        
+        <div>
+          <p className="font-semibold mb-2">Data Sources:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Public company websites, press releases, news articles</li>
+            <li>• Employee reviews (Glassdoor, Blind)</li>
+            <li>• Funding databases (Crunchbase, PitchBook)</li>
+            <li>• Industry reports and analyst coverage</li>
+          </ul>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          Note: AI-powered analysis may use web search to gather recent information.
+        </p>
+      </AnalysisExplanation>
+
+      {/* Why This Matters - Last Position */}
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Understanding the company's business, culture, and competitive landscape helps you tailor 
           your application, prepare better interview questions, and assess cultural fit.
         </p>
       </div>
