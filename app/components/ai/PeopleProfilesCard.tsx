@@ -230,7 +230,7 @@ export default function PeopleProfilesCard({
           const colorClass = bgColors[idx % bgColors.length];
           
           return (
-          <div key={idx} className={`p-4 ${colorClass} rounded-lg border`}>
+            <div key={idx} className={`p-4 ${colorClass} rounded-lg border`}>
             <div className="flex items-start gap-3 mb-3">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <User size={20} className="text-indigo-600" />
@@ -280,8 +280,8 @@ export default function PeopleProfilesCard({
               <p className="text-xs font-semibold text-purple-700 mb-1">💡 What this means for you:</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 italic">{person.whatThisMeans}</p>
             </div>
-          </div>
-        );
+            </div>
+          );
         })}
       </div>
 
