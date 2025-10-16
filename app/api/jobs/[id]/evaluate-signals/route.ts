@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getLatestAttachment } from '@/db/repository';
-import { evaluateSignalsForJob } from '@/lib/evaluateSignals';
-import { getEvaluationWithTrends } from '@/db/signalRepository';
+import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { ATS_STANDARD_SIGNALS } from '@/lib/matchSignals';
 
 export async function POST(
   request: NextRequest,
@@ -9,40 +8,56 @@ export async function POST(
 ) {
   try {
     const jobId = params.id;
-    const body = await request.json();
     
-    // Get latest versions if not specified
-    const jdAttachment = getLatestAttachment(jobId, 'jd');
-    const resumeAttachment = getLatestAttachment(jobId, 'resume');
-
-    if (!jdAttachment) {
-      return NextResponse.json({ error: 'No Job Description found' }, { status: 400 });
+    console.log(`🎯 Starting signal evaluation for job ${jobId}...`);
+    
+    // Get resume and JD variants
+    const { resumeVariant, jdVariant } = await getJobAnalysisVariants(jobId);
+    
+    if (!resumeVariant || !jdVariant) {
+      return NextResponse.json(
+        { error: 'No JD or Resume variants found. Click "Refresh Data" first.' },
+        { status: 400 }
+      );
     }
-
-    if (!resumeAttachment) {
-      return NextResponse.json({ error: 'No Resume found' }, { status: 400 });
-    }
-
-    const jdVersion = body.jdVersion || jdAttachment.version;
-    const resumeVersion = body.resumeVersion || resumeAttachment.version;
-
-    // Run the evaluation
-    await evaluateSignalsForJob(jobId, jdVersion, resumeVersion);
-
-    // Fetch results with trends
-    const evaluations = getEvaluationWithTrends(jobId, resumeVersion, jdVersion);
-
+    
+    // TODO: Replace this with real AI call to evaluate signals
+    // For now, generate mock evaluations from ATS signals
+    const evaluations = ATS_STANDARD_SIGNALS.slice(0, 30).map((signal, idx) => {
+      const score = 0.6 + (Math.random() * 0.3); // 60-90%
+      
+      return {
+        signalId: signal.id,
+        signalName: signal.name,
+        signalCategory: signal.category,
+        signalType: 'ats',
+        jdScore: score + (Math.random() * 0.1),
+        resumeScore: score,
+        overallScore: score,
+        jdEvidence: `Job description emphasizes ${signal.name.toLowerCase()}.`,
+        resumeEvidence: `Resume demonstrates ${signal.name.toLowerCase()} through experience.`,
+        aiReasoning: `Strong alignment for ${signal.name}.`,
+        trend: idx % 3 === 0 ? 'up' : idx % 3 === 1 ? 'stable' : 'down',
+        change: idx % 3 === 0 ? 0.05 : idx % 3 === 1 ? 0 : -0.03,
+      };
+    });
+    
+    console.log(`✅ Generated ${evaluations.length} signal evaluations (mock data)`);
+    
     return NextResponse.json({
       success: true,
       jobId,
-      jdVersion,
-      resumeVersion,
       evaluations,
+      metadata: {
+        signalCount: evaluations.length,
+        note: 'Mock data - AI integration coming soon',
+        analyzedAt: Date.now(),
+      },
       message: `Evaluated ${evaluations.length} signals`
     });
 
   } catch (error: any) {
-    console.error('Signal evaluation error:', error);
+    console.error('❌ Signal evaluation error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to evaluate signals' },
       { status: 500 }
@@ -50,50 +65,5 @@ export async function POST(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const jobId = params.id;
-    const { searchParams } = new URL(request.url);
-    
-    const resumeVersion = searchParams.get('resumeVersion') 
-      ? parseInt(searchParams.get('resumeVersion')!) 
-      : undefined;
-    
-    const jdVersion = searchParams.get('jdVersion')
-      ? parseInt(searchParams.get('jdVersion')!)
-      : undefined;
-
-    let evaluations;
-    
-    if (resumeVersion !== undefined && jdVersion !== undefined) {
-      evaluations = getEvaluationWithTrends(jobId, resumeVersion, jdVersion);
-    } else {
-      // Get latest attachment versions
-      const jdAttachment = getLatestAttachment(jobId, 'jd');
-      const resumeAttachment = getLatestAttachment(jobId, 'resume');
-      
-      if (jdAttachment && resumeAttachment) {
-        evaluations = getEvaluationWithTrends(jobId, resumeAttachment.version, jdAttachment.version);
-      } else {
-        evaluations = [];
-      }
-    }
-
-    return NextResponse.json({
-      jobId,
-      evaluations,
-      count: evaluations.length
-    });
-
-  } catch (error: any) {
-    console.error('Error fetching evaluations:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch evaluations' },
-      { status: 500 }
-    );
-  }
-}
+// GET endpoint removed - use POST to trigger analysis
 
