@@ -58,6 +58,7 @@ export async function getCachedEcosystemData(
   
   try {
     const now = Math.floor(Date.now() / 1000);
+    console.log(`🔍 Cache lookup: company="${companyName}", industry="${industry}", now=${now}`);
     
     // Try exact match first (company + industry)
     if (industry) {
@@ -77,6 +78,7 @@ export async function getCachedEcosystemData(
     }
     
     // Fallback to company name only
+    console.log(`🔍 Trying company-only lookup for: "${companyName}"`);
     const companyMatch = db.prepare(`
       SELECT * FROM company_ecosystem_cache
       WHERE company_name = ?
@@ -84,6 +86,8 @@ export async function getCachedEcosystemData(
       ORDER BY created_at DESC
       LIMIT 1
     `).get(companyName, now) as CompanyEcosystemCacheEntry | undefined;
+    
+    console.log(`🔍 Company-only query result:`, companyMatch ? `FOUND (expires: ${companyMatch.expiresAt})` : 'NOT FOUND');
     
     if (companyMatch) {
       console.log(`✅ Cache HIT (company): ${companyName}`);
