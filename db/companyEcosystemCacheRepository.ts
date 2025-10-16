@@ -62,35 +62,73 @@ export async function getCachedEcosystemData(
     
     // Try exact match first (company + industry)
     if (industry) {
-      const exactMatch = db.prepare(`
+      const row = db.prepare(`
         SELECT * FROM company_ecosystem_cache
         WHERE company_name = ? 
           AND industry = ?
           AND expires_at > ?
         ORDER BY created_at DESC
         LIMIT 1
-      `).get(companyName, industry, now) as CompanyEcosystemCacheEntry | undefined;
+      `).get(companyName, industry, now) as any;
       
-      if (exactMatch) {
+      if (row) {
         console.log(`✅ Cache HIT (exact): ${companyName} + ${industry}`);
+        
+        // Map snake_case to camelCase
+        const exactMatch: CompanyEcosystemCacheEntry = {
+          id: row.id,
+          companyName: row.company_name,
+          industry: row.industry,
+          researchData: row.research_data,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          expiresAt: row.expires_at,
+          contextFingerprint: row.context_fingerprint,
+          companyCount: row.company_count,
+          avgConfidence: row.avg_confidence,
+          sources: row.sources,
+          tokensUsed: row.tokens_used,
+          costUsd: row.cost_usd,
+          webSearchesUsed: row.web_searches_used,
+        };
+        
         return exactMatch;
       }
     }
     
     // Fallback to company name only
     console.log(`🔍 Trying company-only lookup for: "${companyName}"`);
-    const companyMatch = db.prepare(`
+    const row = db.prepare(`
       SELECT * FROM company_ecosystem_cache
       WHERE company_name = ?
         AND expires_at > ?
       ORDER BY created_at DESC
       LIMIT 1
-    `).get(companyName, now) as CompanyEcosystemCacheEntry | undefined;
+    `).get(companyName, now) as any;
     
-    console.log(`🔍 Company-only query result:`, companyMatch ? `FOUND (expires: ${companyMatch.expiresAt})` : 'NOT FOUND');
+    console.log(`🔍 Company-only query result:`, row ? `FOUND (expires: ${row.expires_at})` : 'NOT FOUND');
     
-    if (companyMatch) {
+    if (row) {
       console.log(`✅ Cache HIT (company): ${companyName}`);
+      
+      // Map snake_case to camelCase
+      const companyMatch: CompanyEcosystemCacheEntry = {
+        id: row.id,
+        companyName: row.company_name,
+        industry: row.industry,
+        researchData: row.research_data,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        expiresAt: row.expires_at,
+        contextFingerprint: row.context_fingerprint,
+        companyCount: row.company_count,
+        avgConfidence: row.avg_confidence,
+        sources: row.sources,
+        tokensUsed: row.tokens_used,
+        costUsd: row.cost_usd,
+        webSearchesUsed: row.web_searches_used,
+      };
+      
       return companyMatch;
     }
     
