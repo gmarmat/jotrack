@@ -169,6 +169,15 @@ export default function CompanyEcosystemTableCompact({
               label="Analyze Ecosystem"
             />
           )}
+          {onViewFull && (
+            <button
+              onClick={onViewFull}
+              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+              title="View Full Analysis (15+ columns)"
+            >
+              <Maximize2 size={14} />
+            </button>
+          )}
           <PromptViewer 
             promptKind="ecosystem" 
             version="v1"
@@ -255,7 +264,7 @@ export default function CompanyEcosystemTableCompact({
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">News</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Hiring</th>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Confidence</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">Actions</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[25%]">Key Insights</th>
             </tr>
           </thead>
           <tbody>
@@ -328,15 +337,31 @@ export default function CompanyEcosystemTableCompact({
                   {getConfidenceBadge(company.confidence)}
                 </td>
                 
-                {/* Actions */}
+                {/* Key Insights */}
                 <td className="px-3 py-3">
-                  <button
-                    onClick={onViewFull}
-                    className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-xs font-medium text-gray-700 dark:text-gray-300 transition-colors"
-                    title="View full analysis in modal"
-                  >
-                    View
-                  </button>
+                  <div className="text-xs text-gray-700 dark:text-gray-300">
+                    <div className="mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">Match: </span>
+                      <span className={`font-semibold ${
+                        company.relevanceScore >= 85 ? 'text-green-600 dark:text-green-400' :
+                        company.relevanceScore >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                        'text-yellow-600 dark:text-yellow-400'
+                      }`}>
+                        {company.relevanceScore}%
+                      </span>
+                      <span className="text-gray-600 dark:text-gray-400"> • Career: </span>
+                      <span className={`font-semibold ${
+                        company.careerOpportunity === 'high' ? 'text-green-600 dark:text-green-400' :
+                        company.careerOpportunity === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {company.careerOpportunity.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {company.reason}
+                    </p>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -344,15 +369,14 @@ export default function CompanyEcosystemTableCompact({
         </table>
       </div>
 
-      {/* View Full Analysis Button */}
-      <div className="mt-4 flex justify-center">
-        <button
-          onClick={onViewFull}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium text-sm transition-colors"
-        >
-          <Maximize2 size={16} />
-          View Full Analysis
-        </button>
+      {/* Why This Matters */}
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Understanding the competitive landscape helps you speak intelligently about the market, 
+          identify transferable experience from similar companies, and broaden your job search 
+          to adjacent opportunities. Click <button onClick={onViewFull} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">View Full Analysis</button> for detailed research.
+        </p>
       </div>
     </div>
   );
