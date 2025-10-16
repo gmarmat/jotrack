@@ -136,17 +136,17 @@ export default function CompanyIntelligenceCard({
   const displayCompany = localCompany || company || defaultCompany;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6" data-testid="company-intelligence-card">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="company-intelligence-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <Building2 size={18} className="text-indigo-600" />
           Company Intelligence
         </h3>
         
         <div className="flex items-center gap-2">
           {!isAiPowered && (
-            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
           )}
@@ -160,7 +160,7 @@ export default function CompanyIntelligenceCard({
               promptKind="company" 
               version="v1"
               buttonLabel=""
-              className="px-2 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
             />
             <button
               onClick={() => setShowSourcesModal(true)}
@@ -184,7 +184,7 @@ export default function CompanyIntelligenceCard({
 
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-400">
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -197,9 +197,9 @@ export default function CompanyIntelligenceCard({
       {/* Content */}
       {(!isAnalyzing || company || localCompany) && (<>
       {/* Company Name & Quick Stats */}
-      <div className="mb-4 pb-4 border-b border-gray-200">
-        <h4 className="text-xl font-bold text-gray-900 mb-2">{displayCompany.name}</h4>
-        <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+      <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{displayCompany.name}</h4>
+        <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400">
           {displayCompany.founded && (
             <span>Founded {displayCompany.founded}</span>
           )}
@@ -219,24 +219,24 @@ export default function CompanyIntelligenceCard({
           {/* What They Do */}
           {displayCompany.description && (
             <div>
-              <h5 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-1.5">
                 <Target size={14} className="text-indigo-600" />
                 What They Do
               </h5>
-              <p className="text-sm text-gray-700">{displayCompany.description}</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{displayCompany.description}</p>
             </div>
           )}
 
           {/* Key Facts */}
           {displayCompany.keyFacts && displayCompany.keyFacts.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5">
                 <DollarSign size={14} className="text-green-600" />
                 Key Facts
               </h5>
               <ul className="space-y-1">
                 {displayCompany.keyFacts.map((fact, idx) => (
-                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
                     <span className="text-green-500">•</span>
                     <span>{fact}</span>
                   </li>
@@ -248,16 +248,16 @@ export default function CompanyIntelligenceCard({
           {/* Leadership */}
           {displayCompany.leadership && displayCompany.leadership.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5">
                 <Users size={14} className="text-blue-600" />
                 Leadership
               </h5>
               <ul className="space-y-2">
                 {displayCompany.leadership.map((leader, idx) => (
-                  <li key={idx} className="text-sm text-gray-700">
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300">
                     <span className="font-medium">{leader.name}</span> ({leader.role})
                     {leader.background && (
-                      <span className="text-gray-600"> - {leader.background}</span>
+                      <span className="text-gray-600 dark:text-gray-400"> - {leader.background}</span>
                     )}
                   </li>
                 ))}
@@ -271,13 +271,13 @@ export default function CompanyIntelligenceCard({
           {/* Culture & Values */}
           {displayCompany.culture && displayCompany.culture.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5">
                 <Heart size={14} className="text-pink-600" />
                 Culture & Values
               </h5>
               <ul className="space-y-1">
                 {displayCompany.culture.map((value, idx) => (
-                  <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
                     <span className="text-pink-500">•</span>
                     <span>{value}</span>
                   </li>
@@ -288,32 +288,32 @@ export default function CompanyIntelligenceCard({
 
           {/* Company Principles (New) */}
           <div>
-            <h5 className="text-sm font-semibold text-gray-900 mb-2">Company Principles</h5>
-            <p className="text-xs text-gray-500 italic">Not enough info available</p>
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Company Principles</h5>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
           </div>
 
           {/* Recent News (New) */}
           <div>
-            <h5 className="text-sm font-semibold text-gray-900 mb-2">Recent News (Last 30 days)</h5>
-            <p className="text-xs text-gray-500 italic">Not enough info available</p>
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Recent News (Last 30 days)</h5>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
           </div>
 
           {/* Glassdoor/Culture Keywords (New) */}
           <div>
-            <h5 className="text-sm font-semibold text-gray-900 mb-2">Culture Keywords</h5>
-            <p className="text-xs text-gray-500 italic">Not enough info available</p>
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Culture Keywords</h5>
+            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
           </div>
 
           {/* Competitors */}
           {displayCompany.competitors && displayCompany.competitors.length > 0 && (
             <div>
-              <h5 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5">
                 <TrendingUp size={14} className="text-amber-600" />
                 Key Competitors
               </h5>
               <div className="flex flex-wrap gap-2">
                 {displayCompany.competitors.map((competitor, idx) => (
-                  <span key={idx} className="px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded-md border border-amber-200">
+                  <span key={idx} className="px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-xs rounded-md border border-amber-200 dark:border-amber-800">
                     {competitor}
                   </span>
                 ))}
