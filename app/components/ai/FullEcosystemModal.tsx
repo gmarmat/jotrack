@@ -1,0 +1,540 @@
+'use client';
+
+import { X, Download, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { type EcosystemCompany } from './CompanyEcosystemTable';
+
+interface FullEcosystemModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  companies: EcosystemCompany[];
+  cacheMetadata?: {
+    cached: boolean;
+    cacheAge?: string;
+    cacheExpiresIn?: string;
+  };
+}
+
+/**
+ * Full-screen modal showing all 15+ company data columns
+ * Tabs: Intelligence | Sources | Insights
+ */
+export default function FullEcosystemModal({ 
+  isOpen, 
+  onClose, 
+  companies,
+  cacheMetadata
+}: FullEcosystemModalProps) {
+  const [activeTab, setActiveTab] = useState<'intelligence' | 'sources' | 'insights'>('intelligence');
+  const [selectedCompany, setSelectedCompany] = useState<EcosystemCompany | null>(null);
+
+  if (!isOpen) return null;
+
+  const renderStars = (score: number) => {
+    return '●'.repeat(score) + '○'.repeat(5 - score);
+  };
+
+  const getCareerOpportunityColor = (opportunity: string) => {
+    switch (opportunity) {
+      case 'high': return 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+      case 'medium': return 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+      case 'low': return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
+      default: return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
+    }
+  };
+
+  const getRelevanceColor = (score: number) => {
+    if (score >= 85) return 'text-green-700 dark:text-green-400 font-bold';
+    if (score >= 70) return 'text-blue-700 dark:text-blue-400 font-semibold';
+    if (score >= 60) return 'text-yellow-700 dark:text-yellow-400';
+    return 'text-gray-700 dark:text-gray-400';
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'direct': return '🔴';
+      case 'adjacent': return '🔵';
+      case 'upstream': return '🟣';
+      case 'downstream': return '🟢';
+      case 'complementary': return '🟠';
+      default: return '⚪';
+    }
+  };
+
+  const exportToCSV = () => {
+    // Build CSV content
+    const headers = [
+      'Company', 'Category', 'Employees', 'Industry', 'Location', 'CEO', 
+      'Growth', 'Stability', 'Retention', 'News +', 'News -', 
+      'Skills Current', 'Skills Future', 'Hiring', 'Open Roles',
+      'Relevance', 'Career Fit', 'Confidence', 'Insights'
+    ];
+    
+    const rows = companies.map(c => [
+      c.name,
+      c.category,
+      c.size.employees,
+      `${c.industry.broad} - ${c.industry.specific}`,
+      c.location.headquarters,
+      c.leadership?.ceo || 'N/A',
+      c.careerMetrics.growthScore,
+      c.careerMetrics.stabilityScore,
+      c.careerMetrics.retentionScore,
+      c.recentNews.positive,
+      c.recentNews.negative,
+      c.skillsIntel?.currentHotSkills.join('; ') || 'N/A',
+      c.skillsIntel?.futureSkills?.join('; ') || 'N/A',
+      c.skillsIntel?.hiringTrend || 'unknown',
+      c.skillsIntel?.openRoles || 0,
+      c.relevanceScore,
+      c.careerOpportunity,
+      c.confidence.score,
+      c.insights
+    ]);
+    
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ecosystem-analysis-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {/* Modal Container - 90% viewport */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-[95vw] h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Company Ecosystem - Full Analysis
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {companies.length} companies • 15+ data points per company
+              {cacheMetadata?.cached && (
+                <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">
+                  💰 Cached ({cacheMetadata.cacheAge} ago)
+                </span>
+              )}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+              title="Download as CSV"
+            >
+              <Download size={16} />
+              Export CSV
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Close modal"
+            >
+              <X size={24} className="text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 dark:border-gray-700 px-6">
+          <button
+            onClick={() => setActiveTab('intelligence')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'intelligence'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Intelligence
+          </button>
+          <button
+            onClick={() => setActiveTab('sources')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'sources'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Sources & Research
+          </button>
+          <button
+            onClick={() => setActiveTab('insights')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'insights'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Insights
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-auto p-6">
+          {/* Tab 1: Intelligence - Full Table */}
+          {activeTab === 'intelligence' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead className="sticky top-0 bg-gray-100 dark:bg-gray-800 z-10">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Company</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Category</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Size</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Industry</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">HQ / Region</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">CEO</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Growth</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Stability</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Retention</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">News</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Skills</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Hiring</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Relevance</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Career Fit</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Confidence</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 min-w-[300px]">Insights</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {companies.map((company, idx) => (
+                    <tr 
+                      key={`${company.name}-${idx}`}
+                      className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
+                      onClick={() => setSelectedCompany(company)}
+                    >
+                      {/* Company */}
+                      <td className="px-3 py-3 font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
+                        {company.name}
+                      </td>
+                      
+                      {/* Category */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="flex items-center gap-1">
+                          <span className="text-lg">{getCategoryIcon(company.category)}</span>
+                          <span className="text-xs text-gray-600 dark:text-gray-400">{company.category}</span>
+                        </div>
+                      </td>
+                      
+                      {/* Size */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-gray-900 dark:text-gray-100">{company.size.employees}</div>
+                          <div className="text-gray-500 dark:text-gray-400">{company.size.sizeCategory}</div>
+                        </div>
+                      </td>
+                      
+                      {/* Industry */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-gray-900 dark:text-gray-100">{company.industry.broad}</div>
+                          <div className="text-gray-500 dark:text-gray-400">{company.industry.specific}</div>
+                        </div>
+                      </td>
+                      
+                      {/* Location */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-gray-900 dark:text-gray-100">{company.location.headquarters}</div>
+                          <div className="text-gray-500 dark:text-gray-400">
+                            {company.location.region}
+                            {company.location.isRemote && (
+                              <span className="ml-1 px-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">Remote OK</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* CEO */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-gray-900 dark:text-gray-100">{company.leadership?.ceo || 'N/A'}</div>
+                          <div className="text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                            {company.leadership?.ceoBackground || ''}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* Growth Score */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-orange-600 dark:text-orange-400 font-mono">
+                            {renderStars(company.careerMetrics.growthScore)}
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400">{company.careerMetrics.growthScore}/5</div>
+                        </div>
+                      </td>
+                      
+                      {/* Stability Score */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-blue-600 dark:text-blue-400 font-mono">
+                            {renderStars(company.careerMetrics.stabilityScore)}
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400">{company.careerMetrics.stabilityScore}/5</div>
+                        </div>
+                      </td>
+                      
+                      {/* Retention Score */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-purple-600 dark:text-purple-400 font-mono">
+                            {renderStars(company.careerMetrics.retentionScore)}
+                          </div>
+                          <div className="text-gray-500 dark:text-gray-400">
+                            {company.careerMetrics.avgTenure || 'N/A'}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* News */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs font-medium">
+                          <span className="text-green-600 dark:text-green-400">{company.recentNews.positive}⬆</span>
+                          {' '}
+                          <span className="text-red-600 dark:text-red-400">{company.recentNews.negative}⬇</span>
+                        </div>
+                      </td>
+                      
+                      {/* Skills */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs max-w-[150px]">
+                          <div className="text-gray-900 dark:text-gray-100 truncate">
+                            {company.skillsIntel?.currentHotSkills.slice(0, 3).join(', ') || 'N/A'}
+                          </div>
+                          {company.skillsIntel?.futureSkills && company.skillsIntel.futureSkills.length > 0 && (
+                            <div className="text-gray-500 dark:text-gray-400 truncate">
+                              Future: {company.skillsIntel.futureSkills.slice(0, 2).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      
+                      {/* Hiring */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <div className="text-xs">
+                          <div className="text-gray-900 dark:text-gray-100">
+                            {company.skillsIntel?.hiringTrend === 'growing' ? '↗' : 
+                             company.skillsIntel?.hiringTrend === 'declining' ? '↘' : '→'} 
+                            {' '}{company.skillsIntel?.openRoles || 0}
+                          </div>
+                        </div>
+                      </td>
+                      
+                      {/* Relevance */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <span className={`text-sm ${getRelevanceColor(company.relevanceScore)}`}>
+                          {company.relevanceScore}%
+                        </span>
+                      </td>
+                      
+                      {/* Career Fit */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getCareerOpportunityColor(company.careerOpportunity)}`}>
+                          {company.careerOpportunity.toUpperCase()}
+                        </span>
+                      </td>
+                      
+                      {/* Confidence */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          company.confidence.score === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                          company.confidence.score === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                          'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400'
+                        }`}>
+                          {company.confidence.score.toUpperCase()}
+                        </span>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {company.confidence.percentage}%
+                        </div>
+                      </td>
+                      
+                      {/* Insights */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600 min-w-[300px]">
+                        <p className="text-xs text-gray-700 dark:text-gray-300">
+                          {company.insights}
+                        </p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Tab 2: Sources - Organized by Category */}
+          {activeTab === 'sources' && (
+            <div className="space-y-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                All sources used to gather company intelligence. Click to verify our research.
+              </p>
+
+              {companies.map((company, idx) => (
+                <div key={`${company.name}-sources-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                    {getCategoryIcon(company.category)} {company.name}
+                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                      ({company.sources.length} sources)
+                    </span>
+                  </h4>
+                  
+                  <div className="space-y-2">
+                    {company.sources.map((source, sidx) => (
+                      <div 
+                        key={`${company.name}-source-${sidx}`}
+                        className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-gray-900 rounded"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {source.name}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              source.confidence === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                              source.confidence === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                              'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400'
+                            }`}>
+                              {source.confidence}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {source.category}
+                            </span>
+                          </div>
+                          <a 
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
+                          >
+                            {source.url}
+                            <ExternalLink size={12} />
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tab 3: Insights - Detailed Analysis */}
+          {activeTab === 'insights' && (
+            <div className="space-y-6">
+              {companies.map((company, idx) => (
+                <div key={`${company.name}-insights-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        {getCategoryIcon(company.category)} {company.name}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {company.industry.specific} • {company.size.employees} employees • {company.location.region}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 rounded font-medium ${getCareerOpportunityColor(company.careerOpportunity)}`}>
+                      {company.careerOpportunity.toUpperCase()} FIT
+                    </span>
+                  </div>
+
+                  {/* Insights */}
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Summary:</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{company.insights}</p>
+                    </div>
+
+                    {/* Recent News */}
+                    {company.recentNews.highlights.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          Recent News ({company.recentNews.positive}⬆ {company.recentNews.negative}⬇):
+                        </p>
+                        <ul className="space-y-1">
+                          {company.recentNews.highlights.map((item, hidx) => (
+                            <li key={`${company.name}-news-${hidx}`} className={`text-xs ${
+                              item.startsWith('+') ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                            }`}>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Skills */}
+                    {company.skillsIntel && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Skills in Demand:</p>
+                        <div className="flex gap-4 text-xs">
+                          <div>
+                            <span className="font-medium">Current:</span>{' '}
+                            {company.skillsIntel.currentHotSkills.join(', ')}
+                          </div>
+                          {company.skillsIntel.futureSkills && company.skillsIntel.futureSkills.length > 0 && (
+                            <div>
+                              <span className="font-medium">Future:</span>{' '}
+                              {company.skillsIntel.futureSkills.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Interview Relevance */}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Interview Prep:</p>
+                      <p className="text-xs text-gray-700 dark:text-gray-300">{company.interviewRelevance}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        <strong>Why relevant:</strong> {company.reason}
+                      </p>
+                    </div>
+
+                    {/* Career Metrics */}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Career Metrics:</p>
+                      <div className="grid grid-cols-3 gap-4 text-xs">
+                        <div>
+                          <div className="text-gray-600 dark:text-gray-400">Growth Opportunity</div>
+                          <div className="text-orange-600 dark:text-orange-400 font-semibold">
+                            {renderStars(company.careerMetrics.growthScore)} {company.careerMetrics.growthScore}/5
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-gray-600 dark:text-gray-400">Job Stability</div>
+                          <div className="text-blue-600 dark:text-blue-400 font-semibold">
+                            {renderStars(company.careerMetrics.stabilityScore)} {company.careerMetrics.stabilityScore}/5
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-gray-600 dark:text-gray-400">Retention</div>
+                          <div className="text-purple-600 dark:text-purple-400 font-semibold">
+                            {renderStars(company.careerMetrics.retentionScore)} {company.careerMetrics.retentionScore}/5
+                            {company.careerMetrics.avgTenure && (
+                              <span className="text-gray-500 dark:text-gray-400 ml-1">({company.careerMetrics.avgTenure})</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

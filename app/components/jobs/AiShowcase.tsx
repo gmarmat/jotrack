@@ -9,6 +9,7 @@ import MatchScoreGauge from '@/app/components/ai/MatchScoreGauge';
 import SkillsMatchChart from '@/app/components/ai/SkillsMatchChart';
 import CompanyIntelligenceCard from '@/app/components/ai/CompanyIntelligenceCard';
 import CompanyEcosystemTableCompact from '@/app/components/ai/CompanyEcosystemTableCompact';
+import FullEcosystemModal from '@/app/components/ai/FullEcosystemModal';
 import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
 import FitTable from '@/app/components/coach/tables/FitTable';
 import PromptViewer from '@/app/components/ai/PromptViewer';
@@ -62,6 +63,8 @@ export default function AiShowcase({
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
   const [showCooldownWarning, setShowCooldownWarning] = useState(false);
   const [guardrailMessage, setGuardrailMessage] = useState<string | null>(null);
+  const [showEcosystemModal, setShowEcosystemModal] = useState(false);
+  const [ecosystemCacheMetadata, setEcosystemCacheMetadata] = useState<any>(null);
 
   // Calculate preliminary score on mount
   useEffect(() => {
@@ -375,10 +378,16 @@ export default function AiShowcase({
           isAiPowered={provider === 'remote'}
           onRefresh={() => onRefresh?.('ecosystem')}
           refreshing={isRefreshing}
-          onViewFull={() => {
-            // TODO: Open full modal (Phase 1D)
-            console.log('View full ecosystem modal - coming soon!');
-          }}
+          onViewFull={() => setShowEcosystemModal(true)}
+          cacheMetadata={ecosystemCacheMetadata}
+        />
+
+        {/* Full Ecosystem Modal */}
+        <FullEcosystemModal
+          isOpen={showEcosystemModal}
+          onClose={() => setShowEcosystemModal(false)}
+          companies={aiData?.companyEcosystem || []}
+          cacheMetadata={ecosystemCacheMetadata}
         />
 
         {/* Row 4: Match Matrix - Full Width */}
