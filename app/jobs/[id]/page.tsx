@@ -130,6 +130,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         if (res.ok) {
           const data = await res.json();
           setAnalysisData(data);
+          
+          // Initialize aiData with cached analysis results
+          if (data.companyEcosystem || data.ecosystemMetadata) {
+            setAiData((prev: any) => ({
+              ...prev,
+              companyEcosystem: data.companyEcosystem,
+              ecosystemMetadata: data.ecosystemMetadata,
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch analysis data:', error);

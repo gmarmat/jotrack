@@ -36,6 +36,7 @@ interface AiShowcaseProps {
     peopleInsights?: any;
     companyIntelligence?: any;
     companyEcosystem?: any[];
+    ecosystemMetadata?: any;
     recommendations?: string[];
     sources?: string[];
     provider?: 'local' | 'remote';
@@ -64,7 +65,9 @@ export default function AiShowcase({
   const [showCooldownWarning, setShowCooldownWarning] = useState(false);
   const [guardrailMessage, setGuardrailMessage] = useState<string | null>(null);
   const [showEcosystemModal, setShowEcosystemModal] = useState(false);
-  const [ecosystemCacheMetadata, setEcosystemCacheMetadata] = useState<any>(null);
+  
+  // Use metadata from aiData if available, fallback to local state
+  const ecosystemCacheMetadata = aiData?.ecosystemMetadata || null;
 
   // Calculate preliminary score on mount
   useEffect(() => {
