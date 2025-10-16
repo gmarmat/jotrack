@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people';
+export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals';
 
 interface PromptVariables {
   jobTitle?: string;
@@ -153,6 +153,20 @@ Peers: {{peerUrls}}
 Skip-levels: {{skipLevelUrls}}
 
 Return JSON with profiles array (name, role, background, expertise, communicationStyle, whatThisMeans) and overallInsights object.`,
+
+    ecosystem: `Analyze the company ecosystem for interview prep.
+
+Company: {{companyName}}
+JD: {{jobDescription}}
+
+Return JSON with companies array containing: name, category (direct/adjacent/upstream/downstream/complementary), size, industry, leadership, metrics, news, skills, relevance, insights.`,
+
+    'match-signals': `Evaluate resume-JD match across ATS signals.
+
+JD: {{jobDescription}}
+Resume: {{resumeText}}
+
+Return JSON with signals array (param, weight, score, jdEvidence, resumeEvidence, reasoning), overall score, and category breakdown.`,
   };
 
   return defaults[kind] || `Analyze {{jdText}} and {{resumeText}}`;

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Prompt kind is required' }, { status: 400 });
     }
 
-    const validKinds: PromptKind[] = ['analyze', 'compare', 'improve', 'skillpath', 'persona', 'company', 'people'];
+    const validKinds: PromptKind[] = ['analyze', 'compare', 'improve', 'skillpath', 'persona', 'company', 'people', 'ecosystem', 'match-signals'];
     if (!validKinds.includes(kind)) {
       return NextResponse.json({ error: 'Invalid prompt kind' }, { status: 400 });
     }
