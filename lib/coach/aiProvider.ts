@@ -149,7 +149,7 @@ export async function getAiProviderConfig(): Promise<AiProviderConfig | null> {
   
   if (settings.provider === 'claude') {
     apiKey = settings.claudeKey || settings.apiKey; // Fallback to legacy
-    model = settings.claudeModel || settings.model || 'claude-3-5-sonnet-20241022';
+    model = settings.claudeModel || settings.model || 'claude-3-5-sonnet-20240620';
   } else {
     apiKey = settings.openaiKey || settings.apiKey; // Fallback to legacy
     model = settings.openaiModel || settings.model || 'gpt-4o-mini';
