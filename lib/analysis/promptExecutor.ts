@@ -4,7 +4,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { callAiProvider } from '@/lib/coach/aiProvider';
-import { getVariant } from '@/lib/extraction/variantRepository';
+import { getVariant } from '@/lib/extraction/extractionEngine';
 import type { SourceType } from '@/db/schema';
 
 export interface PromptExecutionParams {
