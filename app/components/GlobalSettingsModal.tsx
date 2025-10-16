@@ -135,10 +135,15 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
 // AI & Privacy Tab
 function AITab() {
   const [networkEnabled, setNetworkEnabled] = useState(false);
-  const [provider, setProvider] = useState('openai');
-  const [model, setModel] = useState('gpt-4o-mini');
+  const [provider, setProvider] = useState('claude');
+  const [model, setModel] = useState('claude-3-5-sonnet-20241022');
   const [apiKey, setApiKey] = useState('');
+  const [tavilyKey, setTavilyKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [openaiModel, setOpenaiModel] = useState('gpt-4o-mini');
   const [hasExistingKey, setHasExistingKey] = useState(false);
+  const [hasExistingTavilyKey, setHasExistingTavilyKey] = useState(false);
+  const [hasExistingOpenaiKey, setHasExistingOpenaiKey] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -151,10 +156,13 @@ function AITab() {
         if (res.ok) {
           const data = await res.json();
           setNetworkEnabled(data.networkEnabled || false);
-          setProvider(data.provider || 'openai');
-          setModel(data.model || 'gpt-4o-mini');
+          setProvider(data.provider || 'claude');
+          setModel(data.model || 'claude-3-5-sonnet-20241022');
+          setOpenaiModel(data.openaiModel || 'gpt-4o-mini');
           setHasExistingKey(!!data.hasApiKey);
-          // Don't set the actual API key for security
+          setHasExistingTavilyKey(!!data.hasTavilyKey);
+          setHasExistingOpenaiKey(!!data.hasOpenaiKey);
+          // Don't set the actual API keys for security
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
@@ -169,11 +177,27 @@ function AITab() {
       await fetch('/api/ai/keyvault/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model, apiKey: apiKey || undefined, networkEnabled }),
+        body: JSON.stringify({ 
+          provider, 
+          model, 
+          apiKey: apiKey || undefined,
+          tavilyKey: tavilyKey || undefined,
+          openaiKey: openaiKey || undefined,
+          openaiModel,
+          networkEnabled 
+        }),
       });
       if (apiKey) {
         setHasExistingKey(true);
         setApiKey(''); // Clear input after saving
+      }
+      if (tavilyKey) {
+        setHasExistingTavilyKey(true);
+        setTavilyKey('');
+      }
+      if (openaiKey) {
+        setHasExistingOpenaiKey(true);
+        setOpenaiKey('');
       }
       setTestResult({ success: true, message: 'Settings saved successfully!' });
     } catch (error) {
@@ -207,13 +231,21 @@ function AITab() {
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* Header with explanation */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           AI Configuration
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Configure AI analysis for Coach Mode. Keys are stored securely and never sent to the browser.
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+          JoTrack uses a <strong>two-tier AI system</strong> for maximum accuracy:
+        </p>
+        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1 ml-4">
+          <li>• <strong>Tavily</strong> - Searches the web for real-time company data (CEO, funding, news)</li>
+          <li>• <strong>Claude/OpenAI</strong> - Analyzes documents and generates insights</li>
+        </ul>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          All keys stored encrypted, never sent to browser. Cost: ~$0.24 per job analysis.
         </p>
       </div>
 
@@ -240,87 +272,194 @@ function AITab() {
 
       {networkEnabled && (
         <>
-          {/* Provider */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Provider</label>
-            <select
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              data-testid="ai-provider"
-            >
-              <option value="openai">OpenAI</option>
-            </select>
-          </div>
+          {/* Section 1: Primary Analysis Engine */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                🧠 Primary Analysis Engine
+              </h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Analyzes resumes, JDs, and generates insights. Recommended: Claude for best accuracy.
+              </p>
+            </div>
 
-          {/* Model */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Model</label>
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              data-testid="ai-model"
-            >
-              <option value="gpt-4o-mini">GPT-4o Mini (Recommended - Fast & Cheap)</option>
-              <option value="gpt-4o">GPT-4o (Balanced)</option>
-              <option value="o1-preview">GPT-o1 Preview (Best Reasoning)</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo (Legacy)</option>
-            </select>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              GPT-4o Mini is recommended for best cost/performance ratio
-            </p>
-          </div>
+            {/* Provider Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Provider</label>
+              <select
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                data-testid="ai-provider"
+              >
+                <option value="claude">Claude (Anthropic) - Recommended ⭐</option>
+                <option value="openai">OpenAI (Fallback)</option>
+              </select>
+            </div>
 
-          {/* API Key */}
-          <div>
-            <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">API Key</label>
-            {hasExistingKey && !apiKey ? (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
-                  ••••••••••••••••••••••••••
-                </div>
-                <button
-                  onClick={() => setApiKey('')}
-                  className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            {/* Claude Model Selection */}
+            {provider === 'claude' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude Model</label>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  data-testid="claude-model"
                 >
-                  Change
-                </button>
+                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Recommended) - ~$0.03/job ⭐</option>
+                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Budget) - ~$0.01/job 💰</option>
+                  <option value="claude-3-opus-20240229">Claude 3 Opus (Premium) - ~$0.15/job 💎</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Sonnet = Best balance of quality and cost. Haiku = Cheaper but less accurate.
+                </p>
               </div>
-            ) : (
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder={hasExistingKey ? "Enter new API key to update" : "sk-..."}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                data-testid="ai-key"
-              />
             )}
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {hasExistingKey 
-                ? '✓ API key is saved and encrypted. You can test the connection anytime.' 
-                : 'Your API key is encrypted and stored securely on the server'}
-            </p>
+
+            {/* OpenAI Model Selection */}
+            {provider === 'openai' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">OpenAI Model</label>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  data-testid="ai-model"
+                >
+                  <option value="gpt-4o-mini">GPT-4o Mini (Budget) - ~$0.02/job 💰</option>
+                  <option value="gpt-4o">GPT-4o (Balanced) - ~$0.10/job</option>
+                  <option value="o1-preview">GPT-o1 Preview (Reasoning) - ~$1.00/job</option>
+                </select>
+              </div>
+            )}
+
+            {/* API Key for Selected Provider */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+                {provider === 'claude' ? 'Claude API Key' : 'OpenAI API Key'}
+              </label>
+              {hasExistingKey && !apiKey ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
+                    ••••••••••••••••••••••••••
+                  </div>
+                  <button
+                    onClick={() => setApiKey('')}
+                    className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={provider === 'claude' ? 'sk-ant-...' : 'sk-proj-...'}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  data-testid="ai-key"
+                />
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {provider === 'claude' 
+                  ? 'Get your key at console.anthropic.com → Pay-as-you-go, no monthly fee'
+                  : 'Get your key at platform.openai.com/api-keys'}
+              </p>
+            </div>
+          </div>
+
+          {/* Section 2: Web Search Engine (Tavily) */}
+          <div className="border border-emerald-200 dark:border-emerald-700 rounded-lg p-4 space-y-4 bg-emerald-50/30 dark:bg-emerald-900/10">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                🌐 Web Search (Required for Real Data)
+              </h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Tavily searches the web for current company data (CEO, funding, news from Oct 2025). Without this, analysis uses AI training data only (may be outdated).
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Tavily API Key</label>
+              {hasExistingTavilyKey && !tavilyKey ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
+                    ••••••••••••••••••••••••••
+                  </div>
+                  <button
+                    onClick={() => setTavilyKey('')}
+                    className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="password"
+                  value={tavilyKey}
+                  onChange={(e) => setTavilyKey(e.target.value)}
+                  placeholder="tvly-..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  data-testid="tavily-key"
+                />
+              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Get free key at <span className="font-medium">app.tavily.com</span> • Free tier: 1000 searches (200 jobs) • Cost after: ~$0.01/job
+              </p>
+            </div>
+          </div>
+
+          {/* Cost Estimate */}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">💰 Estimated Cost Per Job</h4>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-gray-600 dark:text-gray-400">Analysis Engine:</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
+                  {provider === 'claude' 
+                    ? model.includes('sonnet') ? '~$0.03' : model.includes('haiku') ? '~$0.01' : '~$0.15'
+                    : model.includes('mini') ? '~$0.02' : '~$0.10'
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600 dark:text-gray-400">Web Search:</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
+                  {hasExistingTavilyKey || tavilyKey ? '~$0.01' : '$0 (no search)'}
+                </p>
+              </div>
+              <div className="col-span-2 pt-2 border-t border-purple-200 dark:border-purple-800">
+                <p className="text-gray-600 dark:text-gray-400">Total per job:</p>
+                <p className="text-lg font-bold text-purple-900 dark:text-purple-300">
+                  ~${(
+                    (provider === 'claude' 
+                      ? model.includes('sonnet') ? 0.03 : model.includes('haiku') ? 0.01 : 0.15
+                      : model.includes('mini') ? 0.02 : 0.10) +
+                    (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
+                  ).toFixed(2)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  50 jobs/year = ${(
+                    ((provider === 'claude' 
+                      ? model.includes('sonnet') ? 0.03 : model.includes('haiku') ? 0.01 : 0.15
+                      : model.includes('mini') ? 0.02 : 0.10) +
+                    (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
+                  ) * 50).toFixed(2)} (vs $500+ interview coach!)
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Test & Save */}
           <div className="flex gap-3">
             <button
-              onClick={handleTest}
-              disabled={isTesting || (!apiKey && !hasExistingKey)}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              data-testid="test-connection-btn"
-            >
-              {isTesting ? 'Testing...' : 'Test Connection'}
-            </button>
-            <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               data-testid="save-settings-btn"
             >
-              {isSaving ? 'Saving...' : 'Save Settings'}
+              {isSaving ? 'Saving...' : 'Save All Settings'}
             </button>
           </div>
 
