@@ -180,6 +180,7 @@ async function checkIfVariantsExist(
 ): Promise<boolean> {
   for (const attachment of activeAttachments) {
     // Check if ai_optimized variant exists
+    // Note: Old variants use source_type='attachment', new ones use specific types
     const variant = await db
       .select()
       .from(artifactVariants)
@@ -188,6 +189,7 @@ async function checkIfVariantsExist(
           eq(artifactVariants.sourceId, attachment.id),
           eq(artifactVariants.variantType, 'ai_optimized'),
           eq(artifactVariants.isActive, true)
+          // Don't filter by source_type - accept any (backward compat)
         )
       )
       .limit(1);
