@@ -12,8 +12,10 @@ import AiShowcase from '@/app/components/jobs/AiShowcase';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
+import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
+import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
@@ -49,6 +51,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     significance?: 'none' | 'minor' | 'major';
   }[] | null>(null);
   
+  // v2.7: Data Status Panel (always visible, collapsible)
+  const [dataStatusExpanded, setDataStatusExpanded] = useState(true);
+  const [variantViewerOpen, setVariantViewerOpen] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState<{
+    id: string;
+    filename: string;
+    kind: string;
+  } | null>(null);
+  const [attachmentsList, setAttachmentsList] = useState<any[]>([]);
+  
   // ESC key handler for attachments modal
   useEffect(() => {
     if (!showAttachmentsModal) return;
@@ -81,6 +93,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         const attData = await attRes.json();
         const attachments = attData.attachments?.filter((a: any) => !a.deletedAt) ?? [];
         setAttachmentCount(attachments.length);
+        setAttachmentsList(attachments);
         
         // Find JD attachment
         const jdAttachment = attachments.find((a: any) => a.kind === 'jd');
@@ -388,8 +401,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* v2.7: Smart 4-State Banner System */}
-        {!analyzeSuccess && stalenessInfo && stalenessInfo.isStale && (
+        {/* v2.7: Persistent Data Status Panel (Always Visible, Collapsible) */}
+        {stalenessInfo && (
           <div
             className={`p-4 rounded-lg border-l-4 ${
               stalenessInfo.severity === 'no_variants'
@@ -400,23 +413,38 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-500 dark:border-orange-600'
                 : stalenessInfo.severity === 'never_analyzed'
                 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-600'
+                : stalenessInfo.severity === 'fresh'
+                ? 'bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-600'
                 : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500 dark:border-yellow-600'
             }`}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
+                  <button
+                    onClick={() => setDataStatusExpanded(!dataStatusExpanded)}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                    title={dataStatusExpanded ? 'Collapse' : 'Expand'}
+                  >
+                    {dataStatusExpanded ? (
+                      <ChevronUp size={20} className="text-gray-600 dark:text-gray-400" />
+                    ) : (
+                      <ChevronDown size={20} className="text-gray-600 dark:text-gray-400" />
+                    )}
+                  </button>
                   <span className="text-lg">
                     {stalenessInfo.severity === 'no_variants' ? '📄' :
                      stalenessInfo.severity === 'variants_fresh' ? '🌟' :
                      stalenessInfo.severity === 'major' ? '⚠️' : 
-                     stalenessInfo.severity === 'never_analyzed' ? '🌟' : 'ℹ️'}
+                     stalenessInfo.severity === 'never_analyzed' ? '🌟' : 
+                     stalenessInfo.severity === 'fresh' ? '✅' : 'ℹ️'}
                   </span>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {stalenessInfo.severity === 'no_variants' ? 'Extract Data First' :
                      stalenessInfo.severity === 'variants_fresh' ? 'Ready to Analyze' :
                      stalenessInfo.severity === 'major' ? 'Major Changes Detected' :
                      stalenessInfo.severity === 'never_analyzed' ? 'Ready to Analyze' :
+                     stalenessInfo.severity === 'fresh' ? 'Analysis Up to Date' :
                      'Updates Available'}
                   </p>
                 </div>
@@ -545,6 +573,58 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
             
+            {/* Collapsible Document List with View Variants Buttons */}
+            {dataStatusExpanded && attachmentsList.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  Documents ({attachmentsList.length})
+                </p>
+                <div className="space-y-2">
+                  {attachmentsList.map((att: any) => (
+                    <div
+                      key={att.id}
+                      className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">
+                          {att.kind === 'resume' ? '📄' :
+                           att.kind === 'jd' ? '💼' :
+                           att.kind === 'cover_letter' ? '✉️' : '📎'}
+                        </span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {att.filename}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {att.kind} • v{att.version}
+                            {att.isActive && (
+                              <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">
+                                Active
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedAttachment({
+                            id: att.id,
+                            filename: att.filename,
+                            kind: att.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                      >
+                        <Eye size={16} />
+                        View Variants
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Error messages */}
             {refreshError && (
               <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded text-sm text-red-800 dark:text-red-300">
@@ -645,6 +725,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* v2.7: Variant Viewer Modal */}
+      {selectedAttachment && (
+        <VariantViewerModal
+          isOpen={variantViewerOpen}
+          onClose={() => {
+            setVariantViewerOpen(false);
+            setSelectedAttachment(null);
+          }}
+          attachmentId={selectedAttachment.id}
+          filename={selectedAttachment.filename}
+          kind={selectedAttachment.kind}
+        />
       )}
     </main>
   );
