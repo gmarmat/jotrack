@@ -132,11 +132,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           setAnalysisData(data);
           
           // Initialize aiData with cached analysis results
-          if (data.companyEcosystem || data.ecosystemMetadata) {
+          const hasAnalysisData = data.companyEcosystem || data.companyIntelligence;
+          
+          if (hasAnalysisData) {
             setAiData((prev: any) => ({
               ...prev,
-              companyEcosystem: data.companyEcosystem,
-              ecosystemMetadata: data.ecosystemMetadata,
+              companyEcosystem: data.companyEcosystem || prev?.companyEcosystem,
+              ecosystemMetadata: data.ecosystemMetadata || prev?.ecosystemMetadata,
+              companyIntelligence: data.companyIntelligence || prev?.companyIntelligence,
+              companyIntelMetadata: data.companyIntelMetadata || prev?.companyIntelMetadata,
             }));
           }
         }
