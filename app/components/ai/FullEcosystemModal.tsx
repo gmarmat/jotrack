@@ -34,11 +34,12 @@ export default function FullEcosystemModal({
     return '●'.repeat(score) + '○'.repeat(5 - score);
   };
 
-  const getCareerOpportunityColor = (opportunity: string) => {
-    switch (opportunity) {
-      case 'high': return 'text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
-      case 'medium': return 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
-      case 'low': return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
+  const getInterviewPrepColor = (value: string) => {
+    switch (value) {
+      case 'very-likely': return 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
+      case 'likely': return 'text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30';
+      case 'possible': return 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
+      case 'unlikely': return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
       default: return 'text-gray-700 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30';
     }
   };
@@ -201,7 +202,7 @@ export default function FullEcosystemModal({
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Skills</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Hiring</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Relevance</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Career Fit</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Interview Prep</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Confidence</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 min-w-[300px]">Insights</th>
                   </tr>
@@ -338,10 +339,10 @@ export default function FullEcosystemModal({
                         </span>
                       </td>
                       
-                      {/* Career Fit */}
+                      {/* Interview Prep */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getCareerOpportunityColor(company.careerOpportunity)}`}>
-                          {company.careerOpportunity.toUpperCase()}
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getInterviewPrepColor(company.interviewPrepValue)}`}>
+                          {company.interviewPrepValue.toUpperCase().replace('-', ' ')}
                         </span>
                       </td>
                       
@@ -442,8 +443,8 @@ export default function FullEcosystemModal({
                         {company.industry.specific} • {company.size.employees} employees • {company.location.region}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded font-medium ${getCareerOpportunityColor(company.careerOpportunity)}`}>
-                      {company.careerOpportunity.toUpperCase()} FIT
+                    <span className={`px-3 py-1 rounded text-xs font-medium ${getInterviewPrepColor(company.interviewPrepValue)}`}>
+                      {company.interviewPrepValue.toUpperCase().replace('-', ' ')}
                     </span>
                   </div>
 

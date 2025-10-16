@@ -1,7 +1,7 @@
 # Company Ecosystem Matrix v1.0
 
 ## Your Task
-Identify and score companies in this company's ecosystem for career exploration and interview preparation.
+Identify and analyze companies in this company's ecosystem to help the user prepare for interviews by understanding competitive context, market dynamics, and industry trends.
 
 ## Input Data
 You will receive:
@@ -59,9 +59,9 @@ Return a JSON object with this exact structure:
         "openRoles": 47
       },
       "relevanceScore": 95,
-      "reason": "Direct competitor with similar product features",
-      "careerOpportunity": "high",
-      "interviewRelevance": "Very likely - main competitor comparison",
+      "reason": "Direct competitor with similar product features and tech stack",
+      "interviewPrepValue": "very-likely",
+      "interviewRelevance": "Main competitor - prepare product differentiation, technical architecture, scaling challenges",
       "confidence": {
         "score": "high",
         "percentage": 92
@@ -135,23 +135,39 @@ Return a JSON object with this exact structure:
 - **60-69**: Ecosystem player (indirect connection)
 - **50-59**: Tangential (weak connection)
 
-### 3. Career Opportunity Assessment
-- **High**: Similar role exists, good hiring, strong growth
-- **Medium**: Role exists but competitive or slower growth
-- **Low**: Limited opportunities or declining market
+### 3. Interview Prep Value Assessment
+- **Very Likely**: Will almost certainly be discussed (main competitors, major players)
+- **Likely**: Good chance of coming up (adjacent markets, partnerships)
+- **Possible**: Might be mentioned (complementary products, upstream/downstream)
+- **Unlikely**: Rarely discussed (tangential connections)
 
-### 4. Interview Relevance
-- Flag companies likely to be discussed in interviews
-- "How do you compare to [Competitor X]?"
-- "Have you considered [Partner Y]?"
+### 4. Interview Talking Points
+- What to prepare for each company (product comparison, market position, etc.)
+- Likely interview questions: "How do you compare to X?" "What makes you different from Y?"
+- Smart responses the user can craft based on this research
+
+### 5. Quick Insights (2-3 Sentences)
+Generate a concise summary for each company focused on:
+- **Market position**: Leader, challenger, niche player?
+- **Notable characteristics**: Culture, tech stack, recent momentum
+- **Interview prep angle**: What specific points to prepare for this company
+
+**Format**: 2-3 sentences, max 200 characters. Interview-focused, not career-hunting focused.
+
+**Good Example**: 
+"Market leader in collaborative workspace sector with strong product-market fit and innovative design culture. Known for real-time collaboration tech similar to target company. Interview prep: Prepare to discuss product differentiation and technical architecture choices."
+
+**Bad Example** (too career-focused):
+"Great career opportunity with competitive compensation. Apply now as they're hiring 47 roles. High growth potential."
 
 ## Strict Rules
 
 1. **Research Quality**: Use your knowledge of tech industry, public companies, recent news
 2. **No Hallucination**: Only include companies you're confident exist
 3. **Realistic Scores**: Most companies should be 60-85%, not 95%+
-4. **Career Focus**: Prioritize companies user might apply to next
-5. **Interview Prep**: Flag companies interviewer will likely mention
+4. **Interview Prep Focus**: This is for interview preparation, NOT job hunting
+5. **Actionable Insights**: Help user understand market context and prepare smart responses
+6. **Concise**: Insights must be 2-3 sentences max, focused on interview value
 
 ## Example Output (10 Companies for MVP)
 
@@ -207,8 +223,8 @@ Return a JSON object with this exact structure:
       },
       "relevanceScore": 95,
       "reason": "Direct competitor in collaborative workspace market with similar product features and tech stack",
-      "careerOpportunity": "high",
-      "interviewRelevance": "Very likely - main competitor comparison will be discussed",
+      "interviewPrepValue": "very-likely",
+      "interviewRelevance": "Main competitor - prepare to discuss product differentiation, why customers choose one over the other, technical architecture differences",
       "confidence": {
         "score": "high",
         "percentage": 92

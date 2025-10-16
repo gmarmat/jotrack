@@ -74,13 +74,13 @@ export default function CompanyEcosystemTableCompact({
       },
       relevanceScore: 95,
       reason: 'Direct competitor in collaborative workspace market with similar product features',
-      careerOpportunity: 'high',
-      interviewRelevance: 'Very likely - main competitor comparison',
+      interviewPrepValue: 'very-likely',
+      interviewRelevance: 'Main competitor - prepare product differentiation points',
       confidence: {
         score: 'high',
         percentage: 92
       },
-      insights: 'Strong growth company with excellent market position. High hiring activity and competitive compensation. Great career opportunity with proven product-market fit. Strong technical culture with emphasis on design.',
+      insights: 'Market leader in collaborative workspace sector with strong product-market fit and innovative design culture. Known for real-time collaboration tech similar to target company. Interview prep: Prepare to discuss product differentiation, technical architecture choices, and how you\'d approach scaling challenges they\'ve solved.',
       sources: [
         { name: 'LinkedIn', url: 'https://linkedin.com/company/notion', category: 'company', confidence: 'high' },
         { name: 'TechCrunch', url: 'https://techcrunch.com/notion', category: 'news', confidence: 'high' }
@@ -187,36 +187,35 @@ export default function CompanyEcosystemTableCompact({
         </div>
       </div>
 
-      {/* Explanation Section - Using Standard Component */}
+      {/* Explanation Section - Interview Prep Focus */}
       <ExplanationSection title="How We Analyze the Ecosystem">
         <p>
-          We analyze companies across 15+ dimensions to help you understand the 
-          competitive landscape, identify career opportunities, and prepare for interviews.
+          We research the competitive landscape to help you understand the market, speak 
+          intelligently about industry trends, and demonstrate market awareness in your interviews.
         </p>
         
         <div>
           <p className="font-medium mb-1">Our Analysis Methodology:</p>
           <ul className="space-y-1 text-xs">
             <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
-            <li>• 8 Data Sources: Company profiles, news, hiring trends, reviews, forums</li>
-            <li>• 15+ Signals: Size, growth, stability, culture, news, skills demand, hiring</li>
-            <li>• Cached: 7 days (refreshes when "Analyze Ecosystem" button clicked)</li>
+            <li>• 15+ Signals: Size, industry, market momentum, recent news, skills trends, culture</li>
+            <li>• AI + Public Data: Company profiles, news, reviews, industry analysis</li>
+            <li>• Cached: 7 days (click "Analyze Ecosystem" to refresh)</li>
           </ul>
         </div>
         
         <div>
           <p className="font-medium mb-1">What Each Column Means:</p>
           <ul className="space-y-1 text-xs">
-            <li>• <strong>News Signals</strong>: Positive/negative events in last 60 days (3⬆ 1⬇ format)</li>
-            <li>• <strong>Growth Score</strong>: Career growth opportunity within company (1-5 scale, based on promotions, tenure, reviews)</li>
-            <li>• <strong>Hiring Trend</strong>: Open roles + direction (↗growing, ↘declining, →stable)</li>
-            <li>• <strong>Confidence</strong>: Data quality based on source reliability (HIGH/MEDIUM/LOW)</li>
+            <li>• <strong>Relevance</strong>: Similarity to target company (0-100%). Higher = more similar product/market.</li>
+            <li>• <strong>Why Relevant</strong>: Specific reason this company matters for your interview prep.</li>
+            <li>• <strong>Quick Insights</strong>: Summary of market trends, company culture, and interview talking points.</li>
           </ul>
         </div>
         
         <p className="text-xs text-gray-600 dark:text-gray-400">
-          Note: Data collected once and cached for 7 days to save costs. Sources shown 
-          in detailed view. Growth score = internal career growth opportunity (not company revenue growth).
+          Note: This helps you prepare for interviews, not find jobs. Full details (news, growth, 
+          hiring, etc.) in modal. Click <span className="font-medium">View Full Analysis (🔍)</span> in header.
         </p>
       </ExplanationSection>
 
@@ -245,26 +244,23 @@ export default function CompanyEcosystemTableCompact({
         )}
       </div>
 
-      {/* Compact Table */}
+      {/* Compact Table - Interview Prep Focused */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[15%]">Company</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">Type</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[12%]">Size/Industry</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[15%]">Size/Industry</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">
                 <span 
-                  className="cursor-help border-b border-dotted border-gray-400" 
-                  title="Career growth opportunity within company (1-5 scale). Based on promotion rates, avg tenure, and employee reviews. NOT company revenue growth."
+                  className="cursor-help border-b border-dotted border-gray-400 dark:border-gray-500" 
+                  title="Relevance to target company (0-100%). Higher = more similar product/market. Useful for understanding competitive context, not guaranteed interview topic."
                 >
-                  Growth
+                  Relevance
                 </span>
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[10%]">News</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Hiring</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[8%]">Confidence</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[25%]">Key Insights</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[25%]">Why Relevant</th>
+              <th className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300 w-[35%]">Quick Insights</th>
             </tr>
           </thead>
           <tbody>
@@ -275,18 +271,11 @@ export default function CompanyEcosystemTableCompact({
               >
                 {/* Company */}
                 <td className="px-3 py-3">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {company.name}
-                  </div>
-                </td>
-                
-                {/* Type */}
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     <span className="text-lg">{getCategoryIcon(company.category)}</span>
-                    <span className="text-xs text-gray-600 dark:text-gray-400">
-                      {getCategoryLabel(company.category)}
-                    </span>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      {company.name}
+                    </div>
                   </div>
                 </td>
                 
@@ -298,70 +287,29 @@ export default function CompanyEcosystemTableCompact({
                   </div>
                 </td>
                 
-                {/* Growth */}
+                {/* Relevance */}
                 <td className="px-3 py-3">
-                  <div className="text-xs">
-                    <div className="text-orange-600 dark:text-orange-400">
-                      {renderStars(company.careerMetrics.growthScore)}
-                    </div>
-                    <div className="text-gray-500 dark:text-gray-400">
-                      {company.careerMetrics.growthScore}/5
-                    </div>
-                  </div>
+                  <span className={`text-lg font-bold ${
+                    company.relevanceScore >= 85 ? 'text-green-600 dark:text-green-400' :
+                    company.relevanceScore >= 70 ? 'text-blue-600 dark:text-blue-400' :
+                    'text-yellow-600 dark:text-yellow-400'
+                  }`}>
+                    {company.relevanceScore}%
+                  </span>
                 </td>
                 
-                {/* News */}
+                {/* Why Relevant */}
                 <td className="px-3 py-3">
-                  <div 
-                    className="text-xs font-medium cursor-help" 
-                    title={`${company.recentNews.positive} positive, ${company.recentNews.negative} negative news items (60 days)`}
-                  >
-                    <span className="text-green-600 dark:text-green-400">{company.recentNews.positive}⬆</span>
-                    {' '}
-                    <span className="text-red-600 dark:text-red-400">{company.recentNews.negative}⬇</span>
-                  </div>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">
+                    {company.reason}
+                  </p>
                 </td>
                 
-                {/* Hiring */}
+                {/* Quick Insights */}
                 <td className="px-3 py-3">
-                  <div className="text-xs">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">
-                      {getHiringTrendIcon(company.skillsIntel?.hiringTrend || 'unknown')}{' '}
-                      {company.skillsIntel?.openRoles || 0}
-                    </div>
-                  </div>
-                </td>
-                
-                {/* Confidence */}
-                <td className="px-3 py-3">
-                  {getConfidenceBadge(company.confidence)}
-                </td>
-                
-                {/* Key Insights */}
-                <td className="px-3 py-3">
-                  <div className="text-xs text-gray-700 dark:text-gray-300">
-                    <div className="mb-1">
-                      <span className="text-gray-600 dark:text-gray-400">Match: </span>
-                      <span className={`font-semibold ${
-                        company.relevanceScore >= 85 ? 'text-green-600 dark:text-green-400' :
-                        company.relevanceScore >= 70 ? 'text-blue-600 dark:text-blue-400' :
-                        'text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        {company.relevanceScore}%
-                      </span>
-                      <span className="text-gray-600 dark:text-gray-400"> • Career: </span>
-                      <span className={`font-semibold ${
-                        company.careerOpportunity === 'high' ? 'text-green-600 dark:text-green-400' :
-                        company.careerOpportunity === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
-                        'text-gray-600 dark:text-gray-400'
-                      }`}>
-                        {company.careerOpportunity.toUpperCase()}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                      {company.reason}
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-3">
+                    {company.insights}
+                  </p>
                 </td>
               </tr>
             ))}
@@ -371,11 +319,11 @@ export default function CompanyEcosystemTableCompact({
 
       {/* Why This Matters */}
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters for interview prep:</p>
         <p className="text-xs text-gray-600 dark:text-gray-400">
-          Understanding the competitive landscape helps you speak intelligently about the market, 
-          identify transferable experience from similar companies, and broaden your job search 
-          to adjacent opportunities. Click <button onClick={onViewFull} className="text-blue-600 dark:text-blue-400 hover:underline font-medium">View Full Analysis</button> for detailed research.
+          Understanding competitor strengths, market trends, and industry dynamics helps you speak 
+          intelligently about the competitive landscape and demonstrate market awareness. Use insights 
+          to craft informed questions and thoughtful responses about the company's market position.
         </p>
       </div>
     </div>

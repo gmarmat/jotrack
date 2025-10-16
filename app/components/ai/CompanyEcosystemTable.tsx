@@ -56,11 +56,11 @@ export interface EcosystemCompany {
     openRoles: number | null;
   };
   
-  // Match & Relevance (Existing)
-  relevanceScore: number; // 0-100
-  reason: string; // One sentence
-  careerOpportunity: 'high' | 'medium' | 'low';
-  interviewRelevance: string;
+  // Match & Relevance (Interview Prep Context)
+  relevanceScore: number; // 0-100 - Similarity to target company
+  reason: string; // Why this company is relevant (2 lines max)
+  interviewPrepValue: 'very-likely' | 'likely' | 'possible' | 'unlikely'; // How likely to be discussed
+  interviewRelevance: string; // What to prepare for this company
   
   // Confidence & Sources (MVP)
   confidence: {
