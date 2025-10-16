@@ -6,6 +6,7 @@ import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
+import AnalysisExplanation from '@/app/components/ui/AnalysisExplanation';
 import { ATS_STANDARD_SIGNALS, DYNAMIC_SIGNALS_EXAMPLE } from '@/lib/matchSignals';
 
 interface FitDimension {
@@ -30,7 +31,6 @@ interface FitTableProps {
 }
 
 export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson }: FitTableProps) {
-  const [showExplain, setShowExplain] = useState(false);
   const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
@@ -140,44 +140,6 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
           </div>
         </div>
       </div>
-
-      {/* Explain Accordion */}
-      <button
-        onClick={() => setShowExplain(!showExplain)}
-        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 mb-4"
-        data-testid="fit-explain"
-      >
-        {showExplain ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        <span>Explain: How we calculated this</span>
-      </button>
-
-      {showExplain && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-2 mb-2">
-            <Info size={16} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              <p className="font-semibold mb-2">Understanding Your Match Signals:</p>
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <Settings size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
-                  <p><strong>30 ATS Standard Signals:</strong> Universal criteria every ATS looks for (Required Skills Match, Years of Experience, Leadership, Cultural Fit, etc.) - applicable to ANY job.</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Sparkles size={14} className="text-purple-600 mt-0.5 flex-shrink-0" />
-                  <p><strong>Up to 30 Dynamic Signals:</strong> AI-generated signals specific to THIS job (e.g., "Python Programming", "B2B SaaS Experience", "HIPAA Compliance", "Figma Proficiency").</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="flex gap-0.5 mt-0.5">
-                    <Settings size={14} className="text-blue-600 flex-shrink-0" />
-                    <Sparkles size={14} className="text-purple-600 flex-shrink-0" />
-                  </div>
-                  <p><strong>Dual Classification:</strong> When an ATS standard signal is ALSO heavily emphasized in your JD, it shows both icons - these are extra important!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Expand All Button */}
       <div className="mb-3 flex justify-end">
@@ -329,13 +291,44 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
 
       </div>
 
-      {/* Why This Matters */}
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            The fit matrix evaluates your profile against up to 50 job-relevant signals: 30 standard ATS parameters plus up to 10 dynamically generated signals specific to this role. 
-            Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
-          </p>
+      {/* Standard Analysis Explanation - 2nd Last Position */}
+      <AnalysisExplanation>
+        <p>
+          We evaluate your resume against job-specific signals to calculate an overall match score. 
+          This helps you understand your strengths and identify areas to improve.
+        </p>
+        
+        <div>
+          <p className="font-semibold mb-2">Our Analysis Methodology:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• <strong><Settings size={12} className="inline text-blue-600" /> 30 ATS Standard Signals:</strong> Universal criteria (Skills, Experience, Leadership, Culture Fit) - applicable to ANY job</li>
+            <li>• <strong><Sparkles size={12} className="inline text-purple-600" /> Up to 30 Dynamic Signals:</strong> Job-specific requirements from THIS JD (e.g., "Python", "B2B SaaS", "Figma")</li>
+            <li>• <strong><Settings size={12} className="inline text-blue-600" /><Sparkles size={12} className="inline text-purple-600" /> Dual Classification:</strong> When ATS signal is ALSO in JD, shows both icons (extra important!)</li>
+            <li>• Evidence-Based: Each score backed by specific resume/JD text</li>
+          </ul>
+        </div>
+        
+        <div>
+          <p className="font-semibold mb-2">What Each Score Means:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• <strong>Signal Score</strong>: How well you match this requirement (0-100%)</li>
+            <li>• <strong>Weight</strong>: How important this signal is for this role</li>
+            <li>• <strong>Overall</strong>: Weighted average of all signals = your match %</li>
+          </ul>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          Note: Scores are conservative. 70%+ is strong. Focus on top gaps to improve your application.
+        </p>
+      </AnalysisExplanation>
+
+      {/* Why This Matters - Last Position */}
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters:</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          The match matrix evaluates your profile against up to 60 job-relevant signals: 30 standard ATS parameters plus up to 30 dynamically generated signals specific to this role. 
+          Scores above {(threshold * 100).toFixed(0)}% indicate strong alignment. Focus on low-scoring high-weight parameters for maximum impact.
+        </p>
       </div>
     </div>
   );

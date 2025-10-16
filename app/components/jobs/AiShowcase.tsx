@@ -391,38 +391,18 @@ export default function AiShowcase({
         />
 
         {/* Row 4: Match Matrix - Full Width */}
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-              <TrendingUp size={18} className="text-blue-600" />
-              Match Matrix
-            </h3>
-            <button
-              onClick={() => toggleSection('fit')}
-              className="text-sm text-blue-600 hover:text-blue-700"
-              data-testid="toggle-fit-section"
-            >
-              {expandedSections.has('fit') || expandedSections.has('all') ? 'Collapse' : 'Expand'}
-            </button>
-          </div>
-          
-          {(expandedSections.has('fit') || expandedSections.has('all')) && (
-            <div>
-              <FitTable 
-                overall={matchScore}
-                threshold={0.75}
-                breakdown={aiData?.fitParams || [
-                  { param: 'Technical Skills', jdEvidence: 'React, AWS, TypeScript', resumeEvidence: 'React (3y), AWS (2y)', weight: 0.9, score: 0.85, reasoning: 'Strong match' },
-                  { param: 'Experience Level', jdEvidence: '5+ years', resumeEvidence: '6 years', weight: 0.8, score: 0.9, reasoning: 'Exceeds requirement' },
-                  { param: 'Domain Knowledge', jdEvidence: 'Fintech', resumeEvidence: 'E-commerce', weight: 0.6, score: 0.5, reasoning: 'Partial match' },
-                ]}
-                sources={aiData?.sources || []}
-                dryRun={provider === 'local'}
-                onRefresh={onRefresh}
-              />
-            </div>
-          )}
-        </div>
+        <FitTable 
+          overall={matchScore}
+          threshold={0.75}
+          breakdown={aiData?.fitParams || [
+            { param: 'Technical Skills', jdEvidence: 'React, AWS, TypeScript', resumeEvidence: 'React (3y), AWS (2y)', weight: 0.9, score: 0.85, reasoning: 'Strong match' },
+            { param: 'Experience Level', jdEvidence: '5+ years', resumeEvidence: '6 years', weight: 0.8, score: 0.9, reasoning: 'Exceeds requirement' },
+            { param: 'Domain Knowledge', jdEvidence: 'Fintech', resumeEvidence: 'E-commerce', weight: 0.6, score: 0.5, reasoning: 'Partial match' },
+          ]}
+          sources={aiData?.sources || []}
+          dryRun={provider === 'local'}
+          onRefresh={onRefresh}
+        />
 
         {/* Row 5: People Profiles - Full Width */}
         <PeopleProfilesCard
