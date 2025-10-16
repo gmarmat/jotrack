@@ -102,33 +102,19 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
       )
     );
   
-  // State 1: NO_VARIANTS - Attachments exist but no AI variants
-  if (activeAttachments.length > 0) {
-    const hasVariants = await checkIfVariantsExist(jobId, activeAttachments);
-    
-    if (!hasVariants) {
-      return {
-        isStale: true,
-        severity: 'no_variants',
-        message: 'Documents uploaded - click "Refresh Data" to extract AI-optimized data (~$0.02)',
-        hasVariants: false,
-        hasAnalysis: false,
-      };
-    }
-    
-    // State 2: VARIANTS_FRESH - Variants exist but no full analysis
-    if (!currentJob.analysisFingerprint || currentJob.analysisState === 'pending') {
-      return {
-        isStale: true,
-        severity: 'variants_fresh',
-        message: 'AI data ready - click "Analyze All" to generate insights (~$0.20)',
-        hasVariants: true,
-        hasAnalysis: false,
-      };
-    }
+  // Priority 1: Check explicit analysisState from DB (most reliable)
+  // State: VARIANTS_FRESH - Variants ready, need analysis
+  if (currentJob.analysisState === 'variants_fresh') {
+    return {
+      isStale: true,
+      severity: 'variants_fresh',
+      message: 'AI data ready - click "Analyze All" to generate insights (~$0.20)',
+      hasVariants: true,
+      hasAnalysis: false,
+    };
   }
   
-  // Check analysis_state column (set by triggers)
+  // State: STALE - Documents changed after analysis
   if (currentJob.analysisState === 'stale') {
     // Determine if this is major or minor based on what changed
     const changes = currentJob.analysisFingerprint 
@@ -152,8 +138,32 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
     };
   }
   
-  // Never analyzed before
-  if (!currentJob.analysisFingerprint || currentJob.analysisState === 'pending') {
+  // State: PENDING - Never analyzed before
+  if (currentJob.analysisState === 'pending' || !currentJob.analysisFingerprint) {
+    // Check if variants exist
+    if (activeAttachments.length > 0) {
+      const hasVariants = await checkIfVariantsExist(jobId, activeAttachments);
+      
+      if (!hasVariants) {
+        return {
+          isStale: true,
+          severity: 'no_variants',
+          message: 'Documents uploaded - click "Refresh Data" to extract AI-optimized data (~$0.02)',
+          hasVariants: false,
+          hasAnalysis: false,
+        };
+      }
+      
+      // Has variants but never analyzed
+      return {
+        isStale: true,
+        severity: 'variants_fresh',
+        message: 'AI data ready - click "Analyze All" to generate insights (~$0.20)',
+        hasVariants: true,
+        hasAnalysis: false,
+      };
+    }
+    
     return {
       isStale: true,
       severity: 'never_analyzed',
@@ -161,7 +171,7 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
     };
   }
 
-  // State is 'fresh' - analysis is up to date
+  // State: FRESH - analysis is up to date
   return {
     isStale: false,
     severity: 'fresh',
