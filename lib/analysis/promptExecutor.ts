@@ -111,7 +111,7 @@ async function callAnalysisAi(prompt: string): Promise<{
           },
         ],
         temperature: 0.3,
-        max_tokens: 4000,
+        max_tokens: 8000, // Increased for large ecosystem responses
         response_format: { type: 'json_object' },
       }),
     });
@@ -173,9 +173,12 @@ export async function executePrompt(params: PromptExecutionParams): Promise<Prom
       const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/```\n([\s\S]*?)\n```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
       data = JSON.parse(jsonStr);
-    } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', response.content);
-      throw new Error('AI returned invalid JSON');
+    } catch (parseError: any) {
+      console.error('Failed to parse AI response as JSON:');
+      console.error('Parse error:', parseError.message);
+      console.error('Response length:', response.content?.length);
+      console.error('Last 500 chars:', response.content?.slice(-500));
+      throw new Error(`AI returned invalid JSON: ${parseError.message}. Response may be truncated (increase max_tokens).`);
     }
     
     // 5. Return with real usage data
