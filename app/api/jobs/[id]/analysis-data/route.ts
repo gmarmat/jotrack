@@ -3,6 +3,7 @@ import { db } from '@/db/client';
 import { jobs, attachments } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { extractFileContent } from '@/lib/fileContent';
+import { getCachedEcosystemData } from '@/db/companyEcosystemCacheRepository';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,6 +74,40 @@ export async function GET(
       console.error('Failed to fetch coach session:', error);
     }
 
+    // Load cached ecosystem data if available
+    let companyEcosystem = null;
+    let ecosystemMetadata = null;
+    if (jobData.company) {
+      try {
+        const cachedEcosystem = await getCachedEcosystemData(jobData.company);
+        if (cachedEcosystem) {
+          const researchData = JSON.parse(cachedEcosystem.researchData);
+          companyEcosystem = researchData.companies || null;
+          
+          // Calculate cache age
+          const cacheAgeMs = Date.now() - (cachedEcosystem.createdAt * 1000);
+          const cacheAgeDays = Math.floor(cacheAgeMs / (1000 * 60 * 60 * 24));
+          const cacheAgeHours = Math.floor(cacheAgeMs / (1000 * 60 * 60));
+          const cacheAgeStr = cacheAgeDays > 0 
+            ? `${cacheAgeDays} day${cacheAgeDays > 1 ? 's' : ''} ago`
+            : `${cacheAgeHours} hour${cacheAgeHours > 1 ? 's' : ''} ago`;
+          
+          ecosystemMetadata = {
+            cached: true,
+            cacheAge: cacheAgeStr,
+            analyzedAt: cachedEcosystem.createdAt * 1000,
+            companyCount: cachedEcosystem.companyCount,
+            tokensUsed: cachedEcosystem.tokensUsed,
+            costUsd: cachedEcosystem.costUsd,
+          };
+          
+          console.log(`✅ Loaded cached ecosystem for ${jobData.company}: ${companyEcosystem?.length || 0} companies`);
+        }
+      } catch (error) {
+        console.error('Failed to load cached ecosystem:', error);
+      }
+    }
+
     // Build response
     const response = {
       jobId,
@@ -88,6 +123,9 @@ export async function GET(
       // Additional context
       notes: jobData.notes || '',
       postingUrl: jobData.postingUrl || '',
+      // Analysis results (cached)
+      companyEcosystem,
+      ecosystemMetadata,
     };
 
     return NextResponse.json(response);
