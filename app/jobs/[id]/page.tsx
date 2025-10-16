@@ -573,12 +573,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
             
-            {/* Collapsible Document List with View Variants Buttons */}
-            {dataStatusExpanded && attachmentsList.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                  Documents ({attachmentsList.length})
-                </p>
+            {/* Collapsible Content */}
+            {dataStatusExpanded && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                
+                {/* Input Documents Section */}
+                {attachmentsList.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                      📎 Input Documents ({attachmentsList.length})
+                    </p>
                 <div className="space-y-2">
                   {attachmentsList.map((att: any) => (
                     <div
@@ -622,6 +626,92 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </div>
                   ))}
                 </div>
+                  </div>
+                )}
+                
+                {/* Generated Analysis Section */}
+                {stalenessInfo.hasAnalysis && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                      🤖 Generated Analysis
+                    </p>
+                    <div className="space-y-2">
+                      {/* Match Score & Matrix */}
+                      <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">🎯</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              Match Analysis
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Match score, signals breakdown, fit dimensions
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            // Scroll to AiShowcase section
+                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
+                        >
+                          <Eye size={16} />
+                          View Analysis
+                        </button>
+                      </div>
+                      
+                      {/* Company Intelligence */}
+                      <div className="flex items-center justify-between bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">🏢</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              Company Intelligence
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Company research, culture, ecosystem matrix
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
+                        >
+                          <Eye size={16} />
+                          View Intelligence
+                        </button>
+                      </div>
+                      
+                      {/* Profiles */}
+                      <div className="flex items-center justify-between bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg p-3 border border-orange-200 dark:border-orange-800">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">👥</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              People Profiles
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              User, recruiter, hiring manager insights
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-md text-sm font-medium transition-colors"
+                        >
+                          <Eye size={16} />
+                          View Profiles
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
               </div>
             )}
             
@@ -656,18 +746,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         />
 
         {/* 3. AI Showcase: Full-width grid */}
-        <AiShowcase
-          jobId={job.id}
-          jobDescription={analysisData?.jobDescription || ''}
-          resume={analysisData?.resume || ''}
-          companyName={analysisData?.companyName || job.company}
-          companyUrls={analysisData?.companyUrls || []}
-          recruiterUrl={analysisData?.recruiterUrl || ''}
-          peerUrls={analysisData?.peerUrls || []}
-          skipLevelUrls={analysisData?.skipLevelUrls || []}
-          aiData={aiData}
-          onRefresh={handleRefreshAI}
-        />
+        <div id="ai-showcase">
+          <AiShowcase
+            jobId={job.id}
+            jobDescription={analysisData?.jobDescription || ''}
+            resume={analysisData?.resume || ''}
+            companyName={analysisData?.companyName || job.company}
+            companyUrls={analysisData?.companyUrls || []}
+            recruiterUrl={analysisData?.recruiterUrl || ''}
+            peerUrls={analysisData?.peerUrls || []}
+            skipLevelUrls={analysisData?.skipLevelUrls || []}
+            aiData={aiData}
+            onRefresh={handleRefreshAI}
+          />
+        </div>
 
         {/* 4. Timeline Detail (conditional) */}
         {selectedStatus && (
