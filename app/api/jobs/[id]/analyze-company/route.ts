@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { executePrompt, getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { searchWeb, formatSearchResultsForPrompt } from '@/lib/analysis/tavilySearch';
 import { db } from '@/db/client';
 import { jobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -37,13 +38,27 @@ export async function POST(
     // Extract company name from JD variant or use job.company
     const companyName = jdVariant.company || job.company;
     
-    // Execute company intelligence prompt (includes web search permission)
+    // Step 1: Real-time web search via Tavily
+    const searchQuery = `${companyName} company CEO leadership funding culture latest news 2025`;
+    const webSearchResults = await searchWeb(searchQuery, { 
+      maxResults: 5,
+      searchDepth: 'advanced' 
+    });
+    
+    const webSearchData = webSearchResults.success 
+      ? formatSearchResultsForPrompt(webSearchResults.results || [])
+      : 'Web search unavailable - using AI knowledge only';
+    
+    console.log(`🌐 Web search: ${webSearchResults.success ? `${webSearchResults.results?.length || 0} results` : 'skipped (no Tavily key)'}`);
+    
+    // Step 2: Execute company intelligence prompt with web search results
     const result = await executePrompt({
       promptName: 'company',
       promptVersion: 'v1',
       variables: {
         jdVariant: JSON.stringify(jdVariant, null, 2),
         companyName,
+        webSearchResults: webSearchData,
       },
       jobId,
     });
