@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Download, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type EcosystemCompany } from './CompanyEcosystemTable';
 
 interface FullEcosystemModalProps {
@@ -30,6 +30,19 @@ export default function FullEcosystemModal({
   const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const companiesPerPage = 10;
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -271,21 +284,19 @@ export default function FullEcosystemModal({
                 <thead className="sticky top-0 bg-gray-100 dark:bg-gray-800 z-10">
                   <tr>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Company</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Category</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Competes</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Size</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Industry</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">HQ / Region</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">CEO</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Growth</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Market Momentum</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Stability</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Retention</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">News</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Skills</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Hiring</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">News (60d)</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Hiring Trend</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Relevance</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Interview Prep</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Confidence</th>
-                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 min-w-[300px]">Insights</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600">Analysis Confidence</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 min-w-[400px]">Insights</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -300,11 +311,11 @@ export default function FullEcosystemModal({
                         {company.name}
                       </td>
                       
-                      {/* Category */}
+                      {/* Competes */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
                         <div className="flex items-center gap-1">
                           <span className="text-lg">{getCategoryIcon(company.category)}</span>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">{company.category}</span>
+                          <span className="text-xs text-gray-700 dark:text-gray-300 capitalize">{company.category}</span>
                         </div>
                       </td>
                       
@@ -347,13 +358,13 @@ export default function FullEcosystemModal({
                         </div>
                       </td>
                       
-                      {/* Growth Score */}
+                      {/* Market Momentum */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
                         <div className="text-xs">
                           <div className="text-orange-600 dark:text-orange-400 font-mono">
                             {renderStars(company.careerMetrics.growthScore)}
                           </div>
-                          <div className="text-gray-500 dark:text-gray-400">{company.careerMetrics.growthScore}/5</div>
+                          <div className="text-gray-700 dark:text-gray-300">{company.careerMetrics.growthScore}/5</div>
                         </div>
                       </td>
                       
@@ -379,55 +390,48 @@ export default function FullEcosystemModal({
                         </div>
                       </td>
                       
-                      {/* News */}
+                      {/* News (60d) */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
-                        <div className="text-xs font-medium">
-                          <span className="text-green-600 dark:text-green-400">{company.recentNews.positive}⬆</span>
-                          {' '}
-                          <span className="text-red-600 dark:text-red-400">{company.recentNews.negative}⬇</span>
-                        </div>
-                      </td>
-                      
-                      {/* Skills */}
-                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
-                        <div className="text-xs max-w-[150px]">
-                          <div className="text-gray-900 dark:text-gray-100 truncate">
-                            {company.skillsIntel?.currentHotSkills.slice(0, 3).join(', ') || 'N/A'}
+                        <div className="text-xs">
+                          <div className="font-medium">
+                            <span className="text-green-600 dark:text-green-400">{company.recentNews.positive}⬆</span>
+                            {' '}
+                            <span className="text-red-600 dark:text-red-400">{company.recentNews.negative}⬇</span>
                           </div>
-                          {company.skillsIntel?.futureSkills && company.skillsIntel.futureSkills.length > 0 && (
-                            <div className="text-gray-500 dark:text-gray-400 truncate">
-                              Future: {company.skillsIntel.futureSkills.slice(0, 2).join(', ')}
+                          {company.recentNews.highlights.length > 0 && (
+                            <div className="text-gray-600 dark:text-gray-400 mt-1">
+                              {company.recentNews.highlights.slice(0, 2).map((h, i) => (
+                                <div key={i} className={h.startsWith('+') ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}>
+                                  {h.substring(0, 40)}...
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
                       </td>
                       
-                      {/* Hiring */}
+                      {/* Hiring Trend */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
                         <div className="text-xs">
-                          <div className="text-gray-900 dark:text-gray-100">
-                            {company.skillsIntel?.hiringTrend === 'growing' ? '↗' : 
-                             company.skillsIntel?.hiringTrend === 'declining' ? '↘' : '→'} 
-                            {' '}{company.skillsIntel?.openRoles || 0}
+                          <div className="text-gray-700 dark:text-gray-300 font-medium">
+                            {company.skillsIntel?.hiringTrend === 'growing' ? '↗ Growing' : 
+                             company.skillsIntel?.hiringTrend === 'declining' ? '↘ Declining' : 
+                             company.skillsIntel?.hiringTrend === 'stable' ? '→ Stable' : '? Unknown'}
                           </div>
+                          {company.skillsIntel?.openRoles && (
+                            <div className="text-gray-500 dark:text-gray-400">{company.skillsIntel.openRoles} roles</div>
+                          )}
                         </div>
                       </td>
                       
                       {/* Relevance */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
-                        <span className={`text-sm ${getRelevanceColor(company.relevanceScore)}`}>
+                        <span className={`text-lg font-bold ${getRelevanceColor(company.relevanceScore)}`}>
                           {company.relevanceScore}%
                         </span>
                       </td>
                       
-                      {/* Interview Prep */}
-                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getInterviewPrepColor(company.interviewPrepValue)}`}>
-                          {company.interviewPrepValue.toUpperCase().replace('-', ' ')}
-                        </span>
-                      </td>
-                      
-                      {/* Confidence */}
+                      {/* Analysis Confidence */}
                       <td className="px-3 py-3 border border-gray-300 dark:border-gray-600">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           company.confidence.score === 'high' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
@@ -441,11 +445,16 @@ export default function FullEcosystemModal({
                         </div>
                       </td>
                       
-                      {/* Insights */}
-                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600 min-w-[300px]">
-                        <p className="text-xs text-gray-700 dark:text-gray-300">
-                          {company.insights}
-                        </p>
+                      {/* Insights - Formatted with bullets */}
+                      <td className="px-3 py-3 border border-gray-300 dark:border-gray-600 min-w-[400px]">
+                        <div className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
+                          {company.insights.split('. ').filter(s => s.trim()).map((sentence, idx) => (
+                            <div key={idx} className="flex gap-2">
+                              <span className="text-gray-400">•</span>
+                              <span>{sentence.trim()}{idx < company.insights.split('. ').length - 1 ? '.' : ''}</span>
+                            </div>
+                          ))}
+                        </div>
                       </td>
                     </tr>
                   ))}
