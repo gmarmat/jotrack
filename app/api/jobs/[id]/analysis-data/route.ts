@@ -109,6 +109,34 @@ export async function GET(
         console.error('Failed to load cached ecosystem:', error);
       }
     }
+    
+    // Load cached company intelligence if available
+    let companyIntelligence = null;
+    let companyIntelMetadata = null;
+    if (jobData.companyIntelligenceData) {
+      try {
+        companyIntelligence = JSON.parse(jobData.companyIntelligenceData);
+        
+        // Calculate age
+        const analyzedAt = (jobData.companyIntelligenceAnalyzedAt || 0) * 1000;
+        const ageMs = Date.now() - analyzedAt;
+        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
+        const ageStr = ageDays > 0 
+          ? `${ageDays} day${ageDays > 1 ? 's' : ''} ago`
+          : `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`;
+        
+        companyIntelMetadata = {
+          cached: true,
+          cacheAge: ageStr,
+          analyzedAt,
+        };
+        
+        console.log(`✅ Loaded cached company intelligence`);
+      } catch (error) {
+        console.error('Failed to parse company intelligence:', error);
+      }
+    }
 
     // Build response
     const response = {
@@ -128,6 +156,8 @@ export async function GET(
       // Analysis results (cached)
       companyEcosystem,
       ecosystemMetadata,
+      companyIntelligence,
+      companyIntelMetadata,
     };
 
     return NextResponse.json(response);

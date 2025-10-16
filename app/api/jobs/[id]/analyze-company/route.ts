@@ -57,8 +57,15 @@ export async function POST(
     
     console.log(`✅ Company intelligence complete: ${result.tokensUsed} tokens, $${result.cost?.toFixed(4)}`);
     
-    // TODO: Store result in database (company_intel table)
-    // For now, just return it
+    // Save to jobs table for persistence
+    await db.update(jobs)
+      .set({
+        companyIntelligenceData: JSON.stringify(result.data),
+        companyIntelligenceAnalyzedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(jobs.id, jobId));
+    
+    console.log(`💾 Saved company intelligence to database`);
     
     return NextResponse.json({
       success: true,
