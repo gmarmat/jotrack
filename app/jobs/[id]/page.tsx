@@ -209,6 +209,65 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         return; // Success - UI updates automatically
       }
       
+      // Company Intelligence
+      if (analysisType === 'company' || analysisType === 'all') {
+        const res = await fetch(`/api/jobs/${id}/analyze-company`, {
+          method: 'POST',
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Company intelligence failed');
+        }
+        
+        const data = await res.json();
+        console.log('✅ Company intelligence complete:', {
+          cost: data.metadata?.cost,
+          webSearchUsed: data.metadata?.webSearchUsed,
+        });
+        
+        setAiData((prev: any) => ({
+          ...prev,
+          companyIntelligence: data.analysis || {},
+        }));
+        
+        if (analysisType === 'company') {
+          return; // Success - UI updates automatically
+        }
+        // Fall through to 'all' case
+      }
+      
+      // Match Score (skills parameter in UI)
+      if (analysisType === 'skills' || analysisType === 'all') {
+        const res = await fetch(`/api/jobs/${id}/analyze-match-score`, {
+          method: 'POST',
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Match score analysis failed');
+        }
+        
+        const data = await res.json();
+        console.log('✅ Match score analysis complete:', {
+          score: data.analysis?.overallScore || data.analysis?.score,
+          cost: data.metadata?.cost,
+        });
+        
+        setAiData((prev: any) => ({
+          ...prev,
+          matchScore: data.analysis?.overallScore || data.analysis?.score || prev.matchScore,
+          highlights: data.analysis?.highlights || prev.highlights,
+          gaps: data.analysis?.gaps || prev.gaps,
+          skills: data.analysis?.skills || prev.skills,
+        }));
+        
+        if (analysisType === 'skills') {
+          return; // Success - UI updates automatically
+        }
+        // Fall through to 'all' case
+      }
+      
       // Match Matrix / Signal Evaluation
       if (analysisType === 'match' || analysisType === 'all') {
         const res = await fetch(`/api/jobs/${id}/evaluate-signals`, {
@@ -254,6 +313,40 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           return; // Success - UI updates automatically
         }
         // Fall through to 'all' case
+      }
+      
+      // People Profiles (user profile analysis)
+      if (analysisType === 'people' || analysisType === 'all') {
+        const res = await fetch(`/api/jobs/${id}/analyze-user-profile`, {
+          method: 'POST',
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Profile analysis failed');
+        }
+        
+        const data = await res.json();
+        console.log('✅ User profile analysis complete:', {
+          cost: data.metadata?.cost,
+        });
+        
+        setAiData((prev: any) => ({
+          ...prev,
+          peopleProfiles: data.analysis?.profiles || prev.peopleProfiles,
+          peopleInsights: data.analysis?.insights || prev.peopleInsights,
+        }));
+        
+        if (analysisType === 'people') {
+          return; // Success - UI updates automatically
+        }
+        // Fall through to 'all' case
+      }
+      
+      // If 'all', show success message
+      if (analysisType === 'all') {
+        console.log('✅ All analyses complete!');
+        return;
       }
       
       // For other types, reload for now (will wire individually)
