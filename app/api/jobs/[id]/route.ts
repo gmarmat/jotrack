@@ -18,7 +18,23 @@ export async function GET(
       return new Response("Job not found", { status: 404 });
     }
 
-    return Response.json(rows[0]);
+    const job = rows[0] as any;
+    
+    // Transform snake_case to camelCase for frontend
+    const transformed = {
+      ...job,
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+      postingUrl: job.posting_url,
+      deletedAt: job.deleted_at,
+      archivedAt: job.archived_at,
+      permanentDeleteAt: job.permanent_delete_at,
+      analysisState: job.analysis_state,
+      analysisFingerprint: job.analysis_fingerprint,
+      lastFullAnalysisAt: job.last_full_analysis_at,
+    };
+
+    return Response.json(transformed);
   } catch (error) {
     console.error("Failed to fetch job:", error);
     return Response.json({ error: "Failed to fetch job" }, { status: 500 });
