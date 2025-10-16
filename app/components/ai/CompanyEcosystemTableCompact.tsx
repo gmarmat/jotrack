@@ -187,38 +187,6 @@ export default function CompanyEcosystemTableCompact({
         </div>
       </div>
 
-      {/* Explanation Section - Interview Prep Focus */}
-      <ExplanationSection title="How We Analyze the Ecosystem">
-        <p>
-          We research the competitive landscape to help you understand the market, speak 
-          intelligently about industry trends, and demonstrate market awareness in your interviews.
-        </p>
-        
-        <div>
-          <p className="font-medium mb-1">Our Analysis Methodology:</p>
-          <ul className="space-y-1 text-xs">
-            <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
-            <li>• 15+ Signals: Size, industry, market momentum, recent news, skills trends, culture</li>
-            <li>• AI + Public Data: Company profiles, news, reviews, industry analysis</li>
-            <li>• Cached: 7 days (click "Analyze Ecosystem" to refresh)</li>
-          </ul>
-        </div>
-        
-        <div>
-          <p className="font-medium mb-1">What Each Column Means:</p>
-          <ul className="space-y-1 text-xs">
-            <li>• <strong>Relevance</strong>: Similarity to target company (0-100%). Higher = more similar product/market.</li>
-            <li>• <strong>Why Relevant</strong>: Specific reason this company matters for your interview prep.</li>
-            <li>• <strong>Quick Insights</strong>: Summary of market trends, company culture, and interview talking points.</li>
-          </ul>
-        </div>
-        
-        <p className="text-xs text-gray-600 dark:text-gray-400">
-          Note: This helps you prepare for interviews, not find jobs. Full details (news, growth, 
-          hiring, etc.) in modal. Click <span className="font-medium">View Full Analysis (🔍)</span> in header.
-        </p>
-      </ExplanationSection>
-
       {/* Summary Stats with Cache Info */}
       <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -317,8 +285,40 @@ export default function CompanyEcosystemTableCompact({
         </table>
       </div>
 
+      {/* Explanation Section - Interview Prep Focus */}
+      <ExplanationSection title="How We Analyze the Ecosystem">
+        <p>
+          We research the competitive landscape to help you understand the market, speak 
+          intelligently about industry trends, and demonstrate market awareness in your interviews.
+        </p>
+        
+        <div>
+          <p className="font-medium mb-1">Our Analysis Methodology:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• 10 Companies: 5 direct competitors, 3 adjacent markets, 2 complementary products</li>
+            <li>• 15+ Signals: Size, industry, market momentum, recent news, skills trends, culture</li>
+            <li>• AI + Public Data: Company profiles, news, reviews, industry analysis</li>
+            <li>• Cached: 7 days (click "Analyze Ecosystem" to refresh)</li>
+          </ul>
+        </div>
+        
+        <div>
+          <p className="font-medium mb-1">What Each Column Means:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• <strong>Relevance</strong>: Similarity to target company (0-100%). Higher = more similar product/market. Helps you understand competitive context.</li>
+            <li>• <strong>Why Relevant</strong>: Specific reason this company matters for your interview preparation.</li>
+            <li>• <strong>Quick Insights</strong>: Market position, notable characteristics, and specific interview prep angles (2-3 sentences).</li>
+          </ul>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Note: This section helps you prepare for interviews at the target company, not find other jobs. 
+          Full details (news, growth, hiring, skills, etc.) in modal. Click <span className="font-medium">View Full Analysis (🔍)</span> in header.
+        </p>
+      </ExplanationSection>
+
       {/* Why This Matters */}
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Why this matters for interview prep:</p>
         <p className="text-xs text-gray-600 dark:text-gray-400">
           Understanding competitor strengths, market trends, and industry dynamics helps you speak 

@@ -30,6 +30,68 @@ export default function FullEcosystemModal({
 
   if (!isOpen) return null;
 
+  // Sample data if no companies provided (consistent with compact table)
+  const sampleCompanies: EcosystemCompany[] = companies.length > 0 ? companies : [
+    { 
+      name: 'Notion', 
+      category: 'direct',
+      size: {
+        employees: '1,000-5,000',
+        sizeCategory: 'scaleup'
+      },
+      industry: {
+        broad: 'Technology',
+        specific: 'SaaS'
+      },
+      location: {
+        headquarters: 'San Francisco, CA',
+        region: 'North America',
+        isRemote: true
+      },
+      leadership: {
+        ceo: 'Ivan Zhao',
+        ceoBackground: 'Ex-Inkling, Y Combinator'
+      },
+      careerMetrics: {
+        growthScore: 5,
+        stabilityScore: 4,
+        retentionScore: 4,
+        avgTenure: '3.2 years'
+      },
+      recentNews: {
+        positive: 3,
+        negative: 1,
+        highlights: [
+          '+ Series C funding ($275M)',
+          '+ 10M users milestone',
+          '+ Acquired Cron Calendar',
+          '- Layoffs rumor (unverified)'
+        ]
+      },
+      skillsIntel: {
+        currentHotSkills: ['React', 'TypeScript', 'PostgreSQL'],
+        futureSkills: ['AI/ML', 'Real-time Collaboration'],
+        hiringTrend: 'growing',
+        openRoles: 47
+      },
+      relevanceScore: 95,
+      reason: 'Direct competitor in collaborative workspace market with similar product features',
+      interviewPrepValue: 'very-likely',
+      interviewRelevance: 'Main competitor - prepare product differentiation points',
+      confidence: {
+        score: 'high',
+        percentage: 92
+      },
+      insights: 'Market leader in collaborative workspace sector with strong product-market fit and innovative design culture. Known for real-time collaboration tech similar to target company. Interview prep: Prepare to discuss product differentiation, technical architecture choices, and how you\'d approach scaling challenges they\'ve solved.',
+      sources: [
+        { name: 'LinkedIn', url: 'https://linkedin.com/company/notion', category: 'company', confidence: 'high' },
+        { name: 'TechCrunch', url: 'https://techcrunch.com/notion', category: 'news', confidence: 'high' }
+      ]
+    },
+  ];
+
+  const displayCompanies = sampleCompanies;
+
   const renderStars = (score: number) => {
     return '●'.repeat(score) + '○'.repeat(5 - score);
   };
@@ -119,7 +181,7 @@ export default function FullEcosystemModal({
               Company Ecosystem - Full Analysis
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {companies.length} companies • 15+ data points per company
+              {displayCompanies.length} companies • 15+ data points per company
               {cacheMetadata?.cached && (
                 <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">
                   💰 Cached ({cacheMetadata.cacheAge} ago)
@@ -208,7 +270,7 @@ export default function FullEcosystemModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {companies.map((company, idx) => (
+                  {displayCompanies.map((company, idx) => (
                     <tr 
                       key={`${company.name}-${idx}`}
                       className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
@@ -380,7 +442,7 @@ export default function FullEcosystemModal({
                 All sources used to gather company intelligence. Click to verify our research.
               </p>
 
-              {companies.map((company, idx) => (
+              {displayCompanies.map((company, idx) => (
                 <div key={`${company.name}-sources-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                     {getCategoryIcon(company.category)} {company.name}
@@ -432,7 +494,7 @@ export default function FullEcosystemModal({
           {/* Tab 3: Insights - Detailed Analysis */}
           {activeTab === 'insights' && (
             <div className="space-y-6">
-              {companies.map((company, idx) => (
+              {displayCompanies.map((company, idx) => (
                 <div key={`${company.name}-insights-${idx}`} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
