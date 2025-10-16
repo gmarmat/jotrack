@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronUp, Info, Code, AlertCircle, Settings, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AiSources from '../AiSources';
 import ProviderBadge from '../ProviderBadge';
 import PromptViewer from '@/app/components/ai/PromptViewer';
