@@ -179,13 +179,45 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   const handleRefreshAI = async (analysisType?: 'company' | 'people' | 'match' | 'skills' | 'ecosystem' | 'all') => {
     try {
-      console.log('Refreshing AI insights...', analysisType || 'all');
+      console.log('🔄 Refreshing AI insights...', analysisType || 'all');
       
-      // For now, just refresh the page to show updated data
-      // TODO: Implement specific API calls for each analysis type
+      // v2.7: Implement specific API calls for each analysis type
+      if (analysisType === 'ecosystem') {
+        // Call Company Ecosystem API
+        const res = await fetch(`/api/jobs/${id}/analyze-ecosystem`, {
+          method: 'POST',
+        });
+        
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Ecosystem analysis failed');
+        }
+        
+        const data = await res.json();
+        console.log('✅ Ecosystem analysis complete:', {
+          companies: data.analysis?.companies?.length || 0,
+          cost: data.metadata?.cost,
+          cached: data.metadata?.cached,
+        });
+        
+        // Update aiData with real ecosystem data
+        setAiData((prev: any) => ({
+          ...prev,
+          companyEcosystem: data.analysis?.companies || [],
+        }));
+        
+        // TODO: Update cache metadata in AiShowcase
+        // For now, data is updated and will show in UI
+        
+        return; // Don't reload, data updated in state
+      }
+      
+      // For other types, reload for now (will wire individually)
+      console.log('ℹ️ Analysis type not yet wired, reloading page...');
       window.location.reload();
     } catch (error) {
-      console.error('Error refreshing AI insights:', error);
+      console.error('❌ Error refreshing AI insights:', error);
+      alert('Analysis failed: ' + (error as Error).message);
     }
   };
 
@@ -728,18 +760,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
         {/* 3. AI Showcase: Full-width grid */}
         <div id="ai-showcase">
-          <AiShowcase
-            jobId={job.id}
-            jobDescription={analysisData?.jobDescription || ''}
-            resume={analysisData?.resume || ''}
-            companyName={analysisData?.companyName || job.company}
-            companyUrls={analysisData?.companyUrls || []}
-            recruiterUrl={analysisData?.recruiterUrl || ''}
-            peerUrls={analysisData?.peerUrls || []}
-            skipLevelUrls={analysisData?.skipLevelUrls || []}
-            aiData={aiData}
-            onRefresh={handleRefreshAI}
-          />
+        <AiShowcase
+          jobId={job.id}
+          jobDescription={analysisData?.jobDescription || ''}
+          resume={analysisData?.resume || ''}
+          companyName={analysisData?.companyName || job.company}
+          companyUrls={analysisData?.companyUrls || []}
+          recruiterUrl={analysisData?.recruiterUrl || ''}
+          peerUrls={analysisData?.peerUrls || []}
+          skipLevelUrls={analysisData?.skipLevelUrls || []}
+          aiData={aiData}
+          onRefresh={handleRefreshAI}
+        />
         </div>
 
         {/* 4. Timeline Detail (conditional) */}
