@@ -154,11 +154,15 @@ export default function CompanyEcosystemTableCompact({
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Company Ecosystem</h3>
-          {!isAiPowered && (
+          {cacheMetadata?.cached ? (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+              Analyzed {cacheMetadata.cacheAge}
+            </span>
+          ) : !isAiPowered && companies.length > 0 ? (
             <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
-          )}
+          ) : null}
         </div>
         
         <div className="flex items-center gap-3">
