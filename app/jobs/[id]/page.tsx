@@ -182,8 +182,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       console.log('🔄 Refreshing AI insights...', analysisType || 'all');
       
       // v2.7: Implement specific API calls for each analysis type
+      
+      // Company Ecosystem Analysis
       if (analysisType === 'ecosystem') {
-        // Call Company Ecosystem API
         const res = await fetch(`/api/jobs/${id}/analyze-ecosystem`, {
           method: 'POST',
         });
@@ -200,16 +201,59 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           cached: data.metadata?.cached,
         });
         
-        // Update aiData with real ecosystem data
         setAiData((prev: any) => ({
           ...prev,
           companyEcosystem: data.analysis?.companies || [],
         }));
         
-        // TODO: Update cache metadata in AiShowcase
-        // For now, data is updated and will show in UI
+        return; // Success - UI updates automatically
+      }
+      
+      // Match Matrix / Signal Evaluation
+      if (analysisType === 'match' || analysisType === 'all') {
+        const res = await fetch(`/api/jobs/${id}/evaluate-signals`, {
+          method: 'POST',
+        });
         
-        return; // Don't reload, data updated in state
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Signal evaluation failed');
+        }
+        
+        const data = await res.json();
+        
+        // Transform evaluations to FitDimension format for FitTable
+        const fitParams = (data.evaluations || []).map((ev: any) => ({
+          param: ev.signalName || 'Unknown Signal',
+          weight: 0.8, // TODO: Get from ats_signals table
+          jdEvidence: ev.jdEvidence || '',
+          resumeEvidence: ev.resumeEvidence || '',
+          score: ev.overallScore || 0,
+          reasoning: ev.aiReasoning || '',
+        }));
+        
+        // Calculate overall match score (weighted average)
+        const totalWeight = fitParams.reduce((sum: number, p: any) => sum + p.weight, 0);
+        const weightedScore = fitParams.reduce((sum: number, p: any) => sum + (p.weight * p.score), 0);
+        const overallScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
+        
+        console.log('✅ Match Matrix evaluation complete:', {
+          signals: fitParams.length,
+          overallScore: (overallScore * 100).toFixed(0) + '%',
+          jdVersion: data.jdVersion,
+          resumeVersion: data.resumeVersion,
+        });
+        
+        setAiData((prev: any) => ({
+          ...prev,
+          fitParams,
+          matchScore: overallScore,
+        }));
+        
+        if (analysisType === 'match') {
+          return; // Success - UI updates automatically
+        }
+        // Fall through to 'all' case
       }
       
       // For other types, reload for now (will wire individually)
