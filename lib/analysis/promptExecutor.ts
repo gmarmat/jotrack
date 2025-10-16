@@ -74,6 +74,78 @@ export async function fetchVariantForAnalysis(
 }
 
 /**
+ * Simple AI caller for analysis endpoints (bypasses coach mode)
+ */
+async function callAnalysisAi(prompt: string): Promise<{
+  success: boolean;
+  content?: string;
+  tokensUsed?: number;
+  cost?: number;
+  error?: string;
+}> {
+  try {
+    const config = await getAiProviderConfig();
+    
+    if (!config) {
+      throw new Error('No API key configured. Go to Settings → AI & Privacy to add your OpenAI key.');
+    }
+    
+    const { apiKey, model } = config;
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model || 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert career advisor and analyst. Follow the prompt instructions exactly and return only valid JSON.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 4000,
+        response_format: { type: 'json_object' },
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+    const usage = data.usage;
+    
+    // Calculate cost (gpt-4o-mini pricing)
+    const promptTokens = usage?.prompt_tokens || 0;
+    const completionTokens = usage?.completion_tokens || 0;
+    const totalTokens = usage?.total_tokens || 0;
+    const cost = (promptTokens * 0.00000015) + (completionTokens * 0.0000006); // $0.15/$0.60 per 1M tokens
+    
+    return {
+      success: true,
+      content,
+      tokensUsed: totalTokens,
+      cost,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'AI call failed',
+    };
+  }
+}
+
+/**
  * Execute a prompt with AI
  */
 export async function executePrompt(params: PromptExecutionParams): Promise<PromptExecutionResult> {
@@ -87,20 +159,7 @@ export async function executePrompt(params: PromptExecutionParams): Promise<Prom
     // 3. Call AI
     console.log(`🤖 Executing prompt: ${params.promptName}.${params.promptVersion || 'v1'}`);
     
-    const response = await callAiProvider({
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert career advisor and analyst. Follow the prompt instructions exactly and return only valid JSON.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.3, // Lower for more consistent structured output
-      max_tokens: 4000,
-    });
+    const response = await callAnalysisAi(prompt);
     
     if (!response.success || !response.content) {
       throw new Error(response.error || 'AI call failed');
@@ -119,18 +178,16 @@ export async function executePrompt(params: PromptExecutionParams): Promise<Prom
       throw new Error('AI returned invalid JSON');
     }
     
-    // 5. Calculate cost
-    const inputTokens = Math.ceil(prompt.length / 4);
-    const outputTokens = Math.ceil(JSON.stringify(data).length / 4);
-    const totalTokens = inputTokens + outputTokens;
-    const cost = (inputTokens * 0.00015 + outputTokens * 0.0006) / 1000;
+    // 5. Return with real usage data
+    const tokensUsed = response.tokensUsed || 0;
+    const cost = response.cost || 0;
     
-    console.log(`✅ Prompt executed: ${totalTokens} tokens, $${cost.toFixed(4)}`);
+    console.log(`✅ Prompt executed: ${tokensUsed} tokens, $${cost.toFixed(4)}`);
     
     return {
       success: true,
       data,
-      tokensUsed: totalTokens,
+      tokensUsed,
       cost,
       promptUsed: params.promptName,
     };
