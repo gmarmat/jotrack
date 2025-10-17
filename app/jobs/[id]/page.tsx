@@ -644,9 +644,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                      'Updates Available'}
                   </p>
                   <span className="text-xs text-gray-600 dark:text-gray-400 ml-2">
-                    {stalenessInfo.severity === 'no_variants' ? '· Click "Extract Data" to create AI-ready variants from your uploads (~$0.02)' :
+                    {stalenessInfo.severity === 'no_variants' ? '· Click "Refresh Data" to create AI-ready variants from your uploads (~$0.02)' :
                      stalenessInfo.severity === 'variants_fresh' ? '· AI variants ready · Scroll to sections below and trigger analysis for each (~$0.05-0.10 per section)' :
-                     stalenessInfo.severity === 'major' ? '· Documents updated · Click "Extract Data" to refresh AI variants before analyzing' :
+                     stalenessInfo.severity === 'major' ? '· Documents updated · Click "Refresh Data" to refresh AI variants before analyzing' :
                      stalenessInfo.severity === 'never_analyzed' ? '· Upload Resume + JD to begin · System will auto-detect when ready' :
                      stalenessInfo.severity === 'fresh' ? '· All data and analysis current · System will alert when significant changes detected' :
                      '· Minor updates detected · Consider extracting fresh data'}
@@ -682,7 +682,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
-                        Extract Data
+                        Refresh Data
                         <span className="text-xs opacity-75">~$0.02</span>
                       </span>
                     )}
