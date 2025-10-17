@@ -8,6 +8,7 @@ import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import HeaderMeta from '@/app/components/timeline/HeaderMeta';
 import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
+import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
@@ -15,7 +16,7 @@ import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
-import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Paperclip } from 'lucide-react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
@@ -597,8 +598,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* v2.7: Persistent Data Status Panel (Always Visible, Collapsible) */}
-        {stalenessInfo && (
+        {/* v2.7: OLD Data Status Panel - MOVED to 3-column header above, keeping for reference */}
+        {false && stalenessInfo && (
           <div
             className={`p-4 rounded-lg border-l-4 ${
               stalenessInfo.severity === 'no_variants'
@@ -906,21 +907,95 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* 1. Header: Title, Company, StatusChip, Attachments, QuickActions */}
-        <JobHeader 
-          job={job} 
-          currentStatus={currentStatus}
-          onStatusChange={handleStatusChange}
-          onJumpToStatus={setSelectedStatus}
-          attachmentCount={attachmentCount}
-          onOpenAttachments={() => setShowAttachmentsModal(true)}
-        />
+        {/* Combined Header with 3-Column Layout */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
+          {/* 3-Column Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+            {/* Column 1: Job Title, Company, Status, Attachments */}
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
+                  {job.title}
+                </h1>
+                <StatusChipDropdown 
+                  jobId={job.id} 
+                  currentStatus={currentStatus}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
+              <p className="text-base text-gray-600 dark:text-gray-400 mb-4" data-testid="job-company">
+                {job.company}
+              </p>
+              
+              {/* Attachments Button */}
+              <button
+                onClick={() => setShowAttachmentsModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors w-full justify-center"
+                data-testid="attachments-button-header"
+              >
+                <Paperclip size={16} />
+                <span>Attachments</span>
+                {attachmentCount > 0 && (
+                  <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                    {attachmentCount}
+                  </span>
+                )}
+              </button>
+            </div>
 
-        {/* 2. Notes Card: Global notes */}
-        <JobNotesCard
-          jobId={job.id}
-          initialNotes={job.notes || ''}
-        />
+            {/* Column 2: Data Pipeline (Mini Version) */}
+            <div className="border-l border-r border-gray-200 dark:border-gray-700 pl-6 pr-6">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                <span className="text-lg">
+                  {stalenessInfo?.severity === 'fresh' ? '✅' : 
+                   stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
+                   stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
+                </span>
+                Data Status
+              </h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                {stalenessInfo?.message || 'Checking...'}
+              </p>
+              
+              {/* Action Button */}
+              {stalenessInfo?.severity === 'no_variants' && (
+                <button
+                  onClick={handleRefreshVariants}
+                  disabled={refreshing}
+                  className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {refreshing ? 'Extracting...' : 'Refresh Data'}
+                </button>
+              )}
+              {stalenessInfo?.severity === 'variants_fresh' && (
+                <button
+                  onClick={handleGlobalAnalyze}
+                  disabled={analyzing}
+                  className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {analyzing ? 'Analyzing...' : 'Analyze All'}
+                </button>
+              )}
+              {stalenessInfo?.severity === 'major' && (
+                <button
+                  onClick={handleRefreshVariants}
+                  disabled={refreshing}
+                  className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {refreshing ? 'Extracting...' : 'Refresh Data'}
+                </button>
+              )}
+            </div>
+
+            {/* Column 3: Notes (Compact) */}
+            <div>
+              <JobNotesCard
+                jobId={job.id}
+                initialNotes={job.notes || ''}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* 3. AI Showcase: Full-width grid */}
         <div id="ai-showcase">
