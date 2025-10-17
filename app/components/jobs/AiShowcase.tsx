@@ -120,24 +120,29 @@ export default function AiShowcase({
   };
 
   const handleRefresh = async (override: boolean = false, analysisType?: 'company' | 'people' | 'match' | 'skills' | 'ecosystem' | 'all') => {
-    // Check guardrails before proceeding
-    const inputs: AnalysisInputs = {
-      jdText: jobDescription,
-      resumeText: resume,
-      peopleUrls: [...peerUrls, ...skipLevelUrls],
-      companyUrls: companyUrls,
-    };
+    // Only check cooldown for global "Analyze with AI" button (when analysisType is undefined or 'all')
+    const isGlobalAnalysis = !analysisType || analysisType === 'all';
+    
+    if (isGlobalAnalysis) {
+      // Check guardrails before proceeding (only for global analysis)
+      const inputs: AnalysisInputs = {
+        jdText: jobDescription,
+        resumeText: resume,
+        peopleUrls: [...peerUrls, ...skipLevelUrls],
+        companyUrls: companyUrls,
+      };
 
-    const guardrailCheck = checkAnalysisGuardrails(jobId, inputs, override);
+      const guardrailCheck = checkAnalysisGuardrails(jobId, inputs, override);
 
-    if (!guardrailCheck.canProceed && !override) {
-      setGuardrailMessage(guardrailCheck.warningMessage || 'Cannot proceed with analysis');
-      
-      if (guardrailCheck.reason === 'cooldown') {
-        setShowCooldownWarning(true);
+      if (!guardrailCheck.canProceed && !override) {
+        setGuardrailMessage(guardrailCheck.warningMessage || 'Cannot proceed with analysis');
+        
+        if (guardrailCheck.reason === 'cooldown') {
+          setShowCooldownWarning(true);
+        }
+        
+        return;
       }
-      
-      return;
     }
 
     setIsRefreshing(true);
@@ -145,8 +150,18 @@ export default function AiShowcase({
     
     try {
       await onRefresh?.(analysisType);
-      // Record successful analysis
-      recordAnalysis(jobId, inputs);
+      
+      // Record successful analysis (only for global analysis to trigger cooldown)
+      if (isGlobalAnalysis) {
+        const inputs: AnalysisInputs = {
+          jdText: jobDescription,
+          resumeText: resume,
+          peopleUrls: [...peerUrls, ...skipLevelUrls],
+          companyUrls: companyUrls,
+        };
+        recordAnalysis(jobId, inputs);
+      }
+      
       setShowPreliminary(false); // Hide preliminary after AI refresh
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -164,7 +179,17 @@ export default function AiShowcase({
     { term: 'TypeScript', jdCount: 6, resumeCount: 4 },
     { term: 'Node.js', jdCount: 4, resumeCount: 6 },
   ];
-  const provider = aiData?.provider || 'local';
+  
+  // Determine if ANY real AI analysis has been done (check for persisted data or cached data)
+  const hasAnyAiAnalysis = !!(
+    aiData?.companyEcosystem?.length > 0 || 
+    aiData?.companyIntelligence || 
+    aiData?.matchScoreMetadata ||
+    aiData?.companyIntelMetadata ||
+    aiData?.ecosystemMetadata
+  );
+  
+  const provider = hasAnyAiAnalysis ? 'remote' : (aiData?.provider || 'local');
   const hasData = !!aiData;
   
   // Get category-specific recommendations
@@ -265,11 +290,19 @@ export default function AiShowcase({
                 <Target size={18} className="text-purple-600" />
                 Match Score
               </h3>
-              <AnalyzeButton
-                onAnalyze={() => handleRefresh(false, 'match')}
-                isAnalyzing={isRefreshing}
-                label="Analyze Match Score"
-              />
+              <div className="flex items-center gap-2">
+                <PromptViewer 
+                  promptKind="matchScore" 
+                  version="v1"
+                  buttonLabel=""
+                  className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                />
+                <AnalyzeButton
+                  onAnalyze={() => handleRefresh(false, 'match')}
+                  isAnalyzing={isRefreshing}
+                  label="Analyze Match Score"
+                />
+              </div>
             </div>
             
             {/* Preliminary Score Badge */}
@@ -352,11 +385,19 @@ export default function AiShowcase({
                 <Lightbulb size={18} className="text-amber-600" />
                 Skill Match
               </h3>
-              <AnalyzeButton
-                onAnalyze={() => handleRefresh(false, 'skills')}
-                isAnalyzing={isRefreshing}
-                label="Analyze Skills Match"
-              />
+              <div className="flex items-center gap-2">
+                <PromptViewer 
+                  promptKind="matchScore" 
+                  version="v1"
+                  buttonLabel=""
+                  className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                />
+                <AnalyzeButton
+                  onAnalyze={() => handleRefresh(false, 'skills')}
+                  isAnalyzing={isRefreshing}
+                  label="Analyze Skills Match"
+                />
+              </div>
             </div>
             
             <SkillsMatchChart skills={skills} maxSkills={6} />
