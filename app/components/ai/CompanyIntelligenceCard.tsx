@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Users, DollarSign, TrendingUp, Target, Heart, ExternalLink } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, Target, Heart, ExternalLink, AlertCircle, Search, Edit2, Save, X } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
@@ -54,6 +54,11 @@ export default function CompanyIntelligenceCard({
   const [localCompany, setLocalCompany] = useState<CompanyIntelligence | null>(company);
   const [error, setError] = useState<string | null>(null);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
+  
+  // Smart search and manual edit states
+  const [searchingFor, setSearchingFor] = useState<string | null>(null);
+  const [showManualEditModal, setShowManualEditModal] = useState<string | null>(null);
+  const [manualInputText, setManualInputText] = useState('');
   
   // Mock sources for now - in real implementation, this would come from analysis data
   const sources: Source[] = [
