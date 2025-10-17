@@ -136,7 +136,7 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
 function AITab() {
   const [networkEnabled, setNetworkEnabled] = useState(false);
   const [provider, setProvider] = useState('claude');
-  const [claudeModel, setClaudeModel] = useState('claude-3-sonnet-20240229');
+  const [claudeModel, setClaudeModel] = useState('claude-3-5-sonnet-20240620');
   const [claudeKey, setClaudeKey] = useState('');
   const [hasExistingClaudeKey, setHasExistingClaudeKey] = useState(false);
   const [isSavingClaude, setIsSavingClaude] = useState(false);
@@ -164,7 +164,7 @@ function AITab() {
           const data = await res.json();
           setNetworkEnabled(data.networkEnabled || false);
           setProvider(data.provider || 'claude');
-          setClaudeModel(data.claudeModel || 'claude-3-sonnet-20240229');
+          setClaudeModel(data.claudeModel || 'claude-3-5-sonnet-20240620');
           setOpenaiModel(data.openaiModel || 'gpt-4o-mini');
           setHasExistingClaudeKey(!!data.hasClaudeKey);
           setHasExistingTavilyKey(!!data.hasTavilyKey);
@@ -404,7 +404,7 @@ function AITab() {
                     ) : (
                       <>
                         <optgroup label="Recommended">
-                          <option value="claude-3-sonnet-20240229">3 Sonnet ~ $0.03/job</option>
+                          <option value="claude-3-5-sonnet-20240620">3.5 Sonnet ~ $0.03/job</option>
                         </optgroup>
                         <optgroup label="Budget">
                           <option value="claude-3-haiku-20240307">3 Haiku ~ $0.01/job</option>
