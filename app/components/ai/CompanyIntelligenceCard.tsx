@@ -121,6 +121,34 @@ export default function CompanyIntelligenceCard({
     }
   };
 
+  // Smart search for missing data (UI only for now)
+  const handleSmartSearch = async (searchType: 'principles' | 'news' | 'culture') => {
+    setSearchingFor(searchType);
+    // TODO: Implement API call to /api/jobs/[id]/company-search
+    // For now, just show that it's searching
+    setTimeout(() => setSearchingFor(null), 2000);
+  };
+
+  // Manual edit handler
+  const handleManualEdit = (field: 'principles' | 'news' | 'culture') => {
+    setShowManualEditModal(field);
+    setManualInputText('');
+  };
+
+  const handleSaveManualEdit = () => {
+    // Validate word count
+    const wordCount = manualInputText.trim().split(/\s+/).filter(w => w.length > 0).length;
+    if (wordCount > 100) {
+      alert(`Please limit your input to 100 words or less. Current: ${wordCount} words.`);
+      return;
+    }
+    
+    // TODO: Process with AI to summarize into standard format
+    // For now, just close modal
+    setShowManualEditModal(null);
+    setManualInputText('');
+  };
+
   const defaultCompany: CompanyIntelligence = {
     name: 'Company Name',
     founded: 2018,
@@ -304,21 +332,97 @@ export default function CompanyIntelligenceCard({
             </div>
           )}
 
-          {/* Company Principles (New) */}
+          {/* Company Principles */}
           <div>
-            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Company Principles</h5>
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Company Principles</h5>
+              {(!displayCompany.culture || displayCompany.culture.length === 0) && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleSmartSearch('principles')}
+                    disabled={searchingFor === 'principles'}
+                    className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
+                    title="Search web for company principles"
+                  >
+                    <Search size={12} />
+                    {searchingFor === 'principles' ? 'Searching...' : 'Find'}
+                  </button>
+                  <button
+                    onClick={() => handleManualEdit('principles')}
+                    className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    title="Manually add from your research"
+                  >
+                    <Edit2 size={12} />
+                    Edit
+                  </button>
+                </div>
+              )}
+            </div>
+            {(!displayCompany.culture || displayCompany.culture.length === 0) ? (
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
+            ) : (
+              <ul className="space-y-1">
+                {displayCompany.culture.map((principle, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                    <span className="text-indigo-500">•</span>
+                    <span>{principle}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Recent News */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent News (Last 30 days)</h5>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleSmartSearch('news')}
+                  disabled={searchingFor === 'news'}
+                  className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
+                  title="Search web for recent news"
+                >
+                  <Search size={12} />
+                  {searchingFor === 'news' ? 'Searching...' : 'Find'}
+                </button>
+                <button
+                  onClick={() => handleManualEdit('news')}
+                  className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  title="Manually add from your research"
+                >
+                  <Edit2 size={12} />
+                  Edit
+                </button>
+              </div>
+            </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
           </div>
 
-          {/* Recent News (New) */}
+          {/* Culture Keywords */}
           <div>
-            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Recent News (Last 30 days)</h5>
-            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
-          </div>
-
-          {/* Glassdoor/Culture Keywords (New) */}
-          <div>
-            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Culture Keywords</h5>
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Culture Keywords</h5>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleSmartSearch('culture')}
+                  disabled={searchingFor === 'culture'}
+                  className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
+                  title="Search web for culture keywords"
+                >
+                  <Search size={12} />
+                  {searchingFor === 'culture' ? 'Searching...' : 'Find'}
+                </button>
+                <button
+                  onClick={() => handleManualEdit('culture')}
+                  className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  title="Manually add from your research"
+                >
+                  <Edit2 size={12} />
+                  Edit
+                </button>
+              </div>
+            </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
           </div>
 
@@ -384,6 +488,61 @@ export default function CompanyIntelligenceCard({
         </p>
       </div>
       </>)}
+
+      {/* Manual Edit Modal */}
+      {showManualEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowManualEditModal(null)}>
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Add {showManualEditModal === 'principles' ? 'Company Principles' : showManualEditModal === 'news' ? 'Recent News' : 'Culture Keywords'}
+              </h3>
+              <button
+                onClick={() => setShowManualEditModal(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              >
+                <X size={20} className="text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Paste your research here (max 100 words). We'll use AI to summarize it into our standard format.
+            </p>
+
+            <textarea
+              value={manualInputText}
+              onChange={(e) => setManualInputText(e.target.value)}
+              placeholder={`Example: ${showManualEditModal === 'principles' ? 'Fortive Business System: Continuous Improvement, Customer Focus, Accountability...' : showManualEditModal === 'news' ? 'New CEO announced, Q3 earnings beat expectations...' : 'Innovation-driven, collaborative, fast-paced...'}`}
+              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 text-sm"
+              maxLength={600}
+            />
+
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {manualInputText.trim().split(/\s+/).filter(w => w.length > 0).length} / 100 words
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowManualEditModal(null)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveManualEdit}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <Save size={16} />
+                  Save & Summarize
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

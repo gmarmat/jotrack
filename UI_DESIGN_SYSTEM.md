@@ -734,7 +734,203 @@ When creating a new analysis section, ensure:
 
 ---
 
-**Last Updated**: Oct 16, 2024
+## 🤖 AI Analysis Section Standardization (Oct 17, 2025)
+
+### Standard Button Order & Placement
+
+**All 6 AI sections (Match Score, Skill Match, Company Intelligence, Company Ecosystem, Match Matrix, People Profiles) MUST follow this exact layout:**
+
+```tsx
+<div className="flex items-center justify-between mb-4">
+  {/* Left: Section Title */}
+  <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+    <IconComponent size={18} className="text-{color}-600" />
+    Section Name
+  </h3>
+  
+  {/* Right: Badge + Buttons */}
+  <div className="flex items-center gap-2">
+    {/* POSITION 0: "Analyzed X ago" badge (when data exists) */}
+    {metadata?.cached && (
+      <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+        Analyzed {metadata.cacheAge}
+      </span>
+    )}
+
+    {/* POSITION 1: AI Analysis Button (PRIMARY ACTION) */}
+    <AnalyzeButton
+      onAnalyze={handleAnalyze}
+      isAnalyzing={isAnalyzing}
+      label="Analyze Section Name"
+    />
+
+    {/* POSITION 2: Expand Button (when applicable) */}
+    <button
+      onClick={onViewFull}
+      className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+      title="View Full Analysis"
+    >
+      <Maximize2 size={14} />
+    </button>
+
+    {/* POSITION 3: View Prompt Button */}
+    <PromptViewer 
+      promptKind="sectionName" 
+      version="v1"
+      buttonLabel=""
+      className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+    />
+
+    {/* POSITION 4: View Sources Button */}
+    <button
+      onClick={() => setShowSourcesModal(true)}
+      className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+      title="View Sources"
+    >
+      <AlertCircle size={14} />
+    </button>
+  </div>
+</div>
+```
+
+### Button Icons & Styling Reference
+
+| Button | Icon | Border Color | Use Case |
+|--------|------|-------------|----------|
+| **AI Analysis** | `Settings` | Purple gradient | Primary action - trigger analysis |
+| **Expand** | `Maximize2` | Gray | View full/extended data (optional) |
+| **View Prompt** | `Eye` | Gray | View AI prompt being used |
+| **View Sources** | `AlertCircle` | Blue | View data sources/research |
+
+### "Analyzed X ago" Badge
+
+**Position**: RIGHT side, immediately before buttons (not on left with title)
+
+**Styling**:
+```tsx
+<span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+  Analyzed {cacheAge}
+</span>
+```
+
+**Display Logic**:
+- Show when `metadata?.cached === true`
+- Format: "2 hours ago", "1 day ago", "3 days ago"
+- Calculate from `analyzedAt` timestamp
+
+### Sources Modal Component
+
+**Location**: `app/components/ai/SourcesModal.tsx`
+
+**Props**:
+```tsx
+interface SourcesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sources: Source[];
+  title?: string;
+  sectionName?: string;
+}
+
+export interface Source {
+  url?: string;
+  name?: string;
+  title?: string;
+  type?: string;
+  category?: string;
+  confidence?: 'high' | 'medium' | 'low';
+  dateAccessed?: string;
+  relevance?: string;
+}
+```
+
+**Usage**:
+```tsx
+<SourcesModal
+  isOpen={showSourcesModal}
+  onClose={() => setShowSourcesModal(false)}
+  sources={sources}
+  sectionName="Match Score"
+/>
+```
+
+**Fallback Behavior**:
+- When `sources = []`: Show "No sources available - locally calculated"
+- Consistent styling with Company Ecosystem's Sources & Research tab
+
+### Company Intelligence - Smart Search Buttons
+
+**For Missing Data Fields** (Company Principles, Recent News, Culture Keywords):
+
+```tsx
+<div className="flex items-center justify-between mb-2">
+  <h5 className="text-sm font-semibold">Field Name</h5>
+  <div className="flex items-center gap-1">
+    {/* Smart Search Button */}
+    <button
+      onClick={() => handleSmartSearch('fieldType')}
+      disabled={searchingFor === 'fieldType'}
+      className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
+      title="Search web for this information"
+    >
+      <Search size={12} />
+      {searchingFor === 'fieldType' ? 'Searching...' : 'Find'}
+    </button>
+
+    {/* Manual Edit Button */}
+    <button
+      onClick={() => handleManualEdit('fieldType')}
+      className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+      title="Manually add from your research"
+    >
+      <Edit2 size={12} />
+      Edit
+    </button>
+  </div>
+</div>
+```
+
+**Manual Edit Modal**:
+- Max 100 words input
+- Real-time word count display
+- AI summarization on save
+- 600 char limit on textarea
+
+### Checklist for New AI Sections
+
+When creating a new AI analysis section, ensure:
+
+- [ ] Unique gradient background (from section color palette above)
+- [ ] Section icon (Lucide React, 18px, colored to match gradient)
+- [ ] Buttons in correct order: `[Analyze] [Expand] [Prompt] [Sources]`
+- [ ] "Analyzed X ago" badge on RIGHT side, before buttons
+- [ ] SourcesModal component integrated
+- [ ] Dark mode fully supported (test all states)
+- [ ] AnalysisExplanation component (2nd last position)
+- [ ] "Why this matters" section (last position)
+- [ ] Proper spacing: `mb-4` on header, `space-y-4` on content
+- [ ] Border dividers: `border-t border-{color}-200 dark:border-{color}-800`
+
+### Common Pitfalls to Avoid
+
+❌ **DON'T**: Put "Analyzed X ago" badge on left side with title
+✅ **DO**: Put badge on right side, immediately before buttons
+
+❌ **DON'T**: Use different button order for different sections
+✅ **DO**: Always use: Analyze → Expand (optional) → Prompt → Sources
+
+❌ **DON'T**: Use `ExternalLink` icon for Sources button
+✅ **DO**: Use `AlertCircle` icon with blue border
+
+❌ **DON'T**: Create duplicate source displays (e.g., "Unverified" badges)
+✅ **DO**: Use one standard Sources button + SourcesModal
+
+❌ **DON'T**: Hardcode "Sample Data" badges without checking AI status
+✅ **DO**: Use `provider === 'remote'` check or metadata existence
+
+---
+
+**Last Updated**: Oct 17, 2025
 **Maintained By**: Development Team
-**Status**: ✅ Active - All sections standardized
+**Status**: ✅ Active - All 6 sections fully standardized (Oct 17, 2025)
 
