@@ -110,9 +110,45 @@ export async function getAiSettings(): Promise<AiSettings> {
 
 /**
  * Save AI settings to database (encrypted)
+ * IMPORTANT: Merges with existing settings to preserve all keys
  */
-export async function saveAiSettings(settings: AiSettings): Promise<void> {
-  const encrypted = encrypt(JSON.stringify(settings));
+export async function saveAiSettings(newSettings: Partial<AiSettings>): Promise<void> {
+  // Step 1: Load existing settings
+  const existingSettings = await getAiSettings();
+  
+  // Step 2: Merge new settings with existing (preserves other keys!)
+  const mergedSettings: AiSettings = {
+    ...existingSettings,
+    ...newSettings,
+  };
+  
+  // Remove undefined values (don't overwrite with undefined)
+  Object.keys(mergedSettings).forEach(key => {
+    if ((mergedSettings as any)[key] === undefined) {
+      delete (mergedSettings as any)[key];
+    }
+  });
+  
+  console.log('💾 Merging settings:', {
+    existing: {
+      hasClaudeKey: !!existingSettings.claudeKey,
+      hasTavilyKey: !!existingSettings.tavilyKey,
+      hasOpenaiKey: !!existingSettings.openaiKey,
+    },
+    new: {
+      hasClaudeKey: !!newSettings.claudeKey,
+      hasTavilyKey: !!newSettings.tavilyKey,
+      hasOpenaiKey: !!newSettings.openaiKey,
+    },
+    merged: {
+      hasClaudeKey: !!mergedSettings.claudeKey,
+      hasTavilyKey: !!mergedSettings.tavilyKey,
+      hasOpenaiKey: !!mergedSettings.openaiKey,
+    },
+  });
+  
+  // Step 3: Encrypt and save merged settings
+  const encrypted = encrypt(JSON.stringify(mergedSettings));
 
   const existing = await db
     .select()
@@ -131,6 +167,8 @@ export async function saveAiSettings(settings: AiSettings): Promise<void> {
       value: encrypted,
     });
   }
+  
+  console.log('✅ Settings saved and merged successfully');
 }
 
 /**
