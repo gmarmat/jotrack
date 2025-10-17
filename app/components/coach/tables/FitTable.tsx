@@ -7,6 +7,7 @@ import ProviderBadge from '../ProviderBadge';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import AnalysisExplanation from '@/app/components/ui/AnalysisExplanation';
+import SourcesModal, { type Source } from '@/app/components/ai/SourcesModal';
 import { ATS_STANDARD_SIGNALS, DYNAMIC_SIGNALS_EXAMPLE } from '@/lib/matchSignals';
 
 interface FitDimension {
@@ -33,6 +34,7 @@ interface FitTableProps {
 export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson }: FitTableProps) {
   const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
 
   const scoreLevel = overall >= threshold ? 'Great' : overall >= threshold * 0.8 ? 'Medium' : 'Low';
   const scoreColor = overall >= threshold ? 'text-green-600' : overall >= threshold * 0.8 ? 'text-yellow-600' : 'text-red-600';
@@ -108,8 +110,26 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
           <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
         </div>
         
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
+        {/* Right: Actions - Standard order: Sources -> Prompt -> Analyze */}
+        <div className="flex items-center gap-2">
+          {/* View Sources - Position 1 */}
+          <button
+            onClick={() => setShowSourcesModal(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+            title="View Sources"
+          >
+            <AlertCircle size={14} />
+          </button>
+
+          {/* View Prompt - Position 2 */}
+          <PromptViewer 
+            promptKind="match-signals" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+
+          {/* AI Analysis - Position 3 */}
           {onRefresh && (
             <AnalyzeButton
               onAnalyze={onRefresh}
@@ -117,14 +137,16 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
               label="Analyze Match Matrix"
             />
           )}
-          <PromptViewer 
-            promptKind="match-signals" 
-            version="v1"
-            buttonLabel=""
-            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          />
         </div>
       </div>
+      
+      {/* Sources Modal */}
+      <SourcesModal
+        isOpen={showSourcesModal}
+        onClose={() => setShowSourcesModal(false)}
+        sources={[]}
+        sectionName="Match Matrix"
+      />
 
       {/* 72% Score in separate row */}
       <div className="mb-6">
@@ -267,28 +289,7 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
         </table>
       </div>
 
-      {/* Sources */}
-      <div className="mt-4 flex items-center justify-between">
-        <div>
-          {!dryRun && sources.length > 0 && <AiSources sources={sources} />}
-          
-          {/* v1.3: Unverified badge when remote but no sources */}
-          {!dryRun && sources.length === 0 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full" data-testid="unverified-badge">
-              <AlertCircle className="w-3 h-3" />
-              Unverified (no sources)
-            </div>
-          )}
-          
-          {dryRun && (
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-              <Info className="w-3 h-3" />
-              Local fixture (no sources)
-            </div>
-          )}
-        </div>
-
-      </div>
+      {/* Removed duplicate sources section - now using standard Sources button in header */}
 
       {/* Standard Analysis Explanation - 2nd Last Position */}
       <AnalysisExplanation>

@@ -145,42 +145,43 @@ export default function CompanyIntelligenceCard({
     <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800 p-6" data-testid="company-intelligence-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Building2 size={18} className="text-indigo-600" />
-          Company Intelligence
-        </h3>
-        
         <div className="flex items-center gap-2">
-          {metadata?.cached ? (
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Building2 size={18} className="text-indigo-600" />
+            Company Intelligence
+          </h3>
+          {metadata?.cached && (
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
               Analyzed {metadata.cacheAge}
             </span>
-          ) : !isAiPowered && company ? (
-            <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
-              Sample Data
-            </span>
-          ) : null}
-          <div className="flex items-center gap-2">
-            <AnalyzeButton
-              onAnalyze={handleAnalyze}
-              isAnalyzing={isAnalyzing}
-              label="Analyze Company Intelligence"
-            />
-            <PromptViewer 
-              promptKind="company" 
-              version="v1"
-              buttonLabel=""
-              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-            />
-            <button
-              onClick={() => setShowSourcesModal(true)}
-              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-              title="View Sources"
-              data-testid="sources-button"
-            >
-              <ExternalLink size={14} />
-            </button>
-          </div>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* View Sources - Standard order position 1 */}
+          <button
+            onClick={() => setShowSourcesModal(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+            title="View Sources"
+            data-testid="sources-button"
+          >
+            <AlertCircle size={14} />
+          </button>
+
+          {/* View Prompt - Standard order position 2 */}
+          <PromptViewer 
+            promptKind="company" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+
+          {/* AI Analysis - Standard order position 3 */}
+          <AnalyzeButton
+            onAnalyze={handleAnalyze}
+            isAnalyzing={isAnalyzing}
+            label="Analyze Company Intelligence"
+          />
         </div>
       </div>
       

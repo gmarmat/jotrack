@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles, RefreshCw, TrendingUp, Target, Lightbulb, Users, Zap, Building2, Clock } from 'lucide-react';
+import { Sparkles, RefreshCw, TrendingUp, Target, Lightbulb, Users, Zap, Building2, Clock, AlertCircle } from 'lucide-react';
 import LoadingPulse from '../LoadingPulse';
 import { calculatePreliminaryScore } from '@/lib/preliminaryScore';
 import { checkAnalysisGuardrails, recordAnalysis, getCooldownRemaining, type AnalysisInputs } from '@/lib/coach/analysisGuardrails';
@@ -14,6 +14,7 @@ import PeopleProfilesCard from '@/app/components/ai/PeopleProfilesCard';
 import FitTable from '@/app/components/coach/tables/FitTable';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
+import SourcesModal, { type Source } from '@/app/components/ai/SourcesModal';
 import { getMatchScoreCategory } from '@/lib/matchScoreCategories';
 
 interface AiShowcaseProps {
@@ -65,6 +66,8 @@ export default function AiShowcase({
   const [showCooldownWarning, setShowCooldownWarning] = useState(false);
   const [guardrailMessage, setGuardrailMessage] = useState<string | null>(null);
   const [showEcosystemModal, setShowEcosystemModal] = useState(false);
+  const [showMatchScoreSourcesModal, setShowMatchScoreSourcesModal] = useState(false);
+  const [showSkillMatchSourcesModal, setShowSkillMatchSourcesModal] = useState(false);
   
   // Use metadata from aiData if available, fallback to local state
   const ecosystemCacheMetadata = aiData?.ecosystemMetadata || null;
@@ -298,12 +301,24 @@ export default function AiShowcase({
                 )}
               </div>
               <div className="flex items-center gap-2">
+                {/* View Sources */}
+                <button
+                  onClick={() => setShowMatchScoreSourcesModal(true)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                  title="View Sources"
+                >
+                  <AlertCircle size={14} />
+                </button>
+
+                {/* View Prompt */}
                 <PromptViewer 
                   promptKind="matchScore" 
                   version="v1"
                   buttonLabel=""
                   className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                 />
+
+                {/* AI Analysis */}
                 <AnalyzeButton
                   onAnalyze={() => handleRefresh(false, 'match')}
                   isAnalyzing={isRefreshing}
@@ -311,6 +326,14 @@ export default function AiShowcase({
                 />
               </div>
             </div>
+            
+            {/* Sources Modal */}
+            <SourcesModal
+              isOpen={showMatchScoreSourcesModal}
+              onClose={() => setShowMatchScoreSourcesModal(false)}
+              sources={[]}
+              sectionName="Match Score"
+            />
             
             {/* Preliminary Score Badge */}
             {showPreliminary && preliminaryScore !== null && (
@@ -400,12 +423,24 @@ export default function AiShowcase({
                 )}
               </div>
               <div className="flex items-center gap-2">
+                {/* View Sources */}
+                <button
+                  onClick={() => setShowSkillMatchSourcesModal(true)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                  title="View Sources"
+                >
+                  <AlertCircle size={14} />
+                </button>
+
+                {/* View Prompt */}
                 <PromptViewer 
                   promptKind="matchScore" 
                   version="v1"
                   buttonLabel=""
                   className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                 />
+
+                {/* AI Analysis */}
                 <AnalyzeButton
                   onAnalyze={() => handleRefresh(false, 'skills')}
                   isAnalyzing={isRefreshing}
@@ -413,6 +448,14 @@ export default function AiShowcase({
                 />
               </div>
             </div>
+            
+            {/* Sources Modal */}
+            <SourcesModal
+              isOpen={showSkillMatchSourcesModal}
+              onClose={() => setShowSkillMatchSourcesModal(false)}
+              sources={[]}
+              sectionName="Skill Match"
+            />
             
             <SkillsMatchChart skills={skills} maxSkills={6} />
             

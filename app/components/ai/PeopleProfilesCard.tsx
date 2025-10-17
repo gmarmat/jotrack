@@ -1,6 +1,6 @@
 'use client';
 
-import { Users, User, ExternalLink } from 'lucide-react';
+import { Users, User, ExternalLink, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
@@ -160,38 +160,45 @@ export default function PeopleProfilesCard({
     <div className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg border border-cyan-200 dark:border-cyan-800 p-6" data-testid="people-profiles-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Users size={18} className="text-indigo-600" />
-          People Profiles
-        </h3>
-        
         <div className="flex items-center gap-2">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Users size={18} className="text-indigo-600" />
+            People Profiles
+          </h3>
           {!isAiPowered && (
             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
           )}
-          <div className="flex items-center gap-2">
-            <AnalyzeButton
-              onAnalyze={handleAnalyze}
-              isAnalyzing={isAnalyzing}
-              label="Analyze People Profiles"
-            />
-            <PromptViewer 
-              promptKind="people" 
-              version="v1"
-              buttonLabel=""
-              className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-            />
-            <button
-              onClick={() => setShowSourcesModal(true)}
-              className="flex items-center gap-1.5 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-              title="View Sources"
-              data-testid="sources-button"
-            >
-              <ExternalLink size={14} />
-            </button>
-          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Standard button order: Sources -> Prompt -> Analyze */}
+          
+          {/* View Sources - Position 1 */}
+          <button
+            onClick={() => setShowSourcesModal(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+            title="View Sources"
+            data-testid="sources-button"
+          >
+            <AlertCircle size={14} />
+          </button>
+
+          {/* View Prompt - Position 2 */}
+          <PromptViewer 
+            promptKind="people" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+
+          {/* AI Analysis - Position 3 */}
+          <AnalyzeButton
+            onAnalyze={handleAnalyze}
+            isAnalyzing={isAnalyzing}
+            label="Analyze People Profiles"
+          />
         </div>
       </div>
       
