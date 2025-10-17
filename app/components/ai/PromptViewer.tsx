@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Eye, X, Code2 } from 'lucide-react';
 
 interface PromptViewerProps {
-  promptKind: 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals' | 'matchSignals';
+  promptKind: 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals' | 'matchSignals' | 'matchScore';
   version?: string;
   buttonLabel?: string;
   className?: string;

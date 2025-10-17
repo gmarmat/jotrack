@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals';
+export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals' | 'matchScore';
 
 interface PromptVariables {
   jobTitle?: string;
@@ -40,17 +40,29 @@ interface PromptVariables {
  * @returns Raw prompt template with {{placeholders}}
  */
 export function loadPrompt(kind: PromptKind, version: string = 'v1'): string {
-  const promptsDir = path.join(process.cwd(), 'core/ai/prompts');
   const filename = `${kind}.${version}.md`;
-  const filepath = path.join(promptsDir, filename);
+  
+  // Try prompts directory first (new location)
+  const promptsDirNew = path.join(process.cwd(), 'prompts');
+  const filepathNew = path.join(promptsDirNew, filename);
+  
+  // Fallback to core/ai/prompts (old location)
+  const promptsDirOld = path.join(process.cwd(), 'core/ai/prompts');
+  const filepathOld = path.join(promptsDirOld, filename);
 
   try {
-    if (!fs.existsSync(filepath)) {
-      console.warn(`Prompt file not found: ${filepath}, using default`);
-      return getDefaultPrompt(kind);
+    // Try new location first
+    if (fs.existsSync(filepathNew)) {
+      return fs.readFileSync(filepathNew, 'utf-8');
+    }
+    
+    // Try old location
+    if (fs.existsSync(filepathOld)) {
+      return fs.readFileSync(filepathOld, 'utf-8');
     }
 
-    return fs.readFileSync(filepath, 'utf-8');
+    console.warn(`Prompt file not found: ${filename}, using default`);
+    return getDefaultPrompt(kind);
   } catch (error) {
     console.error(`Error loading prompt ${kind}.${version}:`, error);
     return getDefaultPrompt(kind);
@@ -167,6 +179,15 @@ JD: {{jobDescription}}
 Resume: {{resumeText}}
 
 Return JSON with signals array (param, weight, score, jdEvidence, resumeEvidence, reasoning), overall score, and category breakdown.`,
+
+    'matchScore': `Generate comprehensive match score analysis.
+
+JD Variant: {{jdVariant}}
+Resume Variant: {{resumeVariant}}
+Company: {{companyName}}
+User Profile: {{userProfile}}
+
+Return JSON with matchScore object (overallScore, categoryBreakdown, topStrengths, topGaps, quickRecommendation, confidence) and skillsMatch object (technicalSkills array, softSkills array, missingCriticalSkills array, unexpectedStrengths array, transferableSkills array).`,
   };
 
   return defaults[kind] || `Analyze {{jdText}} and {{resumeText}}`;
