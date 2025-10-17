@@ -289,28 +289,29 @@ export default function AiShowcase({
           {/* Match Score Card - Reorganized Layout */}
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Target size={18} className="text-purple-600" />
+                Match Score
+              </h3>
+              
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <Target size={18} className="text-purple-600" />
-                  Match Score
-                </h3>
+                {/* Analyzed badge - right before buttons */}
                 {aiData?.matchScoreMetadata?.cached && (
                   <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
                     Analyzed {aiData.matchScoreMetadata.cacheAge}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {/* View Sources */}
-                <button
-                  onClick={() => setShowMatchScoreSourcesModal(true)}
-                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-                  title="View Sources"
-                >
-                  <AlertCircle size={14} />
-                </button>
 
-                {/* View Prompt */}
+                {/* Standard button order: Analyze -> Prompt -> Sources */}
+                
+                {/* AI Analysis - Position 1 */}
+                <AnalyzeButton
+                  onAnalyze={() => handleRefresh(false, 'match')}
+                  isAnalyzing={isRefreshing}
+                  label="Analyze Match Score"
+                />
+
+                {/* View Prompt - Position 2 */}
                 <PromptViewer 
                   promptKind="matchScore" 
                   version="v1"
@@ -318,12 +319,14 @@ export default function AiShowcase({
                   className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                 />
 
-                {/* AI Analysis */}
-                <AnalyzeButton
-                  onAnalyze={() => handleRefresh(false, 'match')}
-                  isAnalyzing={isRefreshing}
-                  label="Analyze Match Score"
-                />
+                {/* View Sources - Position 3 */}
+                <button
+                  onClick={() => setShowMatchScoreSourcesModal(true)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                  title="View Sources"
+                >
+                  <AlertCircle size={14} />
+                </button>
               </div>
             </div>
             
@@ -411,28 +414,29 @@ export default function AiShowcase({
           {/* Skill Match Card */}
           <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Lightbulb size={18} className="text-amber-600" />
+                Skill Match
+              </h3>
+              
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <Lightbulb size={18} className="text-amber-600" />
-                  Skill Match
-                </h3>
+                {/* Analyzed badge - right before buttons */}
                 {aiData?.matchScoreMetadata?.cached && (
                   <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
                     Analyzed {aiData.matchScoreMetadata.cacheAge}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {/* View Sources */}
-                <button
-                  onClick={() => setShowSkillMatchSourcesModal(true)}
-                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-                  title="View Sources"
-                >
-                  <AlertCircle size={14} />
-                </button>
 
-                {/* View Prompt */}
+                {/* Standard button order: Analyze -> Prompt -> Sources */}
+
+                {/* AI Analysis - Position 1 */}
+                <AnalyzeButton
+                  onAnalyze={() => handleRefresh(false, 'skills')}
+                  isAnalyzing={isRefreshing}
+                  label="Analyze Skills Match"
+                />
+
+                {/* View Prompt - Position 2 */}
                 <PromptViewer 
                   promptKind="matchScore" 
                   version="v1"
@@ -440,12 +444,14 @@ export default function AiShowcase({
                   className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                 />
 
-                {/* AI Analysis */}
-                <AnalyzeButton
-                  onAnalyze={() => handleRefresh(false, 'skills')}
-                  isAnalyzing={isRefreshing}
-                  label="Analyze Skills Match"
-                />
+                {/* View Sources - Position 3 */}
+                <button
+                  onClick={() => setShowSkillMatchSourcesModal(true)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                  title="View Sources"
+                >
+                  <AlertCircle size={14} />
+                </button>
               </div>
             </div>
             

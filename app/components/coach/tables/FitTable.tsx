@@ -104,22 +104,18 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6" data-testid="fit-table">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
-        {/* Left: Title */}
-        <div className="flex items-center gap-2">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Match Matrix</h3>
-          <ProviderBadge provider={dryRun ? 'local' : 'remote'} />
-        </div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Match Matrix</h3>
         
-        {/* Right: Actions - Standard order: Sources -> Prompt -> Analyze */}
+        {/* Right: Actions - Standard order: Analyze -> Prompt -> Sources */}
         <div className="flex items-center gap-2">
-          {/* View Sources - Position 1 */}
-          <button
-            onClick={() => setShowSourcesModal(true)}
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-            title="View Sources"
-          >
-            <AlertCircle size={14} />
-          </button>
+          {/* AI Analysis - Position 1 */}
+          {onRefresh && (
+            <AnalyzeButton
+              onAnalyze={onRefresh}
+              isAnalyzing={refreshing}
+              label="Analyze Match Matrix"
+            />
+          )}
 
           {/* View Prompt - Position 2 */}
           <PromptViewer 
@@ -129,14 +125,14 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
             className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
           />
 
-          {/* AI Analysis - Position 3 */}
-          {onRefresh && (
-            <AnalyzeButton
-              onAnalyze={onRefresh}
-              isAnalyzing={refreshing}
-              label="Analyze Match Matrix"
-            />
-          )}
+          {/* View Sources - Position 3 */}
+          <button
+            onClick={() => setShowSourcesModal(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+            title="View Sources"
+          >
+            <AlertCircle size={14} />
+          </button>
         </div>
       </div>
       

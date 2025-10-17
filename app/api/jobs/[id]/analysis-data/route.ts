@@ -141,13 +141,20 @@ export async function GET(
     // Load cached match score + skills data if available
     let matchScoreData = null;
     let matchScoreMetadata = null;
+    console.log(`🔍 Checking for match score data:`, {
+      hasData: !!jobData.matchScoreData,
+      analyzedAt: jobData.matchScoreAnalyzedAt,
+      dataLength: jobData.matchScoreData?.length || 0
+    });
+    
     if (jobData.matchScoreData) {
       try {
         matchScoreData = JSON.parse(jobData.matchScoreData);
         
         // Calculate age
-        const analyzedAt = (jobData.matchScoreAnalyzedAt || 0) * 1000;
-        const ageMs = Date.now() - analyzedAt;
+        const analyzedAt = (jobData.matchScoreAnalyzedAt || 0);
+        const analyzedAtMs = analyzedAt > 1000000000000 ? analyzedAt : analyzedAt * 1000;
+        const ageMs = Date.now() - analyzedAtMs;
         const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
         const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
         const ageStr = ageDays > 0 
@@ -157,10 +164,14 @@ export async function GET(
         matchScoreMetadata = {
           cached: true,
           cacheAge: ageStr,
-          analyzedAt,
+          analyzedAt: analyzedAtMs,
         };
         
-        console.log(`✅ Loaded cached match score + skills data`);
+        console.log(`✅ Loaded cached match score + skills data:`, {
+          matchScore: matchScoreData?.matchScore?.overallScore,
+          skillsCount: matchScoreData?.skillsMatch?.technicalSkills?.length || 0,
+          cacheAge: ageStr
+        });
       } catch (error) {
         console.error('Failed to parse match score data:', error);
       }

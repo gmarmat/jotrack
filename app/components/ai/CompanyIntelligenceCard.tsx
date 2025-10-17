@@ -150,20 +150,37 @@ export default function CompanyIntelligenceCard({
     <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800 p-6" data-testid="company-intelligence-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Building2 size={18} className="text-indigo-600" />
+          Company Intelligence
+        </h3>
+        
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Building2 size={18} className="text-indigo-600" />
-            Company Intelligence
-          </h3>
+          {/* Analyzed badge - right before buttons */}
           {metadata?.cached && (
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
               Analyzed {metadata.cacheAge}
             </span>
           )}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* View Sources - Standard order position 1 */}
+
+          {/* Standard button order: Analyze -> Prompt -> Sources */}
+
+          {/* AI Analysis - Position 1 */}
+          <AnalyzeButton
+            onAnalyze={handleAnalyze}
+            isAnalyzing={isAnalyzing}
+            label="Analyze Company Intelligence"
+          />
+
+          {/* View Prompt - Position 2 */}
+          <PromptViewer 
+            promptKind="company" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+
+          {/* View Sources - Position 3 */}
           <button
             onClick={() => setShowSourcesModal(true)}
             className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
@@ -172,21 +189,6 @@ export default function CompanyIntelligenceCard({
           >
             <AlertCircle size={14} />
           </button>
-
-          {/* View Prompt - Standard order position 2 */}
-          <PromptViewer 
-            promptKind="company" 
-            version="v1"
-            buttonLabel=""
-            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          />
-
-          {/* AI Analysis - Standard order position 3 */}
-          <AnalyzeButton
-            onAnalyze={handleAnalyze}
-            isAnalyzing={isAnalyzing}
-            label="Analyze Company Intelligence"
-          />
         </div>
       </div>
       

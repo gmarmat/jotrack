@@ -152,36 +152,28 @@ export default function CompanyEcosystemTableCompact({
     <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800 p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Company Ecosystem</h3>
+        
         <div className="flex items-center gap-2">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Company Ecosystem</h3>
+          {/* Analyzed badge - right before buttons */}
           {cacheMetadata?.cached && (
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
               Analyzed {cacheMetadata.cacheAge}
             </span>
           )}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Standard button order: Sources -> Prompt -> Expand -> Analyze */}
-          
-          {/* View Sources - Position 1 (placeholder for now) */}
-          <button
-            className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 opacity-50 cursor-not-allowed"
-            title="View Sources (coming soon)"
-            disabled
-          >
-            <AlertCircle size={14} />
-          </button>
 
-          {/* View Prompt - Position 2 */}
-          <PromptViewer 
-            promptKind="ecosystem" 
-            version="v1"
-            buttonLabel=""
-            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          />
+          {/* Standard button order: Analyze -> Expand -> Prompt -> Sources */}
 
-          {/* Expand - Position 3 */}
+          {/* AI Analysis - Position 1 */}
+          {onRefresh && (
+            <AnalyzeButton
+              onAnalyze={onRefresh}
+              isAnalyzing={refreshing}
+              label="Analyze Ecosystem"
+            />
+          )}
+
+          {/* Expand - Position 2 */}
           {onViewFull && (
             <button
               onClick={onViewFull}
@@ -192,13 +184,23 @@ export default function CompanyEcosystemTableCompact({
             </button>
           )}
 
-          {/* AI Analysis - Position 4 */}
-          {onRefresh && (
-            <AnalyzeButton
-              onAnalyze={onRefresh}
-              isAnalyzing={refreshing}
-              label="Analyze Ecosystem"
-            />
+          {/* View Prompt - Position 3 */}
+          <PromptViewer 
+            promptKind="ecosystem" 
+            version="v1"
+            buttonLabel=""
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+          />
+
+          {/* View Sources - Position 4 (opens expanded modal with Sources tab) */}
+          {onViewFull && (
+            <button
+              onClick={onViewFull}
+              className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+              title="View Sources & Research"
+            >
+              <AlertCircle size={14} />
+            </button>
           )}
         </div>
       </div>
