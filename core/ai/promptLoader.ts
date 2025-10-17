@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals' | 'matchScore';
+export type PromptKind = 'analyze' | 'compare' | 'improve' | 'skillpath' | 'persona' | 'company' | 'people' | 'ecosystem' | 'match-signals' | 'matchScore' | 'notes-summary';
 
 interface PromptVariables {
   jobTitle?: string;
