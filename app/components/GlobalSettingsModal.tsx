@@ -136,7 +136,7 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
 function AITab() {
   const [networkEnabled, setNetworkEnabled] = useState(false);
   const [provider, setProvider] = useState('claude');
-  const [claudeModel, setClaudeModel] = useState('claude-3-5-sonnet-20240620');
+  const [claudeModel, setClaudeModel] = useState('claude-3-5-sonnet-latest');
   const [claudeKey, setClaudeKey] = useState('');
   const [hasExistingClaudeKey, setHasExistingClaudeKey] = useState(false);
   const [isSavingClaude, setIsSavingClaude] = useState(false);
@@ -162,7 +162,7 @@ function AITab() {
           const data = await res.json();
           setNetworkEnabled(data.networkEnabled || false);
           setProvider(data.provider || 'claude');
-          setClaudeModel(data.claudeModel || 'claude-3-5-sonnet-20240620');
+          setClaudeModel(data.claudeModel || 'claude-3-5-sonnet-latest');
           setOpenaiModel(data.openaiModel || 'gpt-4o-mini');
           setHasExistingClaudeKey(!!data.hasClaudeKey);
           setHasExistingTavilyKey(!!data.hasTavilyKey);
@@ -332,9 +332,10 @@ function AITab() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     data-testid="claude-model"
                   >
-                  <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (Recommended) - ~$0.03/job ⭐</option>
-                  <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Budget) - ~$0.01/job 💰</option>
-                  <option value="claude-3-opus-20240229">Claude 3 Opus (Premium) - ~$0.15/job 💎</option>
+                  <option value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet (Latest) - ~$0.03/job ⭐</option>
+                  <option value="claude-3-5-haiku-latest">Claude 3.5 Haiku (Budget) - ~$0.01/job 💰</option>
+                  <option value="claude-3-opus-20240229">Claude 3 Opus - ~$0.15/job 💎</option>
+                  <option value="claude-3-sonnet-20240229">Claude 3 Sonnet - ~$0.02/job</option>
                   </select>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Sonnet = Best balance of quality and cost. Haiku = Cheaper but less accurate.
