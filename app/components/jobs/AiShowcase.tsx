@@ -309,6 +309,8 @@ export default function AiShowcase({
                   onAnalyze={() => handleRefresh(false, 'match')}
                   isAnalyzing={isRefreshing}
                   label="Analyze Match Score"
+                  estimatedCost={0.02}
+                  estimatedSeconds={20}
                 />
 
                 {/* View Prompt - Position 2 */}
@@ -434,6 +436,8 @@ export default function AiShowcase({
                   onAnalyze={() => handleRefresh(false, 'skills')}
                   isAnalyzing={isRefreshing}
                   label="Analyze Skills Match"
+                  estimatedCost={0.02}
+                  estimatedSeconds={20}
                 />
 
                 {/* View Prompt - Position 2 */}

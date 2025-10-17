@@ -206,6 +206,8 @@ export default function CompanyIntelligenceCard({
             onAnalyze={handleAnalyze}
             isAnalyzing={isAnalyzing}
             label="Analyze Company Intelligence"
+            estimatedCost={0.045}
+            estimatedSeconds={35}
           />
 
           {/* View Prompt - Position 2 */}

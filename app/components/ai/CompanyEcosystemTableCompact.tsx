@@ -170,6 +170,8 @@ export default function CompanyEcosystemTableCompact({
               onAnalyze={onRefresh}
               isAnalyzing={refreshing}
               label="Analyze Ecosystem"
+              estimatedCost={0.05}
+              estimatedSeconds={40}
             />
           )}
 

@@ -180,6 +180,8 @@ export default function PeopleProfilesCard({
             onAnalyze={handleAnalyze}
             isAnalyzing={isAnalyzing}
             label="Analyze People Profiles"
+            estimatedCost={0.06}
+            estimatedSeconds={45}
           />
 
           {/* View Prompt - Position 2 */}

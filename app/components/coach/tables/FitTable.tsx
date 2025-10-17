@@ -114,6 +114,8 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
               onAnalyze={onRefresh}
               isAnalyzing={refreshing}
               label="Analyze Match Matrix"
+              estimatedCost={0.03}
+              estimatedSeconds={25}
             />
           )}
 
