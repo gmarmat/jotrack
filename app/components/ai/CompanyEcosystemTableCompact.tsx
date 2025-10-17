@@ -191,29 +191,11 @@ export default function CompanyEcosystemTableCompact({
         </div>
       </div>
 
-      {/* Summary Stats with Cache Info */}
-      <div className="mb-4 flex items-center justify-between">
+      {/* Summary Stats */}
+      <div className="mb-4">
         <p className="text-sm text-gray-700 dark:text-gray-300">
           {totalCompanies} companies analyzed • Avg confidence: {avgConfidence}
-          {cacheMetadata?.cached && (
-            <span className="text-xs ml-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
-              💰 Cached ({cacheMetadata.cacheAge} ago)
-            </span>
-          )}
         </p>
-        
-        {cacheMetadata?.cached && onRefresh && (
-          <button
-            onClick={() => {
-              // Force refresh by appending ?refresh=true
-              onRefresh();
-            }}
-            className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-            title={`Cache expires in ${cacheMetadata.cacheExpiresIn}. Click to refresh now.`}
-          >
-            Refresh Research
-          </button>
-        )}
       </div>
 
       {/* Compact Table - Interview Prep Focused */}

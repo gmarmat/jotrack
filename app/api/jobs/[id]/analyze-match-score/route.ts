@@ -55,8 +55,17 @@ export async function POST(
     
     console.log(`✅ Match score analysis complete: ${result.tokensUsed} tokens, $${result.cost?.toFixed(4)}`);
     
-    // TODO: Store result in database (match_analysis table)
-    // For now, just return it
+    // Save result to database
+    const now = Date.now();
+    await db.update(jobs)
+      .set({
+        matchScoreData: JSON.stringify(result.data),
+        matchScoreAnalyzedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(jobs.id, jobId));
+    
+    console.log(`💾 Saved match score + skills data to database`);
     
     return NextResponse.json({
       success: true,
@@ -65,7 +74,7 @@ export async function POST(
         tokensUsed: result.tokensUsed,
         cost: `$${result.cost?.toFixed(4)}`,
         promptVersion: 'v1',
-        analyzedAt: Date.now(),
+        analyzedAt: now,
       },
     });
   } catch (error: any) {

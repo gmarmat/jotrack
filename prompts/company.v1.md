@@ -7,17 +7,27 @@ Analyze a company based on job description and web research. Use your knowledge 
 You will receive:
 - **Job Description (AI-Optimized)**: {{jdVariant}}
 - **Company Name**: {{companyName}} (extracted from JD)
+- **Web Search Results**: {{webSearchResults}} (from Tavily API, pre-fetched for you)
 
-## Research Instructions
-You have permission to use web search to gather:
-- Company website information
-- Recent news and press releases
-- LinkedIn company page
-- Glassdoor reviews (general themes only)
-- TechCrunch/industry coverage
-- Funding announcements
+## Web Search Results Format
+The web search results are provided with source weighting:
+- **primary** (company_website): Official company information - HIGHEST PRIORITY
+- **high** (recent_news, culture): Recent announcements, leadership changes, company principles - PRIORITIZE THESE
+- **medium** (news): General news articles - use if no better source available
 
-**Budget**: Up to 5 web searches per analysis (~$0.05-0.10 additional cost)
+## Source Prioritization Rules
+1. **Company Website** (primary): Use for official facts (founding year, employee count, mission, principles)
+2. **Recent News (2024-2025)** (high): Use for CEO/leadership info, recent changes, current status
+3. **Culture/Principles** (high): Use for company values, operating system, cultural keywords
+4. **Older News (< 2024)** (medium): Use only if no recent data available
+
+### Handling Conflicting Information
+If sources disagree (e.g., different CEO names):
+- **Priority Order**: Recent news > Company website > Older news
+- **Recency Matters**: For leadership roles, prefer sources from last 6 months
+- **Example**: If 2024 news says "New CEO John Doe" but older sources say "CEO Jane Smith", use John Doe
+
+**Budget**: 10-12 web searches per analysis (~$0.10-0.15 additional cost via Tavily)
 
 ## Required Output Format
 
@@ -66,10 +76,13 @@ Return a JSON object with this exact structure:
 - Notable achievements or milestones
 - Market position
 
-### 3. Culture & Values (3-5 items)
+### 3. Culture & Values / Company Principles (3-5 items)
+- **Primary Sources**: Company website, culture-specific search results
+- Look for official company principles, operating systems (e.g., "Fortive Business System")
 - Extract from JD language (e.g., "fast-paced", "innovative", "remote-friendly")
-- Look for explicit values statements
+- Look for explicit values statements (e.g., "Continuous Improvement", "Customer Focus")
 - Infer from benefits and perks mentioned
+- **Important**: Many companies have well-documented principles - check search results first!
 
 ### 4. Leadership (Top 3-5 people)
 - CEO, CTO, or relevant executives

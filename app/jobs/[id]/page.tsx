@@ -132,7 +132,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           setAnalysisData(data);
           
           // Initialize aiData with cached analysis results
-          const hasAnalysisData = data.companyEcosystem || data.companyIntelligence;
+          const hasAnalysisData = data.companyEcosystem || data.companyIntelligence || data.matchScoreData;
           
           if (hasAnalysisData) {
             setAiData((prev: any) => ({
@@ -141,6 +141,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               ecosystemMetadata: data.ecosystemMetadata || prev?.ecosystemMetadata,
               companyIntelligence: data.companyIntelligence || prev?.companyIntelligence,
               companyIntelMetadata: data.companyIntelMetadata || prev?.companyIntelMetadata,
+              // Match Score + Skills data (unified)
+              matchScore: data.matchScoreData?.matchScore?.overallScore || prev?.matchScore,
+              highlights: data.matchScoreData?.matchScore?.topStrengths || prev?.highlights,
+              gaps: data.matchScoreData?.matchScore?.topGaps || prev?.gaps,
+              skills: data.matchScoreData?.skillsMatch?.technicalSkills || prev?.skills,
+              matchScoreMetadata: data.matchScoreMetadata || prev?.matchScoreMetadata,
+              provider: (data.matchScoreData || data.companyEcosystem || data.companyIntelligence) ? 'remote' : (prev?.provider || 'local'),
             }));
           }
         }
@@ -252,8 +259,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         // Fall through to 'all' case
       }
       
-      // Match Score (skills parameter in UI)
-      if (analysisType === 'skills' || analysisType === 'all') {
+      // Match Score + Skills Analysis (unified API call)
+      // Both 'match' and 'skills' analysis types call the same endpoint
+      if (analysisType === 'match' || analysisType === 'skills' || analysisType === 'all') {
         const res = await fetch(`/api/jobs/${id}/analyze-match-score`, {
           method: 'POST',
         });
@@ -264,27 +272,31 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         }
         
         const data = await res.json();
-        console.log('✅ Match score analysis complete:', {
-          score: data.analysis?.overallScore || data.analysis?.score,
+        console.log('✅ Match score + skills analysis complete:', {
+          matchScore: data.analysis?.matchScore?.overallScore,
+          skillsCount: data.analysis?.skillsMatch?.technicalSkills?.length || 0,
           cost: data.metadata?.cost,
         });
         
+        // Update both Match Score and Skills Match sections
         setAiData((prev: any) => ({
           ...prev,
-          matchScore: data.analysis?.overallScore || data.analysis?.score || prev.matchScore,
-          highlights: data.analysis?.highlights || prev.highlights,
-          gaps: data.analysis?.gaps || prev.gaps,
-          skills: data.analysis?.skills || prev.skills,
+          matchScore: data.analysis?.matchScore?.overallScore || prev.matchScore,
+          highlights: data.analysis?.matchScore?.topStrengths || prev.highlights,
+          gaps: data.analysis?.matchScore?.topGaps || prev.gaps,
+          skills: data.analysis?.skillsMatch?.technicalSkills || prev.skills,
+          matchScoreMetadata: data.metadata,
+          provider: 'remote', // Mark as AI-powered
         }));
         
-        if (analysisType === 'skills') {
+        if (analysisType === 'match' || analysisType === 'skills') {
           return; // Success - UI updates automatically
         }
         // Fall through to 'all' case
       }
       
-      // Match Matrix / Signal Evaluation
-      if (analysisType === 'match' || analysisType === 'all') {
+      // Match Matrix / Signal Evaluation (ATS signals)
+      if (analysisType === 'all') {
         const res = await fetch(`/api/jobs/${id}/evaluate-signals`, {
           method: 'POST',
         });

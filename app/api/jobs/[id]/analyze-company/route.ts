@@ -38,20 +38,52 @@ export async function POST(
     // Extract company name from JD variant or use job.company
     const companyName = jdVariant.company || job.company;
     
-    // Step 1: Real-time web search via Tavily
-    const searchQuery = `${companyName} company CEO leadership funding culture latest news 2025`;
-    const webSearchResults = await searchWeb(searchQuery, { 
-      maxResults: 5,
+    // Step 1: Multi-source web research with prioritization
+    // Search 1: Company website (official source - highest priority)
+    const websiteSearch = await searchWeb(`${companyName} official website about`, { 
+      maxResults: 2,
+      searchDepth: 'basic' 
+    });
+    
+    // Search 2: Recent leadership changes (last 6 months)
+    const leadershipSearch = await searchWeb(`${companyName} CEO executive leadership team 2024 2025`, { 
+      maxResults: 3,
+      searchDepth: 'advanced',
+      includeAnswer: true,
+    });
+    
+    // Search 3: Company principles, culture, values
+    const cultureSearch = await searchWeb(`${companyName} company culture values principles operating system`, { 
+      maxResults: 3,
       searchDepth: 'advanced' 
     });
     
-    const webSearchData = webSearchResults.success 
-      ? formatSearchResultsForPrompt(webSearchResults.results || [])
+    // Search 4: Recent news (last 30 days)
+    const newsSearch = await searchWeb(`${companyName} news announcement October 2024`, { 
+      maxResults: 3,
+      searchDepth: 'advanced' 
+    });
+    
+    // Combine all search results with source weighting
+    const allResults = [
+      ...(websiteSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'primary', sourceType: 'company_website' })),
+      ...(leadershipSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'recent_news' })),
+      ...(cultureSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'culture' })),
+      ...(newsSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'medium', sourceType: 'news' })),
+    ];
+    
+    const webSearchData = allResults.length > 0
+      ? formatSearchResultsForPrompt(allResults)
       : 'Web search unavailable - using AI knowledge only';
     
-    console.log(`🌐 Web search: ${webSearchResults.success ? `${webSearchResults.results?.length || 0} results` : 'skipped (no Tavily key)'}`);
+    console.log(`🌐 Web search: ${allResults.length} results from ${[
+      websiteSearch.success && 'website',
+      leadershipSearch.success && 'leadership',
+      cultureSearch.success && 'culture',
+      newsSearch.success && 'news'
+    ].filter(Boolean).join(', ')}`);
     
-    // Step 2: Execute company intelligence prompt with web search results
+    // Step 2: Execute company intelligence prompt with weighted web search results
     const result = await executePrompt({
       promptName: 'company',
       promptVersion: 'v1',
