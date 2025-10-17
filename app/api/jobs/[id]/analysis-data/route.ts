@@ -86,13 +86,19 @@ export async function GET(
           const researchData = JSON.parse(cachedEcosystem.researchData);
           companyEcosystem = researchData.companies || null;
           
-          // Calculate cache age
+          // Calculate cache age with proper minute/hour/day formatting
           const cacheAgeMs = Date.now() - (cachedEcosystem.createdAt * 1000);
-          const cacheAgeDays = Math.floor(cacheAgeMs / (1000 * 60 * 60 * 24));
+          const cacheAgeMinutes = Math.floor(cacheAgeMs / (1000 * 60));
           const cacheAgeHours = Math.floor(cacheAgeMs / (1000 * 60 * 60));
+          const cacheAgeDays = Math.floor(cacheAgeMs / (1000 * 60 * 60 * 24));
+          
           const cacheAgeStr = cacheAgeDays > 0 
             ? `${cacheAgeDays} day${cacheAgeDays > 1 ? 's' : ''} ago`
-            : `${cacheAgeHours} hour${cacheAgeHours > 1 ? 's' : ''} ago`;
+            : cacheAgeHours > 0
+              ? `${cacheAgeHours} hour${cacheAgeHours > 1 ? 's' : ''} ago`
+              : cacheAgeMinutes > 0
+                ? `${cacheAgeMinutes} min${cacheAgeMinutes > 1 ? 's' : ''} ago`
+                : 'just now';
           
           ecosystemMetadata = {
             cached: true,
@@ -117,14 +123,20 @@ export async function GET(
       try {
         companyIntelligence = JSON.parse(jobData.companyIntelligenceData);
         
-        // Calculate age
+        // Calculate age with proper minute/hour/day formatting
         const analyzedAt = (jobData.companyIntelligenceAnalyzedAt || 0) * 1000;
         const ageMs = Date.now() - analyzedAt;
-        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        const ageMinutes = Math.floor(ageMs / (1000 * 60));
         const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
+        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        
         const ageStr = ageDays > 0 
           ? `${ageDays} day${ageDays > 1 ? 's' : ''} ago`
-          : `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`;
+          : ageHours > 0
+            ? `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`
+            : ageMinutes > 0
+              ? `${ageMinutes} min${ageMinutes > 1 ? 's' : ''} ago`
+              : 'just now';
         
         companyIntelMetadata = {
           cached: true,
@@ -151,15 +163,21 @@ export async function GET(
       try {
         matchScoreData = JSON.parse(jobData.matchScoreData);
         
-        // Calculate age
+        // Calculate age with proper minute/hour/day formatting
         const analyzedAt = (jobData.matchScoreAnalyzedAt || 0);
         const analyzedAtMs = analyzedAt > 1000000000000 ? analyzedAt : analyzedAt * 1000;
         const ageMs = Date.now() - analyzedAtMs;
-        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        const ageMinutes = Math.floor(ageMs / (1000 * 60));
         const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
+        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        
         const ageStr = ageDays > 0 
           ? `${ageDays} day${ageDays > 1 ? 's' : ''} ago`
-          : `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`;
+          : ageHours > 0
+            ? `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`
+            : ageMinutes > 0
+              ? `${ageMinutes} min${ageMinutes > 1 ? 's' : ''} ago`
+              : 'just now';
         
         matchScoreMetadata = {
           cached: true,
@@ -170,7 +188,9 @@ export async function GET(
         console.log(`✅ Loaded cached match score + skills data:`, {
           matchScore: matchScoreData?.matchScore?.overallScore,
           skillsCount: matchScoreData?.skillsMatch?.technicalSkills?.length || 0,
-          cacheAge: ageStr
+          hasSkillsMatch: !!matchScoreData?.skillsMatch,
+          cacheAge: ageStr,
+          sampleSkills: matchScoreData?.skillsMatch?.technicalSkills?.slice(0, 2)
         });
       } catch (error) {
         console.error('Failed to parse match score data:', error);
