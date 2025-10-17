@@ -1,12 +1,27 @@
 # JoTrack Terminology Guide - Correct Names & Labels
 
-## 🚨 **USE THESE EXACT TERMS** (Updated Oct 16, 2024)
+## 🚨 **USE THESE EXACT TERMS** (Updated Oct 17, 2025)
 
 This guide ensures consistency across documentation, code, and conversations.
 
 ---
 
 ## 🔘 Button Labels
+
+### Settings UI (⚙️ → AI & Privacy)
+
+| ❌ WRONG | ✅ CORRECT | Usage |
+|----------|-----------|-------|
+| Update | **Change** | Button to unlock masked API key |
+| Save API Key | **Save** | Button to save settings (shows ✓ checkmark on success) |
+| Save Claude Settings | **Save** | Simplified button text |
+
+**New Features (Oct 17):**
+- ✅ Auto-loads Claude models on Settings open
+- ✅ Model dropdown uses categories (Recommended/Budget/Best Quality)
+- ✅ Simplified labels: "3.5 Sonnet ~ $0.03/job" (no "Claude" prefix)
+- ✅ Checkmark (✓) appears after successful save, auto-hides after 3 seconds
+- ✅ Inline model count: "8 models loaded" next to refresh icon
 
 ### Data Pipeline Panel
 

@@ -20,16 +20,18 @@ KEY FACTS:
 - Button is "Refresh Data" NOT "Extract Data"
 - FitTable displays as "Match Matrix" NOT "FitTable"  
 - API keys via Settings UI (⚙️ top-right) NOT .env.local
-- Settings → AI & Privacy tab to add OpenAI key
-- Sample data everywhere (APIs not wired yet)
+- Settings → AI & Privacy tab → Add Claude key (primary) + Tavily (web search)
+- **Company Ecosystem & Intelligence WIRED and working with real AI!**
+- Models auto-load on Settings open
 
 CURRENT PRIORITY:
-[Insert your goal: e.g., "Wire Company Ecosystem to real API" or "Test Refresh Data flow"]
+[Insert your goal: e.g., "Wire People Profiles" or "Test Match Score analysis"]
 
 TECH STACK:
 - Next.js 14, React 18, TypeScript, Tailwind
 - SQLite (better-sqlite3) + Drizzle ORM
-- OpenAI (gpt-4o-mini) for AI
+- **Claude 3.5 Sonnet (primary)** + OpenAI (fallback)
+- **Tavily Search API** for real-time web research
 - Encrypted API key storage in database
 
 Please check CURRENT_STATE.md before starting work!
@@ -66,10 +68,12 @@ Check:
 - File: app/components/ai/[ComponentName].tsx
 - Look for onRefresh prop to wire
 
-Existing APIs:
-- /api/jobs/[id]/analyze-ecosystem ✅
-- /api/jobs/[id]/evaluate-signals ✅
-- Others need creation ❌
+Existing APIs (WIRED):
+- /api/jobs/[id]/analyze-ecosystem ✅ WORKING
+- /api/jobs/[id]/analyze-company ✅ WORKING
+- /api/jobs/[id]/evaluate-signals ✅ Ready
+- /api/jobs/[id]/analyze-match-score ✅ Ready
+- /api/jobs/[id]/analyze-user-profile ✅ Ready (needs UI wiring)
 ```
 
 ### **For Documentation:**
