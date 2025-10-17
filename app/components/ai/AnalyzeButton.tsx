@@ -111,7 +111,9 @@ export default function AnalyzeButton({
       disabled={disabled || isAnalyzing}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`relative p-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`relative p-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+        (isAnalyzing || isCompleting) && !showSuccess ? 'animate-sparkler-border' : ''
+      } ${className}`}
       title={isAnalyzing ? `Analyzing... (~${estimatedSeconds}s)` : `${label} (${costDisplay})`}
       data-testid="analyze-button"
     >
@@ -181,6 +183,39 @@ export default function AnalyzeButton({
           <Sparkles className="w-4 h-4" />
         )}
       </div>
+
+      {/* Sparkler Border Animation - Subtle and Tasteful */}
+      <style jsx>{`
+        @keyframes sparkler-border {
+          0%, 100% {
+            box-shadow: 
+              0 0 5px rgba(147, 51, 234, 0.4),
+              0 0 10px rgba(147, 51, 234, 0.2),
+              inset 0 0 8px rgba(147, 51, 234, 0.1);
+          }
+          25% {
+            box-shadow: 
+              5px 0 7px rgba(147, 51, 234, 0.5),
+              0 5px 10px rgba(147, 51, 234, 0.3),
+              inset 2px 2px 10px rgba(147, 51, 234, 0.15);
+          }
+          50% {
+            box-shadow: 
+              0 5px 8px rgba(147, 51, 234, 0.6),
+              -5px 0 12px rgba(147, 51, 234, 0.4),
+              inset -2px 0 12px rgba(147, 51, 234, 0.2);
+          }
+          75% {
+            box-shadow: 
+              -5px 0 7px rgba(147, 51, 234, 0.5),
+              0 -5px 10px rgba(147, 51, 234, 0.3),
+              inset 0 -2px 10px rgba(147, 51, 234, 0.15);
+          }
+        }
+        .animate-sparkler-border {
+          animation: sparkler-border 2s ease-in-out infinite;
+        }
+      `}</style>
     </button>
   );
 }
