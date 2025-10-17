@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       networkEnabled: settings.networkEnabled || false,
       provider: settings.provider || 'claude',
       // Claude settings
-      claudeModel: settings.claudeModel || 'claude-3-5-sonnet-latest',
+      claudeModel: settings.claudeModel || 'claude-3-sonnet-20240229',
       hasClaudeKey: !!settings.claudeKey,
       // OpenAI settings
       openaiModel: settings.openaiModel || 'gpt-4o-mini',
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       { 
         networkEnabled: false,
         provider: 'claude',
-        claudeModel: 'claude-3-5-sonnet-latest',
+        claudeModel: 'claude-3-sonnet-20240229',
         hasClaudeKey: false,
         openaiModel: 'gpt-4o-mini',
         hasOpenaiKey: false,
