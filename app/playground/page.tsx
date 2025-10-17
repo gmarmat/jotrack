@@ -8,10 +8,10 @@ export default function PlaygroundPage() {
   const [activeTab, setActiveTab] = useState<'animations' | 'buttons' | 'colors' | 'layouts'>('animations');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-600 rounded-lg">
@@ -37,7 +37,7 @@ export default function PlaygroundPage() {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden">
           <div className="border-b border-gray-200 dark:border-gray-700">
             <div className="flex gap-2 p-2">
@@ -98,8 +98,8 @@ export default function PlaygroundPage() {
                 </div>
 
                 {/* Centered Animation Tester */}
-                <div className="flex items-center justify-center min-h-[600px]">
-                  <div className="transform scale-110">
+                <div className="flex items-center justify-center min-h-[500px] sm:min-h-[600px] py-8 overflow-auto">
+                  <div className="w-full max-w-md">
                     <TestAnimationButton />
                   </div>
                 </div>
@@ -206,8 +206,8 @@ export default function PlaygroundPage() {
       </div>
 
       {/* Footer Info */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 shadow-lg">
           <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
             💡 Why This Playground?
           </h3>
@@ -238,7 +238,7 @@ export default function PlaygroundPage() {
       </div>
 
       {/* Quick Access Hint */}
-      <div className="fixed bottom-6 left-6 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+      <div className="hidden sm:block fixed bottom-6 left-6 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50">
         💡 Bookmark this page: <code className="bg-purple-700 px-2 py-1 rounded">/playground</code>
       </div>
     </div>

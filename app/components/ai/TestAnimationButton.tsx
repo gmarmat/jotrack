@@ -68,7 +68,7 @@ export default function TestAnimationButton() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 bg-white dark:bg-gray-800 border-2 border-purple-500 rounded-2xl shadow-2xl p-6 max-w-md">
+    <div className="relative w-full bg-white dark:bg-gray-800 border-2 border-purple-500 rounded-2xl shadow-2xl p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
           🎨 Animation Playground

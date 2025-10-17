@@ -136,6 +136,19 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           const hasAnalysisData = data.companyEcosystem || data.companyIntelligence || data.matchScoreData;
           
           if (hasAnalysisData) {
+            // Map skills data structure: { skill: "X" } → { term: "X" }
+            const rawSkills = data.matchScoreData?.skillsMatch?.technicalSkills || [];
+            const mappedSkills = rawSkills.map((s: any) => ({
+              term: s.skill || s.term, // Support both formats
+              jdCount: s.jdCount || 0,
+              resumeCount: s.resumeCount || 0,
+              fullProfileCount: s.fullProfileCount || 0,
+              category: s.category,
+              matchStrength: s.matchStrength,
+              yearsExperience: s.yearsExperience,
+              importance: s.importance,
+            }));
+            
             setAiData((prev: any) => ({
               ...prev,
               companyEcosystem: data.companyEcosystem || prev?.companyEcosystem,
@@ -146,7 +159,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               matchScore: data.matchScoreData?.matchScore?.overallScore || prev?.matchScore,
               highlights: data.matchScoreData?.matchScore?.topStrengths || prev?.highlights,
               gaps: data.matchScoreData?.matchScore?.topGaps || prev?.gaps,
-              skills: data.matchScoreData?.skillsMatch?.technicalSkills || prev?.skills,
+              skills: mappedSkills.length > 0 ? mappedSkills : prev?.skills,
               matchScoreMetadata: data.matchScoreMetadata || prev?.matchScoreMetadata,
               provider: (data.matchScoreData || data.companyEcosystem || data.companyIntelligence) ? 'remote' : (prev?.provider || 'local'),
             }));
