@@ -296,8 +296,10 @@ function AITab() {
 
       {networkEnabled && (
         <>
-          {/* Section 1: Primary Analysis Engine */}
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
+          {/* Two-Column Layout for API Keys */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Section 1: Primary Analysis Engine */}
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
             <div>
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 🧠 Primary Analysis Engine
@@ -463,8 +465,8 @@ function AITab() {
             )}
           </div>
 
-          {/* Section 2: Web Search Engine (Tavily) */}
-          <div className="border border-emerald-200 dark:border-emerald-700 rounded-lg p-4 space-y-4 bg-emerald-50/30 dark:bg-emerald-900/10">
+            {/* Section 2: Web Search Engine (Tavily) */}
+            <div className="border border-emerald-200 dark:border-emerald-700 rounded-lg p-4 space-y-4 bg-emerald-50/30 dark:bg-emerald-900/10">
             <div>
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                 🌐 Web Search (Required for Real Data)
@@ -522,9 +524,10 @@ function AITab() {
                 </div>
               )}
             </div>
+            </div>
           </div>
 
-          {/* Cost Estimate */}
+          {/* Cost Estimate - Full Width Below */}
           <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">💰 Estimated Cost Per Job</h4>
             <div className="grid grid-cols-2 gap-3 text-xs">
