@@ -143,14 +143,14 @@ export default function JobNotesCard({
       </div>
 
       {/* Notes Content - Always Scrollable */}
-      <div className="flex-1 overflow-y-auto pr-2 min-h-0">
+      <div className="flex-1 overflow-y-auto pr-2 min-h-0 max-h-[180px]">
         {isEditing ? (
-          <div className="space-y-3 h-full">
+          <div className="space-y-3">
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add your notes about this application...&#10;&#10;💡 Tips:&#10;• Keep notes actionable and keyword-focused&#10;• Quick reminders for interview prep&#10;• Mental notes about the role/company&#10;• Use AI Summarize to condense long notes"
-              className="w-full flex-1 min-h-[150px] p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               data-testid="notes-textarea"
             />
             
