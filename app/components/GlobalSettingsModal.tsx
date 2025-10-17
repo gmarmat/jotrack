@@ -155,7 +155,7 @@ function AITab() {
   const [isSavingOpenai, setIsSavingOpenai] = useState(false);
   const [openaiTestResult, setOpenaiTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  // Load existing settings on mount
+  // Load existing settings and auto-fetch models on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -170,6 +170,29 @@ function AITab() {
           setHasExistingTavilyKey(!!data.hasTavilyKey);
           setHasExistingOpenaiKey(!!data.hasOpenaiKey);
           // Don't set the actual API keys for security
+          
+          // Auto-load Claude models if key exists
+          if (data.hasClaudeKey && data.provider === 'claude') {
+            try {
+              const modelsRes = await fetch('/api/ai/claude/models');
+              if (modelsRes.ok) {
+                const modelsData = await modelsRes.json();
+                const models = modelsData.models.map((m: any) => ({
+                  id: m.id,
+                  label: m.label,
+                  category: m.category,
+                }));
+                setAvailableClaudeModels(models);
+                // Use recommended model if available
+                const defaultModel = modelsData.recommended || models[0]?.id;
+                if (defaultModel && !data.claudeModel) {
+                  setClaudeModel(defaultModel);
+                }
+              }
+            } catch (error) {
+              console.log('Could not auto-load models, user can refresh manually');
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to load settings:', error);
