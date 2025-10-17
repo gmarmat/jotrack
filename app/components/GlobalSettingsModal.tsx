@@ -141,6 +141,8 @@ function AITab() {
   const [hasExistingClaudeKey, setHasExistingClaudeKey] = useState(false);
   const [isSavingClaude, setIsSavingClaude] = useState(false);
   const [claudeTestResult, setClaudeTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [availableClaudeModels, setAvailableClaudeModels] = useState<any[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   
   const [tavilyKey, setTavilyKey] = useState('');
   const [hasExistingTavilyKey, setHasExistingTavilyKey] = useState(false);
@@ -327,19 +329,41 @@ function AITab() {
             {provider === 'claude' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">Claude Model</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-200">Claude Model</label>
+                    <button
+                      onClick={handleRefreshModels}
+                      disabled={isLoadingModels || !hasExistingClaudeKey}
+                      className="text-xs px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={!hasExistingClaudeKey ? "Save Claude key first" : "Refresh available models"}
+                    >
+                      {isLoadingModels ? '🔄 Loading...' : '🔄 Refresh Models'}
+                    </button>
+                  </div>
                   <select
                     value={claudeModel}
                     onChange={(e) => setClaudeModel(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     data-testid="claude-model"
                   >
-                  <option value="claude-3-opus-20240229">Claude 3 Opus (Best Quality) - ~$0.15/job 💎</option>
-                  <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended) - ~$0.02/job ⭐</option>
-                  <option value="claude-3-haiku-20240307">Claude 3 Haiku (Budget) - ~$0.01/job 💰</option>
+                    {availableClaudeModels.length > 0 ? (
+                      availableClaudeModels.map(model => (
+                        <option key={model.id} value={model.id}>
+                          {model.label}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus (Best Quality) - ~$0.15/job 💎</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended) - ~$0.02/job ⭐</option>
+                        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Budget) - ~$0.01/job 💰</option>
+                      </>
+                    )}
                   </select>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Sonnet = Best balance of quality and cost. Haiku = Cheaper but less accurate.
+                    {availableClaudeModels.length > 0 
+                      ? `${availableClaudeModels.length} models loaded from Claude API`
+                      : 'Click "Refresh Models" after saving key to load latest models'}
                   </p>
                 </div>
 
