@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface AnalyzeButtonProps {
@@ -25,21 +25,63 @@ export default function AnalyzeButton({
   const [isHovered, setIsHovered] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false); // Rapid completion animation
+  const [showSuccess, setShowSuccess] = useState(false); // Brief success state
 
   // Reset timer when analysis starts/stops
   useEffect(() => {
     if (isAnalyzing) {
       setStartTime(Date.now());
       setElapsedSeconds(0);
-    } else {
-      setStartTime(null);
-      setElapsedSeconds(0);
+      setIsCompleting(false);
+      setShowSuccess(false);
+    } else if (!isAnalyzing && startTime) {
+      // Analysis finished - trigger completion animation
+      const finalElapsed = Math.floor((Date.now() - startTime) / 1000);
+      
+      if (finalElapsed < estimatedSeconds) {
+        // Finished early - speed up to completion
+        setIsCompleting(true);
+        
+        // Rapid countdown to 0
+        const remainingTime = estimatedSeconds - finalElapsed;
+        const speedUpDuration = 500; // 500ms to reach 0
+        const steps = Math.ceil(remainingTime);
+        const stepDuration = speedUpDuration / steps;
+        
+        let currentStep = 0;
+        const speedUpInterval = setInterval(() => {
+          currentStep++;
+          setElapsedSeconds(finalElapsed + currentStep);
+          
+          if (currentStep >= steps) {
+            clearInterval(speedUpInterval);
+            setIsCompleting(false);
+            setShowSuccess(true);
+            
+            // Show success checkmark briefly
+            setTimeout(() => {
+              setShowSuccess(false);
+              setStartTime(null);
+              setElapsedSeconds(0);
+            }, 300); // 300ms success state
+          }
+        }, stepDuration);
+      } else {
+        // Took longer than estimate - just show success
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setStartTime(null);
+          setElapsedSeconds(0);
+        }, 300);
+      }
     }
-  }, [isAnalyzing]);
+  }, [isAnalyzing, startTime, estimatedSeconds]);
 
-  // Countdown timer
+  // Countdown timer (normal speed)
   useEffect(() => {
-    if (!isAnalyzing || !startTime) return;
+    if (!isAnalyzing || !startTime || isCompleting) return;
 
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -47,16 +89,16 @@ export default function AnalyzeButton({
     }, 100); // Update every 100ms for smooth progress
 
     return () => clearInterval(interval);
-  }, [isAnalyzing, startTime]);
+  }, [isAnalyzing, startTime, isCompleting]);
 
   // Calculate progress (0-100)
-  const progress = isAnalyzing 
-    ? Math.min((elapsedSeconds / estimatedSeconds) * 100, 95) // Cap at 95% until complete
+  const progress = (isAnalyzing || isCompleting || showSuccess)
+    ? Math.min((elapsedSeconds / estimatedSeconds) * 100, showSuccess ? 100 : 95) // 100% on success
     : 0;
 
   // Remaining time
   const remainingSeconds = Math.max(0, estimatedSeconds - elapsedSeconds);
-  const isOverEstimate = elapsedSeconds > estimatedSeconds;
+  const isOverEstimate = elapsedSeconds > estimatedSeconds && !isCompleting;
 
   // Format cost for display
   const costDisplay = estimatedCost >= 0.01 
@@ -74,7 +116,7 @@ export default function AnalyzeButton({
       data-testid="analyze-button"
     >
       {/* Circular Progress Ring (SVG) */}
-      {isAnalyzing && (
+      {(isAnalyzing || isCompleting || showSuccess) && (
         <svg
           className="absolute inset-0 w-full h-full -rotate-90"
           viewBox="0 0 36 36"
@@ -95,21 +137,38 @@ export default function AnalyzeButton({
             cy="18"
             r="16"
             fill="none"
-            stroke={isOverEstimate ? "rgba(251, 191, 36, 0.8)" : "rgba(255, 255, 255, 0.9)"}
+            stroke={
+              showSuccess 
+                ? "rgba(34, 197, 94, 0.9)" // Green on success
+                : isOverEstimate 
+                  ? "rgba(251, 191, 36, 0.8)" // Amber if overtime
+                  : "rgba(255, 255, 255, 0.9)" // White normally
+            }
             strokeWidth="2"
             strokeDasharray="100.53"
             strokeDashoffset={100.53 - (progress * 100.53) / 100}
             strokeLinecap="round"
-            className={isOverEstimate ? "animate-pulse" : "transition-all duration-300"}
+            className={
+              showSuccess 
+                ? "transition-all duration-200" // Fast transition on success
+                : isCompleting 
+                  ? "transition-all duration-100" // Fast during speedup
+                  : isOverEstimate 
+                    ? "animate-pulse" // Pulse when overtime
+                    : "transition-all duration-300" // Normal smooth
+            }
           />
         </svg>
       )}
 
       {/* Button Content */}
       <div className="relative z-10 flex items-center justify-center">
-        {isAnalyzing ? (
-          // Active State: Show countdown
-          <span className="text-xs font-semibold tabular-nums">
+        {showSuccess ? (
+          // Success State: Show checkmark
+          <Check className="w-4 h-4 text-green-400 animate-in fade-in zoom-in duration-200" />
+        ) : (isAnalyzing || isCompleting) ? (
+          // Active/Completing State: Show countdown
+          <span className={`text-xs font-semibold tabular-nums ${isCompleting ? 'text-green-300' : ''}`}>
             {isOverEstimate ? '...' : `${remainingSeconds}s`}
           </span>
         ) : isHovered ? (
