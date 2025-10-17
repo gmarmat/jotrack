@@ -923,9 +923,9 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         {/* Combined Header with 3-Column Layout */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
           {/* 3-Column Grid with Fixed Heights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[300px] max-h-[400px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[280px]">
             {/* Column 1: Job Title, Company, Status, Attachments */}
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
                   {job.title}
@@ -957,7 +957,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Column 2: Data Pipeline with Scrolling */}
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                 <span className="text-lg">
                   {stalenessInfo?.severity === 'fresh' ? '✅' : 
@@ -1060,7 +1060,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Column 3: Notes with Scrolling */}
-            <div className="p-6 overflow-y-auto">
+            <div className="p-6 flex flex-col h-full">
               <JobNotesCard
                 jobId={job.id}
                 initialNotes={job.notes || ''}
