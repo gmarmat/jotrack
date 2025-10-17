@@ -475,28 +475,37 @@ export default function CompanyIntelligenceCard({
         </p>
         
         <div>
-          <p className="font-semibold mb-2">Our Analysis Methodology:</p>
+          <p className="font-semibold mb-2">Our 6-Step Research Process:</p>
+          <ol className="space-y-1 text-xs list-decimal list-inside ml-2">
+            <li><strong>Company Website</strong> → Official facts, mission, values</li>
+            <li><strong>Recent Leadership</strong> → Current executives and their backgrounds (2024-2025)</li>
+            <li><strong className="text-amber-600">⭐ Company Principles</strong> → Official frameworks (e.g., Fortive Business System) - These are interview keywords!</li>
+            <li><strong>Official Culture</strong> → What the company says about itself</li>
+            <li><strong className="text-green-600">Employee Reviews (Positive)</strong> → Top pros from Glassdoor, Reddit, Blind</li>
+            <li><strong className="text-red-600">Employee Reviews (Challenges)</strong> → Real concerns from recent reviews</li>
+          </ol>
+        </div>
+        
+        <div>
+          <p className="font-semibold mb-2">Why We Show Both Positive AND Negative Feedback:</p>
           <ul className="space-y-1 text-xs">
-            <li>• Company Profile: Founded, size, funding, revenue estimates from public sources</li>
-            <li>• Key Facts: Notable milestones, recent news, product launches</li>
-            <li>• Culture: Values, work environment, employee sentiment (reviews, social media)</li>
-            <li>• Leadership: CEO/CTO backgrounds, career paths, communication styles</li>
-            <li>• Competitors: Direct and adjacent competitors for market context</li>
+            <li>✓ <strong>Honest insight</strong> helps you prepare smart questions to ask</li>
+            <li>✓ <strong>Realistic expectations</strong> lead to better career decisions</li>
+            <li>✓ <strong>Balanced view</strong> shows you what current employees actually experience</li>
           </ul>
         </div>
         
         <div>
-          <p className="font-semibold mb-2">Data Sources:</p>
+          <p className="font-semibold mb-2">Source Quality:</p>
           <ul className="space-y-1 text-xs">
-            <li>• Public company websites, press releases, news articles</li>
-            <li>• Employee reviews (Glassdoor, Blind)</li>
-            <li>• Funding databases (Crunchbase, PitchBook)</li>
-            <li>• Industry reports and analyst coverage</li>
+            <li>🔵 <strong>Primary:</strong> Company website, investor relations, annual reports</li>
+            <li>🟢 <strong>High:</strong> Recent news (2024-2025), verified employee reviews</li>
+            <li>🟡 <strong>Medium:</strong> Reddit discussions, industry forums</li>
           </ul>
         </div>
         
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-          Note: AI-powered analysis may use web search to gather recent information.
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 italic">
+          💡 <strong>Pro Tip:</strong> Company Principles (⭐) are critical interview keywords. Use them in your answers to show cultural alignment.
         </p>
       </AnalysisExplanation>
 

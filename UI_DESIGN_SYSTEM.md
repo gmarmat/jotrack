@@ -930,6 +930,262 @@ When creating a new AI analysis section, ensure:
 
 ---
 
+## 🏢 Company Intelligence v2 - Official Standard
+
+**Version**: 2.0  
+**Date**: Oct 17, 2025  
+**Status**: ✅ Production Standard
+
+### Section Hierarchy (Top to Bottom)
+
+1. **Company Overview** (name, founded, size, funding, revenue, description)
+2. **Key Facts** (3-5 bullet points)
+3. ⭐ **Company Principles** (Official frameworks - INTERVIEW KEYWORDS!)
+4. **Official Culture & Values** (from company website)
+5. **Employee Sentiment** (balanced: positive + negative from reviews)
+6. **Leadership** (top 3-5 executives)
+7. **Competitors** (grouped by direct/adjacent)
+
+### Data Schema (TypeScript Interface)
+
+```typescript
+interface CompanyIntelligence {
+  name: string;
+  founded?: number;
+  employees?: string;           // e.g., "250+", "1000-5000"
+  funding?: string;             // e.g., "Series B", "Public"
+  revenue?: string;             // e.g., "$50M ARR"
+  description?: string;         // 1-2 sentences
+  keyFacts?: string[];          // 3-5 items
+  
+  // ⭐ INTERVIEW KEYWORDS - Official Corporate Framework
+  principles?: string[];        // e.g., ["Fortive Business System", "Continuous Improvement"]
+  
+  // Official Culture (from company)
+  cultureOfficial?: string[];   // e.g., ["Innovation", "Collaboration"]
+  
+  // Employee Sentiment (from reviews)
+  cultureEmployeeSentiment?: {
+    positive: string[];         // Top 3 positive themes
+    negative: string[];         // Top 3 challenges (REQUIRED!)
+    overall: string;            // e.g., "Generally positive (3.8/5.0)"
+    sourceCount: number;        // How many reviews analyzed (max 10)
+  };
+  
+  leadership?: Array<{
+    name: string;
+    role: string;
+    background?: string;
+  }>;
+  
+  competitors?: string[];
+  
+  // Deprecated (backward compatibility)
+  culture?: string[];           // Old combined array - still supported
+}
+```
+
+### Search Strategy (6 Targeted Searches)
+
+**File**: `app/api/jobs/[id]/analyze-company/route.ts`
+
+```typescript
+// 1. Company Website (Primary source)
+searchWeb(`${companyName} official website about`, { maxResults: 2, searchDepth: 'basic' });
+
+// 2. Recent Leadership (High priority)
+searchWeb(`${companyName} CEO executive leadership team 2024 2025`, { maxResults: 3, searchDepth: 'advanced' });
+
+// 3. ⭐ Company Principles (Primary source - INTERVIEW KEYWORDS!)
+searchWeb(`${companyName} business system operating principles framework`, { maxResults: 3, searchDepth: 'advanced' });
+
+// 4. Official Culture (High priority)
+searchWeb(`${companyName} company culture values mission site:${domain}`, { maxResults: 2, searchDepth: 'basic' });
+
+// 5. Positive Employee Reviews (High priority)
+searchWeb(`${companyName} employee reviews pros benefits glassdoor reddit 2024`, { maxResults: 5, searchDepth: 'advanced' });
+
+// 6. Negative Employee Reviews (High priority - REQUIRED!)
+searchWeb(`${companyName} employee reviews cons complaints glassdoor reddit blind 2024`, { maxResults: 5, searchDepth: 'advanced' });
+```
+
+### Source Weighting & Prioritization
+
+**Primary Sources** (weight: 1.0):
+- Company official website
+- Investor relations
+- Annual reports
+- Official principles/frameworks documentation
+
+**High Sources** (weight: 0.8):
+- Recent news (2024-2025)
+- Company blog posts
+- Verified employee reviews (Glassdoor, Blind)
+- LinkedIn company page
+
+**Medium Sources** (weight: 0.6):
+- Reddit discussions
+- Industry news articles
+- General forums
+
+**Source Tagging**:
+```typescript
+results.map(r => ({
+  ...r,
+  sourceWeight: 'primary' | 'high' | 'medium',
+  sourceType: 'company_website' | 'principles' | 'official_culture' | 
+              'employee_reviews_positive' | 'employee_reviews_negative' | 
+              'recent_news'
+}))
+```
+
+### UI Formatting Standards
+
+#### 1. Company Principles (⭐ Highlighted)
+
+```tsx
+<div>
+  <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+    <span className="text-amber-600">⭐</span>
+    Company Principles
+  </h5>
+  {principles?.length > 0 ? (
+    <ul className="space-y-1">
+      {principles.map((principle, idx) => (
+        <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+          <span className="text-amber-500 font-bold">•</span>
+          <span className="font-medium">{principle}</span>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+      Not found - these are important interview keywords!
+    </p>
+  )}
+</div>
+```
+
+**Smart Actions** (when missing):
+- `[Find]` button → Web search for principles
+- `[Edit]` button → Manual entry modal (100 word limit)
+
+#### 2. Employee Sentiment (Dual View - BALANCED!)
+
+```tsx
+<div>
+  <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+    Employee Sentiment
+  </h5>
+  <div className="grid grid-cols-2 gap-3 mb-2">
+    {/* GREEN BOX - Positive */}
+    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+      <h6 className="text-xs font-semibold text-green-800 dark:text-green-300 mb-2">
+        ✓ Positive
+      </h6>
+      <ul className="space-y-1">
+        {positive.slice(0, 3).map((item, idx) => (
+          <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-1">
+            <span className="text-green-500">•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    
+    {/* RED BOX - Challenges */}
+    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+      <h6 className="text-xs font-semibold text-red-800 dark:text-red-300 mb-2">
+        △ Challenges
+      </h6>
+      <ul className="space-y-1">
+        {negative.slice(0, 3).map((item, idx) => (
+          <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-1">
+            <span className="text-red-500">•</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  <p className="text-xs text-gray-600 dark:text-gray-400">
+    <strong>Overall:</strong> {overall}
+  </p>
+  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+    Based on {sourceCount} recent reviews (Glassdoor, Reddit, Blind)
+  </p>
+</div>
+```
+
+### Analysis Guardrails
+
+**MUST HAVE**:
+- ✅ Both positive AND negative employee feedback (if any reviews found)
+- ✅ Source count transparency
+- ✅ Overall sentiment rating (X.X/5.0 format)
+- ✅ Distinction between official values and employee reality
+
+**MUST NOT**:
+- ❌ Show only positive reviews (dishonest)
+- ❌ Make up principles if not found (use empty array)
+- ❌ Combine principles with general culture (keep separate)
+- ❌ Use old reviews (prioritize 2024-2025)
+
+**Quality Checks** (in prompt):
+1. Principles must be NAMED frameworks (e.g., "Fortive Business System")
+2. Employee sentiment must cite actual review sources
+3. Negative feedback is REQUIRED if any reviews found
+4. Overall rating must match positive/negative balance
+
+### Backward Compatibility
+
+**Old Structure** (still supported):
+```typescript
+culture?: string[];  // Combined array of values
+```
+
+**Migration Logic**:
+```tsx
+// Display old culture data in Principles if new fields missing
+{displayCompany.principles && displayCompany.principles.length > 0 ? (
+  // Show new principles
+) : displayCompany.culture && displayCompany.culture.length > 0 ? (
+  // Show old culture data as fallback
+) : (
+  // Show "Not found" message
+)}
+```
+
+### Manual Edit Feature
+
+**100-Word Limit** for user-added content:
+```tsx
+<textarea maxLength={600} />  // 100 words ≈ 600 chars
+<p className="text-xs text-gray-500">
+  {wordCount} / 100 words
+</p>
+```
+
+**On Save**:
+1. Validate word count ≤ 100
+2. Send to AI for summarization/formatting
+3. Update database with AI-formatted version
+4. Show success message
+
+### Why This Structure Matters
+
+**For Interview Prep**:
+1. **Principles** → Direct interview keywords (e.g., "Tell me about FBS")
+2. **Employee Sentiment** → Realistic expectations + smart questions to ask
+3. **Balanced View** → Informed career decisions
+
+**For Trust**:
+- Showing negative feedback = honesty
+- Source transparency = credibility
+- Separation of official vs. reality = authenticity
+
+---
+
 **Last Updated**: Oct 17, 2025
 **Maintained By**: Development Team
 **Status**: ✅ Active - All 6 sections fully standardized (Oct 17, 2025)
