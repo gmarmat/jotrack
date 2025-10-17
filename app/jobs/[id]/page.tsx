@@ -13,7 +13,6 @@ import AiShowcase from '@/app/components/jobs/AiShowcase';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
-import TestAnimationButton from '@/app/components/ai/TestAnimationButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
@@ -1144,9 +1143,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           kind={selectedAttachment.kind}
         />
       )}
-      
-      {/* 🎨 Animation Test Playground - No tokens wasted! */}
-      <TestAnimationButton />
     </main>
   );
 }
