@@ -909,10 +909,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
         {/* Combined Header with 3-Column Layout */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
-          {/* 3-Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+          {/* 3-Column Grid with Fixed Heights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[300px] max-h-[400px]">
             {/* Column 1: Job Title, Company, Status, Attachments */}
-            <div>
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
                   {job.title}
@@ -943,8 +943,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </button>
             </div>
 
-            {/* Column 2: Data Pipeline (Mini Version) */}
-            <div className="border-l border-r border-gray-200 dark:border-gray-700 pl-6 pr-6">
+            {/* Column 2: Data Pipeline with Scrolling */}
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                 <span className="text-lg">
                   {stalenessInfo?.severity === 'fresh' ? '✅' : 
@@ -958,37 +958,96 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </p>
               
               {/* Action Button */}
-              {stalenessInfo?.severity === 'no_variants' && (
-                <button
-                  onClick={handleRefreshVariants}
-                  disabled={refreshing}
-                  className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                >
-                  {refreshing ? 'Extracting...' : 'Refresh Data'}
-                </button>
+              <div className="mb-4">
+                {stalenessInfo?.severity === 'no_variants' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'variants_fresh' && (
+                  <button
+                    onClick={handleGlobalAnalyze}
+                    disabled={analyzing}
+                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {analyzing ? 'Analyzing...' : 'Analyze All'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'major' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Access to Variants */}
+              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => {
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                        if (resumeAttachment) {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                      title="View resume variants (raw, AI-optimized, detailed)"
+                    >
+                      📄 Resume Variants
+                    </button>
+                    <button
+                      onClick={() => {
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                        if (jdAttachment) {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
+                      title="View JD variants (raw, AI-optimized, detailed)"
+                    >
+                      💼 JD Variants
+                    </button>
+                  </div>
+                </div>
               )}
-              {stalenessInfo?.severity === 'variants_fresh' && (
-                <button
-                  onClick={handleGlobalAnalyze}
-                  disabled={analyzing}
-                  className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                >
-                  {analyzing ? 'Analyzing...' : 'Analyze All'}
-                </button>
-              )}
-              {stalenessInfo?.severity === 'major' && (
-                <button
-                  onClick={handleRefreshVariants}
-                  disabled={refreshing}
-                  className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                >
-                  {refreshing ? 'Extracting...' : 'Refresh Data'}
-                </button>
+              
+              {/* Intermediate Status Messages */}
+              {(refreshing || analyzing) && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">
+                    {refreshing && 'Creating AI-optimized variants...'}
+                    {analyzing && 'Running AI analysis on all sections...'}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    {refreshing && 'This may take 30-60 seconds'}
+                    {analyzing && 'This may take 2-3 minutes'}
+                  </p>
+                </div>
               )}
             </div>
 
-            {/* Column 3: Notes (Compact) */}
-            <div>
+            {/* Column 3: Notes with Scrolling */}
+            <div className="p-6 overflow-y-auto">
               <JobNotesCard
                 jobId={job.id}
                 initialNotes={job.notes || ''}

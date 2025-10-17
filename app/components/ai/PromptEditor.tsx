@@ -230,20 +230,29 @@ export default function PromptEditor({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowVariables(!showVariables)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
-              title="View template variables"
+              className={`px-4 py-2 text-sm font-medium border rounded-md flex items-center gap-2 transition-all ${
+                showVariables 
+                  ? 'bg-purple-100 border-purple-300 text-purple-900 shadow-sm' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400'
+              }`}
+              title="View template variables used in this prompt"
             >
               <Eye className="w-4 h-4" />
-              Variables ({variables.length})
+              <span className="font-semibold">Variables</span>
+              <span className="px-1.5 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">{variables.length}</span>
             </button>
             
             <button
               onClick={() => setShowVersions(!showVersions)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
-              title="Version history"
+              className={`px-4 py-2 text-sm font-medium border rounded-md flex items-center gap-2 transition-all ${
+                showVersions 
+                  ? 'bg-blue-100 border-blue-300 text-blue-900 shadow-sm' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400'
+              }`}
+              title="View and switch between saved versions"
             >
               <History className="w-4 h-4" />
-              Versions
+              <span className="font-semibold">Versions</span>
             </button>
             
             <button

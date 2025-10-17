@@ -52,15 +52,27 @@ export async function POST(
       includeAnswer: true,
     });
     
-    // Search 3: Company principles, culture, values
-    const cultureSearch = await searchWeb(`${companyName} company culture values principles operating system`, { 
+    // Search 3: Company principles (official frameworks like FBS, TPS, etc.)
+    const principlesSearch = await searchWeb(`${companyName} business system operating principles framework`, { 
       maxResults: 3,
       searchDepth: 'advanced' 
     });
     
-    // Search 4: Recent news (last 30 days)
-    const newsSearch = await searchWeb(`${companyName} news announcement October 2024`, { 
-      maxResults: 3,
+    // Search 4: Official culture/values
+    const officialCultureSearch = await searchWeb(`${companyName} company culture values mission site:${companyName.toLowerCase().replace(/\s+/g, '')}`, { 
+      maxResults: 2,
+      searchDepth: 'basic' 
+    });
+    
+    // Search 5: Employee sentiment (positive)
+    const positiveReviewsSearch = await searchWeb(`${companyName} employee reviews pros benefits glassdoor reddit 2024`, { 
+      maxResults: 5,
+      searchDepth: 'advanced' 
+    });
+    
+    // Search 6: Employee sentiment (negative)
+    const negativeReviewsSearch = await searchWeb(`${companyName} employee reviews cons complaints glassdoor reddit blind 2024`, { 
+      maxResults: 5,
       searchDepth: 'advanced' 
     });
     
@@ -68,8 +80,10 @@ export async function POST(
     const allResults = [
       ...(websiteSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'primary', sourceType: 'company_website' })),
       ...(leadershipSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'recent_news' })),
-      ...(cultureSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'culture' })),
-      ...(newsSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'medium', sourceType: 'news' })),
+      ...(principlesSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'primary', sourceType: 'principles' })),
+      ...(officialCultureSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'official_culture' })),
+      ...(positiveReviewsSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'employee_reviews_positive' })),
+      ...(negativeReviewsSearch.results || []).map((r: any) => ({ ...r, sourceWeight: 'high', sourceType: 'employee_reviews_negative' })),
     ];
     
     const webSearchData = allResults.length > 0
@@ -79,8 +93,10 @@ export async function POST(
     console.log(`🌐 Web search: ${allResults.length} results from ${[
       websiteSearch.success && 'website',
       leadershipSearch.success && 'leadership',
-      cultureSearch.success && 'culture',
-      newsSearch.success && 'news'
+      principlesSearch.success && 'principles',
+      officialCultureSearch.success && 'official culture',
+      positiveReviewsSearch.success && 'positive reviews',
+      negativeReviewsSearch.success && 'negative reviews'
     ].filter(Boolean).join(', ')}`);
     
     // Step 2: Execute company intelligence prompt with weighted web search results

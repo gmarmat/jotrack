@@ -17,7 +17,15 @@ interface CompanyIntelligence {
   revenue?: string;
   description?: string;
   keyFacts?: string[];
-  culture?: string[];
+  principles?: string[];  // Corporate principles (FBS, TPS, etc) - INTERVIEW KEYWORDS!
+  cultureOfficial?: string[];  // Official company values
+  cultureEmployeeSentiment?: {
+    positive: string[];
+    negative: string[];
+    overall: string;
+    sourceCount: number;
+  };
+  culture?: string[];  // Deprecated: Keeping for backward compatibility
   leadership?: Array<{ name: string; role: string; background?: string }>;
   competitors?: string[];
 }
@@ -332,11 +340,14 @@ export default function CompanyIntelligenceCard({
             </div>
           )}
 
-          {/* Company Principles */}
+          {/* Company Principles - Official Framework (INTERVIEW KEYWORDS!) */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Company Principles</h5>
-              {(!displayCompany.culture || displayCompany.culture.length === 0) && (
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                <span className="text-amber-600">⭐</span>
+                Company Principles
+              </h5>
+              {(!displayCompany.principles || displayCompany.principles.length === 0) && (
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleSmartSearch('principles')}
@@ -358,9 +369,17 @@ export default function CompanyIntelligenceCard({
                 </div>
               )}
             </div>
-            {(!displayCompany.culture || displayCompany.culture.length === 0) ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
-            ) : (
+            {displayCompany.principles && displayCompany.principles.length > 0 ? (
+              <ul className="space-y-1">
+                {displayCompany.principles.map((principle, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                    <span className="text-amber-500 font-bold">•</span>
+                    <span className="font-medium">{principle}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : displayCompany.culture && displayCompany.culture.length > 0 ? (
+              // Backward compatibility: Show old culture data
               <ul className="space-y-1">
                 {displayCompany.culture.map((principle, idx) => (
                   <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
@@ -369,62 +388,64 @@ export default function CompanyIntelligenceCard({
                   </li>
                 ))}
               </ul>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not found - these are important interview keywords!</p>
             )}
           </div>
 
-          {/* Recent News */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent News (Last 30 days)</h5>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleSmartSearch('news')}
-                  disabled={searchingFor === 'news'}
-                  className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
-                  title="Search web for recent news"
-                >
-                  <Search size={12} />
-                  {searchingFor === 'news' ? 'Searching...' : 'Find'}
-                </button>
-                <button
-                  onClick={() => handleManualEdit('news')}
-                  className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  title="Manually add from your research"
-                >
-                  <Edit2 size={12} />
-                  Edit
-                </button>
-              </div>
+          {/* Official Culture & Values */}
+          {displayCompany.cultureOfficial && displayCompany.cultureOfficial.length > 0 && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Official Culture & Values</h5>
+              <ul className="space-y-1">
+                {displayCompany.cultureOfficial.map((value, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                    <span className="text-indigo-500">•</span>
+                    <span>{value}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
-          </div>
+          )}
 
-          {/* Culture Keywords */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Culture Keywords</h5>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleSmartSearch('culture')}
-                  disabled={searchingFor === 'culture'}
-                  className="flex items-center gap-1 px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400 disabled:opacity-50"
-                  title="Search web for culture keywords"
-                >
-                  <Search size={12} />
-                  {searchingFor === 'culture' ? 'Searching...' : 'Find'}
-                </button>
-                <button
-                  onClick={() => handleManualEdit('culture')}
-                  className="flex items-center gap-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                  title="Manually add from your research"
-                >
-                  <Edit2 size={12} />
-                  Edit
-                </button>
+          {/* Employee Sentiment (From Reviews) */}
+          {displayCompany.cultureEmployeeSentiment && (
+            <div>
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Employee Sentiment</h5>
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                  <h6 className="text-xs font-semibold text-green-800 dark:text-green-300 mb-2">✓ Positive</h6>
+                  <ul className="space-y-1">
+                    {displayCompany.cultureEmployeeSentiment.positive.slice(0, 3).map((item, idx) => (
+                      <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-1">
+                        <span className="text-green-500">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                  <h6 className="text-xs font-semibold text-red-800 dark:text-red-300 mb-2">△ Challenges</h6>
+                  <ul className="space-y-1">
+                    {displayCompany.cultureEmployeeSentiment.negative.slice(0, 3).map((item, idx) => (
+                      <li key={idx} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-1">
+                        <span className="text-red-500">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                <strong>Overall:</strong> {displayCompany.cultureEmployeeSentiment.overall}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Based on {displayCompany.cultureEmployeeSentiment.sourceCount} recent reviews (Glassdoor, Reddit, Blind)
+              </p>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Not enough info available</p>
-          </div>
+          )}
+
+          {/* Removed: Recent News and Culture Keywords - now integrated into Employee Sentiment */}
 
           {/* Competitors */}
           {displayCompany.competitors && displayCompany.competitors.length > 0 && (

@@ -45,7 +45,14 @@ Return a JSON object with this exact structure:
     "revenue": "string (e.g., '$50M ARR') or null",
     "description": "string (1-2 sentences about what they do)",
     "keyFacts": ["fact1", "fact2", "fact3"],
-    "culture": ["value1", "value2", "value3"],
+    "principles": ["Official framework principle 1", "principle 2"],
+    "cultureOfficial": ["Official value 1", "value 2"],
+    "cultureEmployeeSentiment": {
+      "positive": ["Great work-life balance", "Smart colleagues", "Good benefits"],
+      "negative": ["Slow decision making", "Lots of meetings", "Limited growth"],
+      "overall": "Generally positive (3.8/5.0)",
+      "sourceCount": 10
+    },
     "leadership": [
       {"name": "string", "role": "string", "background": "string"}
     ],
@@ -76,20 +83,51 @@ Return a JSON object with this exact structure:
 - Notable achievements or milestones
 - Market position
 
-### 3. Culture & Values / Company Principles (3-5 items)
-- **Primary Sources**: Company website, culture-specific search results
-- Look for official company principles, operating systems (e.g., "Fortive Business System")
-- Extract from JD language (e.g., "fast-paced", "innovative", "remote-friendly")
-- Look for explicit values statements (e.g., "Continuous Improvement", "Customer Focus")
-- Infer from benefits and perks mentioned
-- **Important**: Many companies have well-documented principles - check search results first!
+### 3. Company Principles - Official Framework (3-5 items) ⭐ INTERVIEW KEYWORDS!
+- **What to look for**: Named corporate frameworks, operating systems, core principles
+- **Examples**: "Fortive Business System", "Toyota Production System", "Amazon Leadership Principles"
+- **Primary Sources**: Company website (About Us, Careers), investor relations, annual reports
+- **Search Priority**: Company website results > news articles
+- **Format**: Specific, named principles (not generic values)
+- **Why Critical**: Candidates are expected to use these exact terms in interviews!
+- **If not found**: Return empty array (don't make up generic values)
 
-### 4. Leadership (Top 3-5 people)
+### 4. Official Culture & Values (3-5 items)
+- **Sources**: Company "About Us", careers page, mission statements
+- **Extract**: What the company officially promotes as their values
+- **Examples**: "Innovation", "Collaboration", "Customer First"
+- **Distinct from Principles**: These are broader values, not named frameworks
+
+### 5. Employee Sentiment (MUST include both positive AND negative)
+**From Web Search Results** (Glassdoor, Reddit, Blind, etc.):
+
+**Positive (Top 3 themes)**:
+- Most frequently mentioned pros from reviews
+- Recent praise (2024-2025 preferred)
+- Examples: "Great work-life balance", "Smart colleagues", "Good benefits"
+
+**Negative (Top 3 challenges)**:
+- Most common complaints or concerns
+- Be honest - this helps candidates make informed decisions
+- Examples: "Slow decision making", "Lots of meetings", "Limited growth opportunities"
+
+**Overall Sentiment**:
+- Synthesize into rating format: "Generally positive (3.8/5.0)"
+- Or: "Mixed reviews (3.2/5.0)", "Very positive (4.5/5.0)"
+- Base on source data, not speculation
+
+**Source Count**:
+- How many review sources you analyzed (max 10)
+- Mix of positive and negative sources
+
+**Important**: ALWAYS include negative feedback if found. Balanced view is crucial for candidates!
+
+### 6. Leadership (Top 3-5 people)
 - CEO, CTO, or relevant executives
 - Include their background if available
 - Focus on those mentioned in JD or context
 
-### 5. Competitors (Top 10-20)
+### 7. Competitors (Top 10-20)
 **Direct Competitors** (same product/market):
 - Companies solving the same problem
 - Direct alternatives customers would consider
@@ -101,7 +139,7 @@ Return a JSON object with this exact structure:
 - Potential career pivot opportunities
 - Score 50-79% relevance
 
-### 6. Sources
+### 8. Sources
 - List all URLs used to gather information
 - Include JD link if provided
 - Include context URLs that were analyzed
