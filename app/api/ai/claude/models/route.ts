@@ -37,40 +37,38 @@ export async function GET(request: NextRequest) {
     // Parse and enrich model data
     const models = (data.data || []).map((model: any) => {
       const id = model.id;
-      const displayName = model.display_name;
+      const displayName = model.display_name || id;
+      
+      // Remove "Claude " prefix and simplify name
+      const simplifiedName = displayName.replace(/^Claude\s+/i, '').replace(/\s+\d{4}-\d{2}-\d{2}$/, '');
       
       // Determine cost tier based on model name
       let costTier = 'unknown';
-      let costPerJob = '~$0.05';
-      let emoji = '📊';
-      let recommendation = '';
+      let costPerJob = '$0.05';
+      let category = 'Other';
       
       if (id.includes('opus')) {
         costTier = 'premium';
-        costPerJob = '~$0.15/job';
-        emoji = '💎';
-        recommendation = 'Best quality';
+        costPerJob = '$0.15';
+        category = 'Best Quality';
       } else if (id.includes('sonnet')) {
         costTier = 'recommended';
-        costPerJob = '~$0.03/job';
-        emoji = '⭐';
-        recommendation = 'Recommended - Best balance';
+        costPerJob = '$0.03';
+        category = 'Recommended';
       } else if (id.includes('haiku')) {
         costTier = 'budget';
-        costPerJob = '~$0.01/job';
-        emoji = '💰';
-        recommendation = 'Budget option';
+        costPerJob = '$0.01';
+        category = 'Budget';
       }
       
       return {
         id,
-        displayName,
+        displayName: simplifiedName,
         createdAt: model.created_at,
         costTier,
         costPerJob,
-        emoji,
-        recommendation,
-        label: `${displayName} (${recommendation}) - ${costPerJob} ${emoji}`,
+        category,
+        label: `${simplifiedName} ~ ${costPerJob}/job`,
       };
     });
     

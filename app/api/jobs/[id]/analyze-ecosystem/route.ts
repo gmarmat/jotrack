@@ -8,6 +8,7 @@ import {
   saveEcosystemToCache, 
   calculateContextFingerprint 
 } from '@/db/companyEcosystemCacheRepository';
+import { searchWeb, formatSearchResultsForPrompt } from '@/lib/analysis/tavilySearch';
 
 const paramsSchema = z.object({
   id: z.string().uuid(),

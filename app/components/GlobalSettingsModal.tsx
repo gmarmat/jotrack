@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Key, Database, Sliders, Code, Sparkles, Download, Upload, Trash2, Clock } from 'lucide-react';
+import { X, Key, Database, Sliders, Code, Sparkles, Download, Upload, Trash2, Clock, RefreshCw, Check } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const PromptEditor = dynamic(() => import('./ai/PromptEditor'), { ssr: false });
@@ -198,7 +198,9 @@ function AITab() {
         setHasExistingClaudeKey(true);
         setClaudeKey('');
       }
-      setClaudeTestResult({ success: true, message: 'Claude key saved!' });
+      setClaudeTestResult({ success: true, message: 'Saved!' });
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setClaudeTestResult(null), 3000);
     } catch (error) {
       setClaudeTestResult({ success: false, message: 'Failed to save' });
     } finally {
@@ -222,7 +224,8 @@ function AITab() {
         setHasExistingTavilyKey(true);
         setTavilyKey('');
       }
-      setTavilyTestResult({ success: true, message: 'Tavily key saved!' });
+      setTavilyTestResult({ success: true, message: 'Saved!' });
+      setTimeout(() => setTavilyTestResult(null), 3000);
     } catch (error) {
       setTavilyTestResult({ success: false, message: 'Failed to save' });
     } finally {
@@ -234,24 +237,54 @@ function AITab() {
     setIsSavingOpenai(true);
     setOpenaiTestResult(null);
     try {
+      const trimmedKey = openaiKey.trim();
       await fetch('/api/ai/keyvault/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           provider: 'openai',
-          openaiKey: openaiKey || undefined,
+          openaiKey: trimmedKey || undefined,
           openaiModel,
         }),
       });
-      if (openaiKey) {
+      if (trimmedKey) {
         setHasExistingOpenaiKey(true);
         setOpenaiKey('');
       }
-      setOpenaiTestResult({ success: true, message: 'OpenAI key saved!' });
+      setOpenaiTestResult({ success: true, message: 'Saved!' });
+      setTimeout(() => setOpenaiTestResult(null), 3000);
     } catch (error) {
       setOpenaiTestResult({ success: false, message: 'Failed to save' });
     } finally {
       setIsSavingOpenai(false);
+    }
+  };
+
+  const handleRefreshModels = async () => {
+    setIsLoadingModels(true);
+    setClaudeTestResult(null);
+    try {
+      const res = await fetch('/api/ai/claude/models');
+      if (res.ok) {
+        const data = await res.json();
+        // Use the label and category directly from the API response
+        const models = data.models.map((m: any) => ({
+          id: m.id,
+          label: m.label,
+          category: m.category,
+        }));
+        setAvailableClaudeModels(models);
+        // Use the recommended model from API or fallback to first
+        const defaultModel = data.recommended || models[0]?.id;
+        if (defaultModel) setClaudeModel(defaultModel);
+      } else {
+        const errorData = await res.json();
+        setClaudeTestResult({ success: false, message: `Failed: ${errorData.error}` });
+      }
+    } catch (error: any) {
+      setClaudeTestResult({ success: false, message: `Failed: ${error.message}` });
+    } finally {
+      setIsLoadingModels(false);
     }
   };
 
@@ -329,16 +362,21 @@ function AITab() {
             {provider === 'claude' && (
               <>
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <label className="block text-sm font-medium text-gray-900 dark:text-gray-200">Claude Model</label>
                     <button
                       onClick={handleRefreshModels}
                       disabled={isLoadingModels || !hasExistingClaudeKey}
-                      className="text-xs px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={!hasExistingClaudeKey ? "Save Claude key first" : "Refresh available models"}
+                      className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title={!hasExistingClaudeKey ? "Save Claude key first" : "Refresh model list from Claude API"}
                     >
-                      {isLoadingModels ? '🔄 Loading...' : '🔄 Refresh Models'}
+                      <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin' : ''}`} />
                     </button>
+                    {availableClaudeModels.length > 0 && (
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        {availableClaudeModels.length} models loaded
+                      </span>
+                    )}
                   </div>
                   <select
                     value={claudeModel}
@@ -347,24 +385,36 @@ function AITab() {
                     data-testid="claude-model"
                   >
                     {availableClaudeModels.length > 0 ? (
-                      availableClaudeModels.map(model => (
-                        <option key={model.id} value={model.id}>
-                          {model.label}
-                        </option>
-                      ))
+                      // Group models by category
+                      <>
+                        {['Recommended', 'Budget', 'Best Quality', 'Other'].map(category => {
+                          const categoryModels = availableClaudeModels.filter(m => m.category === category);
+                          if (categoryModels.length === 0) return null;
+                          return (
+                            <optgroup key={category} label={category}>
+                              {categoryModels.map(model => (
+                                <option key={model.id} value={model.id}>
+                                  {model.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          );
+                        })}
+                      </>
                     ) : (
                       <>
-                        <option value="claude-3-opus-20240229">Claude 3 Opus (Best Quality) - ~$0.15/job 💎</option>
-                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet (Recommended) - ~$0.02/job ⭐</option>
-                        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Budget) - ~$0.01/job 💰</option>
+                        <optgroup label="Recommended">
+                          <option value="claude-3-sonnet-20240229">3 Sonnet ~ $0.03/job</option>
+                        </optgroup>
+                        <optgroup label="Budget">
+                          <option value="claude-3-haiku-20240307">3 Haiku ~ $0.01/job</option>
+                        </optgroup>
+                        <optgroup label="Best Quality">
+                          <option value="claude-3-opus-20240229">3 Opus ~ $0.15/job</option>
+                        </optgroup>
                       </>
                     )}
                   </select>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {availableClaudeModels.length > 0 
-                      ? `${availableClaudeModels.length} models loaded from Claude API`
-                      : 'Click "Refresh Models" after saving key to load latest models'}
-                  </p>
                 </div>
 
                 {/* Claude API Key */}
@@ -379,7 +429,7 @@ function AITab() {
                         onClick={() => setClaudeKey(' ')}
                         className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
-                        Update
+                        Change
                       </button>
                     </div>
                   ) : (
@@ -401,20 +451,12 @@ function AITab() {
                 <div>
                   <button
                     onClick={handleSaveClaude}
-                    disabled={isSavingClaude || (!claudeKey && !hasExistingClaudeKey)}
-                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    disabled={isSavingClaude || (!claudeKey.trim() && !hasExistingClaudeKey)}
+                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
                   >
-                    {isSavingClaude ? 'Saving...' : hasExistingClaudeKey ? 'Update Claude Settings' : 'Save Claude Key'}
+                    {isSavingClaude ? 'Saving...' : 'Save'}
+                    {claudeTestResult?.success && <Check className="w-4 h-4" />}
                   </button>
-                  {claudeTestResult && (
-                    <div className={`mt-2 p-2 rounded text-xs ${
-                      claudeTestResult.success 
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                    }`}>
-                      {claudeTestResult.message}
-                    </div>
-                  )}
                 </div>
               </>
             )}
@@ -439,22 +481,22 @@ function AITab() {
                 {/* OpenAI API Key */}
                 <div>
                   <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">OpenAI API Key</label>
-                  {hasExistingOpenaiKey && !openaiKey ? (
+                  {hasExistingOpenaiKey && openaiKey.trim() === '' ? (
                     <div className="flex items-center gap-2">
                       <div className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400">
                         ••••••••••••••••••••••••••
                       </div>
                       <button
-                        onClick={() => setOpenaiKey('')}
+                        onClick={() => setOpenaiKey(' ')}
                         className="px-3 py-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
-                        Update
+                        Change
                       </button>
                     </div>
                   ) : (
                     <input
                       type="password"
-                      value={openaiKey}
+                      value={openaiKey.trim()}
                       onChange={(e) => setOpenaiKey(e.target.value)}
                       placeholder="sk-proj-..."
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -470,20 +512,12 @@ function AITab() {
                 <div>
                   <button
                     onClick={handleSaveOpenai}
-                    disabled={isSavingOpenai || (!openaiKey && !hasExistingOpenaiKey)}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    disabled={isSavingOpenai || (!openaiKey.trim() && !hasExistingOpenaiKey)}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
                   >
-                    {isSavingOpenai ? 'Saving...' : hasExistingOpenaiKey ? 'Update OpenAI Settings' : 'Save OpenAI Key'}
+                    {isSavingOpenai ? 'Saving...' : 'Save'}
+                    {openaiTestResult?.success && <Check className="w-4 h-4" />}
                   </button>
-                  {openaiTestResult && (
-                    <div className={`mt-2 p-2 rounded text-xs ${
-                      openaiTestResult.success 
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                    }`}>
-                      {openaiTestResult.message}
-                    </div>
-                  )}
                 </div>
               </>
             )}
@@ -533,20 +567,12 @@ function AITab() {
             <div>
               <button
                 onClick={handleSaveTavily}
-                disabled={isSavingTavily || (!tavilyKey && !hasExistingTavilyKey)}
-                className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                disabled={isSavingTavily || (!tavilyKey.trim() && !hasExistingTavilyKey)}
+                className="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
               >
-                {isSavingTavily ? 'Saving...' : hasExistingTavilyKey ? 'Update Tavily Key' : 'Save Tavily Key'}
+                {isSavingTavily ? 'Saving...' : 'Save'}
+                {tavilyTestResult?.success && <Check className="w-4 h-4" />}
               </button>
-              {tavilyTestResult && (
-                <div className={`mt-2 p-2 rounded text-xs ${
-                  tavilyTestResult.success 
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                }`}>
-                  {tavilyTestResult.message}
-                </div>
-              )}
             </div>
             </div>
           </div>
