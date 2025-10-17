@@ -286,10 +286,17 @@ export default function AiShowcase({
           {/* Match Score Card - Reorganized Layout */}
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Target size={18} className="text-purple-600" />
-                Match Score
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <Target size={18} className="text-purple-600" />
+                  Match Score
+                </h3>
+                {aiData?.matchScoreMetadata?.cached && (
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                    Analyzed {aiData.matchScoreMetadata.cacheAge}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <PromptViewer 
                   promptKind="matchScore" 
@@ -381,10 +388,17 @@ export default function AiShowcase({
           {/* Skill Match Card */}
           <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-6 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <Lightbulb size={18} className="text-amber-600" />
-                Skill Match
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <Lightbulb size={18} className="text-amber-600" />
+                  Skill Match
+                </h3>
+                {aiData?.matchScoreMetadata?.cached && (
+                  <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                    Analyzed {aiData.matchScoreMetadata.cacheAge}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <PromptViewer 
                   promptKind="matchScore" 
