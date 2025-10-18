@@ -500,9 +500,17 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
       console.log('  ✅ Transitioned to post-app phase');
     }
     
-    // Now in post-app phase - test recruiter questions
+    // Now in post-app phase - navigate to recruiter tab
+    console.log('  📍 Navigating to Recruiter tab...');
     await recruiterTab.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000); // Wait for tab content to render
+    
+    // Wait for tab content to load (either Generate button OR title)
+    const contentLoaded = await page.locator('button:has-text("Generate Questions")').or(page.locator('h2:has-text("Recruiter")')).waitFor({ timeout: 5000 }).then(() => true).catch(() => false);
+    
+    if (!contentLoaded) {
+      console.log('  ⚠️ Tab content not loaded after 5s');
+    }
     
     // Click "Generate Questions" button
     console.log('  🔍 Looking for Generate Questions button...');
