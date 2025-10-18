@@ -104,9 +104,23 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         console.log('  ✓ Step 1: Discovery complete');
       }
       
-      // STEP 2: Recalculate Score
+      // STEP 2: Recalculate Score (wait for tab to unlock)
+      console.log('  ⏳ Waiting for Score tab to unlock...');
       const scoreTab = page.getByTestId('tab-score');
-      if (await scoreTab.isEnabled().catch(() => false)) {
+      
+      // Poll for Score tab to unlock (profile analysis should unlock it)
+      let scoreUnlocked = false;
+      for (let i = 0; i < 15; i++) {
+        const enabled = await scoreTab.isEnabled().catch(() => false);
+        if (enabled) {
+          scoreUnlocked = true;
+          console.log(`  ✓ Score tab unlocked after ${i + 1}s`);
+          break;
+        }
+        await page.waitForTimeout(1000);
+      }
+      
+      if (scoreUnlocked) {
         await scoreTab.click();
         await page.waitForTimeout(1000);
         
@@ -116,11 +130,26 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           await page.waitForTimeout(35000); // Score recalc
           console.log('  ✓ Step 2: Score recalculated');
         }
+      } else {
+        console.log('  ❌ Score tab never unlocked - PRODUCT BUG!');
       }
       
-      // STEP 3: Generate Resume
+      // STEP 3: Generate Resume (wait for tab to unlock)
+      console.log('  ⏳ Waiting for Resume tab to unlock...');
       const resumeTab = page.getByTestId('tab-resume');
-      if (await resumeTab.isEnabled().catch(() => false)) {
+      
+      let resumeUnlocked = false;
+      for (let i = 0; i < 10; i++) {
+        const enabled = await resumeTab.isEnabled().catch(() => false);
+        if (enabled) {
+          resumeUnlocked = true;
+          console.log(`  ✓ Resume tab unlocked after ${i + 1}s`);
+          break;
+        }
+        await page.waitForTimeout(1000);
+      }
+      
+      if (resumeUnlocked) {
         await resumeTab.click();
         await page.waitForTimeout(1000);
         
@@ -130,11 +159,26 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           await page.waitForTimeout(40000); // Resume generation
           console.log('  ✓ Step 3: Resume generated');
         }
+      } else {
+        console.log('  ❌ Resume tab never unlocked - PRODUCT BUG!');
       }
       
-      // STEP 4: Generate Cover Letter
+      // STEP 4: Generate Cover Letter (wait for tab to unlock)
+      console.log('  ⏳ Waiting for Cover Letter tab to unlock...');
       const coverLetterTab = page.getByTestId('tab-cover-letter');
-      if (await coverLetterTab.isEnabled().catch(() => false)) {
+      
+      let coverLetterUnlocked = false;
+      for (let i = 0; i < 10; i++) {
+        const enabled = await coverLetterTab.isEnabled().catch(() => false);
+        if (enabled) {
+          coverLetterUnlocked = true;
+          console.log(`  ✓ Cover Letter tab unlocked after ${i + 1}s`);
+          break;
+        }
+        await page.waitForTimeout(1000);
+      }
+      
+      if (coverLetterUnlocked) {
         await coverLetterTab.click();
         await page.waitForTimeout(1000);
         
@@ -153,6 +197,8 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
             break;
           }
         }
+      } else {
+        console.log('  ❌ Cover Letter tab never unlocked - PRODUCT BUG!');
       }
       
       console.log('✅ P1-01: FULL pre-app flow complete - Ready tab should unlock');
