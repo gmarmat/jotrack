@@ -42,6 +42,10 @@ export async function searchWeb(query: string, options?: {
     
     console.log(`🌐 Tavily search: "${query.slice(0, 50)}..."`);
     
+    // ⏱️ CRITICAL: Add 30s timeout for web search
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second max for search
+    
     const response = await fetch('https://api.tavily.com/search', {
       method: 'POST',
       headers: {
@@ -56,7 +60,10 @@ export async function searchWeb(query: string, options?: {
         include_raw_content: false,
         include_images: false,
       }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -73,6 +80,15 @@ export async function searchWeb(query: string, options?: {
       searchesUsed: 1,
     };
   } catch (error: any) {
+    // Handle timeout specifically
+    if (error.name === 'AbortError') {
+      console.error('❌ Tavily search timed out after 30 seconds');
+      return {
+        success: false,
+        error: 'Web search timed out after 30 seconds. Please try again.',
+      };
+    }
+    
     console.error('❌ Tavily search failed:', error.message);
     return {
       success: false,

@@ -117,6 +117,10 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
   error?: string;
 }> {
   try {
+    // ⏱️ CRITICAL: Add 60s timeout to prevent indefinite hangs
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second max
+    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -136,7 +140,10 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
           },
         ],
       }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -160,6 +167,14 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
       cost,
     };
   } catch (error: any) {
+    // Handle timeout specifically
+    if (error.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'Claude API call timed out after 60 seconds. Please try again.',
+      };
+    }
+    
     return {
       success: false,
       error: error.message || 'Claude API call failed',
@@ -178,6 +193,10 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
   error?: string;
 }> {
   try {
+    // ⏱️ CRITICAL: Add 60s timeout to prevent indefinite hangs
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second max
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -200,7 +219,10 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
         max_tokens: 8000,
         response_format: { type: 'json_object' },
       }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -224,6 +246,14 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
       cost,
     };
   } catch (error: any) {
+    // Handle timeout specifically
+    if (error.name === 'AbortError') {
+      return {
+        success: false,
+        error: 'OpenAI API call timed out after 60 seconds. Please try again.',
+      };
+    }
+    
     return {
       success: false,
       error: error.message || 'OpenAI API call failed',
