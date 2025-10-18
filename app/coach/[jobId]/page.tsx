@@ -29,6 +29,8 @@ export default function CoachModePage({ params }: CoachPageProps) {
   // Coach State
   const [jobData, setJobData] = useState<any>(null);
   const [discoveryQuestions, setDiscoveryQuestions] = useState<any[]>([]);
+  const [discoveryResponses, setDiscoveryResponses] = useState<Record<string, { answer: string; skipped: boolean }>>({});
+  const [discoveryBatch, setDiscoveryBatch] = useState(0);
   const [profileData, setProfileData] = useState<any>(null);
   const [scoreBefore, setScoreBefore] = useState(0);
   const [scoreAfter, setScoreAfter] = useState(0);
@@ -79,6 +81,48 @@ export default function CoachModePage({ params }: CoachPageProps) {
       if (job.matchScoreData) {
         const matchData = JSON.parse(job.matchScoreData);
         setScoreBefore(matchData.matchScore?.overallScore || 0);
+      }
+
+      // ✅ LOAD SAVED COACH STATE (discovery responses, etc.)
+      try {
+        const coachRes = await fetch(`/api/coach/${jobId}/save`);
+        if (coachRes.ok) {
+          const savedData = await coachRes.json();
+          if (savedData.data) {
+            console.log('✅ Loaded saved coach state:', savedData.data);
+            // Restore discovery questions if they exist
+            if (savedData.data.discoveryQuestions) {
+              setDiscoveryQuestions(savedData.data.discoveryQuestions);
+            }
+            // ✅ Restore discovery responses (THE FIX FOR BUG #10!)
+            if (savedData.data.discoveryResponses) {
+              setDiscoveryResponses(savedData.data.discoveryResponses);
+              console.log('✅ Restored', Object.keys(savedData.data.discoveryResponses).length, 'saved responses');
+            }
+            // ✅ Restore batch position
+            if (savedData.data.currentBatch !== undefined) {
+              setDiscoveryBatch(savedData.data.currentBatch);
+            }
+            // Restore other state
+            if (savedData.data.profileData) {
+              setProfileData(savedData.data.profileData);
+            }
+            if (savedData.data.scoreBefore) {
+              setScoreBefore(savedData.data.scoreBefore);
+            }
+            if (savedData.data.scoreAfter) {
+              setScoreAfter(savedData.data.scoreAfter);
+            }
+            if (savedData.data.generatedResume) {
+              setGeneratedResume(savedData.data.generatedResume);
+            }
+            if (savedData.data.progress) {
+              setProgress(savedData.data.progress);
+            }
+          }
+        }
+      } catch (coachError) {
+        console.warn('No saved coach state found (this is ok for new sessions):', coachError);
       }
     } catch (error) {
       console.error('Failed to load coach state:', error);
@@ -306,6 +350,8 @@ export default function CoachModePage({ params }: CoachPageProps) {
                   <DiscoveryWizard
                     jobId={jobId}
                     questions={discoveryQuestions}
+                    initialResponses={discoveryResponses}
+                    initialBatch={discoveryBatch}
                     onComplete={handleDiscoveryComplete}
                   />
                 )}

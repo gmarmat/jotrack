@@ -16,13 +16,16 @@ interface DiscoveryQuestion {
 interface DiscoveryWizardProps {
   jobId: string;
   questions: DiscoveryQuestion[];
+  initialResponses?: Record<string, { answer: string; skipped: boolean }>;
+  initialBatch?: number;
   onComplete: (responses: Array<{ questionId: string; answer: string; skipped: boolean }>) => void;
 }
 
-export default function DiscoveryWizard({ jobId, questions, onComplete }: DiscoveryWizardProps) {
-  const [currentBatch, setCurrentBatch] = useState(0);
-  const [responses, setResponses] = useState<Record<string, { answer: string; skipped: boolean }>>({});
+export default function DiscoveryWizard({ jobId, questions, initialResponses, initialBatch, onComplete }: DiscoveryWizardProps) {
+  const [currentBatch, setCurrentBatch] = useState(initialBatch || 0);
+  const [responses, setResponses] = useState<Record<string, { answer: string; skipped: boolean }>>(initialResponses || {});
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
   const BATCH_SIZE = 4; // Show 4 questions at a time
   const totalBatches = Math.ceil(questions.length / BATCH_SIZE);
@@ -31,6 +34,37 @@ export default function DiscoveryWizard({ jobId, questions, onComplete }: Discov
   const progress = ((currentBatch + 1) / totalBatches) * 100;
   const answeredCount = Object.values(responses).filter(r => !r.skipped && r.answer.trim().length > 0).length;
   const skippedCount = Object.values(responses).filter(r => r.skipped).length;
+
+  // ✅ AUTO-SAVE responses to database whenever they change
+  useEffect(() => {
+    const saveResponses = async () => {
+      if (Object.keys(responses).length === 0) return; // Don't save empty state
+      
+      setIsSaving(true);
+      try {
+        await fetch(`/api/coach/${jobId}/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            discoveryQuestions: questions,
+            discoveryResponses: responses,
+            currentBatch,
+            progress: { answered: answeredCount, skipped: skippedCount },
+          }),
+        });
+        setLastSaved(new Date());
+        console.log('✅ Auto-saved discovery responses');
+      } catch (error) {
+        console.error('Failed to auto-save discovery responses:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    // Debounce saves (wait 2 seconds after last change)
+    const timeoutId = setTimeout(saveResponses, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [responses, currentBatch, jobId, questions, answeredCount, skippedCount]);
 
   const handleAnswer = (questionId: string, answer: string) => {
     setResponses(prev => ({
