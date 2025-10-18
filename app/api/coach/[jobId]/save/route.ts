@@ -11,9 +11,9 @@ export async function POST(
     const jobId = params.jobId;
     const body = await request.json();
 
-    // Store coach data in coach_sessions table
+    // Store coach data in coach_state table (NOT coach_sessions - that's for score tracking)
     const query = `
-      INSERT INTO coach_sessions (job_id, data_json, updated_at)
+      INSERT INTO coach_state (job_id, data_json, updated_at)
       VALUES (?, ?, ?)
       ON CONFLICT(job_id) DO UPDATE SET
         data_json = excluded.data_json,
@@ -40,7 +40,7 @@ export async function GET(
   try {
     const jobId = params.jobId;
 
-    const query = `SELECT data_json FROM coach_sessions WHERE job_id = ? LIMIT 1`;
+    const query = `SELECT data_json FROM coach_state WHERE job_id = ? LIMIT 1`;
     const stmt = sqlite.prepare(query);
     const result = stmt.get(jobId) as any;
 
