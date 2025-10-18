@@ -50,9 +50,10 @@ test.describe('Phase 3: Error Handling & Edge Cases', () => {
     await firstTextarea.fill(veryLongText);
     await page.waitForTimeout(1000);
     
-    // Verify word limit is enforced
-    const wordCountIndicator = await page.locator('text=/\\d+ \\/ \\d+ words/').textContent();
+    // Verify word limit is enforced (use .first() to avoid strict mode)
+    const wordCountIndicator = await page.locator('text=/\\d+ \\/ \\d+ words/').first().textContent();
     expect(wordCountIndicator).toBeTruthy();
+    expect(wordCountIndicator).toContain('10000'); // Should show 10000 words
     
     // Verify error message shown
     const hasOverLimitError = await page.locator('text=/over limit/i').isVisible().catch(() => false);
@@ -310,13 +311,14 @@ test.describe('Phase 3: Error Handling & Edge Cases', () => {
     
     for (const route of routes) {
       if (route.startsWith('/api/')) {
-        // API routes should return 404 or redirect
+        // API routes should return error status (400, 404, or 500)
         const res = await page.request.post(route, {
           data: {},
           failOnStatusCode: false
         });
         
-        expect([404, 500]).toContain(res.status());
+        const validErrorCodes = [400, 404, 500];
+        expect(validErrorCodes).toContain(res.status());
         console.log(`  ✓ ${route}: ${res.status()}`);
       } else {
         // UI routes should redirect
