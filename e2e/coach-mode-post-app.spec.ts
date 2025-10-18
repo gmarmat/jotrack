@@ -1,0 +1,514 @@
+/**
+ * P1 Tests - Post-Application Features (Interview Prep)
+ * 
+ * CRITICAL: These features have ZERO automated test coverage!
+ * High risk of bugs in production.
+ * 
+ * Coverage:
+ * - "Mark as Applied" flow
+ * - Phase transition (pre-app → post-app)
+ * - Interview questions generation (3 personas)
+ * - Talk tracks generation
+ * - Recommendations engine
+ * 
+ * Expected pass rate: 60-80% (first run, untested features)
+ */
+
+import { test, expect } from '@playwright/test';
+import Database from 'better-sqlite3';
+import { coachState, jobProfiles, coachSessions, jobs, companyInterviewQuestions } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+
+const TEST_JOB_ID = '3957289b-30f5-4ab2-8006-3a08b6630beb';
+
+// Setup database for cleaning test state
+const sqlite = new Database('./data/jotrack.db');
+const db = drizzle(sqlite);
+
+test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
+  
+  // Clean state before each test run
+  test.beforeAll(async () => {
+    console.log('🧹 Cleaning test state for job:', TEST_JOB_ID);
+    
+    // Clear coach-related tables
+    await db.delete(coachState).where(eq(coachState.jobId, TEST_JOB_ID));
+    console.log('✅ Cleared coach_state');
+    
+    await db.delete(jobProfiles).where(eq(jobProfiles.jobId, TEST_JOB_ID));
+    console.log('✅ Cleared job_profiles');
+    
+    await db.delete(coachSessions).where(eq(coachSessions.jobId, TEST_JOB_ID));
+    console.log('✅ Cleared coach_sessions');
+    
+    // Reset coach status to null
+    await db.update(jobs)
+      .set({ 
+        coachStatus: null,
+        appliedAt: null,
+        appliedResumeVersion: null
+      })
+      .where(eq(jobs.id, TEST_JOB_ID));
+    console.log('✅ Reset job coach status');
+    
+    console.log('✅ Test state cleaned - ready for fresh test run!');
+  });
+
+  // ============================================================================
+  // P1-01: "Mark as Applied" Button Appears
+  // ============================================================================
+  test('P1-01: Ready to Apply tab shows "Mark as Applied" button', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Navigate to Ready tab (last pre-app tab)
+    // First we need to unlock it by completing the flow
+    
+    // Check if Ready tab exists and is unlocked
+    const readyTab = page.getByTestId('tab-ready');
+    const isLocked = await readyTab.isDisabled().catch(() => true);
+    
+    if (isLocked) {
+      console.log('⚠️ P1-01: Ready tab locked, completing full pre-app flow...');
+      
+      // Complete discovery
+      const hasButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
+      if (hasButton) {
+        await page.click('[data-testid="generate-discovery-button"]');
+        await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
+        await page.waitForTimeout(2000);
+        
+        const skipButton = page.locator('button:has-text("Skip all")');
+        if (await skipButton.isVisible().catch(() => false)) {
+          await skipButton.click();
+          await page.waitForTimeout(1000);
+        }
+        
+        // Complete profile analysis
+        const completeButtons = [
+          'button:has-text("Complete & Analyze")',
+          'button:has-text("Complete")',
+          'button:has-text("Analyze Profile")'
+        ];
+        
+        for (const selector of completeButtons) {
+          const btn = page.locator(selector);
+          if (await btn.isVisible().catch(() => false)) {
+            await btn.click();
+            break;
+          }
+        }
+        
+        await page.waitForTimeout(10000);
+      }
+      
+      console.log('✅ P1-01: Pre-app flow complete');
+    }
+    
+    // Navigate to Ready tab
+    await readyTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Verify "Mark as Applied" button exists
+    const markAppliedButton = page.locator('button:has-text("Mark as Applied")');
+    await expect(markAppliedButton).toBeVisible({ timeout: 5000 });
+    
+    console.log('✅ P1-01: "Mark as Applied" button visible');
+  });
+
+  // ============================================================================
+  // P1-02: "Mark as Applied" Triggers Phase Transition
+  // ============================================================================
+  test('P1-02: Clicking "Mark as Applied" transitions to post-app phase', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Navigate to Ready tab
+    const readyTab = page.getByTestId('tab-ready');
+    const isUnlocked = await readyTab.isEnabled().catch(() => false);
+    
+    if (!isUnlocked) {
+      console.log('⚠️ P1-02: Ready tab locked, skipping (P1-01 should unlock it)');
+      test.skip();
+      return;
+    }
+    
+    await readyTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Click "Mark as Applied"
+    const markAppliedButton = page.locator('button:has-text("Mark as Applied")');
+    await markAppliedButton.click();
+    await page.waitForTimeout(3000); // Wait for API call
+    
+    // Verify phase transition - should see different tabs now
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    await expect(recruiterTab).toBeVisible({ timeout: 5000 });
+    
+    // Verify old pre-app tabs are gone
+    const discoveryTab = page.getByTestId('tab-discovery');
+    await expect(discoveryTab).not.toBeVisible();
+    
+    console.log('✅ P1-02: Phase transition successful - post-app tabs visible');
+  });
+
+  // ============================================================================
+  // P1-03: Recruiter Questions Generation
+  // ============================================================================
+  test('P1-03: Recruiter interview questions can be generated', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Should be in post-app phase (from P1-02)
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    const tabVisible = await recruiterTab.isVisible().catch(() => false);
+    
+    if (!tabVisible) {
+      console.log('⚠️ P1-03: Not in post-app phase yet (P1-02 should enable it)');
+      test.skip();
+      return;
+    }
+    
+    // Make sure we're on recruiter tab
+    await recruiterTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Click "Generate Questions" button
+    const generateButton = page.locator('button:has-text("Generate Questions")');
+    await generateButton.click();
+    
+    // Wait for AI generation (~15-20s)
+    await page.waitForTimeout(25000);
+    
+    // Verify questions appeared
+    const questionCount = await page.locator('text=/\\d+ Questions to Prepare/').textContent();
+    expect(questionCount).toBeTruthy();
+    
+    const count = parseInt(questionCount?.match(/\d+/)?.[0] || '0');
+    expect(count).toBeGreaterThanOrEqual(8); // Should have at least 8 questions
+    expect(count).toBeLessThanOrEqual(15); // Should be reasonable
+    
+    console.log(`✅ P1-03: Recruiter questions generated (${count} questions)`);
+  });
+
+  // ============================================================================
+  // P1-04: Hiring Manager Questions Generation
+  // ============================================================================
+  test('P1-04: Hiring manager interview questions can be generated', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Navigate to hiring-manager tab
+    const hmTab = page.getByTestId('tab-hiring-manager');
+    const tabVisible = await hmTab.isVisible().catch(() => false);
+    
+    if (!tabVisible) {
+      console.log('⚠️ P1-04: Not in post-app phase');
+      test.skip();
+      return;
+    }
+    
+    await hmTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Generate questions
+    const generateButton = page.locator('button:has-text("Generate Questions")');
+    if (await generateButton.isVisible().catch(() => false)) {
+      await generateButton.click();
+      await page.waitForTimeout(25000);
+    }
+    
+    // Verify questions
+    const questionCount = await page.locator('text=/\\d+ Questions to Prepare/').textContent();
+    const count = parseInt(questionCount?.match(/\d+/)?.[0] || '0');
+    expect(count).toBeGreaterThanOrEqual(8);
+    
+    console.log(`✅ P1-04: Hiring manager questions generated (${count} questions)`);
+  });
+
+  // ============================================================================
+  // P1-05: Peer Panel Questions Generation
+  // ============================================================================
+  test('P1-05: Peer panel interview questions can be generated', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Navigate to peer-panel tab
+    const peerTab = page.getByTestId('tab-peer-panel');
+    const tabVisible = await peerTab.isVisible().catch(() => false);
+    
+    if (!tabVisible) {
+      console.log('⚠️ P1-05: Not in post-app phase');
+      test.skip();
+      return;
+    }
+    
+    await peerTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Generate questions
+    const generateButton = page.locator('button:has-text("Generate Questions")');
+    if (await generateButton.isVisible().catch(() => false)) {
+      await generateButton.click();
+      await page.waitForTimeout(25000);
+    }
+    
+    // Verify questions
+    const questionCount = await page.locator('text=/\\d+ Questions to Prepare/').textContent();
+    const count = parseInt(questionCount?.match(/\d+/)?.[0] || '0');
+    expect(count).toBeGreaterThanOrEqual(8);
+    
+    console.log(`✅ P1-05: Peer panel questions generated (${count} questions)`);
+  });
+
+  // ============================================================================
+  // P1-06: Question Expand/Collapse Works
+  // ============================================================================
+  test('P1-06: Questions can be expanded to show details', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    if (!await recruiterTab.isVisible().catch(() => false)) {
+      test.skip();
+      return;
+    }
+    
+    await recruiterTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Find first question
+    const firstQuestion = page.locator('button').filter({ hasText: /^Q1/ }).first();
+    await firstQuestion.click();
+    await page.waitForTimeout(500);
+    
+    // Verify expanded content shows
+    const hasRationale = await page.locator('text=Why they ask this:').isVisible().catch(() => false);
+    const hasTips = await page.locator('text=Preparation Tips:').isVisible().catch(() => false);
+    
+    expect(hasRationale || hasTips).toBeTruthy();
+    
+    console.log('✅ P1-06: Question expand/collapse works');
+  });
+
+  // ============================================================================
+  // P1-07: Expand All / Collapse All Buttons Work
+  // ============================================================================
+  test('P1-07: Expand All and Collapse All buttons work', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    if (!await recruiterTab.isVisible().catch(() => false)) {
+      test.skip();
+      return;
+    }
+    
+    await recruiterTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Click "Expand All"
+    const expandAllButton = page.locator('button:has-text("Expand All")');
+    if (await expandAllButton.isVisible().catch(() => false)) {
+      await expandAllButton.click();
+      await page.waitForTimeout(500);
+      
+      // Verify multiple questions expanded
+      const rationaleCount = await page.locator('text=Why they ask this:').count();
+      expect(rationaleCount).toBeGreaterThanOrEqual(3);
+      
+      // Click "Collapse All"
+      const collapseAllButton = page.locator('button:has-text("Collapse All")');
+      await collapseAllButton.click();
+      await page.waitForTimeout(500);
+      
+      // Verify collapsed
+      const rationaleAfter = await page.locator('text=Why they ask this:').count();
+      expect(rationaleAfter).toBe(0);
+      
+      console.log('✅ P1-07: Expand/Collapse All works');
+    } else {
+      console.log('⚠️ P1-07: No questions generated yet');
+      test.skip();
+    }
+  });
+
+  // ============================================================================
+  // P1-08: Database - Interview Questions Cached
+  // ============================================================================
+  test('P1-08: Interview questions are saved to database', async ({ page }) => {
+    // Query database for cached questions
+    const cachedQuestions = db
+      .select()
+      .from(companyInterviewQuestions)
+      .where(eq(companyInterviewQuestions.jobId, TEST_JOB_ID))
+      .all();
+    
+    if (cachedQuestions.length === 0) {
+      console.log('⚠️ P1-08: No questions cached yet (P1-03 should cache them)');
+      test.skip();
+      return;
+    }
+    
+    // Verify structure
+    expect(cachedQuestions.length).toBeGreaterThan(0);
+    expect(cachedQuestions[0]).toHaveProperty('interviewStage');
+    expect(cachedQuestions[0]).toHaveProperty('questionsData');
+    
+    console.log(`✅ P1-08: ${cachedQuestions.length} question sets cached in database`);
+  });
+
+  // ============================================================================
+  // P1-09: "Mark as Applied" Updates Database
+  // ============================================================================
+  test('P1-09: "Mark as Applied" updates job coach_status in database', async ({ page }) => {
+    // Query database for job status
+    const job = db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.id, TEST_JOB_ID))
+      .get();
+    
+    if (!job) {
+      console.log('⚠️ P1-09: Test job not found');
+      test.skip();
+      return;
+    }
+    
+    // Verify coach status changed
+    const validStatuses = ['applied', 'interview-prep', null];
+    expect(validStatuses).toContain(job.coachStatus);
+    
+    if (job.coachStatus === 'applied' || job.coachStatus === 'interview-prep') {
+      // Verify appliedAt timestamp
+      expect(job.appliedAt).toBeTruthy();
+      
+      // Verify appliedResumeVersion set
+      expect(job.appliedResumeVersion).toBeTruthy();
+      
+      console.log(`✅ P1-09: Database updated - status: ${job.coachStatus}, applied: ${new Date(job.appliedAt!).toLocaleString()}`);
+    } else {
+      console.log('⚠️ P1-09: Job not marked as applied yet (P1-02 should mark it)');
+      test.skip();
+    }
+  });
+
+  // ============================================================================
+  // P1-10: Post-App Phase Has 3 Tabs
+  // ============================================================================
+  test('P1-10: Post-app phase shows 3 interview preparation tabs', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    // Check if in post-app phase
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    if (!await recruiterTab.isVisible().catch(() => false)) {
+      console.log('⚠️ P1-10: Not in post-app phase');
+      test.skip();
+      return;
+    }
+    
+    // Verify all 3 tabs visible
+    await expect(recruiterTab).toBeVisible();
+    await expect(page.getByTestId('tab-hiring-manager')).toBeVisible();
+    await expect(page.getByTestId('tab-peer-panel')).toBeVisible();
+    
+    console.log('✅ P1-10: All 3 post-app tabs visible');
+  });
+
+  // ============================================================================
+  // P1-11: Cached Questions Display Immediately (No Re-Generation)
+  // ============================================================================
+  test('P1-11: Cached questions display without regeneration', async ({ page }) => {
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    if (!await recruiterTab.isVisible().catch(() => false)) {
+      test.skip();
+      return;
+    }
+    
+    await recruiterTab.click();
+    await page.waitForTimeout(1000);
+    
+    // Check for cached indicator
+    const cachedIndicator = await page.locator('text=/Using cached questions/').isVisible().catch(() => false);
+    const questionsExist = await page.locator('text=/Questions to Prepare/').isVisible().catch(() => false);
+    
+    if (questionsExist) {
+      // Questions loaded - verify no "Generate Questions" button (means cached)
+      const generateButton = page.locator('button:has-text("Generate Questions")');
+      const buttonVisible = await generateButton.isVisible().catch(() => false);
+      
+      expect(buttonVisible).toBe(false); // Should not show button if cached
+      
+      console.log('✅ P1-11: Cached questions loaded (no regeneration)');
+    } else {
+      console.log('⚠️ P1-11: No cached questions (P1-03 should cache them)');
+      test.skip();
+    }
+  });
+
+  // ============================================================================
+  // P1-12: Performance - Questions Load in <3s
+  // ============================================================================
+  test('P1-12: Post-app phase loads quickly (<3s)', async ({ page }) => {
+    const startTime = Date.now();
+    
+    await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    
+    // Wait for recruiter tab
+    const recruiterTab = page.getByTestId('tab-recruiter');
+    await recruiterTab.waitFor({ timeout: 5000 });
+    
+    const loadTime = Date.now() - startTime;
+    
+    expect(loadTime).toBeLessThan(3000);
+    
+    console.log(`✅ P1-12: Post-app phase loaded in ${loadTime}ms`);
+  });
+
+});
+
+test.describe('P1 - Error Handling & Edge Cases', () => {
+  
+  // ============================================================================
+  // P1-13: AI API Failure Handling
+  // ============================================================================
+  test('P1-13: Graceful error when AI API fails', async ({ page }) => {
+    // This test would require mocking API failures
+    // For now, verify error UI exists
+    console.log('⚠️ P1-13: Placeholder for AI failure testing');
+    test.skip();
+  });
+
+  // ============================================================================
+  // P1-14: Invalid Job ID in Post-App Phase
+  // ============================================================================
+  test('P1-14: Invalid job ID in post-app redirects gracefully', async ({ page }) => {
+    await page.goto('/coach/invalid-job-id-12345', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+    
+    // Should redirect to home or show error
+    const currentUrl = page.url();
+    const isHome = currentUrl.endsWith('/') || currentUrl.includes('localhost:3000/jobs');
+    
+    expect(isHome).toBeTruthy();
+    
+    console.log('✅ P1-14: Invalid job ID handled in post-app');
+  });
+
+  // ============================================================================
+  // P1-15: Network Interruption During Question Generation
+  // ============================================================================
+  test('P1-15: Network interruption shows appropriate error', async ({ page }) => {
+    // This would require network mocking
+    // Placeholder for future implementation
+    console.log('⚠️ P1-15: Placeholder for network interruption testing');
+    test.skip();
+  });
+
+});
+
