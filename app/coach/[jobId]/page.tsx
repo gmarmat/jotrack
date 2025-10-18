@@ -7,6 +7,7 @@ import DiscoveryWizard from '@/app/components/coach/DiscoveryWizard';
 import ScoreImprovementCard from '@/app/components/coach/ScoreImprovementCard';
 import ResumeEditor from '@/app/components/coach/ResumeEditor';
 import CoverLetterGenerator from '@/app/components/coach/CoverLetterGenerator';
+import InterviewPrepTab from '@/app/components/coach/InterviewPrepTab';
 
 interface CoachPageProps {
   params: Promise<{ jobId: string }> | { jobId: string };
@@ -415,7 +416,10 @@ export default function CoachModePage({ params }: CoachPageProps) {
             )}
 
             {preAppTab === 'cover-letter' && (
-              <CoverLetterGenerator jobId={jobId} />
+              <CoverLetterGenerator 
+                jobId={jobId} 
+                onGenerate={() => setProgress(prev => ({ ...prev, coverLetterGenerated: true }))}
+              />
             )}
 
             {preAppTab === 'ready' && (
@@ -439,13 +443,33 @@ export default function CoachModePage({ params }: CoachPageProps) {
         )}
 
         {phase === 'post-app' && (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Interview Prep Coming Soon!
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Talk tracks for {postAppTab} interview
-            </p>
+          <div>
+            {postAppTab === 'recruiter' && (
+              <InterviewPrepTab
+                jobId={jobId}
+                interviewStage="recruiter"
+                title="Recruiter Phone Screen Prep"
+                description="Common questions recruiters ask to assess culture fit and basic qualifications"
+              />
+            )}
+
+            {postAppTab === 'hiring-manager' && (
+              <InterviewPrepTab
+                jobId={jobId}
+                interviewStage="hiring-manager"
+                title="Hiring Manager Interview Prep"
+                description="Technical depth, problem-solving scenarios, and team fit questions"
+              />
+            )}
+
+            {postAppTab === 'peer-panel' && (
+              <InterviewPrepTab
+                jobId={jobId}
+                interviewStage="peer-panel"
+                title="Peer Panel Interview Prep"
+                description="Collaboration, technical breadth, and day-to-day work questions from your future teammates"
+              />
+            )}
           </div>
         )}
       </div>
