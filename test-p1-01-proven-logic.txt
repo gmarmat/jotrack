@@ -1,0 +1,57 @@
+
+Running 1 test using 1 worker
+
+(node:10090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P1-01: Ready tab locked, completing FULL pre-app flow...
+  📊 Skipping through all wizard batches...
+  ✓ Batch 1/4: Skipped & navigated
+  ✓ Batch 2/4: Skipped & navigated
+  ✓ Batch 3/4: Skipped & navigated
+  ✘  1 [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button (40.3s)
+
+
+  1) [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 
+
+    TimeoutError: page.waitForSelector: Timeout 3000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Complete Discovery"):not([disabled])') to be visible[22m
+
+
+       98 |           } else {
+       99 |             // Last batch - click Complete Discovery
+    > 100 |             await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 3000 });
+          |                        ^
+      101 |             await page.click('button:has-text("Complete Discovery")');
+      102 |             console.log('  ✓ Batch 4/4: Clicked "Complete Discovery"');
+      103 |           }
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-post-app.spec.ts:100:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 

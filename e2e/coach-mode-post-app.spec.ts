@@ -76,10 +76,11 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
         await page.waitForTimeout(3000);
         
-        // Use PROVEN approach from P0-08: Skip through all 4 batches
+        // Use PROVEN approach from P0-08: Skip through wizard until Complete button appears
         console.log('  📊 Skipping through all wizard batches...');
         
-        for (let batch = 0; batch < 4; batch++) {
+        let batchCount = 0;
+        for (let batch = 0; batch < 10; batch++) { // Max 10 batches safety
           // Skip all questions in this batch FIRST using page.evaluate
           await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'))
@@ -87,24 +88,35 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
             btns.forEach(b => (b as HTMLButtonElement).click());
           });
           
-          await page.waitForTimeout(500); // Wait for React state update
+          await page.waitForTimeout(1000); // Wait for React state update
           
-          // Now Click Next or Complete Discovery
-          if (batch < 3) {
+          // Check which button is available
+          const hasNext = await page.locator('button:has-text("Next")').isVisible().catch(() => false);
+          const hasComplete = await page.locator('button:has-text("Complete Discovery")').isVisible().catch(() => false);
+          
+          if (hasComplete) {
+            // Last batch - click Complete Discovery
+            console.log(`  ⏳ Last batch (${batch + 1}) - waiting for Complete Discovery...`);
+            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
+            await page.click('button:has-text("Complete Discovery")');
+            console.log(`  ✓ Clicked "Complete Discovery" - triggering profile analysis!`);
+            batchCount = batch + 1;
+            break;
+          } else if (hasNext) {
             // Not last batch - click Next
             await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 5000 });
             await page.click('button:has-text("Next")');
-            console.log(`  ✓ Batch ${batch + 1}/4: Skipped & navigated to next`);
+            console.log(`  ✓ Batch ${batch + 1}: Skipped & navigated to next`);
           } else {
-            // Last batch (batch 3 = 4th batch) - click Complete Discovery
-            console.log('  ⏳ Waiting for Complete Discovery to be enabled...');
-            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
-            await page.click('button:has-text("Complete Discovery")');
-            console.log('  ✓ Batch 4/4: Clicked "Complete Discovery" - triggering profile analysis!');
+            console.log(`  ⚠️ No buttons found at batch ${batch + 1} - might be done`);
+            batchCount = batch + 1;
+            break;
           }
           
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(500);
         }
+        
+        console.log(`  ✓ Navigated through ${batchCount} batches`);
         
         // Wait for profile analysis to complete (~15-25s)
         console.log('  ⏳ Waiting for profile analysis API call...');
@@ -165,7 +177,19 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         if (await generateResumeButton.isVisible().catch(() => false)) {
           await generateResumeButton.click();
           await page.waitForTimeout(40000); // Resume generation
-          console.log('  ✓ Step 3: Resume generated');
+          console.log('  ✓ Step 3a: Resume generated');
+          
+          // CRITICAL: Must click "Accept as Final Resume" to unlock Cover Letter tab!
+          const acceptButton = page.locator('button:has-text("Accept as Final Resume")');
+          if (await acceptButton.isVisible().catch(() => false)) {
+            await acceptButton.click();
+            // Handle confirmation dialog
+            page.on('dialog', dialog => dialog.accept());
+            await page.waitForTimeout(1000);
+            console.log('  ✓ Step 3b: Resume finalized (unlocks Cover Letter)');
+          } else {
+            console.log('  ⚠️ Accept as Final button not found');
+          }
         }
       } else {
         console.log('  ❌ Resume tab never unlocked - PRODUCT BUG!');
