@@ -1,0 +1,63 @@
+Senior Software Engineer - Digital Technology
+Fortive Corporation
+Everett, WA (Hybrid)
+
+About Fortive:
+Fortive is a global industrial technology leader serving customers in more than 50 countries with a differentiated portfolio of intelligent operating solutions. Our 18,000+ team members are united in a boundless commitment to solve our customers' most critical business challenges. We're driven by the Fortive Business System (FBS), our proven formula for driving continuous improvement and delivering superior results.
+
+The Role:
+We're seeking a Senior Software Engineer to join our Digital Technology team. You'll work on mission-critical industrial IoT platforms, building scalable cloud solutions that power essential technology for customers worldwide. This role requires deep technical expertise, leadership experience, and alignment with our FBS principles of continuous improvement.
+
+Key Responsibilities:
+- Design and implement microservices architecture using React, Node.js, and AWS
+- Lead technical architecture decisions for industrial IoT platform serving 100K+ devices
+- Mentor team of 5-7 engineers, conducting code reviews and establishing best practices
+- Drive continuous improvement initiatives using FBS methodology and lean principles
+- Collaborate with product managers and customers to define technical roadmaps
+- Implement DevOps practices: CI/CD pipelines, infrastructure as code, monitoring
+- Ensure 99.9% uptime for mission-critical industrial systems
+- Champion security best practices and compliance requirements
+
+Required Skills:
+- 6+ years software engineering experience
+- Expert in React, TypeScript, and modern JavaScript (ES6+)
+- Production experience with Node.js, Express, or similar backend frameworks
+- Strong AWS expertise (EC2, Lambda, S3, RDS, CloudFormation)
+- Kubernetes and Docker for container orchestration
+- CI/CD tools (Jenkins, GitHub Actions, or GitLab CI)
+- RESTful API design and microservices architecture
+- SQL databases (PostgreSQL, MySQL) and NoSQL (MongoDB, DynamoDB)
+- Git version control and collaborative development workflows
+
+Highly Desired:
+- Industrial IoT or embedded systems experience
+- Real-time data processing (Kafka, RabbitMQ, or similar)
+- Infrastructure as code (Terraform, CloudFormation)
+- Monitoring and observability tools (Datadog, New Relic, Prometheus)
+- Agile/Scrum methodologies
+- Leadership or mentoring experience
+- Technical documentation and communication skills
+
+Education:
+- Bachelor's degree in Computer Science, Engineering, or related field
+- Master's degree preferred
+
+What We Offer:
+- Competitive salary ($140K-$180K based on experience)
+- Comprehensive benefits (health, dental, vision, 401k match)
+- Professional development budget
+- Flexible hybrid work arrangement
+- FBS training and continuous improvement culture
+- Opportunity to impact essential technology globally
+
+Why Fortive:
+Our culture is built on the Fortive Business System (FBS), emphasizing:
+- Continuous improvement and operational excellence
+- Customer focus and innovation
+- Talent development and empowerment
+- Accountability and results
+
+If you're passionate about building scalable systems, mentoring engineers, and driving continuous improvement, we want to hear from you!
+
+Fortive is an equal opportunity employer committed to diversity and inclusion.
+

@@ -1,0 +1,72 @@
+Staff Software Engineer - Infrastructure
+Google LLC
+Mountain View, CA | Sunnyvale, CA
+
+Minimum Qualifications:
+• Bachelor's degree in Computer Science or equivalent practical experience
+• 8 years of experience with software development in one or more programming languages (e.g., Python, C, C++, Java, JavaScript)
+• 5 years of experience with data structures or algorithms
+• 3 years of experience with full stack development, across back-end (e.g., Java, Python, GO, or C++) and front-end (e.g., JavaScript or TypeScript, HTML, CSS, or equivalent)
+
+Preferred Qualifications:
+• Master's degree or PhD in Computer Science or related technical field
+• 3 years of experience working in a complex, matrixed organization
+• 3 years of experience in a technical leadership role
+• Experience with distributed systems and large-scale system design
+• Experience with Google Cloud Platform or similar cloud technologies
+• Published research or contributions to open source projects
+
+About the Job:
+Google's software engineers develop the next-generation technologies that change how billions of users connect, explore, and interact with information and one another. Our products need to handle information at massive scale, and extend well beyond web search. We're looking for engineers who bring fresh ideas from all areas, including information retrieval, distributed computing, large-scale system design, networking and data storage, security, artificial intelligence, natural language processing, UI design and mobile.
+
+As a Staff Software Engineer on the Infrastructure team, you will work on critical projects that power Google's core services. You'll design, develop, test, deploy, maintain, and enhance large-scale software solutions. You'll manage project priorities, deadlines, and deliverables while applying your expertise to lead and influence technical direction.
+
+Responsibilities:
+• Design and implement large-scale distributed systems that handle billions of requests per day
+• Lead technical design discussions and code reviews, setting best practices for team of 20+ engineers
+• Influence technical strategy and architecture decisions across multiple teams
+• Mentor and develop engineers, fostering technical growth and career development
+• Drive adoption of new technologies and methodologies to improve system reliability and performance
+• Collaborate with Product Managers, UX designers, and other engineers to deliver user-facing features
+• Participate in on-call rotation, ensuring 99.99% uptime for critical services
+• Contribute to engineering culture through tech talks, design reviews, and documentation
+
+Technical Skills Expected:
+• Expert-level proficiency in at least two programming languages (Python, Go, Java, C++)
+• Deep understanding of distributed systems, scalability, and performance optimization
+• Experience with large-scale data processing (MapReduce, Apache Beam, Dataflow)
+• Strong knowledge of computer science fundamentals (algorithms, data structures, system design)
+• Experience with Google Cloud Platform, Kubernetes, Docker
+• Familiarity with monitoring, logging, and observability (Stackdriver, Prometheus, Grafana)
+• Database expertise (Bigtable, Spanner, PostgreSQL, MySQL)
+• Understanding of machine learning and AI (preferred)
+
+Leadership & Soft Skills:
+• Proven ability to lead technical projects from conception to launch
+• Strong communication skills (written and verbal) for technical and non-technical audiences
+• Experience influencing cross-team technical decisions
+• Demonstrated ability to mentor and develop engineers
+• Comfortable with ambiguity and rapidly changing requirements
+• Growth mindset and commitment to continuous learning
+
+About Google's Culture:
+We value diversity, equity, and inclusion. Our engineers come from diverse backgrounds and bring unique perspectives. We believe in:
+- Innovation and bold thinking
+- User focus and impact
+- Collaboration and teamwork
+- Technical excellence
+- Work-life balance and employee well-being
+
+Compensation:
+Base salary range: $190,000-$285,000 + bonus + equity + benefits
+
+Benefits:
+• Comprehensive health coverage (medical, dental, vision)
+• 401(k) match and financial planning
+• Generous parental leave
+• Learning and development budget ($5K/year)
+• On-site amenities (meals, fitness, childcare)
+• Flexible work arrangements
+
+Google is proud to be an equal opportunity workplace and an affirmative action employer.
+

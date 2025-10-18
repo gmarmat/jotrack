@@ -1,0 +1,76 @@
+Engineering Manager
+FastGrow AI (Series B Startup)
+San Francisco, CA / Remote
+
+About Us:
+We're a fast-growing AI startup (Series B, $50M raised) building the future of automated customer support. Our platform uses cutting-edge NLP and machine learning to help companies deliver exceptional customer experiences at scale. We're looking for an Engineering Manager to help us scale from 15 to 50 engineers over the next year.
+
+The Role:
+Lead a team of 8-12 engineers building our core AI platform. You'll split time between hands-on technical work (30%) and people management (70%). This is a high-impact role reporting directly to our VP of Engineering.
+
+What You'll Do:
+• Manage and grow team of 8-12 engineers (mix of frontend, backend, ML)
+• Drive technical roadmap and architecture decisions
+• Build high-performing team culture (hire, develop, retain talent)
+• Ship features fast (2-week sprints, continuous delivery)
+• Balance technical debt with feature velocity
+• Collaborate with Product, Design, and Customer Success
+• Code reviews, architecture reviews, technical mentorship
+• Define and track engineering metrics (velocity, quality, uptime)
+
+Must-Haves:
+• 5+ years as software engineer
+• 2+ years managing engineering teams (direct reports)
+• Hands-on experience with React, Node.js, TypeScript
+• AWS or GCP cloud experience
+• Strong communication skills (technical and non-technical)
+• Startup experience (fast-paced, wear multiple hats)
+• Track record of shipping products to production
+
+Nice-to-Haves:
+• ML/AI platform experience
+• Kubernetes, Docker, microservices
+• Python (for working with ML team)
+• Experience scaling engineering teams (5 → 20+)
+• Previous startup founder or early employee
+• Open source contributions
+
+Our Stack:
+Frontend: React, TypeScript, Next.js, Tailwind
+Backend: Node.js, Python, FastAPI, PostgreSQL
+ML: PyTorch, Hugging Face, vector databases
+Infra: AWS, Kubernetes, Terraform, GitHub Actions
+
+What We Offer:
+• Competitive salary: $180K-$220K + significant equity (0.5-1.5%)
+• Ground floor opportunity (Series B, high growth)
+• Build team from scratch (hire your own team)
+• Real impact (every decision matters)
+• Flexible remote work
+• Health insurance, 401k, unlimited PTO
+• Learning budget ($3K/year)
+
+Our Culture:
+• Move fast, ship often
+• Customer-obsessed
+• Data-driven decisions
+• Radical transparency
+• Work-life balance (40-45 hour weeks, not 60+)
+• Async-first communication
+• Inclusive and diverse team
+
+Interview Process:
+1. Recruiter call (30 min)
+2. Hiring Manager chat (45 min) - Culture fit, experience
+3. Technical assessment (90 min) - System design + code review
+4. Team interviews (2 hours) - Meet engineers you'd manage
+5. Executive interview (30 min) - CEO or VP Engineering
+
+Apply if you're excited about:
+- Building high-performing teams
+- Shipping AI products to production
+- Startup pace and ambiguity
+- Having real influence on company direction
+
+We're an equal opportunity employer. We value diversity and are committed to creating an inclusive environment.
+

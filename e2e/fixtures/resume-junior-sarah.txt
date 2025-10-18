@@ -1,0 +1,49 @@
+SARAH CHEN
+Seattle, WA | (206) 555-0123 | sarah.chen@email.com | linkedin.com/in/sarahchen
+
+PROFESSIONAL SUMMARY
+Software engineer with 2 years of experience building web applications. Proficient in JavaScript and React. Eager to learn and grow in a collaborative team environment.
+
+EXPERIENCE
+
+Junior Software Engineer | TechStart Inc | Seattle, WA
+March 2022 - Present
+• Developed web applications using React and JavaScript
+• Worked with team on various projects
+• Participated in code reviews and team meetings
+• Fixed bugs and implemented new features
+• Used Git for version control
+
+Software Engineering Intern | WebCo | Seattle, WA  
+June 2021 - February 2022
+• Built features for company website
+• Learned React and modern web development
+• Worked closely with senior developers
+• Attended daily standups
+
+SKILLS
+Languages: JavaScript, HTML, CSS, some Python
+Frameworks: React, Express.js
+Tools: Git, VS Code, npm
+Databases: MySQL (basic)
+Other: Agile methodology, Jira
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Washington | 2021
+GPA: 3.6/4.0
+
+PROJECTS
+Personal Portfolio Website
+• Built personal website using React
+• Deployed on Netlify
+• Showcases projects and skills
+
+Todo List App
+• Simple React application for task management
+• Uses local storage for data persistence
+• Responsive design with CSS
+
+CERTIFICATIONS
+React Fundamentals - Udemy (2021)
+

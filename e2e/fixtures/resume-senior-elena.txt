@@ -1,0 +1,50 @@
+ELENA RODRIGUEZ
+Austin, TX | (512) 555-0142 | elena.rodriguez@email.com | linkedin.com/in/elenarodriguez
+
+PROFESSIONAL SUMMARY
+Senior Software Engineer with 8+ years building scalable distributed systems and leading high-performing engineering teams. Expert in full-stack development, cloud architecture, and engineering management. Proven track record of delivering impactful products serving millions of users while mentoring engineers and driving technical excellence.
+
+EXPERIENCE
+
+Senior Software Engineer | Stripe | Austin, TX
+March 2020 - Present
+• Architected and led migration of payment processing system to microservices, improving throughput by 300% and reducing latency from 200ms to 45ms, handling $2B+ in annual transaction volume
+• Led cross-functional team of 8 engineers (3 frontend, 3 backend, 2 DevOps) through 18-month platform modernization, delivering on schedule and under budget
+• Implemented comprehensive monitoring and alerting using Datadog, reducing incident response time by 60% and achieving 99.99% uptime
+• Mentored 5 engineers to promotion (2 to senior, 3 to mid-level), conducting weekly 1:1s and creating internal technical training program
+• Drove adoption of infrastructure-as-code using Terraform, reducing deployment time from 4 hours to 15 minutes
+• Championed security best practices, achieving SOC 2 compliance and PCI-DSS certification
+
+Software Engineer II | Amazon Web Services | Seattle, WA
+July 2016 - February 2020
+• Built real-time analytics dashboard for AWS Lambda serving 50K+ customers, processing 100M+ events daily
+• Designed and implemented RESTful APIs using Node.js and TypeScript, achieving sub-50ms p95 latency
+• Optimized database queries in PostgreSQL, reducing query time by 75% and saving $200K annually in infrastructure costs
+• Collaborated with PM and UX teams to ship 25+ features across 12 quarterly releases
+• Conducted 200+ code reviews, establishing team coding standards and best practices
+• Led incident response for P1 production issues, achieving 99.95% uptime SLA
+
+TECHNICAL EXPERTISE
+Languages: TypeScript, JavaScript, Python, Go, Java
+Frontend: React, Next.js, Redux, GraphQL, Tailwind CSS
+Backend: Node.js, Express, FastAPI, microservices architecture
+Cloud & DevOps: AWS (Lambda, ECS, RDS, S3, CloudFormation), Docker, Kubernetes, Terraform, CI/CD (GitHub Actions, Jenkins)
+Databases: PostgreSQL, MongoDB, DynamoDB, Redis
+Leadership: Team management, technical mentoring, cross-functional collaboration, strategic planning
+
+EDUCATION
+M.S. Computer Science | Stanford University | 2016
+B.S. Computer Science | UT Austin | 2014 (Summa Cum Laude, GPA: 3.9/4.0)
+
+IMPACT & ACHIEVEMENTS
+• Led 3 major platform migrations (monolith → microservices, on-prem → cloud, SQL → NoSQL)
+• Mentored 12+ engineers to promotion over 8-year career
+• Reduced infrastructure costs by $500K+ through optimization initiatives
+• Achieved 99.99% uptime across all systems managed
+• Public speaker at 2 AWS re:Invent conferences (2018, 2019)
+• Published 3 technical blog posts with 50K+ combined views
+
+CERTIFICATIONS
+AWS Certified Solutions Architect - Professional (2019)
+Certified Kubernetes Administrator (CKA) (2021)
+

@@ -1,0 +1,47 @@
+MARCUS JOHNSON
+San Francisco, CA | (415) 555-0198 | marcus.j@email.com | github.com/marcusj
+
+SUMMARY
+Experienced software engineer with background in web development and cloud technologies. Strong problem solver with good communication skills. Team player who enjoys collaborating with others.
+
+EXPERIENCE
+
+Software Engineer | CloudTech Solutions | San Francisco, CA
+Jan 2020 - Present
+• Work on backend systems and APIs
+• Improved system performance
+• Collaborate with frontend team on various projects
+• Participate in sprint planning and retrospectives
+• Help with deployment and infrastructure tasks
+• Mentor junior developers occasionally
+• Work with databases and data management
+• Contribute to technical discussions
+
+Full Stack Developer | AppWorks | San Francisco, CA
+June 2018 - Dec 2019
+• Built web applications using React and Node.js
+• Worked on database design
+• Implemented features based on requirements
+• Fixed bugs and improved code quality
+• Participated in code reviews
+• Worked with Product team on requirements
+
+TECHNICAL SKILLS
+Languages: JavaScript, TypeScript, Python, some Java
+Frontend: React, Redux, HTML/CSS, responsive design
+Backend: Node.js, Express, REST APIs
+Cloud: AWS (EC2, S3, basic experience)
+Databases: PostgreSQL, MongoDB
+Tools: Git, Docker, basic Kubernetes
+Methodologies: Agile, Scrum
+
+EDUCATION
+B.S. Computer Science | UC Berkeley | 2018
+Minor in Mathematics
+
+ADDITIONAL
+• Active contributor to open source
+• Completed various online courses
+• Interest in cloud architecture and distributed systems
+• Good presentation and documentation skills
+
