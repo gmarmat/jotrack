@@ -1,0 +1,81 @@
+
+Running 1 test using 1 worker
+
+(node:478) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:478) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P1-01: Ready tab locked, completing FULL pre-app flow...
+  ✓ Clicked: [data-testid="discovery-wizard"] button:not(:disabled)
+  ✓ Step 1: Discovery complete
+  ⏳ Waiting for Score tab to unlock...
+  ❌ Score tab never unlocked - PRODUCT BUG!
+  ⏳ Waiting for Resume tab to unlock...
+  ❌ Resume tab never unlocked - PRODUCT BUG!
+  ⏳ Waiting for Cover Letter tab to unlock...
+  ❌ Cover Letter tab never unlocked - PRODUCT BUG!
+✅ P1-01: FULL pre-app flow complete - Ready tab should unlock
+  ❌ Ready tab still locked after full flow - potential bug!
+  ✘  1 [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button (5.1m)
+
+
+  1) [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 
+
+    [31mTest timeout of 300000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 300000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('tab-ready')[22m
+    [2m    - locator resolved to <button disabled data-locked="true" data-testid="tab-ready" class="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap border-transparent text-gray-400 dark:text-gray-600 cursor-not-allowed">…</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    418 × waiting for element to be visible, enabled and stable[22m
+    [2m        - element is not enabled[22m
+    [2m      - retrying click action[22m
+    [2m        - waiting 500ms[22m
+
+
+      222 |     
+      223 |     // Navigate to Ready tab (should be unlocked now)
+    > 224 |     await readyTab.click();
+          |                    ^
+      225 |     await page.waitForTimeout(1000);
+      226 |     
+      227 |     // Verify "Mark as Applied" button exists
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-post-app.spec.ts:224:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › e2e/coach-mode-post-app.spec.ts (5.1m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 

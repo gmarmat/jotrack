@@ -82,26 +82,38 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           await page.waitForTimeout(1000);
         }
         
-        // Find Complete button (try multiple variations)
-        const completeButtons = [
-          'button:has-text("Complete & Analyze")',
-          'button:has-text("Complete")',
-          '[data-testid="discovery-wizard"] button:not(:disabled)'
-        ];
-        
-        let clicked = false;
-        for (const selector of completeButtons) {
-          const btn = page.locator(selector).last();
-          if (await btn.isVisible().catch(() => false)) {
-            await btn.click();
-            clicked = true;
-            console.log(`  ✓ Clicked: ${selector}`);
+        // Navigate through all batches to reach "Complete Discovery" button
+        // The wizard has 4 batches of questions, we need to reach the last one
+        let completedBatches = 0;
+        for (let batch = 0; batch < 10; batch++) { // Max 10 batches safety
+          const nextButton = page.locator('button:has-text("Next")');
+          const completeButton = page.locator('button:has-text("Complete Discovery")');
+          
+          // Check if we're on the last batch (Complete Discovery visible)
+          if (await completeButton.isVisible().catch(() => false)) {
+            console.log(`  ✓ Reached last batch (batch ${batch + 1})`);
+            await completeButton.click();
+            await page.waitForTimeout(15000); // Wait for profile analysis API call
+            console.log('  ✓ Clicked "Complete Discovery" - profile analysis started');
+            completedBatches = batch + 1;
+            break;
+          }
+          
+          // Not last batch - click Next if available
+          if (await nextButton.isVisible().catch(() => false) && await nextButton.isEnabled().catch(() => false)) {
+            await nextButton.click();
+            await page.waitForTimeout(500);
+          } else {
+            console.log(`  ⚠️ Neither Next nor Complete button found at batch ${batch + 1}`);
             break;
           }
         }
         
-        await page.waitForTimeout(10000); // Profile analysis
-        console.log('  ✓ Step 1: Discovery complete');
+        if (completedBatches > 0) {
+          console.log(`  ✓ Step 1: Discovery complete (${completedBatches} batches)`);
+        } else {
+          console.log('  ❌ Failed to complete discovery - no Complete button found!');
+        }
       }
       
       // STEP 2: Recalculate Score (wait for tab to unlock)
