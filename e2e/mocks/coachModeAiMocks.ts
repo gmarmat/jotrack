@@ -291,9 +291,9 @@ John Doe`,
 export async function setupCoachModeApiMocks(page: Page) {
   console.log('🎭 Setting up Coach Mode API mocks...');
 
-  // Mock generate-discovery
+  // Mock generate-discovery (allow all methods)
   await page.route('**/api/jobs/*/coach/generate-discovery', async (route) => {
-    console.log('  ✅ Mocked: generate-discovery');
+    console.log(`  ✅ Mocked: generate-discovery (${route.request().method()})`);
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -301,9 +301,9 @@ export async function setupCoachModeApiMocks(page: Page) {
     });
   });
 
-  // Mock analyze-profile
+  // Mock analyze-profile (allow all methods)
   await page.route('**/api/jobs/*/coach/analyze-profile', async (route) => {
-    console.log('  ✅ Mocked: analyze-profile');
+    console.log(`  ✅ Mocked: analyze-profile (${route.request().method()})`);
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -371,14 +371,29 @@ export async function setupCoachModeApiMocks(page: Page) {
     });
   });
 
-  // Mock save (coach state)
-  await page.route('**/api/coach/*/save', async (route) => {
-    console.log('  ✅ Mocked: save coach state');
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ success: true }),
-    });
+  // Mock save (coach state) - accepts both POST and GET
+  await page.route('**/api/coach/*/save**', async (route) => {
+    const method = route.request().method();
+    console.log(`  ✅ Mocked: save coach state (${method})`);
+    
+    if (method === 'POST') {
+      // Save request - just return success
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    } else {
+      // GET request - return empty state (will load from DB)
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ 
+          success: true,
+          state: {},
+        }),
+      });
+    }
   });
 
   console.log('✅ All Coach Mode API mocks active!');
