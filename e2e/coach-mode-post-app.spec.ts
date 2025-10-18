@@ -284,29 +284,36 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
     if (!isUnlocked) {
       console.log('⚠️ P1-02: Completing pre-app flow to unlock Ready tab...');
       
-      // Use same proven logic as P1-01 (inline for simplicity)
+      // Use PROVEN P1-01 flexible logic
       const hasButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
       if (hasButton) {
         await page.click('[data-testid="generate-discovery-button"]');
         await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
         await page.waitForTimeout(3000);
         
-        for (let batch = 0; batch < 4; batch++) {
+        // FLEXIBLE batch loop (not hardcoded to 4)
+        for (let batch = 0; batch < 10; batch++) {
           await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'))
               .filter(b => b.textContent?.includes('Skip'));
             btns.forEach(b => (b as HTMLButtonElement).click());
           });
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(1000);
           
-          if (batch < 3) {
+          const hasNext = await page.locator('button:has-text("Next")').isVisible().catch(() => false);
+          const hasComplete = await page.locator('button:has-text("Complete Discovery")').isVisible().catch(() => false);
+          
+          if (hasComplete) {
+            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
+            await page.click('button:has-text("Complete Discovery")');
+            break;
+          } else if (hasNext) {
             await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 5000 });
             await page.click('button:has-text("Next")');
           } else {
-            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
-            await page.click('button:has-text("Complete Discovery")');
+            break; // No buttons = done
           }
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(500);
         }
         await page.waitForTimeout(15000);
       }
@@ -403,30 +410,36 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
       const isLocked = await readyTab.isDisabled().catch(() => true);
       
       if (isLocked) {
-        // Complete pre-app flow (discovery → score → resume → cover letter)
+        // Complete discovery using PROVEN P1-01 flexible logic
         const hasGenButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
         if (hasGenButton) {
           await page.click('[data-testid="generate-discovery-button"]');
           await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
           await page.waitForTimeout(3000);
           
-          // Skip through 4 batches
-          for (let batch = 0; batch < 4; batch++) {
+          // FLEXIBLE batch loop (same as P1-01)
+          for (let batch = 0; batch < 10; batch++) {
             await page.evaluate(() => {
               const btns = Array.from(document.querySelectorAll('button'))
                 .filter(b => b.textContent?.includes('Skip'));
               btns.forEach(b => (b as HTMLButtonElement).click());
             });
-            await page.waitForTimeout(500);
+            await page.waitForTimeout(1000);
             
-            if (batch < 3) {
+            const hasNext = await page.locator('button:has-text("Next")').isVisible().catch(() => false);
+            const hasComplete = await page.locator('button:has-text("Complete Discovery")').isVisible().catch(() => false);
+            
+            if (hasComplete) {
+              await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
+              await page.click('button:has-text("Complete Discovery")');
+              break;
+            } else if (hasNext) {
               await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 5000 });
               await page.click('button:has-text("Next")');
             } else {
-              await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
-              await page.click('button:has-text("Complete Discovery")');
+              break;
             }
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(500);
           }
           await page.waitForTimeout(15000); // Profile analysis
         }
