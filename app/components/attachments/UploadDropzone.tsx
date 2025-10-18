@@ -73,7 +73,8 @@ export default function UploadDropzone({
       className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
         dragOver ? "ring-2 ring-blue-400 bg-blue-50" : "border-gray-300"
       }`}
-      data-testid={`drop-${kind}`}
+      data-testid="upload-dropzone"
+      data-kind={kind}
       aria-label={`Upload ${kind}`}
     >
       <div className="flex items-center gap-2">

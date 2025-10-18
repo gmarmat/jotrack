@@ -46,7 +46,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
 
   if (coachStatus === 'applied' || coachStatus === 'interview-prep') {
     return (
-      <div className="mb-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+      <div className="mb-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white shadow-lg" data-testid="coach-mode-entry-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white/20 rounded-xl">
@@ -64,6 +64,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
           
           <button
             onClick={() => router.push(`/coach/${jobId}`)}
+            data-testid="continue-interview-prep"
             className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md"
           >
             Continue Interview Prep →
@@ -75,7 +76,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
 
   if (!matchScore || matchScore === 0) {
     return (
-      <div className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-2xl p-6">
+      <div className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-2xl p-6" data-testid="coach-mode-entry-card">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
@@ -90,13 +91,21 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
               </p>
             </div>
           </div>
+          
+          <button
+            onClick={() => router.push(`/coach/${jobId}`)}
+            data-testid="enter-coach-mode-preview"
+            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+          >
+            Preview Coach Mode
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`mb-8 bg-gradient-to-r ${config.bg} rounded-2xl p-6 text-white shadow-lg`}>
+    <div className={`mb-8 bg-gradient-to-r ${config.bg} rounded-2xl p-6 text-white shadow-lg`} data-testid="coach-mode-entry-card">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl">
@@ -114,6 +123,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
         
         <button
           onClick={() => router.push(`/coach/${jobId}`)}
+          data-testid="enter-coach-mode"
           className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md flex items-center gap-2"
         >
           <Sparkles size={20} />
