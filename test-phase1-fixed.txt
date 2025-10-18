@@ -1,0 +1,158 @@
+
+Running 20 tests using 1 worker
+
+(node:48415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✅ P0-16: Job list loaded
+  ✓   1 [chromium] › e2e/coach-mode-critical.spec.ts:655:7 › P0 Critical - Regression (Existing App) › P0-16: Job list page loads (1.4s)
+✅ P0-17: Job detail page loaded
+  ✓   2 [chromium] › e2e/coach-mode-critical.spec.ts:668:7 › P0 Critical - Regression (Existing App) › P0-17: Job detail page loads (2.3s)
+✅ P0-18: Match Score section displays
+  ✓   3 [chromium] › e2e/coach-mode-critical.spec.ts:684:7 › P0 Critical - Regression (Existing App) › P0-18: Match Score section displays (3.2s)
+✅ P0-19: Back to list works
+  ✓   4 [chromium] › e2e/coach-mode-critical.spec.ts:697:7 › P0 Critical - Regression (Existing App) › P0-19: Can navigate back to job list (2.2s)
+✅ P0-20: Theme toggle works
+  ✓   5 [chromium] › e2e/coach-mode-critical.spec.ts:710:7 › P0 Critical - Regression (Existing App) › P0-20: Theme toggle works (1.8s)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+✅ P0-01: Entry card visible
+  ✓   6 [chromium] › e2e/coach-mode-critical.spec.ts:67:7 › P0 Critical - Coach Mode › P0-01: Entry card appears when match score exists (2.2s)
+✅ P0-02: Coach Mode loaded in 62ms
+  ✓   7 [chromium] › e2e/coach-mode-critical.spec.ts:81:7 › P0 Critical - Coach Mode › P0-02: Performance - Coach Mode loads in <2s (439ms)
+✅ P0-03: Navigation successful
+  ✓   8 [chromium] › e2e/coach-mode-critical.spec.ts:90:7 › P0 Critical - Coach Mode › P0-03: Enter Coach Mode navigates successfully (2.3s)
+📊 Found 4 textboxes, label says: "15 total questions"
+✅ P0-04: 4 questions available for input
+  ✓   9 [chromium] › e2e/coach-mode-critical.spec.ts:105:7 › P0 Critical - Coach Mode › P0-04: Discovery questions generate (15-16 count) (26.4s)
+✅ P0-05: Can type in textarea
+  ✓  10 [chromium] › e2e/coach-mode-critical.spec.ts:143:7 › P0 Critical - Coach Mode › P0-05: Can type answer in textarea (26.6s)
+✅ P0-06: Auto-save triggered
+  ✓  11 [chromium] › e2e/coach-mode-critical.spec.ts:159:7 › P0 Critical - Coach Mode › P0-06: Auto-save triggers within 3 seconds (29.2s)
+📊 P0-07: Current state - Wizard: true, Button: false
+📝 Using existing answer: "Short answer for auto-save test..."
+🔄 Refreshing page to test persistence...
+📊 Before refresh: "Short answer for auto-save test..."
+📊 After refresh:  "Short answer for auto-save test..."
+✅ P0-07: 🌟 PERSISTENCE VERIFIED - Answer survived refresh!
+  ✓  12 [chromium] › e2e/coach-mode-critical.spec.ts:189:7 › P0 Critical - Coach Mode › P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers (5.3s)
+ℹ️ P0-08: Wizard already exists, proceeding to skip questions
+✅ P0-08: Profile analysis completed - Score tab unlocked
+  ✓  13 [chromium] › e2e/coach-mode-critical.spec.ts:249:7 › P0 Critical - Coach Mode › P0-08: Complete discovery triggers profile analysis (14.3s)
+✅ P0-09: Profile saved and verified (903 bytes)
+  ✓  14 [chromium] › e2e/coach-mode-critical.spec.ts:301:7 › P0 Critical - Coach Mode › P0-09: Profile analysis saves to database (102ms)
+⚠️ P0-10: Score tab locked, completing discovery first...
+✅ P0-10: Profile created, Score tab should be unlocked
+✅ P0-10: Score recalculated successfully to 65%
+  ✓  15 [chromium] › e2e/coach-mode-critical.spec.ts:331:7 › P0 Critical - Coach Mode › P0-10: Score recalculation works (API returns success) (38.8s)
+✅ P0-11: Only Discovery unlocked (fresh state)
+  ✓  16 [chromium] › e2e/coach-mode-critical.spec.ts:390:7 › P0 Critical - Coach Mode › P0-11: Tab unlocking - Discovery → Score → Resume (2.3s)
+⚠️ P0-12: Resume tab locked, completing prerequisites...
+✅ P0-12: Prerequisites complete, Resume tab should be unlocked
+  ✘  17 [chromium] › e2e/coach-mode-critical.spec.ts:425:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) (1.5m)
+(node:50521) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50521) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P0-13: Cover Letter tab locked, generating resume first...
+⚠️ P0-13: Resume also locked, completing full flow...
+  ✘  18 [chromium] › e2e/coach-mode-critical.spec.ts:499:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates (39.7s)
+(node:50855) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50855) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+✅ P0-14: Bidirectional navigation works
+  ✓  19 [chromium] › e2e/coach-mode-critical.spec.ts:613:7 › P0 Critical - Coach Mode › P0-14: Navigation - Coach Mode → Job Page → Coach Mode (5.4s)
+✅ P0-15: Invalid ID handled gracefully
+  ✓  20 [chromium] › e2e/coach-mode-critical.spec.ts:636:7 › P0 Critical - Coach Mode › P0-15: Invalid job ID redirects gracefully (2.2s)
+
+
+  1) [chromium] › e2e/coach-mode-critical.spec.ts:425:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m89[39m
+
+      492 |     const aiResumeSection = page.locator('text=AI-Optimized Resume').first().locator('..');
+      493 |     const content = await aiResumeSection.textContent();
+    > 494 |     expect(content?.length || 0).toBeGreaterThan(200); // More lenient
+          |                                  ^
+      495 |     
+      496 |     console.log('✅ P0-12: Split-view resume editor displayed successfully');
+      497 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:494:34
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/coach-mode-critical.spec.ts:499:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates 
+
+    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Complete")') to be visible[22m
+
+
+      538 |         
+      539 |         // Wait for Complete button to be visible and enabled
+    > 540 |         await page.waitForSelector('button:has-text("Complete")', { timeout: 10000 });
+          |                    ^
+      541 |         await page.click('button:has-text("Complete")');
+      542 |         await page.waitForTimeout(10000);
+      543 |         
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:540:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › e2e/coach-mode-critical.spec.ts:425:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) 
+    [chromium] › e2e/coach-mode-critical.spec.ts:499:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates 
+  18 passed (5.0m)
