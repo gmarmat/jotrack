@@ -28,8 +28,8 @@ const db = drizzle(sqlite);
 
 test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
   
-  // Clean state before each test run
-  test.beforeAll(async () => {
+  // Clean state before EACH test (not beforeAll - each test needs clean state)
+  test.beforeEach(async () => {
     console.log('🧹 Cleaning test state for job:', TEST_JOB_ID);
     
     // Clear coach-related tables
