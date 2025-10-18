@@ -182,11 +182,15 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           // CRITICAL: Must click "Accept as Final Resume" to unlock Cover Letter tab!
           const acceptButton = page.locator('button:has-text("Accept as Final Resume")');
           if (await acceptButton.isVisible().catch(() => false)) {
+            // Set up dialog handler BEFORE clicking
+            page.once('dialog', async dialog => {
+              console.log(`    📋 Accepting confirmation dialog: "${dialog.message()}"`);
+              await dialog.accept();
+            });
+            
             await acceptButton.click();
-            // Handle confirmation dialog
-            page.on('dialog', dialog => dialog.accept());
-            await page.waitForTimeout(1000);
-            console.log('  ✓ Step 3b: Resume finalized (unlocks Cover Letter)');
+            await page.waitForTimeout(2000); // Wait for dialog + state update
+            console.log('  ✓ Step 3b: Resume finalized - Cover Letter tab should unlock');
           } else {
             console.log('  ⚠️ Accept as Final button not found');
           }
