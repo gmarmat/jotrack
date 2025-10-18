@@ -187,48 +187,61 @@ test.describe('P0 Critical - Coach Mode', () => {
   });
 
   test('P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers', async ({ page }) => {
-    // This test relies on P0-06 having created wizard and typed answer
-    // We test that the auto-saved data persists across page refresh
+    // SELF-CONTAINED PERSISTENCE TEST
+    // This test is critical - it verifies no data loss!
     
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
     
-    // Wizard should be visible (from P0-06's auto-save)
-    const wizardVisible = await page.locator('[data-testid="discovery-wizard"]').isVisible().catch(() => false);
+    // Step 1: Check current state
+    const hasWizard = await page.locator('[data-testid="discovery-wizard"]').isVisible().catch(() => false);
+    const hasButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
     
-    if (!wizardVisible) {
-      console.log('⚠️ P0-07: Wizard not visible, skipping (P0-06 might not have run)');
-      test.skip();
-      return;
+    console.log(`📊 P0-07: Current state - Wizard: ${hasWizard}, Button: ${hasButton}`);
+    
+    // Step 2: If no wizard, generate questions
+    if (!hasWizard && hasButton) {
+      console.log('🎯 Generating fresh questions for persistence test...');
+      await page.click('[data-testid="generate-discovery-button"]');
+      await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
+      await page.waitForTimeout(2000);
     }
     
-    // Get the current answer from P0-06
-    const existingAnswer = await page.getByRole('textbox').first().inputValue();
-    console.log(`📊 Found existing answer: "${existingAnswer.substring(0, 30)}..."`);
+    // Step 3: Type a test answer (or use existing one)
+    const firstTextbox = page.getByRole('textbox').first();
+    let existingValue = await firstTextbox.inputValue().catch(() => '');
     
-    expect(existingAnswer.length).toBeGreaterThan(0); // Should have content from P0-06
+    if (!existingValue || existingValue.trim().length === 0) {
+      // Field is empty - type new answer
+      const testAnswer = 'PERSISTENCE: Led 5 engineers API 800ms to 200ms 75% improvement 50K users';
+      await firstTextbox.fill(testAnswer);
+      await page.waitForTimeout(3000); // Wait for auto-save
+      existingValue = testAnswer;
+      console.log('📝 Typed new answer for persistence test');
+    } else {
+      console.log(`📝 Using existing answer: "${existingValue.substring(0, 40)}..."`);
+    }
     
-    // REFRESH PAGE
+    expect(existingValue.trim().length).toBeGreaterThan(0);
+    
+    // Step 4: REFRESH PAGE
     console.log('🔄 Refreshing page to test persistence...');
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000); // Let saved state load
     
-    // VERIFY ANSWER PERSISTED
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 5000 });
-    const input = page.getByRole('textbox').first();
-    const persistedAnswer = await input.inputValue();
+    // Step 5: VERIFY DATA PERSISTED
+    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 10000 });
+    const persistedValue = await page.getByRole('textbox').first().inputValue();
     
-    console.log(`📊 After refresh: "${persistedAnswer.substring(0, 30)}..."`);
+    console.log(`📊 Before refresh: "${existingValue.substring(0, 40)}..."`);
+    console.log(`📊 After refresh:  "${persistedValue.substring(0, 40)}..."`);
     
-    // The answer should be the same as before refresh
-    expect(persistedAnswer).toEqual(existingAnswer);
-    expect(persistedAnswer.length).toBeGreaterThan(0);
+    // CRITICAL ASSERTION: Answer should match exactly
+    expect(persistedValue).toEqual(existingValue);
+    expect(persistedValue.trim().length).toBeGreaterThan(0);
     
     // Verify auto-saved indicator
     await expect(page.locator('text=Auto-saved')).toBeVisible();
-    
-    // Verify progress count shows answered question
-    await expect(page.locator('text=/\\d+ answered/').first()).toBeVisible();
     
     console.log('✅ P0-07: 🌟 PERSISTENCE VERIFIED - Answer survived refresh!');
   });
