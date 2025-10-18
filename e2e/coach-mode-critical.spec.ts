@@ -484,12 +484,12 @@ test.describe('P0 Critical - Coach Mode', () => {
       await page.waitForTimeout(40000); // AI generation (generous timeout)
     }
     
-    // Verify split-view editor
-    await expect(page.locator('text=AI-Optimized Resume')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=Your Edits')).toBeVisible();
+    // Verify split-view editor (use .first() to avoid strict mode violation)
+    await expect(page.locator('text=AI-Optimized Resume').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Your Edits').first()).toBeVisible();
     
     // Verify has content
-    const aiResumeSection = page.locator('text=AI-Optimized Resume').locator('..');
+    const aiResumeSection = page.locator('text=AI-Optimized Resume').first().locator('..');
     const content = await aiResumeSection.textContent();
     expect(content?.length || 0).toBeGreaterThan(200); // More lenient
     
@@ -524,8 +524,11 @@ test.describe('P0 Critical - Coach Mode', () => {
         if (!hasWizard && hasButton) {
           await page.click('[data-testid="generate-discovery-button"]');
           await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(3000); // Wait for wizard to fully render
         }
+        
+        // Wait for questions to load (check for textboxes)
+        await page.waitForSelector('textarea, input[type="text"]', { timeout: 10000 });
         
         const skipButton = page.locator('button:has-text("Skip all")');
         if (await skipButton.isVisible().catch(() => false)) {
@@ -533,6 +536,8 @@ test.describe('P0 Critical - Coach Mode', () => {
           await page.waitForTimeout(1000);
         }
         
+        // Wait for Complete button to be visible and enabled
+        await page.waitForSelector('button:has-text("Complete")', { timeout: 10000 });
         await page.click('button:has-text("Complete")');
         await page.waitForTimeout(10000);
         
