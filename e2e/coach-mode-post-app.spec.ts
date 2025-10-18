@@ -76,11 +76,20 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
         await page.waitForTimeout(3000);
         
-        const skipButton = page.locator('button:has-text("Skip all")');
-        if (await skipButton.isVisible().catch(() => false)) {
-          await skipButton.click();
-          await page.waitForTimeout(1000);
+        // Skip all questions in current batch to unlock navigation
+        const currentQuestions = await page.locator('textarea').count();
+        console.log(`  📊 Found ${currentQuestions} questions in current batch`);
+        
+        // Click "Skip" link for each question to unlock Next/Complete button
+        for (let i = 0; i < currentQuestions; i++) {
+          const skipLink = page.locator('text=Skip this question').nth(i);
+          if (await skipLink.isVisible().catch(() => false)) {
+            await skipLink.click();
+            await page.waitForTimeout(200);
+          }
         }
+        
+        console.log('  ✓ Skipped all questions in first batch');
         
         // Navigate through all batches to reach "Complete Discovery" button
         // The wizard has 4 batches of questions, we need to reach the last one
@@ -90,7 +99,10 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           const completeButton = page.locator('button:has-text("Complete Discovery")');
           
           // Check if we're on the last batch (Complete Discovery visible)
-          if (await completeButton.isVisible().catch(() => false)) {
+          const hasComplete = await completeButton.isVisible().catch(() => false);
+          const completeEnabled = hasComplete && await completeButton.isEnabled().catch(() => false);
+          
+          if (completeEnabled) {
             console.log(`  ✓ Reached last batch (batch ${batch + 1})`);
             await completeButton.click();
             await page.waitForTimeout(15000); // Wait for profile analysis API call
@@ -99,10 +111,32 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
             break;
           }
           
-          // Not last batch - click Next if available
-          if (await nextButton.isVisible().catch(() => false) && await nextButton.isEnabled().catch(() => false)) {
-            await nextButton.click();
-            await page.waitForTimeout(500);
+          // Not last batch - skip questions and click Next
+          if (await nextButton.isVisible().catch(() => false)) {
+            const nextEnabled = await nextButton.isEnabled().catch(() => false);
+            
+            if (!nextEnabled) {
+              // Next is disabled - need to skip questions first
+              const batchQuestions = await page.locator('textarea').count();
+              for (let i = 0; i < batchQuestions; i++) {
+                const skipLink = page.locator('text=Skip this question').nth(i);
+                if (await skipLink.isVisible().catch(() => false)) {
+                  await skipLink.click();
+                  await page.waitForTimeout(100);
+                }
+              }
+              await page.waitForTimeout(500);
+            }
+            
+            // Try clicking Next now
+            if (await nextButton.isEnabled().catch(() => false)) {
+              await nextButton.click();
+              await page.waitForTimeout(1000);
+              console.log(`  ✓ Navigated to batch ${batch + 2}`);
+            } else {
+              console.log(`  ⚠️ Next button still disabled at batch ${batch + 1}`);
+              break;
+            }
           } else {
             console.log(`  ⚠️ Neither Next nor Complete button found at batch ${batch + 1}`);
             break;
