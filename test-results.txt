@@ -49,3 +49,699 @@ Running 20 tests using 1 worker
 (Use `node --trace-warnings ...` to show where the warning was created)
 (node:13359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 [chromium] › e2e/coach-mode-critical.spec.ts:250:7 › P0 Critical - Coach Mode › P0-11: Tab unlocking - Discovery → Score → Resume (1.5m)
+(node:15059) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15059) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [chromium] › e2e/coach-mode-critical.spec.ts:285:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) (1.5m)
+(node:15837) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15837) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  13 [chromium] › e2e/coach-mode-critical.spec.ts:320:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates (1.5m)
+(node:16578) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16578) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 [chromium] › e2e/coach-mode-critical.spec.ts:354:7 › P0 Critical - Coach Mode › P0-14: Navigation - Coach Mode → Job Page → Coach Mode (1.5m)
+(node:17340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  15 [chromium] › e2e/coach-mode-critical.spec.ts:374:7 › P0 Critical - Coach Mode › P0-15: Invalid job ID redirects gracefully (2.7s)
+(node:17373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✅ P0-16: Job list loaded
+  ✓  16 [chromium] › e2e/coach-mode-critical.spec.ts:393:7 › P0 Critical - Regression (Existing App) › P0-16: Job list page loads (1.2s)
+  ✘  17 [chromium] › e2e/coach-mode-critical.spec.ts:406:7 › P0 Critical - Regression (Existing App) › P0-17: Job detail page loads (7.7s)
+(node:17451) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17451) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [chromium] › e2e/coach-mode-critical.spec.ts:422:7 › P0 Critical - Regression (Existing App) › P0-18: Match Score section displays (8.7s)
+(node:17526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  19 [chromium] › e2e/coach-mode-critical.spec.ts:436:7 › P0 Critical - Regression (Existing App) › P0-19: Can navigate back to job list (1.5m)
+(node:18238) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18238) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  20 [chromium] › e2e/coach-mode-critical.spec.ts:449:7 › P0 Critical - Regression (Existing App) › P0-20: Theme toggle works (1.5m)
+
+
+  1) [chromium] › e2e/coach-mode-critical.spec.ts:21:7 › P0 Critical - Coach Mode › P0-01: Entry card appears when match score exists 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('coach-mode-entry-card')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('coach-mode-entry-card')[22m
+
+
+      25 |     // Entry card should be visible
+      26 |     const entryCard = page.getByTestId('coach-mode-entry-card');
+    > 27 |     await expect(entryCard).toBeVisible();
+         |                             ^
+      28 |     
+      29 |     // Should have "Enter Coach Mode" button
+      30 |     await expect(page.getByTestId('enter-coach-mode')).toBeVisible();
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:27:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0c827-ars-when-match-score-exists-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0c827-ars-when-match-score-exists-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-0c827-ars-when-match-score-exists-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0c827-ars-when-match-score-exists-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-0c827-ars-when-match-score-exists-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/coach-mode-critical.spec.ts:44:7 › P0 Critical - Coach Mode › P0-03: Enter Coach Mode navigates successfully 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="enter-coach-mode"]')[22m
+
+
+      46 |     await page.waitForTimeout(2000);
+      47 |     
+    > 48 |     await page.click('[data-testid="enter-coach-mode"]');
+         |                ^
+      49 |     
+      50 |     // Should navigate to Coach Mode page
+      51 |     await expect(page).toHaveURL(`/coach/${TEST_JOB_ID}`);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:48:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-abd6e-Mode-navigates-successfully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-abd6e-Mode-navigates-successfully-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-abd6e-Mode-navigates-successfully-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-abd6e-Mode-navigates-successfully-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-abd6e-Mode-navigates-successfully-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › e2e/coach-mode-critical.spec.ts:59:7 › P0 Critical - Coach Mode › P0-04: Discovery questions generate (15-16 count) 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="generate-discovery-button"]')[22m
+
+
+      60 |     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+      61 |     
+    > 62 |     await page.click('[data-testid="generate-discovery-button"]');
+         |                ^
+      63 |     
+      64 |     // Wait for AI generation (generous timeout)
+      65 |     await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:62:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-110ba-tions-generate-15-16-count--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-110ba-tions-generate-15-16-count--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-110ba-tions-generate-15-16-count--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-110ba-tions-generate-15-16-count--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-110ba-tions-generate-15-16-count--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › e2e/coach-mode-critical.spec.ts:77:7 › P0 Critical - Coach Mode › P0-05: Can type answer in textarea 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="generate-discovery-button"]')[22m
+
+
+      77 |   test('P0-05: Can type answer in textarea', async ({ page }) => {
+      78 |     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    > 79 |     await page.click('[data-testid="generate-discovery-button"]');
+         |                ^
+      80 |     await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+      81 |     
+      82 |     // Type in first textarea
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:79:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-d9243-Can-type-answer-in-textarea-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-d9243-Can-type-answer-in-textarea-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-d9243-Can-type-answer-in-textarea-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-d9243-Can-type-answer-in-textarea-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-d9243-Can-type-answer-in-textarea-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › e2e/coach-mode-critical.spec.ts:92:7 › P0 Critical - Coach Mode › P0-06: Auto-save triggers within 3 seconds 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="generate-discovery-button"]')[22m
+
+
+      100 |     
+      101 |     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    > 102 |     await page.click('[data-testid="generate-discovery-button"]');
+          |                ^
+      103 |     await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+      104 |     
+      105 |     // Type answer
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:102:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-5b288-e-triggers-within-3-seconds-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-5b288-e-triggers-within-3-seconds-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-5b288-e-triggers-within-3-seconds-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-5b288-e-triggers-within-3-seconds-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-5b288-e-triggers-within-3-seconds-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › e2e/coach-mode-critical.spec.ts:121:7 › P0 Critical - Coach Mode › P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="generate-discovery-button"]')[22m
+
+
+      121 |   test('P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers', async ({ page }) => {
+      122 |     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    > 123 |     await page.click('[data-testid="generate-discovery-button"]');
+          |                ^
+      124 |     await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+      125 |     
+      126 |     // Answer Q1 with specific text
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:123:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ce474-e-refresh-preserves-answers-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ce474-e-refresh-preserves-answers-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-ce474-e-refresh-preserves-answers-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ce474-e-refresh-preserves-answers-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-ce474-e-refresh-preserves-answers-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › e2e/coach-mode-critical.spec.ts:159:7 › P0 Critical - Coach Mode › P0-08: Complete discovery triggers profile analysis 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('[data-testid="generate-discovery-button"]')[22m
+
+
+      159 |   test('P0-08: Complete discovery triggers profile analysis', async ({ page }) => {
+      160 |     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    > 161 |     await page.click('[data-testid="generate-discovery-button"]');
+          |                ^
+      162 |     await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+      163 |     
+      164 |     // Skip through all batches quickly
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:161:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0d953-y-triggers-profile-analysis-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0d953-y-triggers-profile-analysis-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-0d953-y-triggers-profile-analysis-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-0d953-y-triggers-profile-analysis-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-0d953-y-triggers-profile-analysis-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › e2e/coach-mode-critical.spec.ts:218:7 › P0 Critical - Coach Mode › P0-10: Score recalculation works (API returns success) 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: locator.isDisabled: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('tab-score')[22m
+
+
+      224 |     
+      225 |     // If locked, skip this test (profile doesn't exist yet)
+    > 226 |     const isDisabled = await scoreTab.isDisabled();
+          |                                       ^
+      227 |     if (isDisabled) {
+      228 |       test.skip();
+      229 |       return;
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:226:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-46a03--works-API-returns-success--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-46a03--works-API-returns-success--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-46a03--works-API-returns-success--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-46a03--works-API-returns-success--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-46a03--works-API-returns-success--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [chromium] › e2e/coach-mode-critical.spec.ts:250:7 › P0 Critical - Coach Mode › P0-11: Tab unlocking - Discovery → Score → Resume 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: apiRequestContext._wrapApiCall: ENOENT: no such file or directory, copyfile '/Users/guaravmarmat/Downloads/ai-projects/jotrack/test-results/.playwright-artifacts-8/traces/4521b674e30202f7b24e-4a5c6155fbb9ee494390.network' -> '/Users/guaravmarmat/Downloads/ai-projects/jotrack/test-results/.playwright-artifacts-8/traces/4521b674e30202f7b24e-4a5c6155fbb9ee494390-pwnetcopy-1.network'
+
+    Error: locator.isDisabled: Test ended.
+    Call log:
+    [2m  - waiting for getByTestId('tab-score')[22m
+
+
+      258 |     
+      259 |     // If profile exists (from previous tests), tabs might already be unlocked
+    > 260 |     const scoreDisabled = await scoreTab.isDisabled();
+          |                                          ^
+      261 |     
+      262 |     if (!scoreDisabled) {
+      263 |       // Profile exists - verify Score and Resume unlocking
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:260:42
+
+    Error: ENOENT: no such file or directory, open '/Users/guaravmarmat/Downloads/ai-projects/jotrack/test-results/.playwright-artifacts-8/72e9d22530bdb0730bd3816cffdd655d.zip'
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-933ce--Discovery-→-Score-→-Resume-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-933ce--Discovery-→-Score-→-Resume-chromium/error-context.md
+
+  10) [chromium] › e2e/coach-mode-critical.spec.ts:285:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: locator.isDisabled: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('tab-resume')[22m
+
+
+      290 |     
+      291 |     // Skip if Resume tab locked
+    > 292 |     const isDisabled = await resumeTab.isDisabled();
+          |                                        ^
+      293 |     if (isDisabled) {
+      294 |       test.skip();
+      295 |       return;
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:292:40
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-eac80-n-works-split-view-appears--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [chromium] › e2e/coach-mode-critical.spec.ts:320:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: locator.isDisabled: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('tab-cover-letter')[22m
+
+
+      325 |     
+      326 |     // Skip if locked
+    > 327 |     const isDisabled = await coverLetterTab.isDisabled();
+          |                                             ^
+      328 |     if (isDisabled) {
+      329 |       test.skip();
+      330 |       return;
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:327:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-89c8f-0-13-Cover-letter-generates-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [chromium] › e2e/coach-mode-critical.spec.ts:354:7 › P0 Critical - Coach Mode › P0-14: Navigation - Coach Mode → Job Page → Coach Mode 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has(svg)')[22m
+    [2m    - locator resolved to 2 elements. Proceeding with the first one: <button disabled type="button" aria-disabled="true">…</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    173 × waiting for element to be visible, enabled and stable[22m
+    [2m        - element is not enabled[22m
+    [2m      - retrying click action[22m
+    [2m        - waiting 500ms[22m
+
+
+      356 |     
+      357 |     // Go back to job page
+    > 358 |     await page.click('button:has(svg)'); // Back button (has ArrowLeft icon)
+          |                ^
+      359 |     await page.waitForTimeout(1000);
+      360 |     
+      361 |     // Should be on job page
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:358:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-2ace7-ode-→-Job-Page-→-Coach-Mode-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-2ace7-ode-→-Job-Page-→-Coach-Mode-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-2ace7-ode-→-Job-Page-→-Coach-Mode-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-2ace7-ode-→-Job-Page-→-Coach-Mode-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-2ace7-ode-→-Job-Page-→-Coach-Mode-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [chromium] › e2e/coach-mode-critical.spec.ts:374:7 › P0 Critical - Coach Mode › P0-15: Invalid job ID redirects gracefully 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeTruthy[2m()[22m
+
+    Received: [31mfalse[39m
+
+      383 |     const isHome = currentUrl.endsWith('/') || currentUrl.includes('localhost:3000/jobs');
+      384 |     
+    > 385 |     expect(isHome).toBeTruthy();
+          |                    ^
+      386 |     
+      387 |     console.log('✅ P0-15: Invalid ID handled gracefully');
+      388 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:385:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ebffb-job-ID-redirects-gracefully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ebffb-job-ID-redirects-gracefully-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-ebffb-job-ID-redirects-gracefully-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-ebffb-job-ID-redirects-gracefully-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-ebffb-job-ID-redirects-gracefully-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [chromium] › e2e/coach-mode-critical.spec.ts:406:7 › P0 Critical - Regression (Existing App) › P0-17: Job detail page loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=/Fortive/i')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=/Fortive/i')[22m
+
+
+      412 |     
+      413 |     // Should see company name
+    > 414 |     await expect(page.locator('text=/Fortive/i')).toBeVisible();
+          |                                                   ^
+      415 |     
+      416 |     // Should see status pipeline
+      417 |     await expect(page.locator('text=On Radar')).toBeVisible();
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:414:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-62869-P0-17-Job-detail-page-loads-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-62869-P0-17-Job-detail-page-loads-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-62869-P0-17-Job-detail-page-loads-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-62869-P0-17-Job-detail-page-loads-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-62869-P0-17-Job-detail-page-loads-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [chromium] › e2e/coach-mode-critical.spec.ts:422:7 › P0 Critical - Regression (Existing App) › P0-18: Match Score section displays 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=Match Score')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=Match Score')[22m
+
+
+      425 |     
+      426 |     // Find Match Score section
+    > 427 |     await expect(page.locator('text=Match Score')).toBeVisible();
+          |                                                    ^
+      428 |     
+      429 |     // Should have Analyze button
+      430 |     const analyzeBtn = page.locator('button:has-text("Analyze Match Score")');
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:427:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-306bd-atch-Score-section-displays-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-306bd-atch-Score-section-displays-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-306bd-atch-Score-section-displays-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-306bd-atch-Score-section-displays-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-306bd-atch-Score-section-displays-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [chromium] › e2e/coach-mode-critical.spec.ts:436:7 › P0 Critical - Regression (Existing App) › P0-19: Can navigate back to job list 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('text=← Back to list')[22m
+
+
+      438 |     
+      439 |     // Find and click back link
+    > 440 |     await page.click('text=← Back to list');
+          |                ^
+      441 |     await page.waitForTimeout(1000);
+      442 |     
+      443 |     // Should be on job list
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:440:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-09ca0-n-navigate-back-to-job-list-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-09ca0-n-navigate-back-to-job-list-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-09ca0-n-navigate-back-to-job-list-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-09ca0-n-navigate-back-to-job-list-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-09ca0-n-navigate-back-to-job-list-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [chromium] › e2e/coach-mode-critical.spec.ts:449:7 › P0 Critical - Regression (Existing App) › P0-20: Theme toggle works 
+
+    [31mTest timeout of 90000ms exceeded.[39m
+
+    Error: locator.textContent: Test timeout of 90000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Switch to")')[22m
+
+
+      453 |     // Find theme toggle button
+      454 |     const themeBtn = page.locator('button:has-text("Switch to")');
+    > 455 |     const initialText = await themeBtn.textContent();
+          |                                        ^
+      456 |     
+      457 |     // Click to toggle
+      458 |     await themeBtn.click();
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-critical.spec.ts:455:40
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-9b513-pp-P0-20-Theme-toggle-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-9b513-pp-P0-20-Theme-toggle-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-critical-P0-Cri-9b513-pp-P0-20-Theme-toggle-works-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-critical-P0-Cri-9b513-pp-P0-20-Theme-toggle-works-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-critical-P0-Cri-9b513-pp-P0-20-Theme-toggle-works-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17 failed
+    [chromium] › e2e/coach-mode-critical.spec.ts:21:7 › P0 Critical - Coach Mode › P0-01: Entry card appears when match score exists 
+    [chromium] › e2e/coach-mode-critical.spec.ts:44:7 › P0 Critical - Coach Mode › P0-03: Enter Coach Mode navigates successfully 
+    [chromium] › e2e/coach-mode-critical.spec.ts:59:7 › P0 Critical - Coach Mode › P0-04: Discovery questions generate (15-16 count) 
+    [chromium] › e2e/coach-mode-critical.spec.ts:77:7 › P0 Critical - Coach Mode › P0-05: Can type answer in textarea 
+    [chromium] › e2e/coach-mode-critical.spec.ts:92:7 › P0 Critical - Coach Mode › P0-06: Auto-save triggers within 3 seconds 
+    [chromium] › e2e/coach-mode-critical.spec.ts:121:7 › P0 Critical - Coach Mode › P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers 
+    [chromium] › e2e/coach-mode-critical.spec.ts:159:7 › P0 Critical - Coach Mode › P0-08: Complete discovery triggers profile analysis 
+    [chromium] › e2e/coach-mode-critical.spec.ts:218:7 › P0 Critical - Coach Mode › P0-10: Score recalculation works (API returns success) 
+    [chromium] › e2e/coach-mode-critical.spec.ts:250:7 › P0 Critical - Coach Mode › P0-11: Tab unlocking - Discovery → Score → Resume 
+    [chromium] › e2e/coach-mode-critical.spec.ts:285:7 › P0 Critical - Coach Mode › P0-12: Resume generation works (split-view appears) 
+    [chromium] › e2e/coach-mode-critical.spec.ts:320:7 › P0 Critical - Coach Mode › P0-13: Cover letter generates 
+    [chromium] › e2e/coach-mode-critical.spec.ts:354:7 › P0 Critical - Coach Mode › P0-14: Navigation - Coach Mode → Job Page → Coach Mode 
+    [chromium] › e2e/coach-mode-critical.spec.ts:374:7 › P0 Critical - Coach Mode › P0-15: Invalid job ID redirects gracefully 
+    [chromium] › e2e/coach-mode-critical.spec.ts:406:7 › P0 Critical - Regression (Existing App) › P0-17: Job detail page loads 
+    [chromium] › e2e/coach-mode-critical.spec.ts:422:7 › P0 Critical - Regression (Existing App) › P0-18: Match Score section displays 
+    [chromium] › e2e/coach-mode-critical.spec.ts:436:7 › P0 Critical - Regression (Existing App) › P0-19: Can navigate back to job list 
+    [chromium] › e2e/coach-mode-critical.spec.ts:449:7 › P0 Critical - Regression (Existing App) › P0-20: Theme toggle works 
+  3 passed (21.9m)

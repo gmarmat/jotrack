@@ -358,6 +358,12 @@ export const coachSessions = sqliteTable('coach_sessions', {
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
 });
 
+export const coachState = sqliteTable('coach_state', {
+  jobId: text('job_id').primaryKey().references(() => jobs.id, { onDelete: 'cascade' }),
+  dataJson: text('data_json').notNull(),  // JSON blob of wizard state
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
 export const companyInterviewQuestions = sqliteTable('company_interview_questions', {
   id: text('id').primaryKey(),
   companyName: text('company_name').notNull(),
