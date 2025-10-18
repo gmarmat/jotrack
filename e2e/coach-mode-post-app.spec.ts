@@ -80,26 +80,27 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         console.log('  📊 Skipping through all wizard batches...');
         
         for (let batch = 0; batch < 4; batch++) {
-          // Skip all questions in this batch using page.evaluate (faster & more reliable)
+          // Skip all questions in this batch FIRST using page.evaluate
           await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'))
               .filter(b => b.textContent?.includes('Skip'));
             btns.forEach(b => (b as HTMLButtonElement).click());
           });
           
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(500); // Wait for React state update
           
-          // Click Next or Complete Discovery
+          // Now Click Next or Complete Discovery
           if (batch < 3) {
             // Not last batch - click Next
-            await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 3000 });
+            await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 5000 });
             await page.click('button:has-text("Next")');
-            console.log(`  ✓ Batch ${batch + 1}/4: Skipped & navigated`);
+            console.log(`  ✓ Batch ${batch + 1}/4: Skipped & navigated to next`);
           } else {
-            // Last batch - click Complete Discovery
-            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 3000 });
+            // Last batch (batch 3 = 4th batch) - click Complete Discovery
+            console.log('  ⏳ Waiting for Complete Discovery to be enabled...');
+            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
             await page.click('button:has-text("Complete Discovery")');
-            console.log('  ✓ Batch 4/4: Clicked "Complete Discovery"');
+            console.log('  ✓ Batch 4/4: Clicked "Complete Discovery" - triggering profile analysis!');
           }
           
           await page.waitForTimeout(1000);
