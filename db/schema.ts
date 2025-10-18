@@ -29,6 +29,11 @@ export const jobs = sqliteTable('jobs', {
   matchScoreAnalyzedAt: integer('match_score_analyzed_at', { mode: 'number' }),
   peopleProfilesData: text('people_profiles_data'),
   peopleProfilesAnalyzedAt: integer('people_profiles_analyzed_at', { mode: 'number' }),
+  // v3.0: Coach Mode state tracking
+  coachStatus: text('coach_status').$type<'not_started' | 'profile-building' | 'resume-ready' | 'applied' | 'interview-prep'>().default('not_started'),
+  appliedAt: integer('applied_at', { mode: 'number' }),
+  appliedResumeVersion: integer('applied_resume_version', { mode: 'number' }),
+  jobProfileId: text('job_profile_id'),
 });
 
 export const statusHistory = sqliteTable('status_history', {
@@ -333,6 +338,48 @@ export type NewAnalysisDependency = typeof analysisDependencies.$inferInsert;
 export type ExtractionQueueItem = typeof extractionQueue.$inferSelect;
 export type NewExtractionQueueItem = typeof extractionQueue.$inferInsert;
 
+// v3.0: Coach Mode tables
+export const jobProfiles = sqliteTable('job_profiles', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  profileData: text('profile_data'),  // JSON: skills, experience, projects, achievements
+  discoveryResponses: text('discovery_responses'),  // JSON: Q&A pairs from wizard
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+});
+
+export const coachSessions = sqliteTable('coach_sessions', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  sessionType: text('session_type').notNull(),  // 'profile-building', 'resume-gen', 'interview-prep'
+  matchScoreBefore: integer('match_score_before', { mode: 'number' }),  // Store as 0-100 integer
+  matchScoreAfter: integer('match_score_after', { mode: 'number' }),
+  resumeVersion: integer('resume_version', { mode: 'number' }),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+});
+
+export const companyInterviewQuestions = sqliteTable('company_interview_questions', {
+  id: text('id').primaryKey(),
+  companyName: text('company_name').notNull(),
+  roleCategory: text('role_category').notNull(),
+  interviewStage: text('interview_stage').notNull(),  // 'recruiter', 'hiring-manager', 'peer-panel'
+  questions: text('questions').notNull(),  // JSON array
+  sources: text('sources'),  // JSON: URLs, AI-generated, etc
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  expiresAt: integer('expires_at', { mode: 'number' }).notNull(),
+});
+
+export const talkTracks = sqliteTable('talk_tracks', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  interviewStage: text('interview_stage').notNull(),
+  question: text('question').notNull(),
+  answerLong: text('answer_long').notNull(),
+  answerCheatSheet: text('answer_cheat_sheet').notNull(),
+  keywordsUsed: text('keywords_used'),  // JSON array
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+});
+
 // Typed structures for JSON columns
 export type InterviewerBlock = {
   id: string;
@@ -349,4 +396,37 @@ export type NotesHistoryEntry = {
   text: string;
   timestamp: number;
 };
+
+// v3.0: Coach Mode types
+export type JobProfile = typeof jobProfiles.$inferSelect;
+export type NewJobProfile = typeof jobProfiles.$inferInsert;
+export type CoachSession = typeof coachSessions.$inferSelect;
+export type NewCoachSession = typeof coachSessions.$inferInsert;
+export type CompanyInterviewQuestion = typeof companyInterviewQuestions.$inferSelect;
+export type NewCompanyInterviewQuestion = typeof companyInterviewQuestions.$inferInsert;
+export type TalkTrack = typeof talkTracks.$inferSelect;
+export type NewTalkTrack = typeof talkTracks.$inferInsert;
+
+// Coach Mode JSON structures
+export type ProfileData = {
+  extractedSkills: string[];
+  projects: Array<{
+    title: string;
+    description: string;
+    skillsDemonstrated: string[];
+  }>;
+  achievements: string[];
+  experienceYears: Record<string, number>;
+  hiddenStrengths: string[];
+  profileCompleteness: number;
+};
+
+export type DiscoveryQA = {
+  question: string;
+  answer: string;
+  category: string;  // 'leadership', 'technical', 'projects', 'achievements'
+  skipped: boolean;
+};
+
+export type CoachStatus = 'not_started' | 'profile-building' | 'resume-ready' | 'applied' | 'interview-prep';
 
