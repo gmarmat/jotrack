@@ -179,8 +179,11 @@ export default function CoachModePage({ params }: CoachPageProps) {
       if (!res.ok) throw new Error('Score recalculation failed');
 
       const data = await res.json();
+      setScoreBefore(data.matchScore.before); // Fix: Set before score from API
       setScoreAfter(data.matchScore.after);
       setProgress(prev => ({ ...prev, scoreRecalculated: true }));
+      
+      console.log(`✅ Score improved: ${(data.matchScore.before * 100).toFixed(0)}% → ${(data.matchScore.after * 100).toFixed(0)}% (+${data.matchScore.improvementPercent} points)`);
     } catch (error) {
       console.error('Score recalculation failed:', error);
       alert('Failed to recalculate score');
