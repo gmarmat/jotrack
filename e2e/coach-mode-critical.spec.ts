@@ -104,11 +104,23 @@ test.describe('P0 Critical - Coach Mode', () => {
 
   test('P0-04: Discovery questions generate (15-16 count)', async ({ page }) => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     
     await page.click('[data-testid="generate-discovery-button"]');
     
-    // Wait for AI generation (generous timeout)
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+    // Wait for AI generation (increased timeout for Claude API calls which can take 20-40s)
+    try {
+      await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
+    } catch (error) {
+      // Check if there's an error message on page
+      const hasError = await page.locator('text=/error|failed/i').isVisible().catch(() => false);
+      if (hasError) {
+        const errorText = await page.locator('text=/error|failed/i').textContent();
+        console.log(`⚠️ API Error: ${errorText}`);
+        throw new Error(`Discovery generation failed: ${errorText}`);
+      }
+      throw error; // Re-throw if no error message found
+    }
     
     // Check question count
     const totalText = await page.locator('text=/\\d+ total questions/').textContent();
@@ -122,8 +134,9 @@ test.describe('P0 Critical - Coach Mode', () => {
 
   test('P0-05: Can type answer in textarea', async ({ page }) => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     await page.click('[data-testid="generate-discovery-button"]');
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
     
     // Type in first textarea
     const testAnswer = 'TEST: Led team of 5 engineers, reduced API time by 75%';
@@ -145,8 +158,9 @@ test.describe('P0 Critical - Coach Mode', () => {
     });
     
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     await page.click('[data-testid="generate-discovery-button"]');
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
     
     // Type answer
     await page.getByRole('textbox').first().fill('Short answer for auto-save test');
@@ -166,8 +180,9 @@ test.describe('P0 Critical - Coach Mode', () => {
 
   test('P0-07: 🌟 MOST CRITICAL - Page refresh preserves answers', async ({ page }) => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     await page.click('[data-testid="generate-discovery-button"]');
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
     
     // Answer Q1 with specific text
     const testAnswer = 'PERSISTENCE TEST: At CloudTech I led team of 5 engineers reducing API from 800ms to 200ms';
@@ -204,8 +219,9 @@ test.describe('P0 Critical - Coach Mode', () => {
 
   test('P0-08: Complete discovery triggers profile analysis', async ({ page }) => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     await page.click('[data-testid="generate-discovery-button"]');
-    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 45000 });
+    await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
     
     // Skip through all batches quickly
     for (let batch = 0; batch < 4; batch++) {
