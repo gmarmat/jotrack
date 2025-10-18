@@ -1,0 +1,10 @@
+analyze-button
+coach-mode-entry-card
+coach-mode-header
+discovery-wizard
+enter-coach-mode
+generate-discovery-button
+tab-cover-letter
+tab-discovery
+tab-resume
+tab-score

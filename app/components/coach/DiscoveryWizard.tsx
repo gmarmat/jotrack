@@ -113,7 +113,7 @@ export default function DiscoveryWizard({ jobId, questions, initialResponses, in
   const isLastBatch = currentBatch === totalBatches - 1;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+    <div data-testid="discovery-wizard" className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       {/* Header with Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">

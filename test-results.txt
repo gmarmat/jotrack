@@ -37,3 +37,15 @@ Running 20 tests using 1 worker
 (Use `node --trace-warnings ...` to show where the warning was created)
 (node:11681) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [chromium] › e2e/coach-mode-critical.spec.ts:159:7 › P0 Critical - Coach Mode › P0-08: Complete discovery triggers profile analysis (1.5m)
+(node:12473) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12473) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✅ P0-09: Profile saved (881 bytes)
+  ✓   9 [chromium] › e2e/coach-mode-critical.spec.ts:197:7 › P0 Critical - Coach Mode › P0-09: Profile analysis saves to database (124ms)
+  ✘  10 [chromium] › e2e/coach-mode-critical.spec.ts:218:7 › P0 Critical - Coach Mode › P0-10: Score recalculation works (API returns success) (1.5m)
+(node:13359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
