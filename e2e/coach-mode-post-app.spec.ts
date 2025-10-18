@@ -76,78 +76,39 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
         await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
         await page.waitForTimeout(3000);
         
-        // Skip all questions in current batch to unlock navigation
-        const currentQuestions = await page.locator('textarea').count();
-        console.log(`  📊 Found ${currentQuestions} questions in current batch`);
+        // Use PROVEN approach from P0-08: Skip through all 4 batches
+        console.log('  📊 Skipping through all wizard batches...');
         
-        // Click "Skip" link for each question to unlock Next/Complete button
-        for (let i = 0; i < currentQuestions; i++) {
-          const skipLink = page.locator('text=Skip this question').nth(i);
-          if (await skipLink.isVisible().catch(() => false)) {
-            await skipLink.click();
-            await page.waitForTimeout(200);
-          }
-        }
-        
-        console.log('  ✓ Skipped all questions in first batch');
-        
-        // Navigate through all batches to reach "Complete Discovery" button
-        // The wizard has 4 batches of questions, we need to reach the last one
-        let completedBatches = 0;
-        for (let batch = 0; batch < 10; batch++) { // Max 10 batches safety
-          const nextButton = page.locator('button:has-text("Next")');
-          const completeButton = page.locator('button:has-text("Complete Discovery")');
+        for (let batch = 0; batch < 4; batch++) {
+          // Skip all questions in this batch using page.evaluate (faster & more reliable)
+          await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'))
+              .filter(b => b.textContent?.includes('Skip'));
+            btns.forEach(b => (b as HTMLButtonElement).click());
+          });
           
-          // Check if we're on the last batch (Complete Discovery visible)
-          const hasComplete = await completeButton.isVisible().catch(() => false);
-          const completeEnabled = hasComplete && await completeButton.isEnabled().catch(() => false);
+          await page.waitForTimeout(500);
           
-          if (completeEnabled) {
-            console.log(`  ✓ Reached last batch (batch ${batch + 1})`);
-            await completeButton.click();
-            await page.waitForTimeout(15000); // Wait for profile analysis API call
-            console.log('  ✓ Clicked "Complete Discovery" - profile analysis started');
-            completedBatches = batch + 1;
-            break;
-          }
-          
-          // Not last batch - skip questions and click Next
-          if (await nextButton.isVisible().catch(() => false)) {
-            const nextEnabled = await nextButton.isEnabled().catch(() => false);
-            
-            if (!nextEnabled) {
-              // Next is disabled - need to skip questions first
-              const batchQuestions = await page.locator('textarea').count();
-              for (let i = 0; i < batchQuestions; i++) {
-                const skipLink = page.locator('text=Skip this question').nth(i);
-                if (await skipLink.isVisible().catch(() => false)) {
-                  await skipLink.click();
-                  await page.waitForTimeout(100);
-                }
-              }
-              await page.waitForTimeout(500);
-            }
-            
-            // Try clicking Next now
-            if (await nextButton.isEnabled().catch(() => false)) {
-              await nextButton.click();
-              await page.waitForTimeout(1000);
-              console.log(`  ✓ Navigated to batch ${batch + 2}`);
-            } else {
-              console.log(`  ⚠️ Next button still disabled at batch ${batch + 1}`);
-              break;
-            }
+          // Click Next or Complete Discovery
+          if (batch < 3) {
+            // Not last batch - click Next
+            await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 3000 });
+            await page.click('button:has-text("Next")');
+            console.log(`  ✓ Batch ${batch + 1}/4: Skipped & navigated`);
           } else {
-            console.log(`  ⚠️ Neither Next nor Complete button found at batch ${batch + 1}`);
-            break;
+            // Last batch - click Complete Discovery
+            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 3000 });
+            await page.click('button:has-text("Complete Discovery")');
+            console.log('  ✓ Batch 4/4: Clicked "Complete Discovery"');
           }
+          
+          await page.waitForTimeout(1000);
         }
         
-        if (completedBatches > 0) {
-          console.log(`  ✓ Step 1: Discovery complete (${completedBatches} batches)`);
-        } else {
-          console.log('  ❌ Failed to complete discovery - no Complete button found!');
-        }
+        // Wait for profile analysis to complete (~15-25s)
+        console.log('  ⏳ Waiting for profile analysis API call...');
+        await page.waitForTimeout(15000);
+        console.log('  ✓ Step 1: Discovery complete with profile analysis');
       }
       
       // STEP 2: Recalculate Score (wait for tab to unlock)
