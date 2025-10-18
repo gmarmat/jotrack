@@ -10,6 +10,7 @@ import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
+import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
@@ -1068,6 +1069,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
         </div>
+
+        {/* 2.5. Coach Mode Entry Card */}
+        <CoachModeEntryCard
+          jobId={job.id}
+          matchScore={aiData?.matchScore || 0}
+          coachStatus={job.coachStatus || 'not_started'}
+        />
 
         {/* 3. AI Showcase: Full-width grid */}
         <div id="ai-showcase">
