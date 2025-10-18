@@ -1,0 +1,144 @@
+
+Running 15 tests using 1 worker
+
+(node:25583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+⚠️ P1-13: Placeholder for AI failure testing
+  -   1 [chromium] › e2e/coach-mode-post-app.spec.ts:632:7 › P1 - Error Handling & Edge Cases › P1-13: Graceful error when AI API fails
+✅ P1-14: Invalid job ID handled in post-app
+  ✓   2 [chromium] › e2e/coach-mode-post-app.spec.ts:642:7 › P1 - Error Handling & Edge Cases › P1-14: Invalid job ID in post-app redirects gracefully (3.3s)
+⚠️ P1-15: Placeholder for network interruption testing
+  -   3 [chromium] › e2e/coach-mode-post-app.spec.ts:658:7 › P1 - Error Handling & Edge Cases › P1-15: Network interruption shows appropriate error
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P1-01: Ready tab locked, completing FULL pre-app flow...
+  📊 Skipping through all wizard batches...
+  ✓ Batch 1: Skipped & navigated to next
+  ✓ Batch 2: Skipped & navigated to next
+  ✓ Batch 3: Skipped & navigated to next
+  ⏳ Last batch (4) - waiting for Complete Discovery...
+  ✓ Clicked "Complete Discovery" - triggering profile analysis!
+  ✓ Navigated through 4 batches
+  ⏳ Waiting for profile analysis API call...
+  ✓ Step 1: Discovery complete with profile analysis
+  ⏳ Waiting for Score tab to unlock...
+  ✓ Score tab unlocked after 1s
+  ✓ Step 2: Score recalculated
+  ⏳ Waiting for Resume tab to unlock...
+  ✓ Resume tab unlocked after 1s
+  ✓ Step 3a: Resume generated
+    📋 Accepting confirmation dialog: "Accept this resume as final? This will be your application resume."
+  ✓ Step 3b: Resume finalized - Cover Letter tab should unlock
+  ⏳ Waiting for Cover Letter tab to unlock...
+  ✓ Cover Letter tab unlocked after 1s
+  ✓ Step 4: Cover letter generated
+✅ P1-01: FULL pre-app flow complete - Ready tab should unlock
+  ✓ Ready tab unlocked after 1s
+✅ P1-01: "I've Applied!" button visible on Ready tab
+  ✓   4 [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button (2.5m)
+⚠️ P1-02: Ready tab locked, skipping (P1-01 should unlock it)
+  -   5 [chromium] › e2e/coach-mode-post-app.spec.ts:276:7 › P1 Critical - Post-Application (Interview Prep) › P1-02: Clicking "Mark as Applied" transitions to post-app phase
+⚠️ P1-03: Not in post-app phase yet (P1-02 should enable it)
+  -   6 [chromium] › e2e/coach-mode-post-app.spec.ts:312:7 › P1 Critical - Post-Application (Interview Prep) › P1-03: Recruiter interview questions can be generated
+⚠️ P1-04: Not in post-app phase
+  -   7 [chromium] › e2e/coach-mode-post-app.spec.ts:351:7 › P1 Critical - Post-Application (Interview Prep) › P1-04: Hiring manager interview questions can be generated
+⚠️ P1-05: Not in post-app phase
+  -   8 [chromium] › e2e/coach-mode-post-app.spec.ts:386:7 › P1 Critical - Post-Application (Interview Prep) › P1-05: Peer panel interview questions can be generated
+  -   9 [chromium] › e2e/coach-mode-post-app.spec.ts:421:7 › P1 Critical - Post-Application (Interview Prep) › P1-06: Questions can be expanded to show details
+  -  10 [chromium] › e2e/coach-mode-post-app.spec.ts:451:7 › P1 Critical - Post-Application (Interview Prep) › P1-07: Expand All and Collapse All buttons work
+⚠️ P1-08: No questions cached yet (P1-03 should cache them)
+  -  11 [chromium] › e2e/coach-mode-post-app.spec.ts:493:7 › P1 Critical - Post-Application (Interview Prep) › P1-08: Interview questions are saved to database
+  ✘  12 [chromium] › e2e/coach-mode-post-app.spec.ts:517:7 › P1 Critical - Post-Application (Interview Prep) › P1-09: "Mark as Applied" updates job coach_status in database (115ms)
+(node:26951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P1-10: Not in post-app phase
+  -  13 [chromium] › e2e/coach-mode-post-app.spec.ts:552:7 › P1 Critical - Post-Application (Interview Prep) › P1-10: Post-app phase shows 3 interview preparation tabs
+  -  14 [chromium] › e2e/coach-mode-post-app.spec.ts:575:7 › P1 Critical - Post-Application (Interview Prep) › P1-11: Cached questions display without regeneration
+  ✘  15 [chromium] › e2e/coach-mode-post-app.spec.ts:609:7 › P1 Critical - Post-Application (Interview Prep) › P1-12: Post-app phase loads quickly (<3s) (5.3s)
+
+
+  1) [chromium] › e2e/coach-mode-post-app.spec.ts:517:7 › P1 Critical - Post-Application (Interview Prep) › P1-09: "Mark as Applied" updates job coach_status in database 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m"profile-building"[39m
+    Received array: [31m["applied", "interview-prep", null][39m
+
+      531 |     // Verify coach status changed
+      532 |     const validStatuses = ['applied', 'interview-prep', null];
+    > 533 |     expect(validStatuses).toContain(job.coachStatus);
+          |                           ^
+      534 |     
+      535 |     if (job.coachStatus === 'applied' || job.coachStatus === 'interview-prep') {
+      536 |       // Verify appliedAt timestamp
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-post-app.spec.ts:533:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-dacce-ob-coach-status-in-database-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-dacce-ob-coach-status-in-database-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-dacce-ob-coach-status-in-database-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-post-app-P1-Cri-dacce-ob-coach-status-in-database-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/coach-mode-post-app.spec.ts:609:7 › P1 Critical - Post-Application (Interview Prep) › P1-12: Post-app phase loads quickly (<3s) 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('tab-recruiter') to be visible[22m
+
+
+      614 |     // Wait for recruiter tab
+      615 |     const recruiterTab = page.getByTestId('tab-recruiter');
+    > 616 |     await recruiterTab.waitFor({ timeout: 5000 });
+          |                        ^
+      617 |     
+      618 |     const loadTime = Date.now() - startTime;
+      619 |     
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-post-app.spec.ts:616:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-a4948-app-phase-loads-quickly-3s--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-a4948-app-phase-loads-quickly-3s--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-post-app-P1-Cri-a4948-app-phase-loads-quickly-3s--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-a4948-app-phase-loads-quickly-3s--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-post-app-P1-Cri-a4948-app-phase-loads-quickly-3s--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › e2e/coach-mode-post-app.spec.ts:517:7 › P1 Critical - Post-Application (Interview Prep) › P1-09: "Mark as Applied" updates job coach_status in database 
+    [chromium] › e2e/coach-mode-post-app.spec.ts:609:7 › P1 Critical - Post-Application (Interview Prep) › P1-12: Post-app phase loads quickly (<3s) 
+  11 skipped
+  2 passed (3.0m)

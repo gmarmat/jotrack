@@ -273,29 +273,107 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
   // ============================================================================
   // P1-02: "Mark as Applied" Triggers Phase Transition
   // ============================================================================
-  test('P1-02: Clicking "Mark as Applied" transitions to post-app phase', async ({ page }) => {
+  test('P1-02: Clicking "I\'ve Applied!" transitions to post-app phase', async ({ page }) => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
     
-    // Navigate to Ready tab
+    // Check if Ready tab is unlocked (if not, complete pre-app flow)
     const readyTab = page.getByTestId('tab-ready');
     const isUnlocked = await readyTab.isEnabled().catch(() => false);
     
     if (!isUnlocked) {
-      console.log('⚠️ P1-02: Ready tab locked, skipping (P1-01 should unlock it)');
-      test.skip();
-      return;
+      console.log('⚠️ P1-02: Completing pre-app flow to unlock Ready tab...');
+      
+      // Use same proven logic as P1-01 (inline for simplicity)
+      const hasButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
+      if (hasButton) {
+        await page.click('[data-testid="generate-discovery-button"]');
+        await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
+        await page.waitForTimeout(3000);
+        
+        for (let batch = 0; batch < 4; batch++) {
+          await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'))
+              .filter(b => b.textContent?.includes('Skip'));
+            btns.forEach(b => (b as HTMLButtonElement).click());
+          });
+          await page.waitForTimeout(500);
+          
+          if (batch < 3) {
+            await page.waitForSelector('button:has-text("Next"):not([disabled])', { timeout: 5000 });
+            await page.click('button:has-text("Next")');
+          } else {
+            await page.waitForSelector('button:has-text("Complete Discovery"):not([disabled])', { timeout: 5000 });
+            await page.click('button:has-text("Complete Discovery")');
+          }
+          await page.waitForTimeout(1000);
+        }
+        await page.waitForTimeout(15000);
+      }
+      
+      // Score, Resume, Cover Letter (using polling wait pattern)
+      const tabs = [
+        { name: 'Score', testid: 'tab-score', button: 'Recalculate Score', wait: 35000 },
+        { name: 'Resume', testid: 'tab-resume', button: 'Generate Resume', wait: 40000 },
+        { name: 'Cover Letter', testid: 'tab-cover-letter', button: null, wait: 20000 }
+      ];
+      
+      for (const tab of tabs) {
+        const tabElement = page.getByTestId(tab.testid);
+        for (let i = 0; i < 15; i++) {
+          if (await tabElement.isEnabled().catch(() => false)) {
+            await tabElement.click();
+            await page.waitForTimeout(1000);
+            
+            if (tab.button) {
+              const btn = page.locator(`button:has-text("${tab.button}")`);
+              if (await btn.isVisible().catch(() => false)) {
+                await btn.click();
+                await page.waitForTimeout(tab.wait);
+                
+                if (tab.name === 'Resume') {
+                  const acceptBtn = page.locator('button:has-text("Accept as Final Resume")');
+                  if (await acceptBtn.isVisible().catch(() => false)) {
+                    page.once('dialog', async dialog => await dialog.accept());
+                    await acceptBtn.click();
+                    await page.waitForTimeout(2000);
+                  }
+                }
+              }
+            } else {
+              // Cover Letter - try multiple buttons
+              const btns = [page.getByTestId('analyze-button'), page.locator('button:has-text("Generate")')];
+              for (const btn of btns) {
+                if (await btn.isVisible().catch(() => false)) {
+                  await btn.click();
+                  await page.waitForTimeout(tab.wait);
+                  break;
+                }
+              }
+            }
+            break;
+          }
+          await page.waitForTimeout(1000);
+        }
+      }
+      
+      console.log('  ✅ Pre-app flow complete - waiting for Ready tab unlock...');
+      for (let i = 0; i < 10; i++) {
+        if (await readyTab.isEnabled().catch(() => false)) break;
+        await page.waitForTimeout(1000);
+      }
     }
     
+    // Navigate to Ready tab
     await readyTab.click();
     await page.waitForTimeout(1000);
     
-    // Click "Mark as Applied"
-    const markAppliedButton = page.locator('button:has-text("Mark as Applied")');
-    await markAppliedButton.click();
-    await page.waitForTimeout(3000); // Wait for API call
+    // Click "I've Applied! → Start Interview Prep"
+    const appliedButton = page.locator('button:has-text("I\'ve Applied")');
+    await appliedButton.click();
+    await page.waitForTimeout(3000); // Wait for API call + phase transition
     
-    // Verify phase transition - should see different tabs now
+    // Verify phase transition - should see post-app tabs now
     const recruiterTab = page.getByTestId('tab-recruiter');
     await expect(recruiterTab).toBeVisible({ timeout: 5000 });
     
@@ -303,7 +381,7 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
     const discoveryTab = page.getByTestId('tab-discovery');
     await expect(discoveryTab).not.toBeVisible();
     
-    console.log('✅ P1-02: Phase transition successful - post-app tabs visible');
+    console.log('✅ P1-02: Phase transition successful - entered post-app phase!');
   });
 
   // ============================================================================
