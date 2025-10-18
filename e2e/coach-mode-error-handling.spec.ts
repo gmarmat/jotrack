@@ -18,6 +18,7 @@ import Database from 'better-sqlite3';
 import { jobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { setupCoachModeApiMocks } from './mocks/coachModeAiMocks';
 
 const TEST_JOB_ID = '3957289b-30f5-4ab2-8006-3a08b6630beb';
 
@@ -25,6 +26,11 @@ const sqlite = new Database('./data/jotrack.db');
 const db = drizzle(sqlite);
 
 test.describe('Phase 3: Error Handling & Edge Cases', () => {
+  
+  // 🎭 MOCK AI APIS BEFORE EACH TEST
+  test.beforeEach(async ({ page }) => {
+    await setupCoachModeApiMocks(page);
+  });
   
   // ============================================================================
   // E2E-01: Very Long Text Input (10,000 words)

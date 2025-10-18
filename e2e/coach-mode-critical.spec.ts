@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { db } from '../db/client';
 import { jobs, jobProfiles, coachSessions, coachState } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import { setupCoachModeApiMocks } from './mocks/coachModeAiMocks';
 
 /**
  * P0 CRITICAL TESTS - Coach Mode
@@ -17,6 +18,11 @@ import { eq } from 'drizzle-orm';
 const TEST_JOB_ID = '3957289b-30f5-4ab2-8006-3a08b6630beb';
 
 test.describe('P0 Critical - Coach Mode', () => {
+  
+  // 🎭 MOCK AI APIS BEFORE EACH TEST
+  test.beforeEach(async ({ page }) => {
+    await setupCoachModeApiMocks(page);
+  });
   
   // 🧹 CLEAN STATE BEFORE ALL TESTS
   test.beforeAll(async () => {

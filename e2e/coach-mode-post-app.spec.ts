@@ -19,6 +19,7 @@ import Database from 'better-sqlite3';
 import { coachState, jobProfiles, coachSessions, jobs, companyInterviewQuestions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { setupCoachModeApiMocks } from './mocks/coachModeAiMocks';
 
 const TEST_JOB_ID = '3957289b-30f5-4ab2-8006-3a08b6630beb';
 
@@ -27,6 +28,11 @@ const sqlite = new Database('./data/jotrack.db');
 const db = drizzle(sqlite);
 
 test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
+  
+  // 🎭 MOCK AI APIS BEFORE EACH TEST
+  test.beforeEach(async ({ page }) => {
+    await setupCoachModeApiMocks(page);
+  });
   
   // Clean state ONCE at start - P1-03 through P1-07 depend on P1-02's post-app state!
   test.beforeAll(async () => {
