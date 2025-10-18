@@ -62,22 +62,19 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
     await page.goto(`/coach/${TEST_JOB_ID}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
     
-    // Navigate to Ready tab (last pre-app tab)
-    // First we need to unlock it by completing the flow
-    
-    // Check if Ready tab exists and is unlocked
+    // Ready tab unlocks only after: Discovery → Profile → Score → Resume → Cover Letter
     const readyTab = page.getByTestId('tab-ready');
     const isLocked = await readyTab.isDisabled().catch(() => true);
     
     if (isLocked) {
-      console.log('⚠️ P1-01: Ready tab locked, completing full pre-app flow...');
+      console.log('⚠️ P1-01: Ready tab locked, completing FULL pre-app flow...');
       
-      // Complete discovery
+      // STEP 1: Complete Discovery
       const hasButton = await page.locator('[data-testid="generate-discovery-button"]').isVisible().catch(() => false);
       if (hasButton) {
         await page.click('[data-testid="generate-discovery-button"]');
         await page.waitForSelector('[data-testid="discovery-wizard"]', { timeout: 60000 });
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(3000);
         
         const skipButton = page.locator('button:has-text("Skip all")');
         if (await skipButton.isVisible().catch(() => false)) {
@@ -85,28 +82,99 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
           await page.waitForTimeout(1000);
         }
         
-        // Complete profile analysis
+        // Find Complete button (try multiple variations)
         const completeButtons = [
           'button:has-text("Complete & Analyze")',
           'button:has-text("Complete")',
-          'button:has-text("Analyze Profile")'
+          '[data-testid="discovery-wizard"] button:not(:disabled)'
         ];
         
+        let clicked = false;
         for (const selector of completeButtons) {
-          const btn = page.locator(selector);
+          const btn = page.locator(selector).last();
           if (await btn.isVisible().catch(() => false)) {
             await btn.click();
+            clicked = true;
+            console.log(`  ✓ Clicked: ${selector}`);
             break;
           }
         }
         
-        await page.waitForTimeout(10000);
+        await page.waitForTimeout(10000); // Profile analysis
+        console.log('  ✓ Step 1: Discovery complete');
       }
       
-      console.log('✅ P1-01: Pre-app flow complete');
+      // STEP 2: Recalculate Score
+      const scoreTab = page.getByTestId('tab-score');
+      if (await scoreTab.isEnabled().catch(() => false)) {
+        await scoreTab.click();
+        await page.waitForTimeout(1000);
+        
+        const recalcButton = page.locator('button:has-text("Recalculate Score")');
+        if (await recalcButton.isVisible().catch(() => false)) {
+          await recalcButton.click();
+          await page.waitForTimeout(35000); // Score recalc
+          console.log('  ✓ Step 2: Score recalculated');
+        }
+      }
+      
+      // STEP 3: Generate Resume
+      const resumeTab = page.getByTestId('tab-resume');
+      if (await resumeTab.isEnabled().catch(() => false)) {
+        await resumeTab.click();
+        await page.waitForTimeout(1000);
+        
+        const generateResumeButton = page.locator('button:has-text("Generate Resume")');
+        if (await generateResumeButton.isVisible().catch(() => false)) {
+          await generateResumeButton.click();
+          await page.waitForTimeout(40000); // Resume generation
+          console.log('  ✓ Step 3: Resume generated');
+        }
+      }
+      
+      // STEP 4: Generate Cover Letter
+      const coverLetterTab = page.getByTestId('tab-cover-letter');
+      if (await coverLetterTab.isEnabled().catch(() => false)) {
+        await coverLetterTab.click();
+        await page.waitForTimeout(1000);
+        
+        // Try to find generate button (might have different text)
+        const generateButtons = [
+          page.getByTestId('analyze-button'),
+          page.locator('button:has-text("Generate Cover Letter")'),
+          page.locator('button:has-text("Generate")')
+        ];
+        
+        for (const btn of generateButtons) {
+          if (await btn.isVisible().catch(() => false)) {
+            await btn.click();
+            await page.waitForTimeout(20000); // Cover letter generation
+            console.log('  ✓ Step 4: Cover letter generated');
+            break;
+          }
+        }
+      }
+      
+      console.log('✅ P1-01: FULL pre-app flow complete - Ready tab should unlock');
+      
+      // Wait for Ready tab to unlock (check every second for 10 seconds)
+      let unlocked = false;
+      for (let i = 0; i < 10; i++) {
+        const enabled = await readyTab.isEnabled().catch(() => false);
+        if (enabled) {
+          unlocked = true;
+          console.log(`  ✓ Ready tab unlocked after ${i + 1}s`);
+          break;
+        }
+        await page.waitForTimeout(1000);
+      }
+      
+      if (!unlocked) {
+        console.log('  ❌ Ready tab still locked after full flow - potential bug!');
+      }
     }
     
-    // Navigate to Ready tab
+    // Navigate to Ready tab (should be unlocked now)
     await readyTab.click();
     await page.waitForTimeout(1000);
     
@@ -338,12 +406,11 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
   // P1-08: Database - Interview Questions Cached
   // ============================================================================
   test('P1-08: Interview questions are saved to database', async ({ page }) => {
-    // Query database for cached questions
-    const cachedQuestions = db
-      .select()
-      .from(companyInterviewQuestions)
-      .where(eq(companyInterviewQuestions.jobId, TEST_JOB_ID))
-      .all();
+    // Query database directly (not using Drizzle to avoid schema issues)
+    const cachedQuestions = sqlite.prepare(`
+      SELECT * FROM company_interview_questions 
+      WHERE company_name = (SELECT company FROM jobs WHERE id = ?)
+    `).all(TEST_JOB_ID);
     
     if (cachedQuestions.length === 0) {
       console.log('⚠️ P1-08: No questions cached yet (P1-03 should cache them)');
@@ -353,8 +420,8 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
     
     // Verify structure
     expect(cachedQuestions.length).toBeGreaterThan(0);
-    expect(cachedQuestions[0]).toHaveProperty('interviewStage');
-    expect(cachedQuestions[0]).toHaveProperty('questionsData');
+    expect(cachedQuestions[0]).toHaveProperty('interview_stage');
+    expect(cachedQuestions[0]).toHaveProperty('questions');
     
     console.log(`✅ P1-08: ${cachedQuestions.length} question sets cached in database`);
   });
