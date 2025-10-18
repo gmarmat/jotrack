@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { db } from '@/db/client';
 import { jobs, jobProfiles, coachSessions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { executePrompt } from '@/lib/analysis/promptExecutor';

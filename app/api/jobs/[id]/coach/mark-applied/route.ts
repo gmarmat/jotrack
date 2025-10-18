@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { db } from '@/db/client';
 import { jobs, attachments } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
