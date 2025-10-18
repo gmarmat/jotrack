@@ -260,11 +260,14 @@ test.describe('P1 Critical - Post-Application (Interview Prep)', () => {
     await readyTab.click();
     await page.waitForTimeout(1000);
     
-    // Verify "Mark as Applied" button exists
-    const markAppliedButton = page.locator('button:has-text("Mark as Applied")');
-    await expect(markAppliedButton).toBeVisible({ timeout: 5000 });
+    // Verify "I've Applied!" button exists (actual button text)
+    const appliedButton = page.locator('button:has-text("I\'ve Applied")');
+    await expect(appliedButton).toBeVisible({ timeout: 5000 });
     
-    console.log('✅ P1-01: "Mark as Applied" button visible');
+    // Verify page content
+    await expect(page.locator('text=You\'re Ready to Apply!')).toBeVisible();
+    
+    console.log('✅ P1-01: "I\'ve Applied!" button visible on Ready tab');
   });
 
   // ============================================================================

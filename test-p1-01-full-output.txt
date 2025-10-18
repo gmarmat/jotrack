@@ -1,0 +1,82 @@
+
+Running 1 test using 1 worker
+
+(node:22276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state for job: 3957289b-30f5-4ab2-8006-3a08b6630beb
+✅ Cleared coach_state
+✅ Cleared job_profiles
+✅ Cleared coach_sessions
+✅ Reset job coach status
+✅ Test state cleaned - ready for fresh test run!
+⚠️ P1-01: Ready tab locked, completing FULL pre-app flow...
+  📊 Skipping through all wizard batches...
+  ✓ Batch 1: Skipped & navigated to next
+  ✓ Batch 2: Skipped & navigated to next
+  ✓ Batch 3: Skipped & navigated to next
+  ⏳ Last batch (4) - waiting for Complete Discovery...
+  ✓ Clicked "Complete Discovery" - triggering profile analysis!
+  ✓ Navigated through 4 batches
+  ⏳ Waiting for profile analysis API call...
+  ✓ Step 1: Discovery complete with profile analysis
+  ⏳ Waiting for Score tab to unlock...
+  ✓ Score tab unlocked after 1s
+  ✓ Step 2: Score recalculated
+  ⏳ Waiting for Resume tab to unlock...
+  ✓ Resume tab unlocked after 1s
+  ✓ Step 3a: Resume generated
+    📋 Accepting confirmation dialog: "Accept this resume as final? This will be your application resume."
+  ✓ Step 3b: Resume finalized - Cover Letter tab should unlock
+  ⏳ Waiting for Cover Letter tab to unlock...
+  ✓ Cover Letter tab unlocked after 1s
+  ✓ Step 4: Cover letter generated
+✅ P1-01: FULL pre-app flow complete - Ready tab should unlock
+  ✓ Ready tab unlocked after 1s
+  ✘  1 [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button (4.9m)
+
+
+  1) [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button:has-text("Mark as Applied")')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button:has-text("Mark as Applied")')[22m
+
+
+      263 |     // Verify "Mark as Applied" button exists
+      264 |     const markAppliedButton = page.locator('button:has-text("Mark as Applied")');
+    > 265 |     await expect(markAppliedButton).toBeVisible({ timeout: 5000 });
+          |                                     ^
+      266 |     
+      267 |     console.log('✅ P1-01: "Mark as Applied" button visible');
+      268 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/coach-mode-post-app.spec.ts:265:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/coach-mode-post-app-P1-Cri-06175-hows-Mark-as-Applied-button-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e/coach-mode-post-app.spec.ts:61:7 › P1 Critical - Post-Application (Interview Prep) › P1-01: Ready to Apply tab shows "Mark as Applied" button 
