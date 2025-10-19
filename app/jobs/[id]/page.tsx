@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import CollapsibleHorizontalTimeline from '@/app/components/timeline/CollapsibleHorizontalTimeline';
 import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
-import HeaderMeta from '@/app/components/timeline/HeaderMeta';
+import CollapsibleHeaderMeta from '@/app/components/timeline/CollapsibleHeaderMeta';
 import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
@@ -527,7 +527,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       />
 
       {/* Header Meta - Delta chip, posting link, JD link */}
-      <HeaderMeta
+      <CollapsibleHeaderMeta
         postingUrl={job.posting_url || job.postingUrl}
         createdAt={job.created_at || job.createdAt}
         updatedAt={job.updated_at || job.updatedAt}
