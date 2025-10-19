@@ -260,22 +260,130 @@ export default function CollapsibleHorizontalTimeline({
   // Full version (expanded)
   return (
     <div 
-      className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/65 dark:to-blue-950/65 border-b border-purple-200 dark:border-purple-800 overflow-x-auto sticky top-0 z-40 shadow-sm transition-all duration-300 backdrop-blur-sm"
+      className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/65 dark:to-blue-950/65 border-b border-purple-200 dark:border-purple-800 sticky top-0 z-40 shadow-sm transition-all duration-300 backdrop-blur-sm"
       data-testid="horizontal-timeline"
     >
-      {/* Collapse Button */}
-      <div className="flex justify-end px-6 pt-2">
-        <button
-          onClick={() => setIsCollapsed(true)}
-          className="p-1 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded transition-colors"
-          title="Collapse timeline"
-          aria-label="Collapse timeline"
-        >
-          <ChevronUp className="text-purple-600 dark:text-purple-400" size={16} />
-        </button>
+      {/* Header Row - Full metadata and actions */}
+      <div className="border-b border-purple-200 dark:border-purple-700/50 px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Left: Quick Links */}
+          <div className="flex items-center gap-3">
+            {jdAttachmentId && onViewJd && (
+              <button
+                onClick={onViewJd}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                title="View JD"
+              >
+                <FileText size={14} />
+                View JD
+              </button>
+            )}
+            
+            {postingUrl && (
+              <a
+                href={postingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors"
+                title="View Posting"
+              >
+                <ExternalLink size={14} />
+                View Posting
+              </a>
+            )}
+          </div>
+
+          {/* Right: Metadata + Action Buttons */}
+          <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+            {createdAt && (
+              <div title={formatDateTime(createdAt)}>
+                <span className="font-medium">Created:</span> {formatDateTime(createdAt)}
+              </div>
+            )}
+            {updatedAt && (
+              <div title={formatDateTime(updatedAt)}>
+                <span className="font-medium">Updated:</span> {formatDateTime(updatedAt)}
+              </div>
+            )}
+
+            {/* Delta Chip */}
+            {delta && (
+              <div 
+                className={`px-2.5 py-1 rounded-full font-semibold ${
+                  delta.isStale
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                }`}
+                title={`In current status for ${delta.days} days`}
+              >
+                {delta.label}
+              </div>
+            )}
+
+            {/* Stale Badge */}
+            {delta && delta.isStale && (
+              <div className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-full text-[10px] font-bold">
+                ⏳ STALE
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+
+            {/* User Profile Button */}
+            <button
+              onClick={() => {
+                alert('User Profile - Coming soon!');
+              }}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              title="View User Profile"
+            >
+              <User className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            </button>
+
+            {/* Theme Toggle */}
+            {mounted && (
+              <button
+                onClick={() => {
+                  const newTheme = isDark ? 'light' : 'dark';
+                  setTheme(newTheme);
+                }}
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 text-yellow-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-700" />
+                )}
+              </button>
+            )}
+
+            {/* Settings Button */}
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            </button>
+
+            {/* Collapse Button */}
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="p-2 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded transition-colors"
+              title="Collapse timeline"
+              aria-label="Collapse timeline"
+            >
+              <ChevronUp className="text-purple-600 dark:text-purple-400" size={16} />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center min-w-max px-6 pb-4">
+      {/* Timeline Row */}
+      <div className="overflow-x-auto">
+        <div className="flex items-center min-w-max px-6 py-4">
         {ORDERED_STATUSES.map((status, index) => {
           const isActive = status === currentStatus;
           const isPast = index < currentIndex;
@@ -368,6 +476,13 @@ export default function CollapsibleHorizontalTimeline({
       <div className="md:hidden text-xs text-gray-500 dark:text-gray-400 text-center pb-2">
         ← Scroll to see all stages →
       </div>
+      </div>
+
+      {/* Global Settings Modal */}
+      <GlobalSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 }
