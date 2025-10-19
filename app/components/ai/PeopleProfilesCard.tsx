@@ -1,12 +1,13 @@
 'use client';
 
-import { Users, User, ExternalLink, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Users, User, ExternalLink, AlertCircle, UserPlus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
 import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
 import AnalysisExplanation from '../ui/AnalysisExplanation';
+import ManagePeopleModal from '../people/ManagePeopleModal';
 
 interface PersonProfile {
   name: string;
@@ -48,6 +49,25 @@ export default function PeopleProfilesCard({
   const [localInsights, setLocalInsights] = useState(overallInsights);
   const [error, setError] = useState<string | null>(null);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
+  const [showManagePeopleModal, setShowManagePeopleModal] = useState(false);
+  const [peopleCount, setPeopleCount] = useState(0);
+  
+  // Load people count on mount
+  useEffect(() => {
+    loadPeopleCount();
+  }, [jobId]);
+  
+  const loadPeopleCount = async () => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/people/manage`);
+      const data = await res.json();
+      if (data.success) {
+        setPeopleCount(data.people?.length || 0);
+      }
+    } catch (err) {
+      console.error('Failed to load people count:', err);
+    }
+  };
   
   // Mock sources - in real implementation, from analysis data
   const sources: Source[] = [
@@ -173,7 +193,22 @@ export default function PeopleProfilesCard({
             </span>
           )}
 
-          {/* Standard button order: Analyze -> Prompt -> Sources */}
+          {/* Standard button order: Manage -> Analyze -> Prompt -> Sources */}
+          
+          {/* Manage People - Position 0 (NEW) */}
+          <button
+            onClick={() => setShowManagePeopleModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-300 dark:border-cyan-600 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 font-medium"
+            title="Add or remove people from interview team"
+          >
+            <UserPlus size={14} />
+            <span className="text-xs">Manage People</span>
+            {peopleCount > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-full text-xs font-semibold">
+                {peopleCount}
+              </span>
+            )}
+          </button>
           
           {/* AI Analysis - Position 1 */}
           <AnalyzeButton
@@ -363,6 +398,25 @@ export default function PeopleProfilesCard({
         </p>
       </div>
       </>)}
+      
+      {/* Manage People Modal */}
+      <ManagePeopleModal
+        jobId={jobId}
+        isOpen={showManagePeopleModal}
+        onClose={() => setShowManagePeopleModal(false)}
+        onSave={() => {
+          loadPeopleCount(); // Refresh count
+          setShowManagePeopleModal(false);
+        }}
+      />
+      
+      {/* Sources Modal */}
+      <SourcesModal
+        isOpen={showSourcesModal}
+        onClose={() => setShowSourcesModal(false)}
+        sources={sources}
+        title="People Profiles Sources"
+      />
     </div>
   );
 }
