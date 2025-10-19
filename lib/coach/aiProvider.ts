@@ -19,7 +19,14 @@ const ALGORITHM = 'aes-256-cbc';
 
 // v1.3: Model allowlist for safety
 // v2.7: Added o1-preview for advanced reasoning
-const ALLOWED_MODELS = ['gpt-4o-mini', 'gpt-4o', 'o1-preview', 'gpt-4-turbo', 'gpt-3.5-turbo'];
+// v2.8: Added Claude models
+const ALLOWED_MODELS = [
+  // OpenAI
+  'gpt-4o-mini', 'gpt-4o', 'o1-preview', 'gpt-4-turbo', 'gpt-3.5-turbo',
+  // Claude/Anthropic
+  'claude-3-5-sonnet-20240620', 'claude-3-5-sonnet-20241022', 'claude-3-opus-20240229',
+  'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
+];
 
 export interface AiSettings {
   networkEnabled: boolean;
@@ -351,14 +358,83 @@ export function generateDryRunResponse(capability: string, inputs: any): any {
  * v1.2: Uses versioned prompts, proper token tracking
  */
 /**
- * v1.3: Validate model against allowlist
+ * Fetch available Claude models from Anthropic API
  */
-function validateModel(model: string): void {
-  if (!ALLOWED_MODELS.includes(model)) {
-    throw new Error(
-      `Model "${model}" is not allowed. Supported models: ${ALLOWED_MODELS.join(', ')}`
-    );
+async function fetchClaudeModels(apiKey: string): Promise<string[]> {
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/models', {
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch Claude models:', response.status);
+      return [];
+    }
+    
+    const data = await response.json();
+    return data.data?.map((m: any) => m.id) || [];
+  } catch (error) {
+    console.error('Error fetching Claude models:', error);
+    return [];
   }
+}
+
+/**
+ * v1.3: Validate model against allowlist with auto-recovery
+ */
+async function validateModel(model: string, config: AiProviderConfig): Promise<string> {
+  // If model is in allowlist, use it
+  if (ALLOWED_MODELS.includes(model)) {
+    return model;
+  }
+  
+  console.warn(`⚠️ Model "${model}" not in allowlist, attempting auto-recovery...`);
+  
+  // Auto-recovery for Claude models
+  if (config.provider === 'claude' && model.startsWith('claude')) {
+    console.log('🔍 Fetching latest Claude models from API...');
+    const availableModels = await fetchClaudeModels(config.apiKey);
+    
+    if (availableModels.length > 0) {
+      console.log(`📋 Found ${availableModels.length} Claude models:`, availableModels);
+      
+      // Try to find the best mid-tier model (priority order)
+      const preferredModels = [
+        'claude-3-5-sonnet-20240620',  // Best balance
+        'claude-3-5-sonnet-20241022',  // Newer
+        'claude-3-sonnet-20240229',    // Fallback
+      ];
+      
+      for (const preferred of preferredModels) {
+        if (availableModels.includes(preferred)) {
+          console.log(`✅ Auto-selected model: ${preferred}`);
+          
+          // Update settings with corrected model
+          const settings = await getAiSettings();
+          await saveAiSettings({ ...settings, claudeModel: preferred });
+          
+          return preferred;
+        }
+      }
+      
+      // If none of preferred found, use first Sonnet model
+      const sonnetModel = availableModels.find(m => m.includes('sonnet'));
+      if (sonnetModel) {
+        console.log(`✅ Auto-selected Sonnet model: ${sonnetModel}`);
+        const settings = await getAiSettings();
+        await saveAiSettings({ ...settings, claudeModel: sonnetModel });
+        return sonnetModel;
+      }
+    }
+  }
+  
+  // If auto-recovery fails, throw error with helpful message
+  throw new Error(
+    `Model "${model}" is not allowed. Supported models: ${ALLOWED_MODELS.join(', ')}`
+  );
 }
 
 /**
@@ -404,8 +480,9 @@ export async function callAiProvider(
     throw error;
   }
 
-  // v1.3: Validate model
-  validateModel(config.model);
+  // v1.3: Validate model with auto-recovery
+  const validatedModel = await validateModel(config.model, config);
+  config.model = validatedModel; // Use corrected model
 
   // Map capability to prompt kind
   const promptKind = mapCapabilityToPromptKind(capability);
@@ -419,8 +496,79 @@ export async function callAiProvider(
   // Redact PII before sending (allowlist job posting domains)
   const redactedPrompt = redactPII(renderedPrompt);
 
-  // Call OpenAI API (or other provider)
-  if (config.provider === 'openai') {
+  // Call AI provider based on configuration
+  if (config.provider === 'claude') {
+    // Claude/Anthropic API
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': config.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: config.model || 'claude-3-5-sonnet-20240620',
+        max_tokens: getMaxTokens(capability),
+        messages: [
+          {
+            role: 'user',
+            content: redactedPrompt,
+          },
+        ],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Claude API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        const error = createAiError('rate_limit', 'Claude rate limit exceeded', true);
+        throw error;
+      }
+      
+      const error = createAiError(
+        'network_error',
+        `Claude API error (${response.status}): ${errorText.slice(0, 200)}`,
+        false
+      );
+      throw error;
+    }
+
+    const data = await response.json();
+    let content = data.content[0].text;
+    const usage = data.usage;
+
+    // Strip markdown code blocks if present (Claude often wraps JSON in ```json ... ```)
+    content = content.trim();
+    if (content.startsWith('```')) {
+      // Remove opening ```json or ``` and closing ```
+      content = content.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    }
+
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (error) {
+      console.error('Failed to parse Claude response:', content.slice(0, 500));
+      const aiError = createAiError(
+        'invalid_json',
+        `Failed to parse Claude response as JSON: ${content.slice(0, 200)}`,
+        true
+      );
+      throw aiError;
+    }
+
+    return {
+      result,
+      usage: usage ? {
+        promptTokens: usage.input_tokens,
+        completionTokens: usage.output_tokens,
+        totalTokens: usage.input_tokens + usage.output_tokens,
+      } : undefined,
+    };
+  } else if (config.provider === 'openai') {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -520,6 +668,8 @@ function mapCapabilityToPromptKind(capability: string): any {
     'recruiter_profile': 'persona',
     'company_profile': 'persona',
     'compare_runs': 'compare',
+    'people': 'people',
+    'people-extract': 'people-extract',
   };
 
   return mapping[capability] || 'analyze';
@@ -570,6 +720,21 @@ function buildPromptVariables(capability: string, inputs: any): any {
         updated: JSON.stringify(inputs.updated || {}, null, 2),
       };
 
+    case 'people':
+      return {
+        jobDescription: inputs.jobDescription || '',
+        peopleProfiles: inputs.peopleProfiles || '',
+        recruiterUrl: inputs.recruiterUrl || '',
+        peerUrls: inputs.peerUrls || '',
+        skipLevelUrls: inputs.skipLevelUrls || '',
+        additionalContext: inputs.additionalContext || '',
+      };
+
+    case 'people-extract':
+      return {
+        pastedText: inputs.pastedText || ''
+      };
+
     default:
       return common;
   }
@@ -586,6 +751,8 @@ function getMaxTokens(capability: string): number {
     'resume_improve': 1000,
     'skill_path': 800,
     'compare_runs': 600,
+    'people-extract': 12000, // NEW: Large JSON response for extraction
+    'people': 8000,         // NEW: Analysis with multiple profiles
   };
 
   return limits[capability] || 1000;

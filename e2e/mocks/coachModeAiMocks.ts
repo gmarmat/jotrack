@@ -372,29 +372,10 @@ export async function setupCoachModeApiMocks(page: Page) {
   });
 
   // Mock save (coach state) - accepts both POST and GET
-  await page.route('**/api/coach/*/save**', async (route) => {
-    const method = route.request().method();
-    console.log(`  ✅ Mocked: save coach state (${method})`);
-    
-    if (method === 'POST') {
-      // Save request - just return success
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ success: true }),
-      });
-    } else {
-      // GET request - return empty state (will load from DB)
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ 
-          success: true,
-          state: {},
-        }),
-      });
-    }
-  });
+  // ✅ UN-MOCKED: /api/coach/*/save - Let tests use REAL database
+  // This enables actual persistence testing (P0-07)
+  // Discovery responses are saved to real DB and loaded on page refresh
+  // Removed mock to fix P0-07, P0-10, P0-12, P0-13 failures
 
   console.log('✅ All Coach Mode API mocks active!');
 }

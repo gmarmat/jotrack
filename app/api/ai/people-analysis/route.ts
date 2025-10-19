@@ -43,6 +43,27 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    
+    // Check if we have people in the new repository
+    if (jobId) {
+      try {
+        const { getPeopleForJob } = await import('@/db/peopleRepository');
+        const people = await getPeopleForJob(jobId);
+        
+        if (people.length === 0) {
+          return NextResponse.json(
+            { error: 'No people profiles added yet. Click "Manage People" to add interview team members.' },
+            { status: 400 }
+          );
+        }
+        
+        // TODO: Use people data instead of URLs for analysis
+        console.log(`📊 Found ${people.length} people for job ${jobId}`);
+      } catch (err) {
+        console.error('Error fetching people:', err);
+        // Continue with old URL-based logic as fallback
+      }
+    }
 
     // Check cache if jobId provided and not force refresh
     if (jobId && !forceRefresh) {
@@ -116,19 +137,100 @@ export async function POST(request: NextRequest) {
 
     // Real AI mode
     try {
-      // Call AI provider
+      // Fetch people from repository if jobId provided
+      let peopleContext = '';
+      if (jobId) {
+        try {
+          const { getPeopleForJob } = await import('@/db/peopleRepository');
+          const people = await getPeopleForJob(jobId);
+          
+          // Filter only optimized profiles
+          const optimizedPeople = people.filter((p: any) => p.isOptimized === 1);
+          
+          if (optimizedPeople.length === 0) {
+            return NextResponse.json(
+              { error: 'No optimized profiles found. Please optimize all profiles first in "Manage People".' },
+              { status: 400 }
+            );
+          }
+          
+          // Build context from OPTIMIZED data (stored in summary as JSON)
+          peopleContext = optimizedPeople.map((p: any, idx: number) => {
+            const extracted = p.summary ? JSON.parse(p.summary) : null;
+            
+            if (!extracted) {
+              return `Person ${idx + 1}: ${p.name} (Optimization failed - no data)`;
+            }
+            
+            const roleLabel = p.relType === 'recruiter' ? 'Recruiter' :
+                            p.relType === 'hiring_manager' ? 'Hiring Manager' :
+                            p.relType === 'peer' ? 'Peer/Panel' : 'Other';
+            
+            return `Person ${idx + 1} (${roleLabel}):
+Name: ${extracted.name}
+Current Role: ${extracted.currentTitle || 'Unknown'} at ${extracted.currentCompany || 'Unknown'}
+Location: ${extracted.location || 'Not specified'}
+
+About:
+${extracted.aboutMe || 'Not provided'}
+
+Work Experience:
+${extracted.workExperiences?.map((exp: any) => 
+  `- ${exp.title} at ${exp.company} (${exp.duration})
+   ${exp.description || ''}`
+).join('\n') || 'None listed'}
+
+Education:
+${extracted.education?.map((edu: any) => 
+  `- ${edu.degree} in ${edu.fieldOfStudy || 'N/A'} from ${edu.school} (${edu.year || 'N/A'})`
+).join('\n') || 'None listed'}
+
+Skills: ${extracted.skills?.join(', ') || 'None listed'}
+
+Following: 
+- Companies: ${extracted.following?.companies?.join(', ') || 'None'}
+- People: ${extracted.following?.people?.join(', ') || 'None'}
+
+Recommendations:
+${extracted.recommendations?.map((rec: any) => 
+  `- From ${rec.from}: "${rec.text}"`
+).join('\n') || 'None received'}
+---`;
+          }).join('\n\n');
+          
+          console.log(`📊 Using ${optimizedPeople.length} optimized profiles for AI analysis`);
+        } catch (err) {
+          console.error('Error fetching people for AI:', err);
+        }
+      }
+      
+      // Fall back to URL props if no people found
+      if (!peopleContext) {
+        peopleContext = `Recruiter: ${recruiterUrl || 'None'}
+Peers: ${peerUrls.join(', ') || 'None'}
+Skip Level: ${skipLevelUrls.join(', ') || 'None'}`;
+      }
+      
+      // Call AI provider with people context
+      console.log('🔍 Calling AI with people context:', {
+        jobId,
+        peopleContextLength: peopleContext.length,
+        promptKind: 'people',
+        version: 'v1'
+      });
+      
       const aiResult = await callAiProvider(
-        'people-analysis',
+        'people', // Fixed: prompt files are named people.v1.md, not people-analysis.v1.md
         {
           jobDescription,
-          recruiterUrl,
-          peerUrls: peerUrls.join(', '),
-          skipLevelUrls: skipLevelUrls.join(', '),
+          peopleProfiles: peopleContext,
           additionalContext
         },
         false, // dryRun
         'v1' // promptVersion
       );
+      
+      console.log('✅ AI call successful, parsing result...');
 
       // Parse and validate response
       const result = typeof aiResult.result === 'string' 
@@ -155,22 +257,32 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(result);
     } catch (error: any) {
-      console.error('People analysis error:', error);
+      console.error('❌ People analysis error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        fullError: error
+      });
       
-      // Return friendly error with fallback to local mode
+      // Return detailed error for debugging
       return NextResponse.json(
         { 
-          error: 'AI analysis failed. Please try again or check your API configuration.',
+          error: `AI analysis failed: ${error.message || 'Unknown error'}`,
           details: error.message,
+          errorType: error.name,
           fallback: 'local'
         },
         { status: 500 }
       );
     }
   } catch (error: any) {
-    console.error('People analysis request error:', error);
+    console.error('❌ People analysis request error:', {
+      message: error.message,
+      stack: error.stack,
+      fullError: error
+    });
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: `Request error: ${error.message || 'Internal server error'}` },
       { status: 500 }
     );
   }

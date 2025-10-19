@@ -46,7 +46,7 @@ export async function POST(
   try {
     const jobId = params.id;
     const body = await request.json();
-    const { name, title, linkedinUrl, relType } = body;
+    const { name, title, linkedinUrl, relType, manualText } = body;
     
     if (!name || !relType) {
       return NextResponse.json(
@@ -66,11 +66,17 @@ export async function POST(
     
     const personId = await savePersonAndLink(
       jobId,
-      { name, title, linkedinUrl },
+      { 
+        name, 
+        title, 
+        linkedinUrl, 
+        rawText: manualText, // Store pasted text as rawText (not summary)
+        isOptimized: 0 // Start as unoptimized
+      },
       relType
     );
     
-    console.log(`✅ Person saved with ID: ${personId}`);
+    console.log(`✅ Person saved with ID: ${personId}, rawText length: ${manualText?.length || 0}`);
     
     return NextResponse.json({
       success: true,

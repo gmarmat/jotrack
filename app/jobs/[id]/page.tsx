@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import HorizontalTimeline from '@/app/components/timeline/HorizontalTimeline';
+import CollapsibleHorizontalTimeline from '@/app/components/timeline/CollapsibleHorizontalTimeline';
 import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import HeaderMeta from '@/app/components/timeline/HeaderMeta';
 import JobHeader from '@/app/components/jobs/JobHeader';
@@ -520,7 +520,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       {/* Global Settings Button moved to HeaderMeta ribbon */}
       
       {/* Timeline - Full width above everything */}
-      <HorizontalTimeline 
+      <CollapsibleHorizontalTimeline 
         currentStatus={currentStatus} 
         onStatusClick={setSelectedStatus}
         currentStatusDelta={delta?.label}
@@ -973,7 +973,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
               <div className="mb-3 space-y-1.5">
                 {/* Resume Status */}
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div data-testid="resume-status" className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                   <CheckCircle2 
                     size={14} 
                     className={attachmentsList.some(a => a.kind === 'resume' && a.isActive) ? "text-green-500" : "text-gray-300"} 
@@ -987,7 +987,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
                 
                 {/* JD Status */}
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div data-testid="jd-status" className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                   <CheckCircle2 
                     size={14} 
                     className={attachmentsList.some(a => a.kind === 'jd' && a.isActive) ? "text-green-500" : "text-gray-300"} 
@@ -1056,21 +1056,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </span>
                 )}
               </div>
-              
-              {/* Progression Hint #2: Convert (per UI_DESIGN_SYSTEM dismissible pattern) */}
-              {showProgressHints && attachmentCount > 0 && stalenessInfo?.severity === 'no_variants' && (
-                <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
-                  <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">2</span>
-                  <span className="flex-1 text-gray-700 dark:text-gray-300">Click "Refresh Data" below</span>
-                  <button 
-                    onClick={dismissHints} 
-                    className="ml-auto hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
-                    title="Dismiss all hints"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
               
               {/* Explain: Our Approach (compact) */}
               <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">

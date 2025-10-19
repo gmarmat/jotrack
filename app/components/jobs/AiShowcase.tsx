@@ -59,6 +59,11 @@ export default function AiShowcase({
   onRefresh 
 }: AiShowcaseProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Separate analyzing states for each section (prevents all buttons animating together)
+  const [matchScoreAnalyzing, setMatchScoreAnalyzing] = useState(false);
+  const [companyIntelAnalyzing, setCompanyIntelAnalyzing] = useState(false);
+  
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['all']));
   const [preliminaryScore, setPreliminaryScore] = useState<number | null>(null);
   const [showPreliminary, setShowPreliminary] = useState(true);
@@ -306,8 +311,12 @@ export default function AiShowcase({
                 
                 {/* AI Analysis - Position 1 */}
                 <AnalyzeButton
-                  onAnalyze={() => handleRefresh(false, 'match')}
-                  isAnalyzing={isRefreshing}
+                  onAnalyze={async () => {
+                    setMatchScoreAnalyzing(true);
+                    await handleRefresh(false, 'match');
+                    setMatchScoreAnalyzing(false);
+                  }}
+                  isAnalyzing={matchScoreAnalyzing}
                   label="Analyze Match Score"
                   estimatedCost={0.02}
                   estimatedSeconds={20}
@@ -433,8 +442,12 @@ export default function AiShowcase({
 
                 {/* AI Analysis - Position 1 */}
                 <AnalyzeButton
-                  onAnalyze={() => handleRefresh(false, 'skills')}
-                  isAnalyzing={isRefreshing}
+                  onAnalyze={async () => {
+                    setMatchScoreAnalyzing(true);
+                    await handleRefresh(false, 'skills');
+                    setMatchScoreAnalyzing(false);
+                  }}
+                  isAnalyzing={matchScoreAnalyzing}
                   label="Analyze Skills Match"
                   estimatedCost={0.02}
                   estimatedSeconds={20}
@@ -483,9 +496,11 @@ export default function AiShowcase({
           isAiPowered={provider === 'remote'}
           metadata={aiData?.companyIntelMetadata}
           onAnalyze={async () => {
+            setCompanyIntelAnalyzing(true);
             await onRefresh?.('company');
+            setCompanyIntelAnalyzing(false);
           }}
-          isAnalyzing={isRefreshing}
+          isAnalyzing={companyIntelAnalyzing}
         />
 
         {/* Row 3: Company Ecosystem - Full Width */}

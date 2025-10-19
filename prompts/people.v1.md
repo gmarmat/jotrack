@@ -6,10 +6,10 @@ Analyze people involved in the hiring process (recruiter, hiring manager, team m
 ## Input Data
 You will receive:
 - **Job Description**: {{jobDescription}}
-- **Recruiter URL**: {{recruiterUrl}}
-- **Peer URLs**: {{peerUrls}}
-- **Skip-Level URLs**: {{skipLevelUrls}}
+- **People Profiles** (pasted LinkedIn text, cleaned): {{peopleProfiles}}
 - **Additional Context**: {{additionalContext}}
+
+Note: People profiles have been pre-extracted from LinkedIn. Focus on analyzing them for interview preparation.
 
 ## Required Output Format
 

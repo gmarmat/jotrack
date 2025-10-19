@@ -127,18 +127,19 @@ export default function AttachmentsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 overflow-y-auto p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-y-auto p-4"
       onClick={onClose}
       data-testid="attachments-modal"
     >
       <div
-        className="bg-white w-full max-w-2xl rounded-2xl shadow p-4 my-auto max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Attachments</h2>
+        {/* Header with gradient (per UI_DESIGN_SYSTEM) */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-200 dark:border-blue-800 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Attachments</h2>
           <button
-            className="rounded-md p-2 hover:bg-gray-100"
+            className="rounded-md p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             aria-label="Close attachments"
             onClick={onClose}
             data-testid="close-attachments"
@@ -147,43 +148,45 @@ export default function AttachmentsModal({
           </button>
         </div>
 
-        <div className="mt-3 flex items-center gap-3">
-          <input
-            ref={inputRef}
-            type="file"
-            aria-label="Upload attachment"
-            onChange={onUpload}
-            disabled={uploading}
-            className="block text-sm"
-            data-testid="upload-attachment-input"
-          />
-          {uploading && <span className="text-xs text-gray-500">Uploading…</span>}
-          {error && <span className="text-xs text-red-600" data-testid="upload-error">{error}</span>}
-          <button
-            className="ml-auto text-sm underline"
-            onClick={fetchList}
-            aria-label="Refresh attachments"
-            data-testid="refresh-attachments"
-          >
-            Refresh
-          </button>
-        </div>
+        {/* Content area with padding */}
+        <div className="p-6 overflow-y-auto">
+          <div className="flex items-center gap-3">
+            <input
+              ref={inputRef}
+              type="file"
+              aria-label="Upload attachment"
+              onChange={onUpload}
+              disabled={uploading}
+              className="block text-sm text-gray-900 dark:text-gray-100"
+              data-testid="upload-attachment-input"
+            />
+            {uploading && <span className="text-xs text-gray-500 dark:text-gray-400">Uploading…</span>}
+            {error && <span className="text-xs text-red-600 dark:text-red-400" data-testid="upload-error">{error}</span>}
+            <button
+              className="ml-auto text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+              onClick={fetchList}
+              aria-label="Refresh attachments"
+              data-testid="refresh-attachments"
+            >
+              Refresh
+            </button>
+          </div>
 
-        <div className="mt-4 grid gap-3">
-          {list === null && <div className="text-sm text-gray-500">Loading…</div>}
-          {list && list.length === 0 && (
-            <div className="text-sm text-gray-500">No attachments yet.</div>
-          )}
-          {list && list.length > 0 && (
-            <ul className="divide-y rounded-lg border" data-testid="attachments-list">
+          <div className="mt-4">
+            {list === null && <div className="text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+            {list && list.length === 0 && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">No attachments yet.</div>
+            )}
+            {list && list.length > 0 && (
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="attachments-list">
               {list.map((a) => {
                 const isImage = /\.(png|jpg|jpeg|webp)$/i.test(a.filename);
                 return (
-                  <li key={a.id} className="p-3 flex items-center gap-3" data-testid={`attachment-${a.id}`}>
-                    <div className="w-10 text-center">📎</div>
+                  <li key={a.id} className="p-3 flex items-center gap-3 bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid={`attachment-${a.id}`}>
+                    <div className="w-10 text-center text-2xl">📎</div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium">{a.filename}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{a.filename}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatBytes(Math.max(0, a.size))} • {relativeTime(a.created_at)}
                       </div>
                       {isImage && a.url && (
@@ -192,7 +195,7 @@ export default function AttachmentsModal({
                           <img
                             src={a.url}
                             alt={a.filename}
-                            className="max-h-32 rounded-md border"
+                            className="max-h-32 rounded-md border border-gray-200 dark:border-gray-700"
                             data-testid={`preview-${a.id}`}
                           />
                         </div>
@@ -202,7 +205,7 @@ export default function AttachmentsModal({
                       {a.url && (
                         <a
                           href={a.url}
-                          className="text-sm underline"
+                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
                           download
                           aria-label={`Download ${a.filename}`}
                           data-testid={`download-${a.id}`}
@@ -211,7 +214,7 @@ export default function AttachmentsModal({
                         </a>
                       )}
                       <button
-                        className="text-sm text-red-600 underline disabled:opacity-50"
+                        className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium transition-colors disabled:opacity-50"
                         onClick={() => onDelete(a.id)}
                         disabled={deletingId === a.id}
                         aria-label={`Delete ${a.filename}`}
@@ -227,11 +230,14 @@ export default function AttachmentsModal({
           )}
         </div>
 
-        {hasImages && (
-          <div className="mt-3 text-xs text-gray-500">
-            Tip: Images render inline; other files are available via Download.
-          </div>
-        )}
+          {hasImages && (
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="font-semibold text-blue-900 dark:text-blue-300">Tip:</span> Images render inline; other files are available via Download.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

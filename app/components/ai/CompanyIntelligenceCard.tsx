@@ -69,7 +69,7 @@ export default function CompanyIntelligenceCard({
   const [manualInputText, setManualInputText] = useState('');
   
   // Extract real sources from company data (from Tavily web search)
-  const sources: Source[] = companyData?.sources || [];
+  const sources: Source[] = (localCompany as any)?.sources || [];
 
   const isAnalyzing = externalIsAnalyzing || internalIsAnalyzing;
 
@@ -215,7 +215,7 @@ export default function CompanyIntelligenceCard({
             onClick={() => setShowSourcesModal(true)}
             className="flex items-center gap-1.5 px-2 py-1.5 border border-blue-300 dark:border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400"
             title="View Sources"
-            data-testid="sources-button"
+            data-testid="company-intel-sources-button"
           >
             <AlertCircle size={14} />
           </button>

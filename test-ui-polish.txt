@@ -1,0 +1,996 @@
+
+Running 26 tests using 1 worker
+
+(node:61742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   1 [chromium] › e2e/ui-polish-complete.spec.ts:475:7 › People Profiles - Real LinkedIn URLs › PP-L-FULL: Complete flow with 3 real LinkedIn profiles (1.0m)
+(node:62227) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62227) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   2 [chromium] › e2e/ui-polish-complete.spec.ts:561:7 › Regression - Existing App Features › R1: Match Score section still displays (7.4s)
+(node:62312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   3 [chromium] › e2e/ui-polish-complete.spec.ts:571:7 › Regression - Existing App Features › R2: Company Intelligence section still displays (7.4s)
+(node:62385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   4 [chromium] › e2e/ui-polish-complete.spec.ts:581:7 › Regression - Existing App Features › R3: Attachments modal still opens (1.0m)
+(node:62878) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62878) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   5 [chromium] › e2e/ui-polish-complete.spec.ts:599:7 › Regression - Existing App Features › R4: Theme toggle still works (1.0m)
+(node:63359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   6 [chromium] › e2e/ui-polish-complete.spec.ts:615:7 › Regression - Existing App Features › R5: Navigation back to job list works (1.0m)
+(node:63856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+============================================================
+📊 E2E TEST SUITE SUMMARY
+============================================================
+Strategy: E2E_STRATEGY_UI_POLISH_v2.md (Grade: A+)
+Total Planned Tests: 73
+Automated Tests: 19 (core features)
+Manual Tests Required: ~15 (visual, LinkedIn fetch)
+Regression Coverage: 100%
+============================================================
+  ✓   7 [chromium] › e2e/ui-polish-complete.spec.ts:636:7 › Summary › TEST SUMMARY: Print results (1ms)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   8 [chromium] › e2e/ui-polish-complete.spec.ts:47:7 › UI Polish - New Features › N1-A: Company Intelligence shows real source URLs (not example.com) (1.0m)
+(node:64344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘   9 [chromium] › e2e/ui-polish-complete.spec.ts:77:7 › UI Polish - New Features › N2-A: Resume status shows green checkmark when uploaded (7.4s)
+(node:64431) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64431) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  10 [chromium] › e2e/ui-polish-complete.spec.ts:96:7 › UI Polish - New Features › N3-A: JD status shows green checkmark when uploaded (7.4s)
+(node:64514) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64514) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+ℹ️  N5-A: No variants analyzed yet (expected for fresh job)
+  ✓  11 [chromium] › e2e/ui-polish-complete.spec.ts:111:7 › UI Polish - New Features › N5-A: Data Pipeline shows "Analyzed X ago" badge (2.5s)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  12 [chromium] › e2e/ui-polish-complete.spec.ts:130:7 › UI Polish - New Features › N6-A: Data Pipeline shows "Explain" section (7.4s)
+(node:64622) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64622) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+ℹ️  N8-A: Manual verification needed - create new job with no analysis
+  -  13 [chromium] › e2e/ui-polish-complete.spec.ts:145:7 › UI Polish - New Features › N8-A: Coach Mode shows locked state when no analysis
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  14 [chromium] › e2e/ui-polish-complete.spec.ts:159:7 › UI Polish - New Features › PP1: Manage People button visible with count badge (1.0m)
+(node:65118) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:65118) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  15 [chromium] › e2e/ui-polish-complete.spec.ts:182:7 › UI Polish - New Features › PP2: Manage People modal opens with cyan gradient (1.0m)
+(node:65614) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:65614) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  16 [chromium] › e2e/ui-polish-complete.spec.ts:211:7 › UI Polish - New Features › PP4: Add Person button creates new form (1.0m)
+(node:66099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  17 [chromium] › e2e/ui-polish-complete.spec.ts:239:7 › UI Polish - New Features › PP6-PP7: Can fill name and title fields (1.0m)
+(node:66603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  18 [chromium] › e2e/ui-polish-complete.spec.ts:266:7 › UI Polish - New Features › PP11: Role selector has 4 options (1.0m)
+(node:67085) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67085) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  19 [chromium] › e2e/ui-polish-complete.spec.ts:293:7 › UI Polish - New Features › PP14: Save people updates count badge (1.0m)
+(node:67565) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67565) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  20 [chromium] › e2e/ui-polish-complete.spec.ts:338:7 › UI Polish - New Features › CM1: Coach Mode entry card still appears (7.4s)
+(node:67648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  21 [chromium] › e2e/ui-polish-complete.spec.ts:349:7 › UI Polish - New Features › CM2: Can enter Coach Mode successfully (1.0m)
+(node:68138) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68138) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✅ Mocked: save coach state (GET)
+  ✅ Mocked: save coach state (GET)
+  ✅ Mocked: generate-discovery (POST)
+✅ CM3: Discovery questions generated (mocked)
+  ✓  22 [chromium] › e2e/ui-polish-complete.spec.ts:363:7 › UI Polish - New Features › CM3: Discovery questions generate with mocks (5.4s)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✅ Mocked: save coach state (GET)
+  ✅ Mocked: save coach state (GET)
+ℹ️  CM4: No wizard visible (might need to generate first)
+  -  23 [chromium] › e2e/ui-polish-complete.spec.ts:385:7 › UI Polish - New Features › CM4: Can type in discovery textarea
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+✅ E7: Page loaded in 75ms (< 2s)
+  ✓  24 [chromium] › e2e/ui-polish-complete.spec.ts:411:7 › UI Polish - New Features › E7: Page loads quickly (< 2s) with all new features (562ms)
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  25 [chromium] › e2e/ui-polish-complete.spec.ts:423:7 › UI Polish - New Features › E9: Dark mode - All new features visible (1.0m)
+(node:68704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🧹 Cleaning test state...
+✅ Cleared job people refs
+✅ Cleared coach state
+🎭 Setting up Coach Mode API mocks...
+✅ All Coach Mode API mocks active!
+  ✘  26 [chromium] › e2e/ui-polish-complete.spec.ts:443:7 › UI Polish - New Features › V1: 3-column header maintains proper height (1.0m)
+
+
+  1) [chromium] › e2e/ui-polish-complete.spec.ts:47:7 › UI Polish - New Features › N1-A: Company Intelligence shows real source URLs (not example.com) 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("Company Intelligence")')[22m
+
+
+      50 |     
+      51 |     // Scroll to Company Intelligence
+    > 52 |     await page.locator('h3:has-text("Company Intelligence")').scrollIntoViewIfNeeded();
+         |                                                               ^
+      53 |     await page.waitForTimeout(500);
+      54 |     
+      55 |     // Click "View Sources" button
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:52:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-46545-ource-URLs-not-example-com--chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-46545-ource-URLs-not-example-com--chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-46545-ource-URLs-not-example-com--chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-46545-ource-URLs-not-example-com--chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-46545-ource-URLs-not-example-com--chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e/ui-polish-complete.spec.ts:77:7 › UI Polish - New Features › N2-A: Resume status shows green checkmark when uploaded 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=/Resume:.*\\w+/').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=/Resume:.*\\w+/').first()[22m
+
+
+      81 |     // Find resume status indicator in Column 1
+      82 |     const resumeStatus = page.locator('text=/Resume:.*\\w+/').first();
+    > 83 |     await expect(resumeStatus).toBeVisible();
+         |                                ^
+      84 |     
+      85 |     // Check for green checkmark (CheckCircle2 with text-green-500 class)
+      86 |     const greenCheck = page.locator('.text-green-500').first();
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:83:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2bdfb-een-checkmark-when-uploaded-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2bdfb-een-checkmark-when-uploaded-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-2bdfb-een-checkmark-when-uploaded-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2bdfb-een-checkmark-when-uploaded-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-2bdfb-een-checkmark-when-uploaded-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › e2e/ui-polish-complete.spec.ts:96:7 › UI Polish - New Features › N3-A: JD status shows green checkmark when uploaded 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=/JD:.*\\w+/').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=/JD:.*\\w+/').first()[22m
+
+
+      100 |     // Find JD status indicator
+      101 |     const jdStatus = page.locator('text=/JD:.*\\w+/').first();
+    > 102 |     await expect(jdStatus).toBeVisible();
+          |                            ^
+      103 |     
+      104 |     // Should have filename (not "Not uploaded")
+      105 |     const statusText = await jdStatus.textContent();
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:102:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-97dee-een-checkmark-when-uploaded-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-97dee-een-checkmark-when-uploaded-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-97dee-een-checkmark-when-uploaded-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-97dee-een-checkmark-when-uploaded-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-97dee-een-checkmark-when-uploaded-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › e2e/ui-polish-complete.spec.ts:130:7 › UI Polish - New Features › N6-A: Data Pipeline shows "Explain" section 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('text=How data extraction works:')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('text=How data extraction works:')[22m
+
+
+      134 |     // Find explain section in Column 2
+      135 |     const explain = page.locator('text=How data extraction works:');
+    > 136 |     await expect(explain).toBeVisible();
+          |                           ^
+      137 |     
+      138 |     // Verify it explains the workflow
+      139 |     const workflow = page.locator('text=/uploads.*variants.*Ready/');
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:136:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-62aa8-eline-shows-Explain-section-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-62aa8-eline-shows-Explain-section-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-62aa8-eline-shows-Explain-section-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-62aa8-eline-shows-Explain-section-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-62aa8-eline-shows-Explain-section-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › e2e/ui-polish-complete.spec.ts:159:7 › UI Polish - New Features › PP1: Manage People button visible with count badge 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      162 |     
+      163 |     // Scroll to People Profiles
+    > 164 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      165 |     await page.waitForTimeout(500);
+      166 |     
+      167 |     // Find Manage People button
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:164:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-546bc-on-visible-with-count-badge-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-546bc-on-visible-with-count-badge-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-546bc-on-visible-with-count-badge-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-546bc-on-visible-with-count-badge-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-546bc-on-visible-with-count-badge-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › e2e/ui-polish-complete.spec.ts:182:7 › UI Polish - New Features › PP2: Manage People modal opens with cyan gradient 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      185 |     
+      186 |     // Scroll to People Profiles
+    > 187 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      188 |     await page.waitForTimeout(500);
+      189 |     
+      190 |     // Click Manage People
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:187:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2752c-al-opens-with-cyan-gradient-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2752c-al-opens-with-cyan-gradient-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-2752c-al-opens-with-cyan-gradient-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2752c-al-opens-with-cyan-gradient-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-2752c-al-opens-with-cyan-gradient-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › e2e/ui-polish-complete.spec.ts:211:7 › UI Polish - New Features › PP4: Add Person button creates new form 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      214 |     
+      215 |     // Open modal
+    > 216 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      217 |     await page.waitForTimeout(500);
+      218 |     await page.locator('button:has-text("Manage People")').click();
+      219 |     await page.waitForTimeout(1000);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:216:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-ae9f1-son-button-creates-new-form-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-ae9f1-son-button-creates-new-form-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-ae9f1-son-button-creates-new-form-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-ae9f1-son-button-creates-new-form-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-ae9f1-son-button-creates-new-form-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › e2e/ui-polish-complete.spec.ts:239:7 › UI Polish - New Features › PP6-PP7: Can fill name and title fields 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      242 |     
+      243 |     // Open modal and add person
+    > 244 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      245 |     await page.waitForTimeout(500);
+      246 |     await page.locator('button:has-text("Manage People")').click();
+      247 |     await page.waitForTimeout(1000);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:244:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-c8aa9--fill-name-and-title-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-c8aa9--fill-name-and-title-fields-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-c8aa9--fill-name-and-title-fields-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-c8aa9--fill-name-and-title-fields-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-c8aa9--fill-name-and-title-fields-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [chromium] › e2e/ui-polish-complete.spec.ts:266:7 › UI Polish - New Features › PP11: Role selector has 4 options 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      269 |     
+      270 |     // Open modal and add person
+    > 271 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      272 |     await page.waitForTimeout(500);
+      273 |     await page.locator('button:has-text("Manage People")').click();
+      274 |     await page.waitForTimeout(1000);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:271:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-9eb8b-Role-selector-has-4-options-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-9eb8b-Role-selector-has-4-options-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-9eb8b-Role-selector-has-4-options-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-9eb8b-Role-selector-has-4-options-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-9eb8b-Role-selector-has-4-options-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [chromium] › e2e/ui-polish-complete.spec.ts:293:7 › UI Polish - New Features › PP14: Save people updates count badge 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      296 |     
+      297 |     // Open modal
+    > 298 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      299 |     await page.waitForTimeout(500);
+      300 |     
+      301 |     const manageButton = page.locator('button:has-text("Manage People")');
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:298:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-e3d2c--people-updates-count-badge-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-e3d2c--people-updates-count-badge-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-e3d2c--people-updates-count-badge-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-e3d2c--people-updates-count-badge-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-e3d2c--people-updates-count-badge-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [chromium] › e2e/ui-polish-complete.spec.ts:338:7 › UI Polish - New Features › CM1: Coach Mode entry card still appears 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('coach-mode-entry-card')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('coach-mode-entry-card')[22m
+
+
+      342 |     // Find Coach Mode entry card
+      343 |     const entryCard = page.getByTestId('coach-mode-entry-card');
+    > 344 |     await expect(entryCard).toBeVisible();
+          |                             ^
+      345 |     
+      346 |     console.log('✅ CM1: Coach Mode entry card visible');
+      347 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:344:29
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-cbd73-de-entry-card-still-appears-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-cbd73-de-entry-card-still-appears-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-cbd73-de-entry-card-still-appears-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-cbd73-de-entry-card-still-appears-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-cbd73-de-entry-card-still-appears-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [chromium] › e2e/ui-polish-complete.spec.ts:349:7 › UI Polish - New Features › CM2: Can enter Coach Mode successfully 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('enter-coach-mode')[22m
+
+
+      353 |     // Click entry button
+      354 |     const entryButton = page.getByTestId('enter-coach-mode');
+    > 355 |     await entryButton.click();
+          |                       ^
+      356 |     
+      357 |     // Verify navigation
+      358 |     await expect(page).toHaveURL(/\/coach\//);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:355:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-5d9e2-ter-Coach-Mode-successfully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-5d9e2-ter-Coach-Mode-successfully-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-5d9e2-ter-Coach-Mode-successfully-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-5d9e2-ter-Coach-Mode-successfully-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-5d9e2-ter-Coach-Mode-successfully-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [chromium] › e2e/ui-polish-complete.spec.ts:423:7 › UI Polish - New Features › E9: Dark mode - All new features visible 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /theme|dark|light/i }).first()[22m
+
+
+      427 |     // Toggle to dark mode
+      428 |     const themeButton = page.getByRole('button', { name: /theme|dark|light/i }).first();
+    > 429 |     await themeButton.click();
+          |                       ^
+      430 |     await page.waitForTimeout(1000);
+      431 |     
+      432 |     // Verify document status visible in dark mode
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:429:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2a8b6----All-new-features-visible-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2a8b6----All-new-features-visible-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-2a8b6----All-new-features-visible-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-2a8b6----All-new-features-visible-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-2a8b6----All-new-features-visible-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [chromium] › e2e/ui-polish-complete.spec.ts:443:7 › UI Polish - New Features › V1: 3-column header maintains proper height 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.boundingBox: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('.grid.grid-cols-1.md\\:grid-cols-3').first()[22m
+
+
+      449 |     
+      450 |     // Measure height
+    > 451 |     const box = await grid.boundingBox();
+          |                            ^
+      452 |     
+      453 |     if (box) {
+      454 |       // Should be close to 280px (h-[280px])
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:451:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-8a909-der-maintains-proper-height-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-8a909-der-maintains-proper-height-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-UI-Poli-8a909-der-maintains-proper-height-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-UI-Poli-8a909-der-maintains-proper-height-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-UI-Poli-8a909-der-maintains-proper-height-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [chromium] › e2e/ui-polish-complete.spec.ts:475:7 › People Profiles - Real LinkedIn URLs › PP-L-FULL: Complete flow with 3 real LinkedIn profiles 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('h3:has-text("People Profiles")')[22m
+
+
+      478 |     
+      479 |     // Open modal
+    > 480 |     await page.locator('h3:has-text("People Profiles")').scrollIntoViewIfNeeded();
+          |                                                          ^
+      481 |     await page.waitForTimeout(500);
+      482 |     await page.locator('button:has-text("Manage People")').click();
+      483 |     await page.waitForTimeout(1000);
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:480:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-People--43963-th-3-real-LinkedIn-profiles-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-People--43963-th-3-real-LinkedIn-profiles-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-People--43963-th-3-real-LinkedIn-profiles-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-People--43963-th-3-real-LinkedIn-profiles-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-People--43963-th-3-real-LinkedIn-profiles-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [chromium] › e2e/ui-polish-complete.spec.ts:561:7 › Regression - Existing App Features › R1: Match Score section still displays 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('h3:has-text("Match Score")').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('h3:has-text("Match Score")').first()[22m
+
+
+      564 |     
+      565 |     const matchScore = page.locator('h3:has-text("Match Score")').first();
+    > 566 |     await expect(matchScore).toBeVisible();
+          |                              ^
+      567 |     
+      568 |     console.log('✅ R1: Match Score section intact');
+      569 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:566:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-ea1e2-core-section-still-displays-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-ea1e2-core-section-still-displays-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-Regress-ea1e2-core-section-still-displays-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-ea1e2-core-section-still-displays-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-Regress-ea1e2-core-section-still-displays-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [chromium] › e2e/ui-polish-complete.spec.ts:571:7 › Regression - Existing App Features › R2: Company Intelligence section still displays 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('h3:has-text("Company Intelligence")')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('h3:has-text("Company Intelligence")')[22m
+
+
+      574 |     
+      575 |     const companyIntel = page.locator('h3:has-text("Company Intelligence")');
+    > 576 |     await expect(companyIntel).toBeVisible();
+          |                                ^
+      577 |     
+      578 |     console.log('✅ R2: Company Intelligence section intact');
+      579 |   });
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:576:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-494a9-ence-section-still-displays-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-494a9-ence-section-still-displays-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-Regress-494a9-ence-section-still-displays-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-494a9-ence-section-still-displays-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-Regress-494a9-ence-section-still-displays-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [chromium] › e2e/ui-polish-complete.spec.ts:581:7 › Regression - Existing App Features › R3: Attachments modal still opens 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('attachments-button-header')[22m
+
+
+      585 |     // Click attachments button
+      586 |     const attachButton = page.getByTestId('attachments-button-header');
+    > 587 |     await attachButton.click();
+          |                        ^
+      588 |     await page.waitForTimeout(1000);
+      589 |     
+      590 |     // Verify modal opened (check for upload dropzone or file list)
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:587:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-f4304-tachments-modal-still-opens-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-f4304-tachments-modal-still-opens-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-Regress-f4304-tachments-modal-still-opens-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-f4304-tachments-modal-still-opens-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-Regress-f4304-tachments-modal-still-opens-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [chromium] › e2e/ui-polish-complete.spec.ts:599:7 › Regression - Existing App Features › R4: Theme toggle still works 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: /theme|dark|light/i }).first()[22m
+
+
+      602 |     
+      603 |     const themeButton = page.getByRole('button', { name: /theme|dark|light/i }).first();
+    > 604 |     await themeButton.click();
+          |                       ^
+      605 |     await page.waitForTimeout(500);
+      606 |     
+      607 |     // Check if dark class applied to html
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:604:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-57265-R4-Theme-toggle-still-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-57265-R4-Theme-toggle-still-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-Regress-57265-R4-Theme-toggle-still-works-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-57265-R4-Theme-toggle-still-works-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-Regress-57265-R4-Theme-toggle-still-works-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [chromium] › e2e/ui-polish-complete.spec.ts:615:7 › Regression - Existing App Features › R5: Navigation back to job list works 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('a[href="/"]').first()[22m
+
+
+      619 |     // Find back button or home link
+      620 |     const backButton = page.locator('a[href="/"]').first();
+    > 621 |     await backButton.click();
+          |                      ^
+      622 |     await page.waitForTimeout(1000);
+      623 |     
+      624 |     // Verify on home page
+        at /Users/guaravmarmat/Downloads/ai-projects/jotrack/e2e/ui-polish-complete.spec.ts:621:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-424fd-tion-back-to-job-list-works-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-424fd-tion-back-to-job-list-works-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/ui-polish-complete-Regress-424fd-tion-back-to-job-list-works-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/ui-polish-complete-Regress-424fd-tion-back-to-job-list-works-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/ui-polish-complete-Regress-424fd-tion-back-to-job-list-works-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20 failed
+    [chromium] › e2e/ui-polish-complete.spec.ts:47:7 › UI Polish - New Features › N1-A: Company Intelligence shows real source URLs (not example.com) 
+    [chromium] › e2e/ui-polish-complete.spec.ts:77:7 › UI Polish - New Features › N2-A: Resume status shows green checkmark when uploaded 
+    [chromium] › e2e/ui-polish-complete.spec.ts:96:7 › UI Polish - New Features › N3-A: JD status shows green checkmark when uploaded 
+    [chromium] › e2e/ui-polish-complete.spec.ts:130:7 › UI Polish - New Features › N6-A: Data Pipeline shows "Explain" section 
+    [chromium] › e2e/ui-polish-complete.spec.ts:159:7 › UI Polish - New Features › PP1: Manage People button visible with count badge 
+    [chromium] › e2e/ui-polish-complete.spec.ts:182:7 › UI Polish - New Features › PP2: Manage People modal opens with cyan gradient 
+    [chromium] › e2e/ui-polish-complete.spec.ts:211:7 › UI Polish - New Features › PP4: Add Person button creates new form 
+    [chromium] › e2e/ui-polish-complete.spec.ts:239:7 › UI Polish - New Features › PP6-PP7: Can fill name and title fields 
+    [chromium] › e2e/ui-polish-complete.spec.ts:266:7 › UI Polish - New Features › PP11: Role selector has 4 options 
+    [chromium] › e2e/ui-polish-complete.spec.ts:293:7 › UI Polish - New Features › PP14: Save people updates count badge 
+    [chromium] › e2e/ui-polish-complete.spec.ts:338:7 › UI Polish - New Features › CM1: Coach Mode entry card still appears 
+    [chromium] › e2e/ui-polish-complete.spec.ts:349:7 › UI Polish - New Features › CM2: Can enter Coach Mode successfully 
+    [chromium] › e2e/ui-polish-complete.spec.ts:423:7 › UI Polish - New Features › E9: Dark mode - All new features visible 
+    [chromium] › e2e/ui-polish-complete.spec.ts:443:7 › UI Polish - New Features › V1: 3-column header maintains proper height 
+    [chromium] › e2e/ui-polish-complete.spec.ts:475:7 › People Profiles - Real LinkedIn URLs › PP-L-FULL: Complete flow with 3 real LinkedIn profiles 
+    [chromium] › e2e/ui-polish-complete.spec.ts:561:7 › Regression - Existing App Features › R1: Match Score section still displays 
+    [chromium] › e2e/ui-polish-complete.spec.ts:571:7 › Regression - Existing App Features › R2: Company Intelligence section still displays 
+    [chromium] › e2e/ui-polish-complete.spec.ts:581:7 › Regression - Existing App Features › R3: Attachments modal still opens 
+    [chromium] › e2e/ui-polish-complete.spec.ts:599:7 › Regression - Existing App Features › R4: Theme toggle still works 
+    [chromium] › e2e/ui-polish-complete.spec.ts:615:7 › Regression - Existing App Features › R5: Navigation back to job list works 
+  2 skipped
+  4 passed (15.4m)

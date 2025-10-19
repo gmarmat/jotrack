@@ -1,13 +1,13 @@
 'use client';
 
-import { Users, User, ExternalLink, AlertCircle, UserPlus } from 'lucide-react';
+import { Users, User, ExternalLink, AlertCircle, UserPlus, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import PromptViewer from './PromptViewer';
 import { LoadingShimmerCard } from '../LoadingShimmer';
 import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
 import AnalysisExplanation from '../ui/AnalysisExplanation';
-import ManagePeopleModal from '../people/ManagePeopleModal';
+import CleanPeopleModal from '../people/CleanPeopleModal';
 
 interface PersonProfile {
   name: string;
@@ -49,23 +49,37 @@ export default function PeopleProfilesCard({
   const [localInsights, setLocalInsights] = useState(overallInsights);
   const [error, setError] = useState<string | null>(null);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
-  const [showManagePeopleModal, setShowManagePeopleModal] = useState(false);
+  const [showCleanPeopleModal, setShowCleanPeopleModal] = useState(false);
   const [peopleCount, setPeopleCount] = useState(0);
+  const [rawPeople, setRawPeople] = useState<any[]>([]);
+  const [unoptimizedCount, setUnoptimizedCount] = useState(0);
   
-  // Load people count on mount
+  // Load people count and raw data on mount
   useEffect(() => {
-    loadPeopleCount();
+    loadPeopleData();
   }, [jobId]);
   
-  const loadPeopleCount = async () => {
+  const loadPeopleData = async () => {
     try {
       const res = await fetch(`/api/jobs/${jobId}/people/manage`);
       const data = await res.json();
       if (data.success) {
-        setPeopleCount(data.people?.length || 0);
+        const people = data.people || [];
+        setPeopleCount(people.length);
+        setRawPeople(people);
+        
+        // Count unoptimized profiles
+        const unoptimized = people.filter((p: any) => !p.isOptimized || p.isOptimized === 0).length;
+        setUnoptimizedCount(unoptimized);
+        
+        console.log('📊 Loaded people data:', {
+          total: people.length,
+          optimized: people.length - unoptimized,
+          unoptimized
+        });
       }
     } catch (err) {
-      console.error('Failed to load people count:', err);
+      console.error('Failed to load people data:', err);
     }
   };
   
@@ -134,7 +148,26 @@ export default function PeopleProfilesCard({
     ]
   };
 
-  const displayProfiles = localProfiles || profiles || defaultProfiles;
+  // Priority sorting: recruiter > hiring_manager > peer > other
+  const rolePriority = {
+    'recruiter': 1,
+    'hiring_manager': 2,
+    'peer': 3,
+    'other': 4
+  };
+  
+  const allProfiles = localProfiles || profiles || defaultProfiles;
+  const sortedProfiles = [...allProfiles].sort((a, b) => {
+    const aPriority = rolePriority[a.role?.toLowerCase().replace(/\s/g, '_') as keyof typeof rolePriority] || 99;
+    const bPriority = rolePriority[b.role?.toLowerCase().replace(/\s/g, '_') as keyof typeof rolePriority] || 99;
+    return aPriority - bPriority;
+  });
+  
+  // Limit to 4 profiles (2x2 grid) for display
+  const displayProfiles = sortedProfiles.slice(0, 4);
+  const hasMoreProfiles = sortedProfiles.length > 4;
+  const totalProfiles = sortedProfiles.length;
+  
   const displayInsights = localInsights || overallInsights || defaultInsights;
 
   const handleAnalyze = async () => {
@@ -144,10 +177,31 @@ export default function PeopleProfilesCard({
       return;
     }
     
+    // Check if any people have been added
+    const response = await fetch(`/api/jobs/${jobId}/people/manage`);
+    if (response.ok) {
+      const data = await response.json();
+      if (!data.people || data.people.length === 0) {
+        setError('No people profiles added yet. Click "Manage People" to add interview team members first.');
+        return;
+      }
+      console.log(`📊 Found ${data.people.length} people for analysis`);
+      
+      // NEW: Check if all profiles are optimized
+      const unoptimized = data.people.filter((p: any) => !p.isOptimized || p.isOptimized === 0).length;
+      if (unoptimized > 0) {
+        setError(
+          `${unoptimized} profile${unoptimized > 1 ? 's are' : ' is'} not optimized yet. ` +
+          `Click "Manage People" and click the Zap (⚡) icon to optimize all profiles before running analysis.`
+        );
+        return;
+      }
+    }
+    
     setIsAnalyzing(true);
     setError(null);
     try {
-      const response = await fetch('/api/ai/people-analysis', {
+      const apiResponse = await fetch('/api/ai/people-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,17 +214,27 @@ export default function PeopleProfilesCard({
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+      if (!apiResponse.ok) {
+        const errorData = await apiResponse.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ API Error Response:', {
+          status: apiResponse.status,
+          statusText: apiResponse.statusText,
+          error: errorData
+        });
+        throw new Error(errorData.error || `Analysis failed (${apiResponse.status})`);
       }
 
-      const data = await response.json();
+      const data = await apiResponse.json();
+      console.log('✅ AI Analysis Success:', data);
       setLocalProfiles(data.profiles);
       setLocalInsights(data.overallInsights);
     } catch (err: any) {
-      console.error('People analysis error:', err);
-      setError(err.message || 'Analysis failed');
+      console.error('❌ People analysis error:', {
+        message: err.message,
+        stack: err.stack,
+        fullError: err
+      });
+      setError(`AI analysis failed: ${err.message || 'Unknown error'}. Check console for details.`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -197,7 +261,7 @@ export default function PeopleProfilesCard({
           
           {/* Manage People - Position 0 (NEW) */}
           <button
-            onClick={() => setShowManagePeopleModal(true)}
+            onClick={() => setShowCleanPeopleModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-300 dark:border-cyan-600 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 font-medium"
             title="Add or remove people from interview team"
           >
@@ -251,6 +315,60 @@ export default function PeopleProfilesCard({
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">
           <strong>Error:</strong> {error}
+        </div>
+      )}
+      
+      {/* Raw Profiles (before AI analysis) */}
+      {rawPeople.length > 0 && !localProfiles && !profiles && !isAnalyzing && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              {rawPeople.length} Team {rawPeople.length === 1 ? 'Member' : 'Members'} Added
+            </h4>
+            
+            {unoptimizedCount === 0 ? (
+              <span className="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                <CheckCircle2 size={12} />
+                All Optimized - Ready for Analysis
+              </span>
+            ) : (
+              <span className="text-xs bg-amber-600 text-white px-2 py-1 rounded flex items-center gap-1">
+                <AlertCircle size={12} />
+                {unoptimizedCount} Need Optimization
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+            {rawPeople.slice(0, 4).map((person, idx) => (
+              <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                <Users size={16} className="text-cyan-600" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">{person.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{person.title || 'No title'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {unoptimizedCount > 0 ? (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                ⚠️ <strong>{unoptimizedCount} profile{unoptimizedCount > 1 ? 's need' : ' needs'} optimization.</strong> 
+                {' '}Click "Manage People" and click the Zap (⚡) icon next to each profile to optimize before running analysis.
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-green-700 dark:text-green-300">
+                  ✅ <strong>All profiles optimized!</strong> Click "Analyze People Profiles" above to:
+                </p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside ml-2 space-y-1">
+                  <li>Extract background & expertise from optimized data</li>
+                  <li>Identify communication styles</li>
+                  <li>Generate interview preparation tips</li>
+                  <li>Assess team dynamics & cultural fit</li>
+                </ul>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -328,6 +446,19 @@ export default function PeopleProfilesCard({
           );
         })}
       </div>
+      
+      {/* "View all X profiles" link if more than 4 */}
+      {hasMoreProfiles && (
+        <div className="text-center mb-6">
+          <button
+            onClick={() => setShowCleanPeopleModal(true)}
+            className="text-sm text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 font-medium inline-flex items-center gap-1"
+          >
+            <Users size={14} />
+            View all {totalProfiles} profiles
+          </button>
+        </div>
+      )}
 
       {/* Overall Insights */}
       {displayInsights && (
@@ -400,13 +531,13 @@ export default function PeopleProfilesCard({
       </>)}
       
       {/* Manage People Modal */}
-      <ManagePeopleModal
+      <CleanPeopleModal
         jobId={jobId}
-        isOpen={showManagePeopleModal}
-        onClose={() => setShowManagePeopleModal(false)}
+        isOpen={showCleanPeopleModal}
+        onClose={() => setShowCleanPeopleModal(false)}
         onSave={() => {
-          loadPeopleCount(); // Refresh count
-          setShowManagePeopleModal(false);
+          loadPeopleData(); // Refresh people data (count + raw profiles)
+          setShowCleanPeopleModal(false);
         }}
       />
       

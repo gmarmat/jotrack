@@ -83,13 +83,17 @@ export async function upsertPeopleProfile(data: NewPeopleProfile): Promise<Peopl
   if (existing.length > 0) {
     await db
       .update(peopleProfiles)
-      .set({ ...data, updatedAt: Date.now() })
+      .set({ ...data, updatedAt: Math.floor(Date.now() / 1000) })
       .where(eq(peopleProfiles.id, data.id));
-    return { ...existing[0], ...data, updatedAt: Date.now() };
+    return { ...existing[0], ...data, updatedAt: Math.floor(Date.now() / 1000) };
   }
 
-  await db.insert(peopleProfiles).values(data);
-  return data as PeopleProfile;
+  // Insert with updatedAt (required field)
+  await db.insert(peopleProfiles).values({
+    ...data,
+    updatedAt: Math.floor(Date.now() / 1000),
+  });
+  return { ...data, updatedAt: Math.floor(Date.now() / 1000) } as PeopleProfile;
 }
 
 export async function getPeopleByLinkedIn(linkedinUrl: string): Promise<PeopleProfile | null> {

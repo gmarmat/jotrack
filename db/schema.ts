@@ -110,7 +110,10 @@ export const peopleProfiles = sqliteTable('people_profiles', {
   location: text('location'),
   tenureMonths: integer('tenure_months', { mode: 'number' }),
   techDepth: text('tech_depth'), // e.g., "high", "medium", "low"
-  summary: text('summary'),
+  summary: text('summary'), // NOW: Stores cleaned/extracted JSON
+  rawText: text('raw_text'), // NEW: Original pasted text
+  optimizedAt: integer('optimized_at', { mode: 'number' }), // NEW: Timestamp
+  isOptimized: integer('is_optimized', { mode: 'number' }).default(0), // NEW: Boolean flag
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
 });
 
