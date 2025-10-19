@@ -245,10 +245,22 @@ Skip Level: ${skipLevelUrls.join(', ') || 'None'}`;
       // Save to DB cache if jobId provided
       if (jobId) {
         try {
+          const now = Math.floor(Date.now() / 1000); // Unix timestamp
+          
+          // Save to people_analyses cache table
           sqlite.prepare(`
             INSERT OR REPLACE INTO people_analyses (job_id, result_json, created_at)
             VALUES (?, ?, ?)
           `).run(jobId, JSON.stringify(result), Date.now());
+          
+          // Update jobs table with analysis timestamp
+          sqlite.prepare(`
+            UPDATE jobs 
+            SET people_profiles_analyzed_at = ?
+            WHERE id = ?
+          `).run(now, jobId);
+          
+          console.log(`✅ People analysis saved and timestamp updated for job ${jobId}`);
         } catch (error) {
           console.error('Failed to cache people analysis:', error);
           // Continue anyway - caching failure shouldn't block response

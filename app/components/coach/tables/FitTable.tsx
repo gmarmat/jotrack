@@ -29,15 +29,27 @@ interface FitTableProps {
   onRefresh?: () => void;
   refreshing?: boolean;
   rawJson?: any; // v1.3: Optional raw JSON for debugging
+  analyzedAt?: number; // Timestamp when analysis was performed
 }
 
-export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson }: FitTableProps) {
+export default function FitTable({ overall, threshold, breakdown, sources, dryRun, onRefresh, refreshing = false, rawJson, analyzedAt }: FitTableProps) {
   const [allExpanded, setAllExpanded] = useState(false); // v2.3: Expand All state
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showSourcesModal, setShowSourcesModal] = useState(false);
 
   const scoreLevel = overall >= threshold ? 'Great' : overall >= threshold * 0.8 ? 'Medium' : 'Low';
   const scoreColor = overall >= threshold ? 'text-green-600' : overall >= threshold * 0.8 ? 'text-yellow-600' : 'text-red-600';
+
+  // Format analyzed time
+  const formatAnalyzedTime = (timestamp: number): string => {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - timestamp;
+    
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
 
   const topContributors = [...breakdown]
     .sort((a, b) => (b.weight * b.score) - (a.weight * a.score))
@@ -106,8 +118,15 @@ export default function FitTable({ overall, threshold, breakdown, sources, dryRu
       <div className="flex items-start justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Match Matrix</h3>
         
-        {/* Right: Actions - Standard order: Analyze -> Prompt -> Sources */}
+        {/* Right: Actions - Standard order: Analyzed badge -> Analyze -> Prompt -> Sources */}
         <div className="flex items-center gap-2">
+          {/* Analyzed badge - right before buttons */}
+          {analyzedAt && !dryRun && (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+              Analyzed {formatAnalyzedTime(analyzedAt)}
+            </span>
+          )}
+
           {/* AI Analysis - Position 1 */}
           {onRefresh && (
             <AnalyzeButton

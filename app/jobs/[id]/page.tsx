@@ -175,7 +175,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               gaps: data.matchScoreData?.matchScore?.topGaps || prev?.gaps,
               skills: mappedSkills.length > 0 ? mappedSkills : prev?.skills,
               matchScoreMetadata: data.matchScoreMetadata || prev?.matchScoreMetadata,
-              provider: (data.matchScoreData || data.companyEcosystem || data.companyIntelligence) ? 'remote' : (prev?.provider || 'local'),
+              // People Profiles (from cache)
+              peopleProfiles: data.peopleProfiles?.profiles || prev?.peopleProfiles,
+              peopleInsights: data.peopleProfiles?.insights || prev?.peopleInsights,
+              peopleProfilesMetadata: data.peopleProfilesMetadata || prev?.peopleProfilesMetadata,
+              provider: (data.matchScoreData || data.companyEcosystem || data.companyIntelligence || data.peopleProfiles) ? 'remote' : (prev?.provider || 'local'),
             }));
           }
         }

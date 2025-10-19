@@ -533,6 +533,7 @@ export default function AiShowcase({
           sources={aiData?.sources || []}
           dryRun={provider === 'local'}
           onRefresh={onRefresh}
+          analyzedAt={aiData?.matchScoreMetadata?.analyzedAt}
         />
 
         {/* Row 5: People Profiles - Full Width */}
@@ -545,6 +546,7 @@ export default function AiShowcase({
           profiles={aiData?.peopleProfiles || null}
           overallInsights={aiData?.peopleInsights}
           isAiPowered={provider === 'remote'}
+          analyzedAt={aiData?.peopleProfilesMetadata?.analyzedAt}
         />
 
         {/* Sources */}

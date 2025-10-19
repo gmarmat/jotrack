@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db/client';
+import { db, sqlite } from '@/db/client';
 import { jobs, attachments } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { extractFileContent } from '@/lib/fileContent';
@@ -197,6 +197,55 @@ export async function GET(
       }
     }
 
+    // Load people profiles analysis data if available
+    let peopleProfiles = null;
+    let peopleProfilesMetadata = null;
+    if (jobData.peopleProfilesAnalyzedAt) {
+      try {
+        const cached = sqlite.prepare(`
+          SELECT result_json, created_at 
+          FROM people_analyses 
+          WHERE job_id = ?
+          ORDER BY created_at DESC 
+          LIMIT 1
+        `).get(jobId) as any;
+        
+        if (cached && cached.result_json) {
+          peopleProfiles = JSON.parse(cached.result_json);
+          
+          // Calculate age
+          const nowSeconds = Math.floor(Date.now() / 1000);
+          const ageSeconds = nowSeconds - jobData.peopleProfilesAnalyzedAt;
+          const ageHours = Math.floor(ageSeconds / 3600);
+          const ageDays = Math.floor(ageHours / 24);
+          
+          let ageStr = '';
+          if (ageDays > 0) {
+            ageStr = `${ageDays} day${ageDays > 1 ? 's' : ''} ago`;
+          } else if (ageHours > 0) {
+            ageStr = `${ageHours} hour${ageHours > 1 ? 's' : ''} ago`;
+          } else {
+            const ageMinutes = Math.floor(ageSeconds / 60);
+            ageStr = ageMinutes > 0 ? `${ageMinutes} min ago` : 'just now';
+          }
+          
+          peopleProfilesMetadata = {
+            cached: true,
+            analyzedAt: jobData.peopleProfilesAnalyzedAt,
+            cacheAge: ageStr,
+            profileCount: peopleProfiles?.profiles?.length || 0
+          };
+          
+          console.log(`✅ Loaded people profiles cache for job ${jobId}:`, {
+            profileCount: peopleProfilesMetadata.profileCount,
+            cacheAge: ageStr
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load people profiles cache:', error);
+      }
+    }
+
     // Build response
     const response = {
       jobId,
@@ -219,6 +268,8 @@ export async function GET(
       companyIntelMetadata,
       matchScoreData,
       matchScoreMetadata,
+      peopleProfiles,
+      peopleProfilesMetadata,
     };
 
     return NextResponse.json(response);

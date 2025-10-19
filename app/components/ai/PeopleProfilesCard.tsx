@@ -26,6 +26,7 @@ interface PeopleProfilesCardProps {
   peerUrls?: string[];
   skipLevelUrls?: string[];
   profiles: PersonProfile[] | null;
+  analyzedAt?: number; // Timestamp when analysis was performed
   overallInsights?: {
     teamDynamics: string;
     culturalFit: string;
@@ -42,12 +43,24 @@ export default function PeopleProfilesCard({
   skipLevelUrls = [],
   profiles,
   overallInsights,
-  isAiPowered 
+  isAiPowered,
+  analyzedAt 
 }: PeopleProfilesCardProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [localProfiles, setLocalProfiles] = useState<PersonProfile[] | null>(profiles);
   const [localInsights, setLocalInsights] = useState(overallInsights);
   const [error, setError] = useState<string | null>(null);
+
+  // Format analyzed time
+  const formatAnalyzedTime = (timestamp: number): string => {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - timestamp;
+    
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
   const [showSourcesModal, setShowSourcesModal] = useState(false);
   const [showCleanPeopleModal, setShowCleanPeopleModal] = useState(false);
   const [peopleCount, setPeopleCount] = useState(0);
@@ -250,12 +263,16 @@ export default function PeopleProfilesCard({
         </h3>
         
         <div className="flex items-center gap-2">
-          {/* Sample Data badge - right before buttons (no analyzed data yet) */}
-          {!isAiPowered && (
+          {/* Analyzed badge or Sample Data badge - right before buttons */}
+          {analyzedAt && isAiPowered ? (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+              Analyzed {formatAnalyzedTime(analyzedAt)}
+            </span>
+          ) : !isAiPowered ? (
             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>
-          )}
+          ) : null}
 
           {/* Standard button order: Manage -> Analyze -> Prompt -> Sources */}
           
