@@ -670,6 +670,9 @@ function mapCapabilityToPromptKind(capability: string): any {
     'compare_runs': 'compare',
     'people': 'people',
     'people-extract': 'people-extract',
+    'interview-questions-recruiter': 'interview-questions-recruiter',
+    'interview-questions-hiring-manager': 'interview-questions-hiring-manager',
+    'interview-questions-peer': 'interview-questions-peer',
   };
 
   return mapping[capability] || 'analyze';
@@ -735,6 +738,29 @@ function buildPromptVariables(capability: string, inputs: any): any {
         pastedText: inputs.pastedText || ''
       };
 
+    case 'interview-questions-recruiter':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        jobTitle: inputs.jobTitle || 'Unknown Role',
+        jdSummary: inputs.jdSummary || ''
+      };
+
+    case 'interview-questions-hiring-manager':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        jobTitle: inputs.jobTitle || 'Unknown Role',
+        jobDescription: inputs.jobDescription || '',
+        resumeSummary: inputs.resumeSummary || 'TBD'
+      };
+
+    case 'interview-questions-peer':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        jobTitle: inputs.jobTitle || 'Unknown Role',
+        jobDescription: inputs.jobDescription || '',
+        technicalSkills: inputs.technicalSkills || 'General software engineering'
+      };
+
     default:
       return common;
   }
@@ -751,8 +777,11 @@ function getMaxTokens(capability: string): number {
     'resume_improve': 1000,
     'skill_path': 800,
     'compare_runs': 600,
-    'people-extract': 12000, // NEW: Large JSON response for extraction
-    'people': 8000,         // NEW: Analysis with multiple profiles
+    'people-extract': 12000, // Large JSON response for extraction
+    'people': 8000,         // Analysis with multiple profiles
+    'interview-questions-recruiter': 2000,      // 10 questions with tips
+    'interview-questions-hiring-manager': 3000, // 15 questions with STAR guidance
+    'interview-questions-peer': 3000,          // 12 questions with keyPoints
   };
 
   return limits[capability] || 1000;

@@ -10,6 +10,7 @@ import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
 import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
+import InterviewQuestionsCard from '@/app/components/interview/InterviewQuestionsCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
@@ -1195,6 +1196,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           onRefresh={handleRefreshAI}
         />
         </div>
+
+        {/* 3.5. Interview Questions - Only show after "Applied" status */}
+        {currentStatus !== 'ON_RADAR' && (
+          <InterviewQuestionsCard
+            jobId={job.id}
+            companyName={job.company}
+            roleTitle={job.title}
+          />
+        )}
 
         {/* 4. Timeline Detail (conditional) */}
         {selectedStatus && (
