@@ -3,21 +3,52 @@
 import { useState, useEffect } from 'react';
 import { JobStatus, ORDERED_STATUSES, STATUS_LABELS } from "@/lib/status";
 import { JOURNEY_MAPPING } from "@/lib/statusJourney";
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink, FileText, Settings, Moon, Sun, User } from 'lucide-react';
+import { calculateDelta, formatDateTime } from "@/lib/timeDelta";
+import { useTheme } from "next-themes";
+import GlobalSettingsModal from "../GlobalSettingsModal";
 
 interface CollapsibleHorizontalTimelineProps {
   currentStatus: JobStatus;
   onStatusClick?: (status: JobStatus) => void;
   currentStatusDelta?: string; // e.g., "6d"
+  // Header props
+  postingUrl?: string | null;
+  createdAt?: number;
+  updatedAt?: number;
+  currentStatusEnteredAt?: number;
+  jdAttachmentId?: string | null;
+  onViewJd?: () => void;
 }
 
 export default function CollapsibleHorizontalTimeline({
   currentStatus,
   onStatusClick,
   currentStatusDelta,
+  postingUrl,
+  createdAt,
+  updatedAt,
+  currentStatusEnteredAt,
+  jdAttachmentId,
+  onViewJd,
 }: CollapsibleHorizontalTimelineProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const currentIndex = ORDERED_STATUSES.indexOf(currentStatus);
+  
+  const delta = currentStatusEnteredAt
+    ? calculateDelta(currentStatusEnteredAt)
+    : null;
+
+  // Handle theme toggle on client only
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = resolvedTheme || theme;
+  const isDark = currentTheme === 'dark';
 
   // Auto-collapse on scroll
   useEffect(() => {
@@ -50,7 +81,7 @@ export default function CollapsibleHorizontalTimeline({
     }
   };
 
-  // Compact version (collapsed)
+  // Compact version (collapsed) - integrated with header
   if (isCollapsed) {
     return (
       <div 
@@ -58,6 +89,7 @@ export default function CollapsibleHorizontalTimeline({
         data-testid="horizontal-timeline-compact"
       >
         <div className="flex items-center justify-between px-6 py-2">
+          {/* Left: Timeline Info */}
           <div className="flex items-center gap-4">
             {/* Current Status Indicator */}
             <div className="flex items-center gap-2">
@@ -81,7 +113,7 @@ export default function CollapsibleHorizontalTimeline({
                 return (
                   <div
                     key={status}
-                    className={`w-8 h-1.5 rounded-full transition-all ${
+                    className={`w-6 h-1.5 rounded-full transition-all ${
                       isActive
                         ? "bg-gradient-to-r from-blue-500 to-purple-500"
                         : isPast
@@ -100,16 +132,127 @@ export default function CollapsibleHorizontalTimeline({
             </span>
           </div>
 
-          {/* Expand Button */}
-          <button
-            onClick={() => setIsCollapsed(false)}
-            className="p-2 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded-lg transition-colors"
-            title="Expand timeline"
-            aria-label="Expand timeline"
-          >
-            <ChevronDown className="text-purple-600 dark:text-purple-400" size={20} />
-          </button>
+          {/* Right: Header Actions */}
+          <div className="flex items-center gap-2">
+            {/* Quick Actions */}
+            <div className="flex items-center gap-1">
+              {jdAttachmentId && onViewJd && (
+                <button
+                  onClick={onViewJd}
+                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  title="View JD"
+                >
+                  <FileText size={14} />
+                </button>
+              )}
+              
+              {postingUrl && (
+                <a
+                  href={postingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  title="View Posting"
+                >
+                  <ExternalLink size={14} />
+                </a>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+
+            {/* Metadata */}
+            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+              {createdAt && (
+                <>
+                  <span className="font-medium">{formatDateTime(createdAt)}</span>
+                  <span>•</span>
+                </>
+              )}
+              {updatedAt && (
+                <>
+                  <span className="font-medium">{formatDateTime(updatedAt)}</span>
+                  {delta && <span>•</span>}
+                </>
+              )}
+              
+              {/* Delta Chip */}
+              {delta && (
+                <div 
+                  className={`px-2 py-0.5 rounded-full font-semibold text-xs ${
+                    delta.isStale
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                  }`}
+                  title={`In current status for ${delta.days} days`}
+                >
+                  {delta.label}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1">
+              {/* User Profile Button */}
+              <button
+                onClick={() => {
+                  alert('User Profile - Coming soon!');
+                }}
+                className="p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                title="User Profile"
+              >
+                <User className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              {/* Theme Toggle */}
+              {mounted && (
+                <button
+                  onClick={() => {
+                    const newTheme = isDark ? 'light' : 'dark';
+                    setTheme(newTheme);
+                  }}
+                  className="p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                >
+                  {isDark ? (
+                    <Sun className="w-4 h-4 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-4 h-4 text-gray-700" />
+                  )}
+                </button>
+              )}
+
+              {/* Settings Button */}
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
+
+            {/* Expand Button */}
+            <button
+              onClick={() => setIsCollapsed(false)}
+              className="p-2 hover:bg-purple-100 dark:hover:bg-purple-800/30 rounded-lg transition-colors"
+              title="Expand timeline and header"
+              aria-label="Expand timeline"
+            >
+              <ChevronDown className="text-purple-600 dark:text-purple-400" size={20} />
+            </button>
+          </div>
         </div>
+
+        {/* Global Settings Modal */}
+        <GlobalSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
       </div>
     );
   }
