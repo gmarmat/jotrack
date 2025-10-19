@@ -1186,7 +1186,156 @@ culture?: string[];  // Combined array of values
 
 ---
 
-**Last Updated**: Oct 17, 2025
+## 📋 3-Column Header Pattern (Job Detail Page)
+
+### Standard Button Sizing
+All buttons in the 3-column header MUST use consistent sizing for vertical alignment:
+
+```typescript
+const COLUMN_BUTTON_CLASS = "w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors";
+```
+
+**Apply to**:
+- Column 1: Attachments button
+- Column 2: Refresh Data / Analyze All buttons
+- Column 3: Notes action buttons
+
+### Document Status Indicators
+**Column 1 Pattern**:
+```tsx
+<div className="mb-3 space-y-1.5">
+  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+    <CheckCircle2 size={14} className={exists ? "text-green-500" : "text-gray-300"} />
+    <span className="font-medium">Label:</span>
+    <span className="truncate">{filename || 'Not uploaded'}</span>
+  </div>
+</div>
+```
+
+**Standard Labels** (per TERMINOLOGY_GUIDE):
+- "Resume:" (not "CV" or "Resume File")
+- "JD:" (not "Job Description")
+- "Cover Letter:" (not "CL")
+
+### "Analyzed X ago" Badge
+**Column 2 Pattern**:
+```tsx
+<div className="flex items-center justify-between mb-3">
+  <h3>Section Title</h3>
+  {analyzedAt && (
+    <span className="text-xs text-gray-500 dark:text-gray-400">
+      Analyzed {formatTimeAgo(analyzedAt)} {/* m/h/d format */}
+    </span>
+  )}
+</div>
+```
+
+**Time Format**:
+- < 60 min: "15m ago"
+- < 24 hours: "3h ago"  
+- >= 24 hours: "2d ago"
+
+### "Explain" Section Pattern
+**Compact, informative, non-intrusive**:
+```tsx
+<div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+  <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
+    Section title:
+  </p>
+  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+    Brief explanation (max 2-3 lines)
+  </p>
+</div>
+```
+
+---
+
+## 🎯 Progression Hints Pattern
+
+### Dismissible Hints (localStorage)
+**Purpose**: Guide new users without being intrusive
+
+**Implementation**:
+```typescript
+const [showProgressHints, setShowProgressHints] = useState(() => {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem('jotrack_progress_hints_dismissed') !== 'true';
+});
+
+const dismissHints = () => {
+  localStorage.setItem('jotrack_progress_hints_dismissed', 'true');
+  setShowProgressHints(false);
+};
+```
+
+**Visual Design**:
+```tsx
+{showProgressHints && condition && (
+  <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+    <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">
+      1
+    </span>
+    <span className="flex-1 text-gray-700 dark:text-gray-300">
+      Hint text
+    </span>
+    <button onClick={dismissHints} className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold">
+      ×
+    </button>
+  </div>
+)}
+```
+
+**Characteristics**:
+- Purple theme (matches AI features)
+- Pill shape (rounded-full)
+- Numbered badges (1, 2, 3)
+- Single dismiss for all hints
+- Condition-based display
+
+---
+
+## 👥 ManagePeopleModal Design
+
+### Gradient & Borders
+```tsx
+// Header
+className="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 
+           border-b border-cyan-200 dark:border-cyan-800"
+
+// Content cards
+className="border-2 border-cyan-200 dark:border-cyan-800 rounded-lg"
+```
+
+### Structure (follows SourcesModal pattern)
+```tsx
+<div className="fixed inset-0 bg-black/50 z-50">
+  <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-3xl">
+    {/* Header with gradient */}
+    <div className="bg-gradient-to-br from-cyan-50...">
+      <h2>Manage Interview Team</h2>
+      <button onClick={onClose}><X /></button>
+    </div>
+    
+    {/* Content with scroll */}
+    <div className="overflow-y-auto p-6">
+      {/* Existing people + Add new forms */}
+    </div>
+    
+    {/* Footer with actions */}
+    <div className="border-t">
+      <button>Cancel</button>
+      <button>Save</button>
+    </div>
+  </div>
+</div>
+```
+
+**Button Order**:
+- Manage People (cyan) → Analyze (purple) → Prompt (gray) → Sources (blue)
+
+---
+
+**Last Updated**: Oct 18, 2025
 **Maintained By**: Development Team
-**Status**: ✅ Active - All 6 sections fully standardized (Oct 17, 2025)
+**Status**: ✅ Active - All sections standardized + 3-column header pattern added (Oct 18, 2025)
 
