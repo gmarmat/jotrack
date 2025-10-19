@@ -68,16 +68,8 @@ export default function CompanyIntelligenceCard({
   const [showManualEditModal, setShowManualEditModal] = useState<string | null>(null);
   const [manualInputText, setManualInputText] = useState('');
   
-  // Mock sources for now - in real implementation, this would come from analysis data
-  const sources: Source[] = [
-    {
-      url: 'https://example.com/company-profile',
-      title: `${companyName} Company Profile`,
-      type: 'other',
-      dateAccessed: new Date().toISOString(),
-      relevance: 'Primary source for company information'
-    }
-  ];
+  // Extract real sources from company data (from Tavily web search)
+  const sources: Source[] = companyData?.sources || [];
 
   const isAnalyzing = externalIsAnalyzing || internalIsAnalyzing;
 

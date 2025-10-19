@@ -120,26 +120,51 @@ export async function POST(
     
     console.log(`✅ Company intelligence complete: ${result.tokensUsed} tokens, $${result.cost?.toFixed(4)}`);
     
+    // Map web search results to Source objects (real URLs, not example.com!)
+    const sources = allResults.slice(0, 15).map((r: any) => ({
+      url: r.url || 'https://unknown',
+      title: r.title || r.content?.substring(0, 60) || 'Untitled',
+      type: r.sourceType === 'company_website' ? 'official' :
+            r.sourceType === 'recent_news' ? 'news' :
+            r.sourceType === 'employee_reviews_positive' || r.sourceType === 'employee_reviews_negative' ? 'community' :
+            'other' as any,
+      dateAccessed: new Date().toISOString(),
+      snippet: r.content?.substring(0, 200),
+    }));
+    
+    console.log(`🔗 Extracted ${sources.length} real source URLs from web search`);
+    
     // Save to jobs table for persistence (extract 'company' object from response)
     const companyData = result.data?.company || result.data;
+    
+    // Include sources in saved data for UI display
+    const dataToSave = {
+      ...companyData,
+      sources, // Add real sources
+    };
+    
     await db.update(jobs)
       .set({
-        companyIntelligenceData: JSON.stringify(companyData),
+        companyIntelligenceData: JSON.stringify(dataToSave),
         companyIntelligenceAnalyzedAt: Math.floor(Date.now() / 1000),
       })
       .where(eq(jobs.id, jobId));
     
-    console.log(`💾 Saved company intelligence to database:`, companyData?.name || 'unknown');
+    console.log(`💾 Saved company intelligence to database with ${sources.length} sources`);
     
     return NextResponse.json({
       success: true,
-      analysis: result.data,
+      analysis: {
+        ...result.data,
+        sources, // Include in response
+      },
       metadata: {
         tokensUsed: result.tokensUsed,
         cost: `$${result.cost?.toFixed(4)}`,
         promptVersion: 'v1',
         analyzedAt: Date.now(),
         webSearchUsed: true,
+        sourcesCount: sources.length,
       },
     });
   } catch (error: any) {

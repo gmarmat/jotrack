@@ -17,13 +17,27 @@ import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
-import { ChevronDown, ChevronUp, Eye, Paperclip } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText } from 'lucide-react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
+  // Standard button class for 3-column header (per UI_DESIGN_SYSTEM)
+  const COLUMN_BUTTON_CLASS = "w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors";
+  
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [job, setJob] = useState<any>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
   const [jdAttachmentId, setJdAttachmentId] = useState<string | null>(null);
+  
+  // Progression hints state (dismissible, localStorage pattern)
+  const [showProgressHints, setShowProgressHints] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('jotrack_progress_hints_dismissed') !== 'true';
+  });
+  
+  const dismissHints = () => {
+    localStorage.setItem('jotrack_progress_hints_dismissed', 'true');
+    setShowProgressHints(false);
+  };
   const [currentStatusEnteredAt, setCurrentStatusEnteredAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
@@ -941,10 +955,68 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 {job.company}
               </p>
               
+              {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
+              {showProgressHints && attachmentCount === 0 && (
+                <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+                  <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
+                  <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
+                  <button 
+                    onClick={dismissHints} 
+                    className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
+                    title="Dismiss all hints"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
+              <div className="mb-3 space-y-1.5">
+                {/* Resume Status */}
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <CheckCircle2 
+                    size={14} 
+                    className={attachmentsList.some(a => a.kind === 'resume' && a.isActive) ? "text-green-500" : "text-gray-300"} 
+                  />
+                  <span className="font-medium">Resume:</span>
+                  <span className="truncate">
+                    {attachmentsList.find(a => a.kind === 'resume' && a.isActive)
+                      ? `${attachmentsList.find(a => a.kind === 'resume' && a.isActive)!.filename}`
+                      : 'Not uploaded'}
+                  </span>
+                </div>
+                
+                {/* JD Status */}
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <CheckCircle2 
+                    size={14} 
+                    className={attachmentsList.some(a => a.kind === 'jd' && a.isActive) ? "text-green-500" : "text-gray-300"} 
+                  />
+                  <span className="font-medium">JD:</span>
+                  <span className="truncate">
+                    {attachmentsList.find(a => a.kind === 'jd' && a.isActive)
+                      ? `${attachmentsList.find(a => a.kind === 'jd' && a.isActive)!.filename}`
+                      : 'Not uploaded'}
+                  </span>
+                </div>
+                
+                {/* Cover Letter Status (from Coach Mode) */}
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <FileText 
+                    size={14} 
+                    className={job.coachStatus === 'applied' || job.coachStatus === 'interview-prep' ? "text-green-500" : "text-gray-300"} 
+                  />
+                  <span className="font-medium">Cover Letter:</span>
+                  <span>
+                    {job.coachStatus === 'applied' || job.coachStatus === 'interview-prep' ? 'Generated' : 'Not created'}
+                  </span>
+                </div>
+              </div>
+              
               {/* Attachments Button */}
               <button
                 onClick={() => setShowAttachmentsModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors w-full justify-center"
+                className={`${COLUMN_BUTTON_CLASS} flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 justify-center`}
                 data-testid="attachments-button-header"
               >
                 <Paperclip size={16} />
@@ -959,14 +1031,57 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
             {/* Column 2: Data Pipeline with Scrolling */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-                <span className="text-lg">
-                  {stalenessInfo?.severity === 'fresh' ? '✅' : 
-                   stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
-                   stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
-                </span>
-                Data Status
-              </h3>
+              {/* Header with "Analyzed X ago" badge */}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span className="text-lg">
+                    {stalenessInfo?.severity === 'fresh' ? '✅' : 
+                     stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
+                     stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
+                  </span>
+                  Data Status
+                </h3>
+                {stalenessInfo?.variantsAnalyzedAt && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Analyzed {(() => {
+                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                      const minutes = Math.floor(ageMs / 60000);
+                      const hours = Math.floor(ageMs / 3600000);
+                      const days = Math.floor(ageMs / 86400000);
+                      
+                      if (minutes < 60) return `${minutes}m ago`;
+                      if (hours < 24) return `${hours}h ago`;
+                      return `${days}d ago`;
+                    })()}
+                  </span>
+                )}
+              </div>
+              
+              {/* Progression Hint #2: Convert (per UI_DESIGN_SYSTEM dismissible pattern) */}
+              {showProgressHints && attachmentCount > 0 && stalenessInfo?.severity === 'no_variants' && (
+                <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+                  <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">2</span>
+                  <span className="flex-1 text-gray-700 dark:text-gray-300">Click "Refresh Data" below</span>
+                  <button 
+                    onClick={dismissHints} 
+                    className="ml-auto hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
+                    title="Dismiss all hints"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              {/* Explain: Our Approach (compact) */}
+              <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
+                  How data extraction works:
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
+                </p>
+              </div>
+              
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                 {stalenessInfo?.message || 'Checking...'}
               </p>
@@ -977,7 +1092,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
@@ -986,7 +1101,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleGlobalAnalyze}
                     disabled={analyzing}
-                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
                   >
                     {analyzing ? 'Analyzing...' : 'Analyze All'}
                   </button>
@@ -995,7 +1110,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
@@ -1075,6 +1190,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           jobId={job.id}
           matchScore={aiData?.matchScore || 0}
           coachStatus={job.coachStatus || 'not_started'}
+          hasBasicAnalysis={
+            (aiData?.matchScore || 0) > 0 || 
+            !!job.companyIntelligenceData
+          }
         />
 
         {/* 3. AI Showcase: Full-width grid */}

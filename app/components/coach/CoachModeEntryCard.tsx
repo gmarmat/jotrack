@@ -7,12 +7,40 @@ interface CoachModeEntryCardProps {
   jobId: string;
   matchScore?: number;  // 0.0 - 1.0
   coachStatus?: string;
+  hasBasicAnalysis?: boolean; // NEW: Has matchScore OR companyIntel
 }
 
-export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus = 'not_started' }: CoachModeEntryCardProps) {
+export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus = 'not_started', hasBasicAnalysis = true }: CoachModeEntryCardProps) {
   const router = useRouter();
   
   const scorePercent = Math.round(matchScore * 100);
+  
+  // NEW: Show disabled state if no basic analysis yet (per TERMINOLOGY_GUIDE)
+  if (!hasBasicAnalysis) {
+    return (
+      <div 
+        className="mb-8 bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 opacity-60" 
+        data-testid="coach-mode-entry-card-disabled"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-gray-500 dark:text-gray-400 mb-1">
+              Coach Mode
+            </h3>
+            <p className="text-sm text-gray-400 dark:text-gray-500">
+              Run Match Score or Company Intelligence analysis first to unlock
+            </p>
+          </div>
+          <button 
+            disabled 
+            className="px-6 py-2 bg-gray-300 dark:bg-gray-700 text-gray-500 rounded-lg cursor-not-allowed font-semibold"
+          >
+            Locked
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   const getScoreTier = (score: number) => {
     const percent = score * 100;
