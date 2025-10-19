@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import CollapsibleHorizontalTimeline from '@/app/components/timeline/CollapsibleHorizontalTimeline';
-import StatusDetailPanel from '@/app/components/timeline/StatusDetailPanel';
 import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
@@ -23,7 +22,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   // Standard button class for 3-column header (per UI_DESIGN_SYSTEM)
   const COLUMN_BUTTON_CLASS = "w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors";
   
-  const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [job, setJob] = useState<any>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
   const [jdAttachmentId, setJdAttachmentId] = useState<string | null>(null);
@@ -526,7 +524,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       {/* Timeline - Full width above everything */}
       <CollapsibleHorizontalTimeline 
         currentStatus={currentStatus} 
-        onStatusClick={setSelectedStatus}
+        onStatusClick={() => {}}
         currentStatusDelta={delta?.label}
         postingUrl={job.posting_url || job.postingUrl}
         createdAt={job.created_at || job.createdAt}
@@ -1206,19 +1204,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           />
         )}
 
-        {/* 4. Timeline Detail (conditional) */}
-        {selectedStatus && (
-          <div className="relative" data-testid="timeline-detail-wrapper">
-            <button
-              onClick={() => setSelectedStatus(null)}
-              className="absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-lg z-10"
-              aria-label="Close timeline detail"
-            >
-              ✕
-            </button>
-            <StatusDetailPanel jobId={job.id} status={selectedStatus} />
-          </div>
-        )}
+        {/* 4. Timeline Detail - Removed (deprecated) */}
       </div>
 
       {/* Attachments Modal with Full Drop Zones */}

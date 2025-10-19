@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Sparkles, AlertCircle, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
+import { Search, Sparkles, AlertCircle, ChevronDown, ChevronUp, MessageSquare, X } from 'lucide-react';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import SourcesModal from '@/app/components/ai/SourcesModal';
@@ -42,6 +42,8 @@ export default function InterviewQuestionsCard({
   
   const [expandedPersona, setExpandedPersona] = useState<string | null>(null);
   const [showSourcesModal, setShowSourcesModal] = useState(false);
+  const [showPersonaSelector, setShowPersonaSelector] = useState(false);
+  const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
   
   // Format analyzed time
   const formatAnalyzedTime = (timestamp: number): string => {
@@ -124,6 +126,18 @@ export default function InterviewQuestionsCard({
       console.error('Generation error:', err);
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  const handleGenerateForPersona = async (persona: string) => {
+    console.log(`✨ Generating questions for ${persona}...`);
+    
+    // For now, generate all and auto-expand the selected persona
+    await handleGenerate();
+    
+    // Auto-expand the selected persona
+    if (persona !== 'all') {
+      setExpandedPersona(persona);
     }
   };
   
@@ -252,17 +266,124 @@ export default function InterviewQuestionsCard({
         </div>
       )}
       
-      {/* Empty State */}
+      {/* Empty State - Interview Scheduled Flow */}
       {searchedQuestions.length === 0 && !aiQuestions && !isSearching && !isGenerating && (
-        <div className="text-center py-8">
-          <MessageSquare size={48} className="mx-auto text-gray-300 dark:text-gray-700 mb-3" />
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            No interview questions yet. Search the web or generate with AI to start preparing.
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full mb-4">
+            <MessageSquare size={32} className="text-purple-600 dark:text-purple-400" />
+          </div>
+          
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Prepare for Your Interview
+          </h4>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            When you have an interview scheduled, click below to generate tailored questions and prep material.
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            💡 Web search finds real questions from Glassdoor, Blind, etc.<br/>
-            AI generates custom questions tailored to this role and company.
+          
+          {/* Main CTA Button */}
+          <button
+            onClick={() => setShowPersonaSelector(true)}
+            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+          >
+            📅 I Have an Interview Scheduled
+          </button>
+          
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
+            We'll generate questions specific to your interview type (Recruiter, Hiring Manager, or Peer)
           </p>
+        </div>
+      )}
+      
+      {/* Persona Selector Modal */}
+      {showPersonaSelector && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                Who's Interviewing You?
+              </h3>
+              <button
+                onClick={() => setShowPersonaSelector(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Select the interview type to generate targeted prep questions:
+            </p>
+            
+            <div className="space-y-3">
+              {/* Recruiter */}
+              <button
+                onClick={() => {
+                  setSelectedPersona('recruiter');
+                  setShowPersonaSelector(false);
+                  handleGenerateForPersona('recruiter');
+                }}
+                className="w-full flex items-start gap-3 p-4 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 border-2 border-cyan-200 dark:border-cyan-800 rounded-xl hover:border-cyan-400 dark:hover:border-cyan-600 transition-colors text-left"
+              >
+                <span className="text-3xl">👔</span>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Recruiter / HR</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Culture fit, motivation, logistics (10 questions)</p>
+                </div>
+              </button>
+              
+              {/* Hiring Manager */}
+              <button
+                onClick={() => {
+                  setSelectedPersona('hiring_manager');
+                  setShowPersonaSelector(false);
+                  handleGenerateForPersona('hiring_manager');
+                }}
+                className="w-full flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-xl hover:border-purple-400 dark:hover:border-purple-600 transition-colors text-left"
+              >
+                <span className="text-3xl">👨‍💼</span>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Hiring Manager</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Experience, leadership, STAR method (15 questions)</p>
+                </div>
+              </button>
+              
+              {/* Peer/Panel */}
+              <button
+                onClick={() => {
+                  setSelectedPersona('peer');
+                  setShowPersonaSelector(false);
+                  handleGenerateForPersona('peer');
+                }}
+                className="w-full flex items-start gap-3 p-4 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border-2 border-indigo-200 dark:border-indigo-800 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors text-left"
+              >
+                <span className="text-3xl">👥</span>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Peer / Panel</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Technical depth, system design (12 questions)</p>
+                </div>
+              </button>
+              
+              {/* Generate All */}
+              <button
+                onClick={() => {
+                  setSelectedPersona('all');
+                  setShowPersonaSelector(false);
+                  handleGenerate(); // Generate all 3 personas
+                }}
+                className="w-full flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 rounded-xl hover:border-purple-400 dark:hover:border-purple-600 transition-colors text-left"
+              >
+                <span className="text-3xl">✨</span>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">All Interview Types</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Generate all 37 questions (recruiter + HM + peer)</p>
+                </div>
+              </button>
+            </div>
+            
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-4 text-center">
+              💡 You can always generate additional types later
+            </p>
+          </div>
         </div>
       )}
       
