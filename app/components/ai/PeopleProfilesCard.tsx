@@ -318,56 +318,44 @@ export default function PeopleProfilesCard({
         </div>
       )}
       
-      {/* Raw Profiles (before AI analysis) */}
+      {/* Compact People Summary (before AI analysis) */}
       {rawPeople.length > 0 && !localProfiles && !profiles && !isAnalyzing && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              {rawPeople.length} Team {rawPeople.length === 1 ? 'Member' : 'Members'} Added
-            </h4>
-            
-            {unoptimizedCount === 0 ? (
-              <span className="text-xs bg-green-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                <CheckCircle2 size={12} />
-                All Optimized - Ready for Analysis
-              </span>
-            ) : (
-              <span className="text-xs bg-amber-600 text-white px-2 py-1 rounded flex items-center gap-1">
-                <AlertCircle size={12} />
-                {unoptimizedCount} Need Optimization
-              </span>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-            {rawPeople.slice(0, 4).map((person, idx) => (
-              <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-                <Users size={16} className="text-cyan-600" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">{person.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{person.title || 'No title'}</p>
-                </div>
+        <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <Users size={16} className="text-purple-600 dark:text-purple-400" />
               </div>
-            ))}
-          </div>
-          <div className="space-y-2">
-            {unoptimizedCount > 0 ? (
-              <p className="text-xs text-amber-700 dark:text-amber-300">
-                ⚠️ <strong>{unoptimizedCount} profile{unoptimizedCount > 1 ? 's need' : ' needs'} optimization.</strong> 
-                {' '}Click "Manage People" and click the Zap (⚡) icon next to each profile to optimize before running analysis.
-              </p>
-            ) : (
-              <>
-                <p className="text-xs text-green-700 dark:text-green-300">
-                  ✅ <strong>All profiles optimized!</strong> Click "Analyze People Profiles" above to:
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {rawPeople.length} Team {rawPeople.length === 1 ? 'Member' : 'Members'} Added
                 </p>
-                <ul className="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside ml-2 space-y-1">
-                  <li>Extract background & expertise from optimized data</li>
-                  <li>Identify communication styles</li>
-                  <li>Generate interview preparation tips</li>
-                  <li>Assess team dynamics & cultural fit</li>
-                </ul>
-              </>
-            )}
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {rawPeople.length - unoptimizedCount} out of {rawPeople.length} ready for analysis
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {unoptimizedCount === 0 ? (
+                <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                  <CheckCircle2 size={12} />
+                  Ready
+                </span>
+              ) : (
+                <span className="text-xs bg-amber-600 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                  <AlertCircle size={12} />
+                  {unoptimizedCount} pending
+                </span>
+              )}
+              
+              <button
+                onClick={() => setShowCleanPeopleModal(true)}
+                className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
+              >
+                Manage →
+              </button>
+            </div>
           </div>
         </div>
       )}
