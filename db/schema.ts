@@ -34,6 +34,9 @@ export const jobs = sqliteTable('jobs', {
   appliedAt: integer('applied_at', { mode: 'number' }),
   appliedResumeVersion: integer('applied_resume_version', { mode: 'number' }),
   jobProfileId: text('job_profile_id'),
+  // v3.1: Interview Questions tracking
+  interviewQuestionsSearchedAt: integer('interview_questions_searched_at', { mode: 'number' }),
+  interviewQuestionsGeneratedAt: integer('interview_questions_generated_at', { mode: 'number' }),
 });
 
 export const statusHistory = sqliteTable('status_history', {
@@ -438,4 +441,29 @@ export type DiscoveryQA = {
 };
 
 export type CoachStatus = 'not_started' | 'profile-building' | 'resume-ready' | 'applied' | 'interview-prep';
+
+// v3.1: Interview Questions Tables
+
+// Company-wide cache for web-searched questions (90 day TTL, shared across jobs)
+export const interviewQuestionsCache = sqliteTable('interview_questions_cache', {
+  id: text('id').primaryKey(),
+  companyName: text('company_name').notNull(),
+  roleCategory: text('role_category'),
+  searchedQuestions: text('searched_questions'), // JSON array
+  searchSources: text('search_sources'),         // JSON array of URLs
+  searchedAt: integer('searched_at', { mode: 'number' }),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+  expiresAt: integer('expires_at', { mode: 'number' }),
+});
+
+// Job-specific AI-generated questions (3 personas)
+export const jobInterviewQuestions = sqliteTable('job_interview_questions', {
+  id: text('id').primaryKey(),
+  jobId: text('job_id').notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  recruiterQuestions: text('recruiter_questions'),     // JSON array
+  hiringManagerQuestions: text('hiring_manager_questions'), // JSON array
+  peerQuestions: text('peer_questions'),              // JSON array
+  generatedAt: integer('generated_at', { mode: 'number' }),
+  createdAt: integer('created_at', { mode: 'number' }).notNull(),
+});
 
