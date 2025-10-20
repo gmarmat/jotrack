@@ -105,7 +105,15 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         // Fetch attachments
         const attRes = await fetch(`/api/jobs/${id}/attachments`);
         const attData = await attRes.json();
-        const attachments = attData.attachments?.filter((a: any) => !a.deletedAt) ?? [];
+        const attachments = Array.isArray(attData) ? attData : (attData.attachments || []);
+        
+        console.log('🔍 Attachments API Response:', {
+          attData,
+          attachments,
+          isArray: Array.isArray(attData),
+          attachmentsLength: attachments.length
+        });
+        
         setAttachmentCount(attachments.length);
         setAttachmentsList(attachments);
         
