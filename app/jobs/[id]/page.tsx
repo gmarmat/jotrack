@@ -971,44 +971,67 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
               <div className="mb-3 space-y-1.5">
                 {/* Resume Status */}
-                <div data-testid="resume-status" className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <CheckCircle2 
-                    size={14} 
-                    className={attachmentsList.some(a => a.kind === 'resume' && a.isActive) ? "text-green-500" : "text-gray-300"} 
-                  />
-                  <span className="font-medium">Resume:</span>
-                  <span className="truncate">
-                    {attachmentsList.find(a => a.kind === 'resume' && a.isActive)
-                      ? `${attachmentsList.find(a => a.kind === 'resume' && a.isActive)!.filename}`
-                      : 'Not uploaded'}
-                  </span>
-                </div>
+                {(() => {
+                  const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                  const hasResume = !!resumeAttachment;
+                  return (
+                    <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
+                      {hasResume ? (
+                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                      ) : (
+                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
+                      <span className="truncate text-gray-600 dark:text-gray-400">
+                        {hasResume 
+                          ? `v${resumeAttachment!.version || 1} • ${new Date(resumeAttachment!.updatedAt).toLocaleDateString()}`
+                          : 'Not uploaded'}
+                      </span>
+                    </div>
+                  );
+                })()}
                 
                 {/* JD Status */}
-                <div data-testid="jd-status" className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <CheckCircle2 
-                    size={14} 
-                    className={attachmentsList.some(a => a.kind === 'jd' && a.isActive) ? "text-green-500" : "text-gray-300"} 
-                  />
-                  <span className="font-medium">JD:</span>
-                  <span className="truncate">
-                    {attachmentsList.find(a => a.kind === 'jd' && a.isActive)
-                      ? `${attachmentsList.find(a => a.kind === 'jd' && a.isActive)!.filename}`
-                      : 'Not uploaded'}
-                  </span>
-                </div>
+                {(() => {
+                  const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                  const hasJd = !!jdAttachment;
+                  return (
+                    <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
+                      {hasJd ? (
+                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                      ) : (
+                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
+                      <span className="truncate text-gray-600 dark:text-gray-400">
+                        {hasJd 
+                          ? `v${jdAttachment!.version || 1} • ${new Date(jdAttachment!.updatedAt).toLocaleDateString()}`
+                          : 'Not uploaded'}
+                      </span>
+                    </div>
+                  );
+                })()}
                 
                 {/* Cover Letter Status (from Coach Mode) */}
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <FileText 
-                    size={14} 
-                    className={job.coachStatus === 'applied' || job.coachStatus === 'interview-prep' ? "text-green-500" : "text-gray-300"} 
-                  />
-                  <span className="font-medium">Cover Letter:</span>
-                  <span>
-                    {job.coachStatus === 'applied' || job.coachStatus === 'interview-prep' ? 'Generated' : 'Not created'}
-                  </span>
-                </div>
+                {(() => {
+                  const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter' && a.isActive);
+                  const hasCoverLetter = !!clAttachment;
+                  return (
+                    <div className="flex items-center gap-2 text-xs">
+                      {hasCoverLetter ? (
+                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                      ) : (
+                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
+                      <span className="truncate text-gray-600 dark:text-gray-400">
+                        {hasCoverLetter 
+                          ? `v${clAttachment!.version || 1} • ${new Date(clAttachment!.updatedAt).toLocaleDateString()}`
+                          : 'Not created'}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               
               {/* Attachments Button */}
