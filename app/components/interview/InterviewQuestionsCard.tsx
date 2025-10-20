@@ -131,13 +131,46 @@ export default function InterviewQuestionsCard({
   
   const handleGenerateForPersona = async (persona: string) => {
     console.log(`✨ Generating questions for ${persona}...`);
+    setIsGenerating(true);
+    setError(null);
+    setShowPersonaSelector(false);
     
-    // For now, generate all and auto-expand the selected persona
-    await handleGenerate();
-    
-    // Auto-expand the selected persona
-    if (persona !== 'all') {
-      setExpandedPersona(persona);
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/interview-questions/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ persona }) // Pass persona to backend!
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Generation failed');
+      }
+      
+      const data = await res.json();
+      setAiQuestions(data);
+      setGeneratedAt(data.generatedAt);
+      
+      const totalQuestions = 
+        (data.recruiter?.questions?.length || 0) +
+        (data.hiringManager?.questions?.length || 0) +
+        (data.peer?.questions?.length || 0);
+      
+      console.log(`✅ Generated ${totalQuestions} AI questions for ${persona}`);
+      
+      // Auto-expand the selected persona
+      if (persona === 'recruiter') {
+        setExpandedPersona('recruiter');
+      } else if (persona === 'hiring-manager') {
+        setExpandedPersona('hiringManager');
+      } else if (persona === 'peer') {
+        setExpandedPersona('peer');
+      }
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Generation error:', err);
+    } finally {
+      setIsGenerating(false);
     }
   };
   

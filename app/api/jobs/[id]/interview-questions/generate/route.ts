@@ -17,8 +17,10 @@ export async function POST(
 ) {
   try {
     const jobId = context.params.id;
+    const body = await request.json().catch(() => ({}));
+    const persona = body.persona || 'all'; // 'recruiter', 'hiring-manager', 'peer', or 'all'
     
-    console.log(`✨ Generating AI interview questions for job ${jobId}...`);
+    console.log(`✨ Generating AI interview questions for job ${jobId} (persona: ${persona})...`);
     
     // Get job details
     const job = await db
@@ -59,52 +61,83 @@ export async function POST(
     // Extract technical skills from JD for peer questions
     const technicalSkills = extractTechnicalSkills(jobDescription);
     
-    console.log('🎭 Generating questions for 3 personas in parallel...');
+    // Determine which personas to generate based on request
+    const shouldGenerateRecruiter = persona === 'all' || persona === 'recruiter';
+    const shouldGenerateHiringManager = persona === 'all' || persona === 'hiring-manager';
+    const shouldGeneratePeer = persona === 'all' || persona === 'peer';
     
-    // Generate questions for 3 personas in parallel
-    const [recruiterResult, hiringManagerResult, peerResult] = await Promise.all([
-      // Recruiter questions (10 questions)
-      callAiProvider('interview-questions-recruiter', {
-        companyName,
-        jobTitle,
-        jdSummary
-      }, false, 'v1').catch(err => {
-        console.error('Recruiter questions failed:', err);
-        return { result: { questions: [] } };
-      }),
-      
-      // Hiring Manager questions (15 questions)
-      callAiProvider('interview-questions-hiring-manager', {
-        companyName,
-        jobTitle,
-        jobDescription,
-        resumeSummary: 'TBD - will pull from coach profile in future'
-      }, false, 'v1').catch(err => {
-        console.error('Hiring Manager questions failed:', err);
-        return { result: { questions: [] } };
-      }),
-      
-      // Peer questions (12 questions)
-      callAiProvider('interview-questions-peer', {
-        companyName,
-        jobTitle,
-        jobDescription,
-        technicalSkills
-      }, false, 'v1').catch(err => {
-        console.error('Peer questions failed:', err);
-        return { result: { questions: [] } };
-      })
-    ]);
+    console.log('🎭 Generating questions for selected persona(s):', {
+      recruiter: shouldGenerateRecruiter,
+      hiringManager: shouldGenerateHiringManager,
+      peer: shouldGeneratePeer
+    });
     
-    // Parse results (handle both string and object responses)
-    const recruiterQuestions = parseAiResult(recruiterResult.result);
-    const hiringManagerQuestions = parseAiResult(hiringManagerResult.result);
-    const peerQuestions = parseAiResult(peerResult.result);
+    // Generate only requested personas (saves tokens!)
+    const promises = [];
+    
+    if (shouldGenerateRecruiter) {
+      promises.push(
+        callAiProvider('interview-questions-recruiter', {
+          companyName,
+          jobTitle,
+          jdSummary
+        }, false, 'v1').catch(err => {
+          console.error('Recruiter questions failed:', err);
+          return { result: { questions: [] } };
+        })
+      );
+    }
+    
+    if (shouldGenerateHiringManager) {
+      promises.push(
+        callAiProvider('interview-questions-hiring-manager', {
+          companyName,
+          jobTitle,
+          jobDescription,
+          resumeSummary: 'TBD - will pull from coach profile in future'
+        }, false, 'v1').catch(err => {
+          console.error('Hiring Manager questions failed:', err);
+          return { result: { questions: [] } };
+        })
+      );
+    }
+    
+    if (shouldGeneratePeer) {
+      promises.push(
+        callAiProvider('interview-questions-peer', {
+          companyName,
+          jobTitle,
+          jobDescription,
+          technicalSkills
+        }, false, 'v1').catch(err => {
+          console.error('Peer questions failed:', err);
+          return { result: { questions: [] } };
+        })
+      );
+    }
+    
+    const results = await Promise.all(promises);
+    
+    // Map results back to personas
+    let recruiterQuestions = null;
+    let hiringManagerQuestions = null;
+    let peerQuestions = null;
+    let resultIndex = 0;
+    
+    if (shouldGenerateRecruiter) {
+      recruiterQuestions = parseAiResult(results[resultIndex++].result);
+    }
+    if (shouldGenerateHiringManager) {
+      hiringManagerQuestions = parseAiResult(results[resultIndex++].result);
+    }
+    if (shouldGeneratePeer) {
+      peerQuestions = parseAiResult(results[resultIndex++].result);
+    }
     
     console.log('✅ Generated questions:', {
-      recruiter: recruiterQuestions.questions?.length || 0,
-      hiringManager: hiringManagerQuestions.questions?.length || 0,
-      peer: peerQuestions.questions?.length || 0
+      recruiter: recruiterQuestions?.questions?.length || 0,
+      hiringManager: hiringManagerQuestions?.questions?.length || 0,
+      peer: peerQuestions?.questions?.length || 0
     });
     
     // Save to database
@@ -118,24 +151,31 @@ export async function POST(
       .limit(1);
     
     if (existing.length > 0) {
-      // Update existing
+      // Update existing - only update requested personas
+      const updateData: any = { generatedAt: now };
+      
+      if (shouldGenerateRecruiter) {
+        updateData.recruiterQuestions = JSON.stringify(recruiterQuestions);
+      }
+      if (shouldGenerateHiringManager) {
+        updateData.hiringManagerQuestions = JSON.stringify(hiringManagerQuestions);
+      }
+      if (shouldGeneratePeer) {
+        updateData.peerQuestions = JSON.stringify(peerQuestions);
+      }
+      
       await db
         .update(jobInterviewQuestions)
-        .set({
-          recruiterQuestions: JSON.stringify(recruiterQuestions),
-          hiringManagerQuestions: JSON.stringify(hiringManagerQuestions),
-          peerQuestions: JSON.stringify(peerQuestions),
-          generatedAt: now
-        })
+        .set(updateData)
         .where(eq(jobInterviewQuestions.jobId, jobId));
     } else {
       // Insert new
       await db.insert(jobInterviewQuestions).values({
         id: uuidv4(),
         jobId,
-        recruiterQuestions: JSON.stringify(recruiterQuestions),
-        hiringManagerQuestions: JSON.stringify(hiringManagerQuestions),
-        peerQuestions: JSON.stringify(peerQuestions),
+        recruiterQuestions: recruiterQuestions ? JSON.stringify(recruiterQuestions) : null,
+        hiringManagerQuestions: hiringManagerQuestions ? JSON.stringify(hiringManagerQuestions) : null,
+        peerQuestions: peerQuestions ? JSON.stringify(peerQuestions) : null,
         generatedAt: now,
         createdAt: now
       });
