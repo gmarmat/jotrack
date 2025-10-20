@@ -328,10 +328,53 @@ export async function getJobAnalysisVariants(jobId: string): Promise<{
   resumeAttachmentId: string;
   jdAttachmentId: string;
 }> {
-  const { db } = await import('@/db/client');
+  const { db, sqlite } = await import('@/db/client');
   const { attachments } = await import('@/db/schema');
   const { eq, and, isNull } = await import('drizzle-orm');
   
+  // === STEP 1: CHECK BUNDLE CACHE (Fast path!) ===
+  const bundleRow = sqlite.prepare(`
+    SELECT * FROM job_analysis_bundles WHERE job_id = ? LIMIT 1
+  `).get(jobId);
+  
+  if (bundleRow) {
+    console.log(`💾 Using cached analysis bundle for job ${jobId} (created ${new Date(bundleRow.created_at * 1000).toLocaleString()})`);
+    
+    // Get attachment IDs for return value
+    const activeAttachments = await db
+      .select({ id: attachments.id, kind: attachments.kind })
+      .from(attachments)
+      .where(
+        and(
+          eq(attachments.jobId, jobId),
+          eq(attachments.isActive, true),
+          isNull(attachments.deletedAt)
+        )
+      );
+    
+    const resumeAtt = activeAttachments.find(a => a.kind === 'resume');
+    const jdAtt = activeAttachments.find(a => a.kind === 'jd');
+    
+    // Return bundled variants (already extracted!)
+    return {
+      resumeVariant: {
+        raw: bundleRow.resume_raw,
+        aiOptimized: bundleRow.resume_ai_optimized,
+        detailed: bundleRow.resume_detailed,
+      },
+      jdVariant: {
+        raw: bundleRow.jd_raw,
+        aiOptimized: bundleRow.jd_ai_optimized,
+        detailed: bundleRow.jd_detailed,
+      },
+      resumeAttachmentId: resumeAtt?.id || '',
+      jdAttachmentId: jdAtt?.id || '',
+    };
+  }
+  
+  console.log(`🔍 No bundle found for job ${jobId}, fetching from DB...`);
+  
+  // === STEP 2: FALLBACK TO DB (if no bundle) ===
   // Get active resume and JD attachments
   const activeAttachments = await db
     .select()

@@ -4,11 +4,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '@/db/client';
+import { db, sqlite } from '@/db/client';
 import { jobs, attachments, artifactVariants } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import { getVariant, saveRawVariant } from '@/lib/extraction/extractionEngine';
 import { callAiProvider } from '@/lib/coach/aiProvider';
+import { saveAnalysisBundle, calculateFingerprint } from '@/lib/analysis/bundleManager';
 import { createHash } from 'crypto';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
@@ -473,6 +474,59 @@ export async function POST(
       .where(eq(jobs.id, jobId));
     
     console.log(`✅ Variant refresh complete. Total cost: $${totalCost.toFixed(3)}`);
+    
+    // === SAVE ANALYSIS BUNDLE (for reuse!) ===
+    try {
+      const resumeProc = processed.find(p => p.kind === 'resume');
+      const jdProc = processed.find(p => p.kind === 'jd');
+      
+      if (resumeProc?.extracted && jdProc?.extracted) {
+        // Get all 3 variants for each
+        const resumeAttachment = activeAttachments.find(a => a.kind === 'resume');
+        const jdAttachment = activeAttachments.find(a => a.kind === 'jd');
+        
+        if (resumeAttachment && jdAttachment) {
+          const resumeRaw = await getVariant(resumeAttachment.id, 'resume', 'raw') || 
+                           await getVariant(resumeAttachment.id, 'attachment', 'raw');
+          const resumeAi = await getVariant(resumeAttachment.id, 'resume', 'ai_optimized') || 
+                          await getVariant(resumeAttachment.id, 'attachment', 'ai_optimized');
+          const resumeDetailed = await getVariant(resumeAttachment.id, 'resume', 'detailed') || 
+                                await getVariant(resumeAttachment.id, 'attachment', 'detailed');
+          
+          const jdRaw = await getVariant(jdAttachment.id, 'job_description', 'raw') || 
+                       await getVariant(jdAttachment.id, 'attachment', 'raw');
+          const jdAi = await getVariant(jdAttachment.id, 'job_description', 'ai_optimized') || 
+                      await getVariant(jdAttachment.id, 'attachment', 'ai_optimized');
+          const jdDetailed = await getVariant(jdAttachment.id, 'job_description', 'detailed') || 
+                            await getVariant(jdAttachment.id, 'attachment', 'detailed');
+          
+          if (resumeRaw && resumeAi && jdRaw && jdAi) {
+            const fingerprint = calculateFingerprint(
+              resumeRaw.text || '',
+              jdRaw.text || ''
+            );
+            
+            saveAnalysisBundle({
+              jobId,
+              fingerprint,
+              resumeRaw: resumeRaw.text || '',
+              resumeAiOptimized: resumeAi.text || '',
+              resumeDetailed: resumeDetailed?.text || '',
+              jdRaw: jdRaw.text || '',
+              jdAiOptimized: jdAi.text || '',
+              jdDetailed: jdDetailed?.text || '',
+              tokensUsed: Math.floor(totalCost / 0.000003), // Rough estimate
+              costUsd: totalCost,
+            });
+            
+            console.log(`📦 Saved analysis bundle (fingerprint: ${fingerprint.substring(0, 8)}...)`);
+          }
+        }
+      }
+    } catch (bundleError) {
+      console.error('⚠️ Failed to save analysis bundle:', bundleError);
+      // Don't fail the request if bundle save fails
+    }
     
     return NextResponse.json({
       success: true,
