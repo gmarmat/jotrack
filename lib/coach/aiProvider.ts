@@ -673,6 +673,7 @@ function mapCapabilityToPromptKind(capability: string): any {
     'interview-questions-recruiter': 'interview-questions-recruiter',
     'interview-questions-hiring-manager': 'interview-questions-hiring-manager',
     'interview-questions-peer': 'interview-questions-peer',
+    'writing-style-evaluation': 'writing-style-evaluation',
   };
 
   return mapping[capability] || 'analyze';
@@ -761,6 +762,13 @@ function buildPromptVariables(capability: string, inputs: any): any {
         technicalSkills: inputs.technicalSkills || 'General software engineering'
       };
 
+    case 'writing-style-evaluation':
+      return {
+        jobDescription: inputs.jobDescription || '',
+        discoveryResponses: inputs.discoveryResponses || '',
+        resumeContent: inputs.resumeContent || ''
+      };
+
     default:
       return common;
   }
@@ -781,6 +789,7 @@ function getMaxTokens(capability: string): number {
     'people': 8000,         // Analysis with multiple profiles
     'interview-questions-recruiter': 2000,      // 10 questions with tips
     'interview-questions-hiring-manager': 3000, // 15 questions with STAR guidance
+    'writing-style-evaluation': 4000, // Comprehensive writing analysis
     'interview-questions-peer': 3000,          // 12 questions with keyPoints
   };
 
