@@ -106,14 +106,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         const attRes = await fetch(`/api/jobs/${id}/attachments`);
         const attData = await attRes.json();
         const attachments = Array.isArray(attData) ? attData : (attData.attachments || []);
-        
-        console.log('🔍 Attachments API Response:', {
-          attData,
-          attachments,
-          isArray: Array.isArray(attData),
-          attachmentsLength: attachments.length
-        });
-        
         setAttachmentCount(attachments.length);
         setAttachmentsList(attachments);
         
@@ -992,7 +984,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
                       <span className="truncate text-gray-600 dark:text-gray-400">
                         {hasResume 
-                          ? `v${resumeAttachment!.version || 1} • ${new Date(resumeAttachment!.updatedAt).toLocaleDateString()}`
+                          ? `v${resumeAttachment!.version || 1} • ${new Date((resumeAttachment!.created_at || resumeAttachment!.createdAt) * 1000).toLocaleDateString()}`
                           : 'Not uploaded'}
                       </span>
                     </div>
@@ -1013,7 +1005,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
                       <span className="truncate text-gray-600 dark:text-gray-400">
                         {hasJd 
-                          ? `v${jdAttachment!.version || 1} • ${new Date(jdAttachment!.updatedAt).toLocaleDateString()}`
+                          ? `v${jdAttachment!.version || 1} • ${new Date((jdAttachment!.created_at || jdAttachment!.createdAt) * 1000).toLocaleDateString()}`
                           : 'Not uploaded'}
                       </span>
                     </div>
@@ -1034,7 +1026,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
                       <span className="truncate text-gray-600 dark:text-gray-400">
                         {hasCoverLetter 
-                          ? `v${clAttachment!.version || 1} • ${new Date(clAttachment!.updatedAt).toLocaleDateString()}`
+                          ? `v${clAttachment!.version || 1} • ${new Date((clAttachment!.created_at || clAttachment!.createdAt) * 1000).toLocaleDateString()}`
                           : 'Not created'}
                       </span>
                     </div>
