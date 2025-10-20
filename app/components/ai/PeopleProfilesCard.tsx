@@ -264,11 +264,11 @@ export default function PeopleProfilesCard({
         
         <div className="flex items-center gap-2">
           {/* Analyzed badge or Sample Data badge - right before buttons */}
-          {analyzedAt && isAiPowered ? (
+          {analyzedAt ? (
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
               Analyzed {formatAnalyzedTime(analyzedAt)}
             </span>
-          ) : !isAiPowered ? (
+          ) : profiles && profiles.length > 0 ? (
             <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
               Sample Data
             </span>

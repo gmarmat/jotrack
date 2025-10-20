@@ -198,35 +198,48 @@ export default function InterviewQuestionsCard({
           
           {/* Standard button order: Analyze -> Prompt -> Sources */}
           
-          {/* Search Button - Position 1 */}
-          <AnalyzeButton
-            onAnalyze={handleSearch}
-            isAnalyzing={isSearching}
-            label="Search Web"
-            estimatedCost={0.01}
-            estimatedSeconds={10}
-            icon={<Search size={14} />}
-          />
+          {/* Single Primary Action Button - conditional based on state */}
+          {!searchedQuestions.length && !aiQuestions ? (
+            // Step 1: Search web for questions
+            <button
+              onClick={handleSearch}
+              disabled={isSearching}
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isSearching ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search size={14} />
+                  Search Web
+                </>
+              )}
+            </button>
+          ) : (
+            // Step 2: Generate AI questions (after search)
+            <button
+              onClick={() => setShowPersonaSelector(true)}
+              disabled={isGenerating}
+              className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={14} />
+                  Generate Questions
+                </>
+              )}
+            </button>
+          )}
           
-          {/* Generate Button - Position 2 */}
-          <AnalyzeButton
-            onAnalyze={handleGenerate}
-            isAnalyzing={isGenerating}
-            label="Generate AI Questions"
-            estimatedCost={0.05}
-            estimatedSeconds={30}
-            icon={<Sparkles size={14} />}
-          />
-          
-          {/* View Prompt - Position 3 (shows all 3 persona prompts) */}
-          <PromptViewer 
-            promptKind="interview-questions-recruiter" 
-            version="v1"
-            buttonLabel="View Prompts"
-            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-xs"
-          />
-          
-          {/* View Sources - Position 4 */}
+          {/* View Sources - Only show after search */}
           {sources.length > 0 && (
             <button
               onClick={() => setShowSourcesModal(true)}
