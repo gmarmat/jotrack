@@ -16,7 +16,7 @@ import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
-import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
   // Standard button class for 3-column header (per UI_DESIGN_SYSTEM)
