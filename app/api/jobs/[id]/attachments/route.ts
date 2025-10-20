@@ -7,6 +7,7 @@ import { eq, desc, and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { jobs, attachments, ATTACHMENT_KINDS, type AttachmentKind } from '@/db/schema';
 import { getMaxVersion } from '@/db/repository';
+import { invalidateBundle } from '@/lib/analysis/bundleManager';
 import {
   ATTACHMENTS_ROOT,
   ensureJobDir,
@@ -230,6 +231,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       createdAt: now,
       deletedAt: null,
     });
+    
+    // Invalidate analysis bundle when Resume or JD is uploaded
+    if (kind === 'resume' || kind === 'jd') {
+      invalidateBundle(jobId);
+      console.log(`🗑️ Invalidated analysis bundle for job ${jobId} (${kind} uploaded)`);
+    }
 
     // v2.7: Extract raw text variant (local, free, fast)
     // Only for text-extractable files (DOCX, PDF, TXT)
