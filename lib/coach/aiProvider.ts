@@ -674,6 +674,9 @@ function mapCapabilityToPromptKind(capability: string): any {
     'interview-questions-hiring-manager': 'interview-questions-hiring-manager',
     'interview-questions-peer': 'interview-questions-peer',
     'writing-style-evaluation': 'writing-style-evaluation',
+    'talk-track-recruiter': 'talk-track-recruiter',
+    'talk-track-hiring-manager': 'talk-track-hiring-manager',
+    'talk-track-peer': 'talk-track-peer',
   };
 
   return mapping[capability] || 'analyze';
@@ -769,6 +772,37 @@ function buildPromptVariables(capability: string, inputs: any): any {
         resumeContent: inputs.resumeContent || ''
       };
 
+    case 'talk-track-recruiter':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        roleTitle: inputs.roleTitle || 'Unknown Role',
+        interviewQuestion: inputs.interviewQuestion || '',
+        jdKeyPoints: inputs.jdKeyPoints || '',
+        resumeSummary: inputs.resumeSummary || '',
+        writingStyleProfile: inputs.writingStyleProfile || '{}'
+      };
+
+    case 'talk-track-hiring-manager':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        roleTitle: inputs.roleTitle || 'Unknown Role',
+        interviewQuestion: inputs.interviewQuestion || '',
+        jobDescription: inputs.jobDescription || '',
+        resumeSummary: inputs.resumeSummary || '',
+        writingStyleProfile: inputs.writingStyleProfile || '{}',
+        teamContext: inputs.teamContext || 'Not available'
+      };
+
+    case 'talk-track-peer':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        roleTitle: inputs.roleTitle || 'Unknown Role',
+        interviewQuestion: inputs.interviewQuestion || '',
+        technicalSkills: inputs.technicalSkills || 'General software engineering',
+        resumeSummary: inputs.resumeSummary || '',
+        writingStyleProfile: inputs.writingStyleProfile || '{}'
+      };
+
     default:
       return common;
   }
@@ -791,6 +825,9 @@ function getMaxTokens(capability: string): number {
     'interview-questions-hiring-manager': 3000, // 15 questions with STAR guidance
     'writing-style-evaluation': 4000, // Comprehensive writing analysis
     'interview-questions-peer': 3000,          // 12 questions with keyPoints
+    'talk-track-recruiter': 2000,    // STAR answer + cheat sheet
+    'talk-track-hiring-manager': 3000, // STAR answer + technical depth
+    'talk-track-peer': 3000,         // STAR answer + deep technical prep
   };
 
   return limits[capability] || 1000;
