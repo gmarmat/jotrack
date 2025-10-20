@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:network": "next dev --hostname 0.0.0.0",
     "dev:clean": "rm -rf .next node_modules/.cache .turbo && next dev",
     "build": "next build",
     "start": "next start",

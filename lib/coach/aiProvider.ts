@@ -678,6 +678,7 @@ function mapCapabilityToPromptKind(capability: string): any {
     'talk-track-hiring-manager': 'talk-track-hiring-manager',
     'talk-track-peer': 'talk-track-peer',
     'recommendations': 'recommendations',
+    'linkedin-optimization': 'linkedin-optimization',
   };
 
   return mapping[capability] || 'analyze';
@@ -813,6 +814,16 @@ function buildPromptVariables(capability: string, inputs: any): any {
         careerGoals: inputs.careerGoals || 'Not specified'
       };
 
+    case 'linkedin-optimization':
+      return {
+        companyName: inputs.companyName || 'Unknown Company',
+        roleTitle: inputs.roleTitle || 'Unknown Role',
+        jobDescription: inputs.jobDescription || '',
+        currentLinkedInProfile: inputs.currentLinkedInProfile || '',
+        resumeSummary: inputs.resumeSummary || '',
+        matchMatrixGaps: inputs.matchMatrixGaps || ''
+      };
+
     default:
       return common;
   }
@@ -839,6 +850,7 @@ function getMaxTokens(capability: string): number {
     'talk-track-hiring-manager': 3000, // STAR answer + technical depth
     'talk-track-peer': 3000,         // STAR answer + deep technical prep
     'recommendations': 8000,         // Comprehensive recommendations (courses, projects, LinkedIn, prep)
+    'linkedin-optimization': 10000,  // Complete profile optimization (headline, about, experience, skills)
   };
 
   return limits[capability] || 1000;
