@@ -185,7 +185,15 @@ export default function InterviewQuestionsCard({
             icon={<Sparkles size={14} />}
           />
           
-          {/* View Sources - Position 3 */}
+          {/* View Prompt - Position 3 (shows all 3 persona prompts) */}
+          <PromptViewer 
+            promptKind="interview-questions-recruiter" 
+            version="v1"
+            buttonLabel="View Prompts"
+            className="px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-xs"
+          />
+          
+          {/* View Sources - Position 4 */}
           {sources.length > 0 && (
             <button
               onClick={() => setShowSourcesModal(true)}

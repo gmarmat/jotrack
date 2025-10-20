@@ -214,7 +214,7 @@ export default function FullEcosystemModal({
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {displayCompanies.length} companies • 15+ data points per company
-              {cacheMetadata?.cached && (
+              {cacheMetadata?.cacheAge && (
                 <span className="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">
                   💰 Cached ({cacheMetadata.cacheAge} ago)
                 </span>

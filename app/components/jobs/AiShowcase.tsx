@@ -301,7 +301,7 @@ export default function AiShowcase({
               
               <div className="flex items-center gap-2">
                 {/* Analyzed badge - right before buttons */}
-                {aiData?.matchScoreMetadata?.cached && (
+                {aiData?.matchScoreMetadata?.cacheAge && (
                   <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
                     Analyzed {aiData.matchScoreMetadata.cacheAge}
                   </span>
@@ -432,7 +432,7 @@ export default function AiShowcase({
               
               <div className="flex items-center gap-2">
                 {/* Analyzed badge - right before buttons */}
-                {aiData?.matchScoreMetadata?.cached && (
+                {aiData?.matchScoreMetadata?.cacheAge && (
                   <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
                     Analyzed {aiData.matchScoreMetadata.cacheAge}
                   </span>
