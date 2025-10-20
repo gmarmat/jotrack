@@ -972,7 +972,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               <div className="mb-3 space-y-1.5">
                 {/* Resume Status */}
                 {(() => {
-                  const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                  const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
                   const hasResume = !!resumeAttachment;
                   return (
                     <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
@@ -993,7 +993,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 
                 {/* JD Status */}
                 {(() => {
-                  const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                  const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
                   const hasJd = !!jdAttachment;
                   return (
                     <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
@@ -1014,7 +1014,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 
                 {/* Cover Letter Status (from Coach Mode) */}
                 {(() => {
-                  const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter' && a.isActive);
+                  const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
                   const hasCoverLetter = !!clAttachment;
                   return (
                     <div className="flex items-center gap-2 text-xs">
@@ -1130,7 +1130,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <div className="flex flex-col gap-1.5">
                     <button
                       onClick={() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
                         if (resumeAttachment) {
                           setSelectedAttachment({
                             id: resumeAttachment.id,
@@ -1147,7 +1147,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </button>
                     <button
                       onClick={() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
                         if (jdAttachment) {
                           setSelectedAttachment({
                             id: jdAttachment.id,
