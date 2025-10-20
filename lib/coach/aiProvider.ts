@@ -677,6 +677,7 @@ function mapCapabilityToPromptKind(capability: string): any {
     'talk-track-recruiter': 'talk-track-recruiter',
     'talk-track-hiring-manager': 'talk-track-hiring-manager',
     'talk-track-peer': 'talk-track-peer',
+    'recommendations': 'recommendations',
   };
 
   return mapping[capability] || 'analyze';
@@ -803,6 +804,15 @@ function buildPromptVariables(capability: string, inputs: any): any {
         writingStyleProfile: inputs.writingStyleProfile || '{}'
       };
 
+    case 'recommendations':
+      return {
+        jobDescription: inputs.jobDescription || '',
+        resumeSummary: inputs.resumeSummary || '',
+        matchMatrixGaps: inputs.matchMatrixGaps || '',
+        writingStyleProfile: inputs.writingStyleProfile || '{}',
+        careerGoals: inputs.careerGoals || 'Not specified'
+      };
+
     default:
       return common;
   }
@@ -828,6 +838,7 @@ function getMaxTokens(capability: string): number {
     'talk-track-recruiter': 2000,    // STAR answer + cheat sheet
     'talk-track-hiring-manager': 3000, // STAR answer + technical depth
     'talk-track-peer': 3000,         // STAR answer + deep technical prep
+    'recommendations': 8000,         // Comprehensive recommendations (courses, projects, LinkedIn, prep)
   };
 
   return limits[capability] || 1000;
