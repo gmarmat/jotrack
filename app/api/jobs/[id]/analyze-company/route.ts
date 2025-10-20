@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { executePrompt, getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
 import { searchWeb, formatSearchResultsForPrompt } from '@/lib/analysis/tavilySearch';
-import { db } from '@/db/client';
+import { db, sqlite } from '@/db/client';
 import { jobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -37,6 +38,50 @@ export async function POST(
     
     // Extract company name from JD variant or use job.company
     const companyName = jdVariant.company || job.company;
+    const industry = jdVariant.industry || 'General';
+    
+    // === CACHING LAYER (30-day TTL) ===
+    const now = Math.floor(Date.now() / 1000);
+    const cacheQuery = sqlite.prepare(`
+      SELECT * FROM company_intelligence_cache 
+      WHERE company_name = ? 
+      AND expires_at > ?
+      LIMIT 1
+    `).get(companyName, now);
+    
+    if (cacheQuery) {
+      console.log(`💾 Cache HIT for ${companyName} (expires in ${Math.floor((cacheQuery.expires_at - now) / 86400)} days)`);
+      
+      const cachedData = JSON.parse(cacheQuery.intelligence_data);
+      const cacheAge = now - cacheQuery.created_at;
+      
+      // Update job record
+      await db.update(jobs)
+        .set({
+          companyIntelligenceData: cacheQuery.intelligence_data,
+          companyIntelligenceAnalyzedAt: cacheQuery.created_at,
+        })
+        .where(eq(jobs.id, jobId));
+      
+      return NextResponse.json({
+        success: true,
+        analysis: cachedData,
+        metadata: {
+          cached: true,
+          cacheAge,
+          cachedAt: cacheQuery.created_at,
+          expiresAt: cacheQuery.expires_at,
+          tokensUsed: cacheQuery.tokens_used || 0,
+          cost: `$${cacheQuery.cost_usd?.toFixed(4) || '0.0000'}`,
+          promptVersion: 'v1',
+          analyzedAt: cacheQuery.created_at * 1000,
+          webSearchUsed: (cacheQuery.web_searches_used || 0) > 0,
+          sourcesCount: cachedData.sources?.length || 0,
+        },
+      });
+    }
+    
+    console.log(`🔍 Cache MISS for ${companyName} - performing fresh analysis...`);
     
     // Step 1: Multi-source web research with prioritization
     // Search 1: Company website (official source - highest priority)
@@ -143,14 +188,54 @@ export async function POST(
       sources, // Add real sources
     };
     
+    const analyzedAt = Math.floor(Date.now() / 1000);
+    
     await db.update(jobs)
       .set({
         companyIntelligenceData: JSON.stringify(dataToSave),
-        companyIntelligenceAnalyzedAt: Math.floor(Date.now() / 1000),
+        companyIntelligenceAnalyzedAt: analyzedAt,
       })
       .where(eq(jobs.id, jobId));
     
     console.log(`💾 Saved company intelligence to database with ${sources.length} sources`);
+    
+    // === SAVE TO CACHE (30-day TTL) ===
+    const TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+    const expiresAt = analyzedAt + TTL_SECONDS;
+    const contextFingerprint = crypto.createHash('sha256').update(companyName).digest('hex');
+    
+    try {
+      sqlite.prepare(`
+        INSERT INTO company_intelligence_cache (
+          company_name, industry, intelligence_data, expires_at,
+          context_fingerprint, sources, tokens_used, cost_usd, web_searches_used
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(company_name) DO UPDATE SET
+          intelligence_data = excluded.intelligence_data,
+          expires_at = excluded.expires_at,
+          context_fingerprint = excluded.context_fingerprint,
+          sources = excluded.sources,
+          tokens_used = excluded.tokens_used,
+          cost_usd = excluded.cost_usd,
+          web_searches_used = excluded.web_searches_used,
+          updated_at = unixepoch()
+      `).run(
+        companyName,
+        industry,
+        JSON.stringify(dataToSave),
+        expiresAt,
+        contextFingerprint,
+        JSON.stringify(sources),
+        result.tokensUsed || 0,
+        result.cost || 0,
+        6 // 6 web searches performed
+      );
+      
+      console.log(`💾 Cached company intelligence for ${companyName} (expires in 30 days)`);
+    } catch (cacheError) {
+      console.error('⚠️ Failed to cache company intelligence:', cacheError);
+      // Don't fail the request if caching fails
+    }
     
     return NextResponse.json({
       success: true,
