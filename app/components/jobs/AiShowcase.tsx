@@ -444,13 +444,27 @@ export default function AiShowcase({
                 <AnalyzeButton
                   onAnalyze={async () => {
                     setMatchScoreAnalyzing(true);
-                    await handleRefresh(false, 'skills');
-                    setMatchScoreAnalyzing(false);
+                    try {
+                      const res = await fetch(`/api/jobs/${jobId}/match-skills-local`, {
+                        method: 'POST'
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        console.log('✅ Local skill matching complete:', data.metadata);
+                        // Trigger parent refresh to reload data
+                        await onRefresh?.('skills');
+                      } else {
+                        const err = await res.json();
+                        console.error('Skill matching error:', err);
+                      }
+                    } finally {
+                      setMatchScoreAnalyzing(false);
+                    }
                   }}
                   isAnalyzing={matchScoreAnalyzing}
-                  label="Analyze Skills Match"
-                  estimatedCost={0.02}
-                  estimatedSeconds={20}
+                  label="Match Skills (Local)"
+                  estimatedCost={0.00}
+                  estimatedSeconds={2}
                 />
 
                 {/* View Prompt - Position 2 */}
