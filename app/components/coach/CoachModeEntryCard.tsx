@@ -133,54 +133,63 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
   }
 
   return (
-    <div className={`bg-gradient-to-br ${config.bg} rounded-2xl p-8 text-white shadow-xl`} data-testid="coach-mode-entry-card">
+    <div className={`bg-gradient-to-br ${config.bg} rounded-xl p-5 text-white shadow-lg relative overflow-hidden`} data-testid="coach-mode-entry-card">
+      {/* Decorative Background Element */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+      
       {/* Header with Score Badge */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <Icon size={28} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold">Resume Coach</h3>
-              <p className="text-white/80 text-sm">Pre-Application Optimization</p>
-            </div>
+      <div className="flex items-start justify-between mb-4 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+            <Icon size={22} />
           </div>
-          <p className="text-white/90 text-base mb-4 leading-relaxed">
-            Build your extended profile, generate ATS-optimized resume, and improve your match score from <span className="font-bold text-white">{scorePercent}%</span>
-          </p>
+          <div>
+            <h3 className="text-xl font-bold">Resume Coach</h3>
+            <p className="text-white/70 text-xs">Pre-Application Optimization</p>
+          </div>
+        </div>
+        
+        {/* Score Badge - Eye-catching */}
+        <div className="flex flex-col items-center bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
+          <div className="text-2xl font-black leading-none">{scorePercent}%</div>
+          <div className="text-[10px] text-white/80 font-medium">Current</div>
         </div>
       </div>
 
-      {/* Feature List */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 size={16} className="flex-shrink-0" />
-          <span>Discovery Questions</span>
+      {/* Compact Description */}
+      <p className="text-white/90 text-sm mb-4 leading-snug">
+        Build extended profile, generate ATS-optimized resume, and boost your match score
+      </p>
+
+      {/* Compact Feature List - Single Row */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex items-center gap-1 text-xs bg-white/10 rounded-full px-2 py-1">
+          <CheckCircle2 size={12} className="flex-shrink-0" />
+          <span>Discovery</span>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 size={16} className="flex-shrink-0" />
-          <span>Score Improvement</span>
+        <div className="flex items-center gap-1 text-xs bg-white/10 rounded-full px-2 py-1">
+          <CheckCircle2 size={12} className="flex-shrink-0" />
+          <span>Score Boost</span>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 size={16} className="flex-shrink-0" />
-          <span>Resume Generator</span>
+        <div className="flex items-center gap-1 text-xs bg-white/10 rounded-full px-2 py-1">
+          <CheckCircle2 size={12} className="flex-shrink-0" />
+          <span>Resume Gen</span>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle2 size={16} className="flex-shrink-0" />
+        <div className="flex items-center gap-1 text-xs bg-white/10 rounded-full px-2 py-1">
+          <CheckCircle2 size={12} className="flex-shrink-0" />
           <span>Cover Letter</span>
         </div>
       </div>
 
-      {/* CTA Button */}
+      {/* Compact CTA Button */}
       <button
         onClick={() => router.push(`/coach/${jobId}`)}
         data-testid="enter-coach-mode"
-        className="w-full px-6 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all shadow-lg flex items-center justify-center gap-3 group"
+        className="w-full px-4 py-2.5 bg-white text-purple-600 rounded-lg font-bold text-sm hover:bg-gray-50 transition-all shadow-md flex items-center justify-center gap-2 group"
       >
-        <Sparkles size={24} className="group-hover:scale-110 transition-transform" />
+        <Sparkles size={18} className="group-hover:scale-110 transition-transform" />
         <span>Start Resume Coach</span>
-        <span className="text-2xl">→</span>
+        <span className="text-lg">→</span>
       </button>
     </div>
   );
