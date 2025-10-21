@@ -1009,10 +1009,12 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                         year: '2-digit' 
                       }) : '';
                       
-                      // Shorten filename if too long
+                      // Better filename shortening: first few + last few + extension
                       const filename = resumeAttachment.filename;
+                      const extension = filename.substring(filename.lastIndexOf('.'));
+                      const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
                       const shortenedFilename = filename.length > 20 
-                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
+                        ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
                         : filename;
                       
                       return `${shortenedFilename} • ${date}`;
@@ -1054,10 +1056,12 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                         year: '2-digit' 
                       }) : '';
                       
-                      // Shorten filename if too long
+                      // Better filename shortening: first few + last few + extension
                       const filename = jdAttachment.filename;
+                      const extension = filename.substring(filename.lastIndexOf('.'));
+                      const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
                       const shortenedFilename = filename.length > 20 
-                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
+                        ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
                         : filename;
                       
                       return `${shortenedFilename} • ${date}`;
@@ -1065,50 +1069,52 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </span>
                 </div>
                 
-                {/* Cover Letter */}
-                <div className="flex items-center gap-2 text-xs">
-                  {(() => {
-                    const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                    return clAttachment ? (
-                      <button
-                        onClick={() => setViewingAttachment({
-                          id: clAttachment.id,
-                          filename: clAttachment.filename,
-                          textContent: clAttachment.text_content || 'No content available',
-                          kind: 'cover_letter'
-                        })}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                        title="Preview Cover Letter"
-                      >
-                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
-                      </button>
-                    ) : (
-                      <div className="w-6 h-6"></div>
-                    );
-                  })()}
-                  <span className="text-gray-700 dark:text-gray-300 font-medium">Cover Letter:</span>
-                  <span className="text-gray-900 dark:text-gray-100">
+                  {/* Cover Letter */}
+                  <div className="flex items-center gap-2 text-xs">
                     {(() => {
                       const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                      if (!clAttachment) return 'Not created';
-                      
-                      const timestamp = clAttachment.created_at || clAttachment.createdAt;
-                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                        month: 'numeric', 
-                        day: 'numeric', 
-                        year: '2-digit' 
-                      }) : '';
-                      
-                      // Shorten filename if too long
-                      const filename = clAttachment.filename;
-                      const shortenedFilename = filename.length > 20 
-                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
-                        : filename;
-                      
-                      return `${shortenedFilename} • ${date}`;
+                      return clAttachment ? (
+                        <button
+                          onClick={() => setViewingAttachment({
+                            id: clAttachment.id,
+                            filename: clAttachment.filename,
+                            textContent: clAttachment.text_content || 'No content available',
+                            kind: 'cover_letter'
+                          })}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="Preview Cover Letter"
+                        >
+                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                      ) : (
+                        <div className="w-6 h-6"></div>
+                      );
                     })()}
-                  </span>
-                </div>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">CL:</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {(() => {
+                        const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                        if (!clAttachment) return 'None';
+                        
+                        const timestamp = clAttachment.created_at || clAttachment.createdAt;
+                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                          month: 'numeric', 
+                          day: 'numeric', 
+                          year: '2-digit' 
+                        }) : '';
+                        
+                        // Better filename shortening: first few + last few + extension
+                        const filename = clAttachment.filename;
+                        const extension = filename.substring(filename.lastIndexOf('.'));
+                        const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+                        const shortenedFilename = filename.length > 20 
+                          ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
+                          : filename;
+                        
+                        return `${shortenedFilename} • ${date}`;
+                      })()}
+                    </span>
+                  </div>
               </div>
               
               {/* Attachments Button at Bottom */}
@@ -1169,7 +1175,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               
               {/* Simple Description */}
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                AI converts documents into 3 variants (Raw, Short, Long) for analysis. Click "Analyze All" to process all sections.
+                Convert uploaded docs into Raw (utf-8) and two AI summarized versions (short and long) to use in the app.
               </p>
 
               {/* Variant Access Icons (Compact) */}
