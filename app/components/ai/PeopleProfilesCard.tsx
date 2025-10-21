@@ -8,6 +8,7 @@ import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
 import AnalysisExplanation from '../ui/AnalysisExplanation';
 import CleanPeopleModal from '../people/CleanPeopleModal';
+import EvidenceChip, { type Evidence } from './EvidenceChip';
 
 interface PersonProfile {
   name: string;
@@ -17,6 +18,7 @@ interface PersonProfile {
   expertise: string[];
   communicationStyle?: string;
   whatThisMeans: string;
+  evidence?: Evidence[]; // NEW: Array of evidence supporting the insights
 }
 
 interface PeopleProfilesCardProps {
@@ -133,7 +135,26 @@ export default function PeopleProfilesCard({
       ],
       expertise: ['Technical recruiting', 'Engineering talent', 'Startup hiring'],
       communicationStyle: 'Professional',
-      whatThisMeans: 'Jane has deep technical knowledge, so be prepared to discuss technical details and system design. Emphasize your senior-level experience and architectural decisions.'
+      whatThisMeans: 'Jane has deep technical knowledge, so be prepared to discuss technical details and system design. Emphasize your senior-level experience and architectural decisions.',
+      evidence: [
+        {
+          platform: 'linkedin',
+          quote: 'Led 50+ senior engineering hires',
+          fullQuote: 'Led 50+ senior engineering hires at Google, Microsoft, and various startups. Passionate about connecting top technical talent with innovative companies.',
+          url: 'https://linkedin.com/in/janedoe',
+          date: '2024-10-01',
+          confidence: 'high'
+        },
+        {
+          platform: 'glassdoor',
+          quote: 'Jane is super technical and asks great questions',
+          fullQuote: 'Jane is super technical and asks great questions about system design. She really understands the role and can tell if you\'re a good fit quickly.',
+          url: 'https://glassdoor.com/reviews/company',
+          date: '2024-09-15',
+          confidence: 'high',
+          author: 'Senior Engineer Candidate'
+        }
+      ]
     },
     {
       name: 'John Smith',
@@ -145,7 +166,35 @@ export default function PeopleProfilesCard({
       ],
       expertise: ['System architecture', 'Team scaling', 'Fintech domain'],
       communicationStyle: 'Technical',
-      whatThisMeans: 'John will likely focus on scalability, architecture decisions, and your experience building reliable financial systems. Prepare examples of handling high-stakes technical challenges.'
+      whatThisMeans: 'John will likely focus on scalability, architecture decisions, and your experience building reliable financial systems. Prepare examples of handling high-stakes technical challenges.',
+      evidence: [
+        {
+          platform: 'linkedin',
+          quote: 'Led engineering teams through 10x growth',
+          fullQuote: 'Led engineering teams through 10x growth at FinTech startup. Scaled systems to handle $1B+ in daily transactions.',
+          url: 'https://linkedin.com/in/johnsmith',
+          date: '2024-09-20',
+          confidence: 'high'
+        },
+        {
+          platform: 'reddit',
+          quote: 'John is OBSESSED with metrics and data',
+          fullQuote: 'John is OBSESSED with metrics and data. He asked for exact numbers on everything - latency, throughput, error rates. Come prepared with quantitative results.',
+          url: 'https://reddit.com/r/cscareerquestions',
+          date: '2024-08-10',
+          confidence: 'medium',
+          author: 'throwaway_engineer123'
+        },
+        {
+          platform: 'blind',
+          quote: 'Interviewing with John? Bring your system design A-game',
+          fullQuote: 'Interviewing with John? Bring your system design A-game. He went DEEP on distributed systems, consensus algorithms, and failure scenarios.',
+          url: 'https://teamblind.com',
+          date: '2024-07-25',
+          confidence: 'medium',
+          author: 'Anonymous at Company'
+        }
+      ]
     }
   ];
 
@@ -442,9 +491,21 @@ export default function PeopleProfilesCard({
               </div>
             )}
 
+            {/* Evidence Chips - NEW! */}
+            {person.evidence && person.evidence.length > 0 && (
+              <div className="mb-3">
+                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Evidence:</p>
+                <div className="flex flex-wrap gap-2">
+                  {person.evidence.map((evidence, i) => (
+                    <EvidenceChip key={i} evidence={evidence} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* What This Means */}
-            <div className="pt-3 border-t border-gray-200">
-              <p className="text-xs font-semibold text-purple-700 mb-1">💡 What this means for you:</p>
+            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1">💡 What this means for you:</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 italic">{person.whatThisMeans}</p>
             </div>
             </div>
