@@ -25,7 +25,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold text-gray-500 dark:text-gray-400 mb-1">
-              Coach Mode
+              Resume Coach
             </h3>
             <p className="text-sm text-gray-400 dark:text-gray-500">
               Run Match Score or Company Intelligence analysis first to unlock
@@ -54,17 +54,17 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
   const tierConfig = {
     low: {
       bg: 'from-red-500 to-orange-500',
-      text: 'Score Low ({scorePercent}%) - Coach Mode can help bridge gaps',
+      text: 'Score Low ({scorePercent}%) - Resume Coach can help bridge gaps',
       icon: Target,
     },
     medium: {
       bg: 'from-yellow-500 to-amber-500',
-      text: 'Score Medium ({scorePercent}%) - Coach Mode can optimize your application',
+      text: 'Score Medium ({scorePercent}%) - Resume Coach can optimize your application',
       icon: TrendingUp,
     },
     high: {
       bg: 'from-green-500 to-emerald-500',
-      text: 'Score High ({scorePercent}%) - Coach Mode will polish final details',
+      text: 'Score High ({scorePercent}%) - Resume Coach will polish final details',
       icon: CheckCircle2,
     },
   };
@@ -144,7 +144,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
               {config.text.replace('{scorePercent}', scorePercent.toString())}
             </h3>
             <p className="text-white/90 text-sm">
-              Build your extended profile, generate ATS-optimized resume, and prep for interviews
+              Build your extended profile, generate ATS-optimized resume, and improve your match score
             </p>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
           className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md flex items-center gap-2"
         >
           <Sparkles size={20} />
-          Enter Coach Mode
+          Enter Resume Coach
         </button>
       </div>
 
@@ -176,7 +176,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-white rounded-full" />
-            <span>Interview Prep</span>
+            <span>Cover Letter</span>
           </div>
         </div>
       </div>

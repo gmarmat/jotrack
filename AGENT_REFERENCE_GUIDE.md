@@ -12,13 +12,13 @@
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach  
-**Last UI Update**: October 21, 2025 - Compact timeline row, settings modal fix, keyword match optimization
+**Last UI Update**: October 21, 2025 - Coach rebranding, two-column coach layout, compact timeline row, settings modal fix, keyword match optimization
 
 ### The Complete System (High-Level)
 
 **JoTrack helps users land jobs through TWO major features**:
 
-**1. Application Coach (Pre-Interview)**
+**1. Resume Coach (Pre-Application)**
 ```
 User uploads Resume + Job Description
     ↓
@@ -1225,16 +1225,24 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 
 ### Recent UI Improvements (October 21, 2025)
 
-**1. Compact Timeline Row**
+**1. Coach Rebranding & Two-Column Layout**
+- Renamed "Coach Mode" → "Resume Coach" for clarity
+- Created two-column layout showcasing both coach features
+- Resume Coach: Pre-application optimization (resume, cover letter, score improvement)
+- Interview Coach: Post-application preparation (questions, answers, talk tracks)
+- Clear prerequisites: Resume Coach needs Match Score OR Company Intel, Interview Coach needs BOTH Match Score AND Skills Analysis
+- Three states: Locked (no prereqs), Waiting (prereqs met but not applied), Available (ready to use)
+
+**2. Compact Timeline Row**
 - Added job title and company name to collapsed timeline
 - Centered job info with compact stacked dates on right
 - Prevents user confusion when scrolling down
 
-**2. Settings Modal Positioning**
+**3. Settings Modal Positioning**
 - Fixed clipping issue with collapsible control bar
 - Modal now opens below control bar with proper spacing
 
-**3. Keyword Match Optimization**
+**4. Keyword Match Optimization**
 - Replaced word cloud with compact, readable format
 - Reduced font sizes for space efficiency
 - Removed detailed popup for cleaner interface

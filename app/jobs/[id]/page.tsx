@@ -9,6 +9,7 @@ import JobNotesCard from '@/app/components/jobs/JobNotesCard';
 import StatusChipDropdown from '@/app/components/jobs/StatusChipDropdown';
 import AiShowcase from '@/app/components/jobs/AiShowcase';
 import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
+import InterviewCoachEntryCard from '@/app/components/coach/InterviewCoachEntryCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
@@ -1192,16 +1193,27 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* 2.5. Coach Mode Entry Card */}
-        <CoachModeEntryCard
-          jobId={job.id}
-          matchScore={aiData?.matchScore || 0}
-          coachStatus={job.coachStatus || 'not_started'}
-          hasBasicAnalysis={
-            (aiData?.matchScore || 0) > 0 || 
-            !!job.companyIntelligenceData
-          }
-        />
+        {/* 2.5. Coach Modes - Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Resume Coach */}
+          <CoachModeEntryCard
+            jobId={job.id}
+            matchScore={aiData?.matchScore || 0}
+            coachStatus={job.coachStatus || 'not_started'}
+            hasBasicAnalysis={
+              (aiData?.matchScore || 0) > 0 || 
+              !!job.companyIntelligenceData
+            }
+          />
+          
+          {/* Interview Coach */}
+          <InterviewCoachEntryCard
+            jobId={job.id}
+            currentStatus={currentStatus}
+            hasMatchScore={(aiData?.matchScore || 0) > 0}
+            hasSkillsAnalysis={!!aiData?.skillsMatch}
+          />
+        </div>
 
         {/* 3. AI Showcase: Full-width grid */}
         <div id="ai-showcase">
@@ -1219,80 +1231,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         />
         </div>
 
-        {/* 3.5. Interview Coach Entry Point (Post-Application) */}
-        {currentStatus !== 'ON_RADAR' && (
-          <div className="mt-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-8 shadow-2xl">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-2xl font-bold mb-2 flex items-center gap-2">
-                  🎯 Interview Scheduled?
-                </h3>
-                <p className="text-purple-100 mb-2">
-                  Let's help you ace it! Interview Coach will:
-                </p>
-                <ul className="text-sm text-purple-100 space-y-1 ml-4 list-disc">
-                  <li>Search Glassdoor, Reddit, Blind for real interview questions</li>
-                  <li>Help you draft & score answers (0-100 with AI feedback)</li>
-                  <li>Generate professional STAR talk tracks</li>
-                  <li>Extract 2-3 core stories that cover 90% of questions</li>
-                </ul>
-              </div>
-              <div className="hidden md:block bg-white/20 rounded-xl p-4 backdrop-blur-sm text-center">
-                <div className="text-3xl font-bold">2-3</div>
-                <div className="text-xs text-purple-100">Core Stories</div>
-                <div className="text-xs text-purple-200 mt-1">cover 90%</div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link href={`/interview-coach/${job.id}?type=recruiter`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">📞</span>
-                  <span className="text-lg">Recruiter Screen</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    Culture fit • Motivation • Basics
-                  </span>
-                </button>
-              </Link>
-              
-              <Link href={`/interview-coach/${job.id}?type=hiring-manager`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">👨‍💼</span>
-                  <span className="text-lg">Hiring Manager</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    STAR stories • Leadership • Projects
-                  </span>
-                </button>
-              </Link>
-              
-              <Link href={`/interview-coach/${job.id}?type=peer`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">👥</span>
-                  <span className="text-lg">Peer / Panel</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    System design • Team collaboration
-                  </span>
-                </button>
-              </Link>
-            </div>
-            
-            <div className="mt-6 bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-              <p className="text-sm text-purple-50 font-medium mb-2">
-                💡 What happens when you click:
-              </p>
-              <ol className="text-xs text-purple-100 space-y-1 ml-4 list-decimal">
-                <li>We search interview questions (Glassdoor, Reddit, Blind) - 30 seconds</li>
-                <li>You select 5-8 questions to prepare</li>
-                <li>Draft answers, get AI scores (0-100), improve with follow-ups</li>
-                <li>Generate STAR talk tracks when ready</li>
-                <li>Extract 2-3 core stories to memorize</li>
-              </ol>
-            </div>
-          </div>
-        )}
 
         {/* 4. Timeline Detail - Removed (deprecated) */}
       </div>
