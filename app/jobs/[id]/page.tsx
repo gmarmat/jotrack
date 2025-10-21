@@ -1039,16 +1039,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
               
               {/* Right Sub-Column: Attachments Button */}
-              <div className="flex items-end">
+              <div className="flex items-center">
                 <button
                   onClick={() => setShowAttachmentsModal(true)}
-                  className="px-4 py-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex flex-col items-center gap-2"
+                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-xs"
                   data-testid="attachments-button-header"
                 >
-                  <Paperclip size={20} />
-                  <span className="text-xs">Attachments</span>
+                  <Paperclip size={14} />
+                  <span>Attachments</span>
                   {attachmentCount > 0 && (
-                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
                       {attachmentCount}
                     </span>
                   )}
@@ -1058,56 +1058,76 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
             {/* Column 2: Data Pipeline with AI Button */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with AI Extract button */}
+              {/* Header with AI button (standardized) */}
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <span className="text-lg">📄</span>
                   Data Pipeline
                 </h3>
-                {/* AI Extract Button */}
-                {stalenessInfo?.severity === 'no_variants' ? (
-                  <button
-                    onClick={handleRefreshVariants}
-                    disabled={refreshing}
-                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors flex items-center gap-1"
-                  >
-                    {refreshing ? (
-                      <>
-                        <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Extracting...
-                      </>
-                    ) : (
-                      <>⚡ Extract (~$0.02)</>
-                    )}
-                  </button>
-                ) : (
-                  <div className="text-right">
+                {/* AI Button - Standardized */}
+                <div className="text-right">
+                  {stalenessInfo?.severity === 'no_variants' ? (
                     <button
-                      onClick={handleGlobalAnalyze}
-                      disabled={analyzing}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors mb-1"
+                      onClick={handleRefreshVariants}
+                      disabled={refreshing}
+                      className="group relative px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors"
+                      title="Extract AI variants (~$0.02)"
                     >
-                      {analyzing ? 'Analyzing...' : '⚡ AI'}
+                      {refreshing ? (
+                        <>
+                          <svg className="animate-spin h-3 w-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span className="ml-1">Extracting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="group-hover:hidden">Extract</span>
+                          <span className="hidden group-hover:inline">~$0.02</span>
+                        </>
+                      )}
                     </button>
-                    {stalenessInfo?.variantsAnalyzedAt && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {(() => {
-                          const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                          const minutes = Math.floor(ageMs / 60000);
-                          const hours = Math.floor(ageMs / 3600000);
-                          const days = Math.floor(ageMs / 86400000);
-                          
-                          if (minutes < 60) return `${minutes}m ago`;
-                          if (hours < 24) return `${hours}h ago`;
-                          return `${days}d ago`;
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleGlobalAnalyze}
+                        disabled={analyzing}
+                        className="group relative px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors mb-1"
+                        title="Analyze all sections (~$0.05)"
+                      >
+                        {analyzing ? (
+                          <>
+                            <svg className="animate-spin h-3 w-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="ml-1">Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="group-hover:hidden">Analyze All</span>
+                            <span className="hidden group-hover:inline">~$0.05</span>
+                          </>
+                        )}
+                      </button>
+                      {stalenessInfo?.variantsAnalyzedAt && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Analyzed {(() => {
+                            const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                            const minutes = Math.floor(ageMs / 60000);
+                            const hours = Math.floor(ageMs / 3600000);
+                            const days = Math.floor(ageMs / 86400000);
+                            
+                            if (minutes < 60) return `${minutes}m ago`;
+                            if (hours < 24) return `${hours}h ago`;
+                            return `${days}d ago`;
+                          })()}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
               
               {/* Status Message */}
@@ -1115,126 +1135,74 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 {stalenessInfo?.message || 'Checking...'}
               </p>
 
-              {/* Variant Access Icons (Resume) */}
-              {(() => {
-                const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                return resumeAttachment && stalenessInfo?.hasVariants ? (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Resume:</p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            kind: resumeAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                          // TODO: Set default tab to 'ui' (raw)
-                        }}
-                        className="p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
-                        title="View UI (Raw)"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">UI (Raw)</span>
-                      
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            kind: resumeAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                          // TODO: Set default tab to 'ai_optimized'
-                        }}
-                        className="p-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 transition-colors"
-                        title="View AI Optimized"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Short</span>
-                      
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            kind: resumeAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                          // TODO: Set default tab to 'detailed'
-                        }}
-                        className="p-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 transition-colors"
-                        title="View Detailed"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Long</span>
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-              
-              {/* Variant Access Icons (JD) */}
-              {(() => {
-                const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                return jdAttachment && stalenessInfo?.hasVariants ? (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">JD:</p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            kind: jdAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }}
-                        className="p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
-                        title="View UI (Raw)"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">UI (Raw)</span>
-                      
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            kind: jdAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }}
-                        className="p-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 transition-colors"
-                        title="View AI Optimized"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Short</span>
-                      
-                      <button
-                        onClick={() => {
-                          setSelectedAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            kind: jdAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }}
-                        className="p-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 transition-colors"
-                        title="View Detailed"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Long</span>
-                    </div>
-                  </div>
-                ) : null;
-              })()}
+              {/* Variant Access Icons (Compact) */}
+              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
+                <div className="space-y-2">
+                  {/* Resume Variants */}
+                  {(() => {
+                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                    return resumeAttachment ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">Resume:</span>
+                        <button
+                          onClick={() => {/* TODO: Open UI variant directly */}}
+                          className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
+                          title="View UI (Raw)"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <button
+                          onClick={() => {/* TODO: Open AI Short variant directly */}}
+                          className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
+                          title="View AI Optimized"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <button
+                          onClick={() => {/* TODO: Open AI Long variant directly */}}
+                          className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
+                          title="View Detailed"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-1">UI / AI-S / AI-L</span>
+                      </div>
+                    ) : null;
+                  })()}
+                  
+                  {/* JD Variants */}
+                  {(() => {
+                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                    return jdAttachment ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">JD:</span>
+                        <button
+                          onClick={() => {/* TODO: Open UI variant directly */}}
+                          className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
+                          title="View UI (Raw)"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <button
+                          onClick={() => {/* TODO: Open AI Short variant directly */}}
+                          className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
+                          title="View AI Optimized"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <button
+                          onClick={() => {/* TODO: Open AI Long variant directly */}}
+                          className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
+                          title="View Detailed"
+                        >
+                          <Eye size={12} />
+                        </button>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-1">UI / AI-S / AI-L</span>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
               
               {/* Intermediate Status Messages */}
               {(refreshing || analyzing) && (

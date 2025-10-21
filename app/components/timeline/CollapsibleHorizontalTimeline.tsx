@@ -181,34 +181,33 @@ export default function CollapsibleHorizontalTimeline({
             {/* Divider */}
             <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
 
-            {/* Metadata */}
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+            {/* Metadata (Vertical Stack for Compact Layout) */}
+            <div className="flex flex-col items-end gap-0.5 text-[10px] leading-tight">
               {createdAt && (
-                <>
-                  <span className="font-medium">{formatDateTime(createdAt)}</span>
-                  <span>•</span>
-                </>
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  {formatDateTime(createdAt)}
+                </span>
               )}
-              {updatedAt && (
-                <>
-                  <span className="font-medium">{formatDateTime(updatedAt)}</span>
-                  {delta && <span>•</span>}
-                </>
-              )}
-              
-              {/* Delta Chip */}
-              {delta && (
-                <div 
-                  className={`px-2 py-0.5 rounded-full font-semibold text-xs ${
-                    delta.isStale
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                  }`}
-                  title={`In current status for ${delta.days} days`}
-                >
-                  {delta.label}
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                {updatedAt && (
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
+                    {formatDateTime(updatedAt)}
+                  </span>
+                )}
+                {/* Delta Chip */}
+                {delta && (
+                  <div 
+                    className={`px-1.5 py-0.5 rounded-full font-semibold text-[9px] ${
+                      delta.isStale
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                    }`}
+                    title={`In current status for ${delta.days} days`}
+                  >
+                    {delta.label}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Divider */}

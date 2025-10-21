@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Edit3, Plus, FileText, Sparkles, RotateCcw } from 'lucide-react';
+import { Edit3, FileText, Sparkles, RotateCcw } from 'lucide-react';
 import AnalyzeButton from '../ai/AnalyzeButton';
 
 interface JobNotesCardProps {
@@ -48,12 +48,6 @@ export default function JobNotesCard({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleAddBullet = () => {
-    const newText = notes.trim() ? `${notes}\n• ` : '• ';
-    setNotes(newText);
-    setIsEditing(true);
   };
 
   const handleAiSummarize = async () => {
@@ -120,16 +114,6 @@ export default function JobNotesCard({
               <RotateCcw size={16} />
             </button>
           )}
-          
-          <button
-            onClick={handleAddBullet}
-            className="flex items-center gap-1 px-2 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-            data-testid="add-bullet-button"
-            title="Add bullet point"
-          >
-            <Plus size={16} />
-            Bullet
-          </button>
           
           <button
             onClick={() => setIsEditing(!isEditing)}
