@@ -3,14 +3,17 @@
 import { useState } from 'react';
 import { ExternalLink, X } from 'lucide-react';
 
+export type EvidencePlatform = 'linkedin' | 'glassdoor' | 'reddit' | 'blind' | 'other';
+export type EvidenceConfidence = 'high' | 'medium' | 'low';
+
 export interface Evidence {
-  platform: 'linkedin' | 'glassdoor' | 'reddit' | 'blind' | 'other';
+  platform: EvidencePlatform;
   quote: string;
   fullQuote?: string;
   context?: string;
   url?: string;
   date?: string;
-  confidence?: 'high' | 'medium' | 'low';
+  confidence?: EvidenceConfidence;
   author?: string;
 }
 
