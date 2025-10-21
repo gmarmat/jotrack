@@ -19,6 +19,9 @@ interface CollapsibleHorizontalTimelineProps {
   currentStatusEnteredAt?: number;
   jdAttachmentId?: string | null;
   onViewJd?: () => void;
+  // Job info for collapsed view
+  jobTitle?: string;
+  companyName?: string;
 }
 
 export default function CollapsibleHorizontalTimeline({
@@ -31,6 +34,8 @@ export default function CollapsibleHorizontalTimeline({
   currentStatusEnteredAt,
   jdAttachmentId,
   onViewJd,
+  jobTitle,
+  companyName,
 }: CollapsibleHorizontalTimelineProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -131,6 +136,20 @@ export default function CollapsibleHorizontalTimeline({
               Step {currentIndex + 1} of {ORDERED_STATUSES.length}
             </span>
           </div>
+
+          {/* Center: Job Title + Company (NEW!) */}
+          {(jobTitle || companyName) && (
+            <div className="flex-1 text-center px-4">
+              <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                {jobTitle || 'Untitled'}
+              </div>
+              {companyName && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                  {companyName}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Right: Header Actions */}
           <div className="flex items-center gap-2">

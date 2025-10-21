@@ -288,8 +288,9 @@ export default function InterviewCoachPage() {
               }
               
               // Get competitive advantages
-              const competitiveAdvantages = analysisData.matchScoreData?.skillsMatch
-                ? analysisData.matchScoreData.skillsMatch
+              const skillsMatch = analysisData.matchScoreData?.skillsMatch || [];
+              const competitiveAdvantages = Array.isArray(skillsMatch)
+                ? skillsMatch
                     .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
                     .slice(0, 3)
                 : [];
