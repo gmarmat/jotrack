@@ -947,11 +947,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </h1>
               
               {/* Company and Status */}
-              <div className="flex items-center gap-2 mb-4">
-                <p className="text-base text-gray-600 dark:text-gray-400" data-testid="job-company">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-base text-gray-600 dark:text-gray-400 flex-1" data-testid="job-company">
                   {job.company}
                 </p>
-                <span className="text-gray-400">..........</span>
                 <StatusChipDropdown 
                   jobId={job.id} 
                   currentStatus={currentStatus}
@@ -980,6 +979,25 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 <div className="flex-1 space-y-1">
                   {/* Resume */}
                   <div className="flex items-center gap-2 text-xs">
+                    {(() => {
+                      const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                      return resumeAttachment ? (
+                        <button
+                          onClick={() => setViewingAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            textContent: resumeAttachment.text_content || 'No content available',
+                            kind: 'resume'
+                          })}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="Preview Resume"
+                        >
+                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                      ) : (
+                        <div className="w-6 h-6"></div>
+                      );
+                    })()}
                     <span className="text-gray-700 dark:text-gray-300 font-medium">Resume:</span>
                     <span className="text-gray-900 dark:text-gray-100">
                       {(() => {
@@ -1000,6 +1018,25 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   
                   {/* JD */}
                   <div className="flex items-center gap-2 text-xs">
+                    {(() => {
+                      const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                      return jdAttachment ? (
+                        <button
+                          onClick={() => setViewingAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            textContent: jdAttachment.text_content || 'No content available',
+                            kind: 'jd'
+                          })}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="Preview Job Description"
+                        >
+                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                      ) : (
+                        <div className="w-6 h-6"></div>
+                      );
+                    })()}
                     <span className="text-gray-700 dark:text-gray-300 font-medium">JD:</span>
                     <span className="text-gray-900 dark:text-gray-100">
                       {(() => {
@@ -1020,6 +1057,25 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   
                   {/* Cover Letter */}
                   <div className="flex items-center gap-2 text-xs">
+                    {(() => {
+                      const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                      return clAttachment ? (
+                        <button
+                          onClick={() => setViewingAttachment({
+                            id: clAttachment.id,
+                            filename: clAttachment.filename,
+                            textContent: clAttachment.text_content || 'No content available',
+                            kind: 'cover_letter'
+                          })}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="Preview Cover Letter"
+                        >
+                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                      ) : (
+                        <div className="w-6 h-6"></div>
+                      );
+                    })()}
                     <span className="text-gray-700 dark:text-gray-300 font-medium">Cover Letter:</span>
                     <span className="text-gray-900 dark:text-gray-100">
                       {(() => {
@@ -1096,10 +1152,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
               </div>
               
-              {/* Simple Description */}
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                Documents will be converted into 3 variants for analysis.
-              </p>
+              {/* Detailed Description */}
+              <div className="mb-4">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  AI extracts 3 document variants for comprehensive analysis:
+                </p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 ml-2">
+                  <li>• <strong>UI (Raw):</strong> Original uploaded text</li>
+                  <li>• <strong>AI Short:</strong> Optimized, concise version</li>
+                  <li>• <strong>AI Long:</strong> Detailed, comprehensive version</li>
+                </ul>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                  Click "Analyze All" to process all sections with these variants.
+                </p>
+              </div>
 
               {/* Variant Access Icons (Compact) */}
               {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
