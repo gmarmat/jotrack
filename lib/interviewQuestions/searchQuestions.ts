@@ -1,4 +1,5 @@
 import { searchWeb } from '@/lib/analysis/tavilySearch';
+import { extractWebIntelligence, type WebIntelligence } from '@/lib/interview/webIntelligence';
 
 export interface SearchedQuestion {
   question: string;
@@ -10,59 +11,91 @@ export interface SearchedQuestion {
 
 /**
  * Search the web for real interview questions using Tavily
+ * V2.0: Returns rich intelligence (8 dimensions), not just questions!
  * @param companyName - Company name (e.g., "Google", "Amazon")
  * @param roleTitle - Job title (e.g., "Software Engineer", "Product Manager")
- * @returns Object with questions array and source URLs
+ * @param interviewerNames - Optional: Names of interviewers to validate
+ * @returns Object with questions, web intelligence, and source URLs
  */
 export async function searchInterviewQuestions(
   companyName: string,
-  roleTitle: string
-): Promise<{ questions: SearchedQuestion[]; sources: string[] }> {
+  roleTitle: string,
+  interviewerNames: string[] = []
+): Promise<{ 
+  questions: SearchedQuestion[]; 
+  sources: string[];
+  webIntelligence: WebIntelligence;
+}> {
   console.log(`🔍 Searching interview questions for ${companyName} - ${roleTitle}...`);
   
-  // Build search query optimized for interview question sites
-  const query = `${companyName} ${roleTitle} interview questions experiences glassdoor blind`;
+  // Build search queries (multiple for richer data)
+  const queries = [
+    `${companyName} ${roleTitle} interview questions site:glassdoor.com`,
+    `${companyName} interview experience site:reddit.com`,
+    `${companyName} ${roleTitle} interview site:teamblind.com`,
+  ];
+  
+  // Add interviewer-specific searches if names provided
+  interviewerNames.forEach(name => {
+    queries.push(`${name} ${companyName} interview site:glassdoor.com`);
+  });
   
   try {
-    const searchResponse = await searchWeb(query, {
-      maxResults: 10,
-      searchDepth: 'advanced'
-    });
+    // Execute all searches in parallel
+    const searchPromises = queries.map(query => 
+      searchWeb(query, {
+        maxResults: 5,
+        searchDepth: 'advanced'
+      })
+    );
     
-    if (!searchResponse.success || !searchResponse.results || searchResponse.results.length === 0) {
+    const searchResponses = await Promise.all(searchPromises);
+    
+    // Combine all results
+    const allResults = searchResponses
+      .filter(r => r.success && r.results)
+      .flatMap(r => r.results);
+    
+    if (allResults.length === 0) {
       console.log('⚠️ No search results found');
-      return { questions: [], sources: [] };
+      return { 
+        questions: [], 
+        sources: [],
+        webIntelligence: {
+          questions: [],
+          interviewerValidations: {},
+          successPatterns: [],
+          failurePatterns: [],
+          warnings: [],
+          processIntel: {},
+          salaryData: { offers: [] },
+          culturalSignals: []
+        }
+      };
     }
     
-    // Extract questions from search results
-    const questions: SearchedQuestion[] = [];
-    const sources: string[] = [];
+    // V2.0: Extract rich intelligence (8 dimensions!)
+    const webIntelligence = extractWebIntelligence(allResults, interviewerNames);
     
-    for (const result of searchResponse.results) {
-      // Parse content for question patterns
-      const content = result.content || '';
-      const questionMatches = extractQuestions(content);
-      
-      for (const question of questionMatches) {
-        questions.push({
-          question,
-          source: result.title || 'Unknown',
-          url: result.url,
-          category: categorizeQuestion(question)
-        });
-      }
-      
-      sources.push(result.url);
-    }
+    console.log(`✅ Found ${webIntelligence.questions.length} questions from ${allResults.length} sources`);
+    console.log(`✅ Interviewer validations:`, Object.keys(webIntelligence.interviewerValidations));
+    console.log(`✅ Success patterns:`, webIntelligence.successPatterns.length);
+    console.log(`✅ Warnings:`, webIntelligence.warnings.length);
     
-    // Deduplicate questions
-    const uniqueQuestions = deduplicateQuestions(questions);
+    // Convert to old format for backwards compatibility
+    const questions: SearchedQuestion[] = webIntelligence.questions.map(q => ({
+      question: q,
+      source: 'Web Search',
+      url: '',
+      category: categorizeQuestion(q)
+    }));
     
-    console.log(`✅ Found ${uniqueQuestions.length} unique questions from ${sources.length} sources`);
+    const sources = allResults.map(r => r.url).filter(Boolean);
     
     return {
-      questions: uniqueQuestions.slice(0, 30), // Cap at 30 questions
-      sources: Array.from(new Set(sources))    // Deduplicate sources
+      questions: questions.slice(0, 50), // Increased cap for V2.0
+      sources: Array.from(new Set(sources)),
+      webIntelligence  // NEW! Rich intelligence data
     };
   } catch (error) {
     console.error('❌ Interview question search failed:', error);

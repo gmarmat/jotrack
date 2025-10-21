@@ -28,6 +28,24 @@ export async function POST(
     
     console.log(`🔍 Searching interview questions for ${companyName} - ${roleTitle}...`);
     
+    // V2.0: Load interviewer names from People Profiles for validation
+    let interviewerNames: string[] = [];
+    try {
+      const peopleAnalysis = sqlite.prepare(`
+        SELECT result_json FROM people_analyses WHERE job_id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      if (peopleAnalysis && peopleAnalysis.result_json) {
+        const peopleProfiles = JSON.parse(peopleAnalysis.result_json);
+        if (peopleProfiles?.profiles) {
+          interviewerNames = peopleProfiles.profiles.map((p: any) => p.name).filter(Boolean);
+          console.log(`✅ Will validate ${interviewerNames.length} interviewers:`, interviewerNames);
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ No people profiles found, skipping interviewer validation');
+    }
+    
     // Check cache first (90 day TTL)
     const now = Math.floor(Date.now() / 1000);
     const normalizedCompany = companyName.toLowerCase().trim();
@@ -63,9 +81,10 @@ export async function POST(
     
     // No cache - search web for questions
     console.log('🌐 No cache found, searching web with Tavily...');
-    const { questions, sources } = await searchInterviewQuestions(
+    const { questions, sources, webIntelligence } = await searchInterviewQuestions(
       companyName,
-      roleTitle
+      roleTitle,
+      interviewerNames  // V2.0: Pass interviewer names for validation!
     );
     
     if (questions.length === 0) {
