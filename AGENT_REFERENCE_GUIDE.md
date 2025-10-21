@@ -50,7 +50,7 @@ Tailored Questions (30-40) + Optimized Talk Tracks (8-10) + Core Stories (2-3)
 User prepares for interview with personalized guidance
 ```
 
-**Key Insight**: Match Matrix signals (60) are skill measurements. Interview Coach layers (7 current, 8 planned) are context inputs. Match signals AGGREGATE into Interview Coach Layer 1.
+**Key Insight**: Match Matrix signals (60) are skill measurements. Interview Coach layers (8 total, all implemented) are context inputs. Match signals AGGREGATE into Interview Coach Layer 1.
 
 **This is ONE system with TWO features working together seamlessly.**
 
