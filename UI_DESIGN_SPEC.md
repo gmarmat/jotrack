@@ -236,6 +236,169 @@ Before making ANY UI changes:
 
 ---
 
-**Last Updated**: 2025-10-10
-**Version**: 0.3.0
+---
+
+## Coach Feature Cards
+
+### Resume Coach & Interview Coach Cards
+
+**Purpose**: Showcase our two flagship features with clear value propositions and prerequisites
+
+#### Available State (Prerequisites Met)
+```tsx
+<div className="bg-gradient-to-br from-[color1] to-[color2] rounded-2xl p-8 text-white shadow-xl">
+  {/* Header with Icon */}
+  <div className="flex items-center gap-3 mb-3">
+    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+      <Icon size={28} />
+    </div>
+    <div>
+      <h3 className="text-2xl font-bold">[Feature Name]</h3>
+      <p className="text-white/80 text-sm">[Phase Label]</p>
+    </div>
+  </div>
+  
+  {/* Description */}
+  <p className="text-white/90 text-base mb-4 leading-relaxed">
+    [Feature description with key benefits]
+  </p>
+  
+  {/* Feature List (2x2 grid) */}
+  <div className="grid grid-cols-2 gap-3 mb-6">
+    <div className="flex items-center gap-2 text-sm">
+      <CheckCircle2 size={16} className="flex-shrink-0" />
+      <span>[Feature 1]</span>
+    </div>
+    {/* 3 more features */}
+  </div>
+  
+  {/* CTA Button - Full Width */}
+  <button className="w-full px-6 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg 
+                     hover:bg-gray-50 transition-all shadow-lg flex items-center 
+                     justify-center gap-3 group">
+    <Icon size={24} className="group-hover:scale-110 transition-transform" />
+    <span>[Action Text]</span>
+    <span className="text-2xl">→</span>
+  </button>
+</div>
+```
+
+#### Locked State (Prerequisites Not Met)
+```tsx
+<div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/50 
+                dark:to-gray-800/50 rounded-2xl p-8 border-2 border-dashed 
+                border-gray-300 dark:border-gray-700 shadow-lg">
+  {/* Header */}
+  <div className="flex items-center gap-3 mb-4">
+    <div className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg">
+      <Icon size={28} className="text-gray-400 dark:text-gray-500" />
+    </div>
+    <div>
+      <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300">[Feature Name]</h3>
+      <p className="text-gray-500 dark:text-gray-400 text-sm">[Phase Label]</p>
+    </div>
+  </div>
+  
+  {/* Teaser Description */}
+  <p className="text-gray-600 dark:text-gray-400 text-base mb-4 leading-relaxed">
+    [Feature teaser to educate and entice user]
+  </p>
+  
+  {/* Feature Teaser List (2x2 grid) */}
+  <div className="grid grid-cols-2 gap-3 mb-4">
+    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+      <Icon size={16} className="flex-shrink-0" />
+      <span>[Feature 1]</span>
+    </div>
+    {/* 3 more features */}
+  </div>
+  
+  {/* Prerequisites Checklist */}
+  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border 
+                  border-gray-200 dark:border-gray-700 mb-4">
+    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+      🔒 Unlock Requirements:
+    </p>
+    <div className="space-y-2">
+      {/* Checkboxes with conditional styling */}
+      <div className="flex items-center gap-2 text-sm">
+        {complete ? <CheckCircle2 className="text-green-500" /> : <div className="w-4 h-4 border-2 border-gray-300 rounded" />}
+        <span className={complete ? "text-green-600" : "text-gray-600"}>[Requirement]</span>
+      </div>
+    </div>
+  </div>
+  
+  {/* Locked Button */}
+  <button disabled className="w-full px-6 py-4 bg-gray-200 dark:bg-gray-700 
+                              text-gray-500 dark:text-gray-400 rounded-xl font-bold text-lg 
+                              cursor-not-allowed flex items-center justify-center gap-3">
+    <span className="text-2xl">🔒</span>
+    <span>Locked - Complete Prerequisites</span>
+  </button>
+</div>
+```
+
+#### Waiting State (Prerequisites Met, But Not Yet Applicable)
+```tsx
+<div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 
+                dark:to-indigo-900/30 rounded-2xl p-8 border-2 border-blue-300 
+                dark:border-blue-700 shadow-lg">
+  {/* Header */}
+  <div className="flex items-center gap-3 mb-4">
+    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+      <Icon size={28} className="text-blue-600 dark:text-blue-300" />
+    </div>
+    <div>
+      <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">[Feature Name]</h3>
+      <p className="text-blue-600 dark:text-blue-300 text-sm">[Phase Label]</p>
+    </div>
+  </div>
+  
+  {/* Almost Ready Message */}
+  <div className="bg-blue-100 dark:bg-blue-900/50 rounded-lg p-4 mb-4">
+    <p className="text-blue-800 dark:text-blue-200 text-base font-semibold mb-2">
+      ✅ Prerequisites Complete!
+    </p>
+    <p className="text-blue-700 dark:text-blue-300 text-sm">
+      [Next step instructions]
+    </p>
+  </div>
+  
+  {/* Feature Preview (2x2 grid with checkmarks) */}
+  <div className="grid grid-cols-2 gap-3 mb-6">
+    <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+      <CheckCircle2 size={16} className="flex-shrink-0" />
+      <span>[Feature 1]</span>
+    </div>
+  </div>
+  
+  {/* Waiting Button */}
+  <button disabled className="w-full px-6 py-4 bg-blue-200 dark:bg-blue-800 
+                              text-blue-600 dark:text-blue-300 rounded-xl font-bold text-lg 
+                              cursor-not-allowed flex items-center justify-center gap-3">
+    <span className="text-2xl">⏳</span>
+    <span>[Waiting Message]</span>
+  </button>
+</div>
+```
+
+**Design Principles**:
+- **Three Clear States**: Locked → Waiting → Available
+- **Educational**: Locked state teases features and shows prerequisites
+- **Encouraging**: Waiting state celebrates progress and shows next step
+- **Actionable**: Available state has prominent CTA with hover animation
+- **Consistent Layout**: All states use similar structure for familiarity
+- **Visual Hierarchy**: Icon + Title → Description → Features → CTA
+- **Full-Width Buttons**: Coach CTAs use full width for prominence
+
+**Color Schemes**:
+- Resume Coach (Available): `from-green-500 to-emerald-500` (success gradient)
+- Interview Coach (Available): `from-purple-600 to-blue-600` (action gradient)
+- Locked State: Gray with dashed border (neutral, disabled)
+- Waiting State: Blue gradient with solid border (progress, almost ready)
+
+---
+
+**Last Updated**: 2025-10-21
+**Version**: 0.4.0
 

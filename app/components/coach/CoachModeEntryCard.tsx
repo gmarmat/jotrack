@@ -133,53 +133,55 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
   }
 
   return (
-    <div className={`mb-8 bg-gradient-to-r ${config.bg} rounded-2xl p-6 text-white shadow-lg`} data-testid="coach-mode-entry-card">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/20 rounded-xl">
-            <Icon size={32} />
+    <div className={`bg-gradient-to-br ${config.bg} rounded-2xl p-8 text-white shadow-xl`} data-testid="coach-mode-entry-card">
+      {/* Header with Score Badge */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <Icon size={28} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold">Resume Coach</h3>
+              <p className="text-white/80 text-sm">Pre-Application Optimization</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-2xl font-bold mb-1">
-              {config.text.replace('{scorePercent}', scorePercent.toString())}
-            </h3>
-            <p className="text-white/90 text-sm">
-              Build your extended profile, generate ATS-optimized resume, and improve your match score
-            </p>
-          </div>
+          <p className="text-white/90 text-base mb-4 leading-relaxed">
+            Build your extended profile, generate ATS-optimized resume, and improve your match score from <span className="font-bold text-white">{scorePercent}%</span>
+          </p>
         </div>
-        
-        <button
-          onClick={() => router.push(`/coach/${jobId}`)}
-          data-testid="enter-coach-mode"
-          className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md flex items-center gap-2"
-        >
-          <Sparkles size={20} />
-          Enter Resume Coach
-        </button>
       </div>
 
-      {/* Quick Preview of What's Inside */}
-      <div className="mt-4 pt-4 border-t border-white/20">
-        <div className="grid grid-cols-4 gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white rounded-full" />
-            <span>Discovery Questions</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white rounded-full" />
-            <span>Score Improvement</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white rounded-full" />
-            <span>Resume Generator</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white rounded-full" />
-            <span>Cover Letter</span>
-          </div>
+      {/* Feature List */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle2 size={16} className="flex-shrink-0" />
+          <span>Discovery Questions</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle2 size={16} className="flex-shrink-0" />
+          <span>Score Improvement</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle2 size={16} className="flex-shrink-0" />
+          <span>Resume Generator</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <CheckCircle2 size={16} className="flex-shrink-0" />
+          <span>Cover Letter</span>
         </div>
       </div>
+
+      {/* CTA Button */}
+      <button
+        onClick={() => router.push(`/coach/${jobId}`)}
+        data-testid="enter-coach-mode"
+        className="w-full px-6 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all shadow-lg flex items-center justify-center gap-3 group"
+      >
+        <Sparkles size={24} className="group-hover:scale-110 transition-transform" />
+        <span>Start Resume Coach</span>
+        <span className="text-2xl">→</span>
+      </button>
     </div>
   );
 }
