@@ -869,12 +869,26 @@ function DeveloperTab() {
   const [selectedPromptKind, setSelectedPromptKind] = useState('');
 
   const prompts = [
-    { kind: 'analyze', label: 'Job Analysis' },
-    { kind: 'compare', label: 'Resume Comparison' },
-    { kind: 'improve', label: 'Resume Improvement' },
-    { kind: 'company', label: 'Company Intelligence' },
-    { kind: 'people', label: 'People Profiles' },
-    { kind: 'matchSignals', label: 'Match Signals (50)' },
+    // Job Analysis Prompts
+    { kind: 'analyze', label: 'Job Analysis', category: 'Job Analysis' },
+    { kind: 'compare', label: 'Resume Comparison', category: 'Job Analysis' },
+    { kind: 'company', label: 'Company Intelligence', category: 'Job Analysis' },
+    { kind: 'people', label: 'People Profiles', category: 'Job Analysis' },
+    { kind: 'matchSignals', label: 'Match Signals (50)', category: 'Job Analysis' },
+    
+    // Application Coach Prompts (Resume/Cover Letter)
+    { kind: 'improve', label: 'Resume Improvement', category: 'Application Coach' },
+    { kind: 'discovery', label: 'Discovery Questions', category: 'Application Coach' },
+    { kind: 'cover-letter', label: 'Cover Letter Generator', category: 'Application Coach' },
+    { kind: 'writing-style-evaluation', label: 'Writing Style Analysis', category: 'Application Coach' },
+    
+    // Interview Coach Prompts
+    { kind: 'coach-questions-recruiter', label: 'Recruiter Questions', category: 'Interview Coach' },
+    { kind: 'coach-questions-hiring-manager', label: 'Hiring Manager Questions', category: 'Interview Coach' },
+    { kind: 'coach-questions-peer-panel', label: 'Peer/Panel Questions', category: 'Interview Coach' },
+    { kind: 'talk-track-recruiter', label: 'Talk Track (Recruiter)', category: 'Interview Coach' },
+    { kind: 'talk-track-hiring-manager', label: 'Talk Track (Hiring Manager)', category: 'Interview Coach' },
+    { kind: 'talk-track-peer', label: 'Talk Track (Peer)', category: 'Interview Coach' },
   ];
 
   const handleOpenPromptEditor = (kind: string) => {
@@ -900,16 +914,53 @@ function DeveloperTab() {
           <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
             Edit AI prompts with Monaco Editor, version control, and live testing
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {prompts.map(({ kind, label }) => (
-              <button
-                key={kind}
-                onClick={() => handleOpenPromptEditor(kind)}
-                className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-left transition-colors"
-              >
-                {label}
-              </button>
-            ))}
+          
+          {/* Job Analysis Prompts */}
+          <div className="mb-4">
+            <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-400 mb-2">Job Analysis</h5>
+            <div className="grid grid-cols-2 gap-2">
+              {prompts.filter(p => p.category === 'Job Analysis').map(({ kind, label }) => (
+                <button
+                  key={kind}
+                  onClick={() => handleOpenPromptEditor(kind)}
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-left transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Application Coach Prompts */}
+          <div className="mb-4">
+            <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-400 mb-2">Application Coach (Pre-Interview)</h5>
+            <div className="grid grid-cols-2 gap-2">
+              {prompts.filter(p => p.category === 'Application Coach').map(({ kind, label }) => (
+                <button
+                  key={kind}
+                  onClick={() => handleOpenPromptEditor(kind)}
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-left transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Interview Coach Prompts */}
+          <div>
+            <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-400 mb-2">Interview Coach (Post-Application)</h5>
+            <div className="grid grid-cols-2 gap-2">
+              {prompts.filter(p => p.category === 'Interview Coach').map(({ kind, label }) => (
+                <button
+                  key={kind}
+                  onClick={() => handleOpenPromptEditor(kind)}
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-left transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

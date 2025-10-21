@@ -102,6 +102,8 @@ export default function CleanPeopleModal({ jobId, isOpen, onClose, onSave }: Cle
           name: newPerson.name.trim(),
           title: newPerson.title.trim(),
           relType: newPerson.role,
+          recruiterType: newPerson.role === 'headhunter' ? 'headhunter' : newPerson.role === 'recruiter' ? 'company' : null,
+          searchFirmName: newPerson.role === 'headhunter' ? (newPerson as any).searchFirmName : null,
           manualText: newPerson.linkedinText.trim()
         })
       });
@@ -381,12 +383,42 @@ export default function CleanPeopleModal({ jobId, isOpen, onClose, onSave }: Cle
                   onChange={(e) => setNewPerson({...newPerson, role: e.target.value as any})}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
                 >
-                  <option value="recruiter">Recruiter</option>
+                  <option value="recruiter">Recruiter (Company)</option>
+                  <option value="headhunter">Headhunter (Executive Search)</option>
                   <option value="hiring_manager">Hiring Manager</option>
                   <option value="peer">Peer/Panel Interviewer</option>
                   <option value="other">Other</option>
                 </select>
+                {newPerson.role === 'headhunter' && (
+                  <p className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+                    🎯 Executive search firm - we'll tailor interview prep for long-term relationship building
+                  </p>
+                )}
               </div>
+              
+              {/* Search Firm (if headhunter) */}
+              {newPerson.role === 'headhunter' && (
+                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                  <label className="block text-sm font-medium text-purple-900 dark:text-purple-100 mb-1">
+                    Search Firm Name
+                  </label>
+                  <select
+                    value={(newPerson as any).searchFirmName || ''}
+                    onChange={(e) => setNewPerson({...newPerson, searchFirmName: e.target.value} as any)}
+                    className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+                  >
+                    <option value="">Select firm...</option>
+                    <option value="Korn Ferry">Korn Ferry</option>
+                    <option value="Heidrick & Struggles">Heidrick & Struggles</option>
+                    <option value="Egon Zehnder">Egon Zehnder</option>
+                    <option value="Spencer Stuart">Spencer Stuart</option>
+                    <option value="Russell Reynolds">Russell Reynolds</option>
+                    <option value="DHR Global">DHR Global</option>
+                    <option value="Boyden">Boyden</option>
+                    <option value="other">Other (will extract from profile)</option>
+                  </select>
+                </div>
+              )}
 
               {/* LinkedIn Text */}
               <div>
