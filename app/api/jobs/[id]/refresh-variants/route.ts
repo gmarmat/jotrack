@@ -282,7 +282,11 @@ export async function POST(
       );
     }
     
-    console.log(`📎 Found ${activeAttachments.length} active attachments`);
+    console.log(`📎 Found ${activeAttachments.length} active attachments:`);
+    activeAttachments.forEach(att => {
+      console.log(`   - ${att.kind}: ${att.filename} (v${att.version}, isActive=${att.isActive})`);
+    });
+    console.log('');
     
     const processed: ProcessedAttachment[] = [];
     let totalCost = 0;

@@ -145,13 +145,24 @@ export default function AttachmentsSection({
     return (
       <>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-            {rec.filename}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+              {rec.filename}
+            </span>
+            {rec.isActive && (
+              <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
+                <CheckCircle size={12} />
+                ACTIVE
+              </span>
+            )}
+            {rec.deletedAt && (
+              <span className="px-2 py-0.5 text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full">
+                DELETED
+              </span>
+            )}
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
             v{rec.version} • {formatFileSize(rec.size)} • {formatTimestamp(rec.createdAt)}
-            {rec.isActive && " • active"}
-            {rec.deletedAt && " • deleted"}
           </div>
         </div>
         <div className="flex items-center gap-1">

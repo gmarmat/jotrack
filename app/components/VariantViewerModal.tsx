@@ -75,14 +75,17 @@ export default function VariantViewerModal({
   const formatContent = (variant: Variant | undefined) => {
     if (!variant) return 'No data available';
     
-    if (variant.variantType === 'raw') {
-      // Raw text - show as plain text
-      return typeof variant.content === 'string' 
-        ? variant.content 
-        : variant.content?.text || JSON.stringify(variant.content, null, 2);
+    // Handle different content formats
+    if (typeof variant.content === 'string') {
+      return variant.content;
     }
     
-    // AI variants - show formatted JSON
+    // New format: { text: "...", wordCount: 123, variant: "normalized" }
+    if (variant.content?.text && typeof variant.content.text === 'string') {
+      return variant.content.text;
+    }
+    
+    // Old format: structured JSON or fallback
     return JSON.stringify(variant.content, null, 2);
   };
 

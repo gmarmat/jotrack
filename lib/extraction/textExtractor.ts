@@ -82,10 +82,32 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     };
   } catch (error: any) {
     console.error('❌ PDF extraction failed:', error);
+    console.error('   Error details:', {
+      name: error.constructor?.name,
+      message: error.message,
+      code: error.code,
+      path: error.path
+    });
+    
+    // Provide helpful, specific error messages
+    let errorMsg = 'Failed to extract text from PDF';
+    
+    if (error.message?.includes('encrypted') || error.message?.includes('password')) {
+      errorMsg = '🔒 PDF is password-protected. Remove password using Adobe/Preview and re-upload.';
+    } else if (error.message?.includes('ENOENT') || error.message?.includes('no such file')) {
+      errorMsg = '📁 PDF file not found. Try re-uploading the file.';
+    } else if (error.message?.includes('defineProperty') || error.message?.includes('test/data')) {
+      errorMsg = '🖼️ Cannot extract text from this PDF (likely image-based/scanned). Convert to .docx or .txt and re-upload.';
+    } else if (!error.message || error.message.includes('Failed to extract')) {
+      errorMsg = '⚠️ PDF extraction failed. For best results, upload as .docx or .txt format.';
+    } else {
+      errorMsg = `PDF error: ${error.message}. Try .docx or .txt format instead.`;
+    }
+    
     return {
       success: false,
       text: '',
-      error: error.message || 'Failed to extract text from PDF',
+      error: errorMsg,
     };
   }
 }
