@@ -767,7 +767,14 @@ function buildPromptVariables(capability: string, inputs: any): any {
         jobTitle: inputs.jobTitle || 'Unknown Role',
         jobDescription: inputs.jobDescription || '',
         resumeSummary: inputs.resumeSummary || 'TBD',
-        hiringManagerProfile: inputs.hiringManagerProfile || null
+        hiringManagerProfile: inputs.hiringManagerProfile || null,
+        // V2.0: Skills Gap Targeting
+        matchScore: inputs.matchScore || 0,
+        strongSkills: inputs.strongSkills || '',
+        weakSkills: inputs.weakSkills || '',
+        careerLevel: inputs.careerLevel || 'Unknown',
+        industryTenure: inputs.industryTenure || 0,
+        stabilityScore: inputs.stabilityScore || 100
       };
 
     case 'interview-questions-peer':
@@ -775,8 +782,15 @@ function buildPromptVariables(capability: string, inputs: any): any {
         companyName: inputs.companyName || 'Unknown Company',
         jobTitle: inputs.jobTitle || 'Unknown Role',
         jobDescription: inputs.jobDescription || '',
-        technicalSkills: inputs.technicalSkills || 'General software engineering',
-        peerProfile: inputs.peerProfile || null
+        technicalSkills: inputs.technicalSkills || 'General domain expertise',
+        peerProfile: inputs.peerProfile || null,
+        // V2.0: Skills Gap Targeting
+        matchScore: inputs.matchScore || 0,
+        strongSkills: inputs.strongSkills || '',
+        weakSkills: inputs.weakSkills || '',
+        careerLevel: inputs.careerLevel || 'Unknown',
+        industryTenure: inputs.industryTenure || 0,
+        stabilityScore: inputs.stabilityScore || 100
       };
 
     case 'writing-style-evaluation':

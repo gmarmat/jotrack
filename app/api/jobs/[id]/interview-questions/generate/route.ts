@@ -181,8 +181,15 @@ export async function POST(
           jobTitle,
           jobDescription,
           resumeSummary: 'TBD - will pull from coach profile in future',
-          hiringManagerProfile: hiringManagerProfile || null  // Pass profile if available
-        }, false, 'v1').catch(err => {
+          hiringManagerProfile: hiringManagerProfile || null,  // Pass profile if available
+          // V2.0: Skills Gap Targeting
+          matchScore,
+          strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
+          weakSkills: weakCriticalSkills.map((s: any) => s.skill).join(', '),
+          careerLevel: 'TBD', // TODO: Extract from Tier 3
+          industryTenure: 0,   // TODO: Extract from Tier 3
+          stabilityScore: 100  // TODO: Extract from Tier 3
+        }, false, 'v2').catch(err => { // v1 → v2!
           console.error('Hiring Manager questions failed:', err);
           return { result: { questions: [] } };
         })
@@ -196,8 +203,15 @@ export async function POST(
           jobTitle,
           jobDescription,
           technicalSkills,
-          peerProfile: peerProfile || null  // Pass profile if available
-        }, false, 'v1').catch(err => {
+          peerProfile: peerProfile || null,  // Pass profile if available
+          // V2.0: Skills Gap Targeting
+          matchScore,
+          strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
+          weakSkills: weakCriticalSkills.map((s: any) => s.skill).join(', '),
+          careerLevel: 'TBD', // TODO: Extract from Tier 3
+          industryTenure: 0,   // TODO: Extract from Tier 3
+          stabilityScore: 100  // TODO: Extract from Tier 3
+        }, false, 'v2').catch(err => { // v1 → v2!
           console.error('Peer questions failed:', err);
           return { result: { questions: [] } };
         })
