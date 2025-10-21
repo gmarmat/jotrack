@@ -83,7 +83,8 @@ OUTPUT NORMALIZED TEXT BELOW (START YOUR RESPONSE WITH THE CLEANED TEXT, NO PREA
     sourceType,
   }, false, 'v1');
   
-  const text = result.trim();
+  // Result is plain TEXT (not JSON), use directly
+  const text = (typeof result === 'string' ? result : result.text || JSON.stringify(result)).trim();
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   
   return { text, wordCount };

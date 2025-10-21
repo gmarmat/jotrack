@@ -491,7 +491,10 @@ export async function callAiProvider(
   const variables = buildPromptVariables(capability, inputs);
   
   // Load and render prompt template
-  const renderedPrompt = getRenderedPrompt(promptKind, variables, promptVersion);
+  // For inline prompts, use the prompt directly from inputs
+  const renderedPrompt = promptKind === 'inline-prompt' && inputs.prompt
+    ? inputs.prompt
+    : getRenderedPrompt(promptKind, variables, promptVersion);
 
   // Redact PII before sending (allowlist job posting domains)
   const redactedPrompt = redactPII(renderedPrompt);
@@ -547,17 +550,23 @@ export async function callAiProvider(
       content = content.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
     }
 
+    // For inline prompts (text variants), return raw text without parsing
     let result;
-    try {
-      result = JSON.parse(content);
-    } catch (error) {
-      console.error('Failed to parse Claude response:', content.slice(0, 500));
-      const aiError = createAiError(
-        'invalid_json',
-        `Failed to parse Claude response as JSON: ${content.slice(0, 200)}`,
-        true
-      );
-      throw aiError;
+    if (promptKind === 'inline-prompt') {
+      result = content.trim();  // Return text as-is
+    } else {
+      // For template prompts, parse as JSON
+      try {
+        result = JSON.parse(content);
+      } catch (error) {
+        console.error('Failed to parse Claude response:', content.slice(0, 500));
+        const aiError = createAiError(
+          'invalid_json',
+          `Failed to parse Claude response as JSON: ${content.slice(0, 200)}`,
+          true
+        );
+        throw aiError;
+      }
     }
 
     return {
@@ -620,21 +629,27 @@ export async function callAiProvider(
     }
 
     // v1.3: Improved JSON parsing with better error handling
+    // For inline prompts (text variants), return raw text without parsing
     let result;
-    try {
-      result = JSON.parse(content);
-    } catch (error) {
-      console.error('Failed to parse OpenAI response:', content.slice(0, 500));
-      const aiError = createAiError(
-        'invalid_json',
-        `Failed to parse OpenAI response as JSON: ${content.slice(0, 200)}`,
-        true
-      );
-      throw aiError;
+    if (promptKind === 'inline-prompt') {
+      result = content.trim();  // Return text as-is
+    } else {
+      // For template prompts, parse as JSON
+      try {
+        result = JSON.parse(content);
+      } catch (error) {
+        console.error('Failed to parse OpenAI response:', content.slice(0, 500));
+        const aiError = createAiError(
+          'invalid_json',
+          `Failed to parse OpenAI response as JSON: ${content.slice(0, 200)}`,
+          true
+        );
+        throw aiError;
+      }
     }
 
-    // v1.3: Validate response structure
-    if (!result.fit || typeof result.fit.overall !== 'number') {
+    // v1.3: Validate response structure (skip for inline prompts)
+    if (promptKind !== 'inline-prompt' && (!result.fit || typeof result.fit.overall !== 'number')) {
       console.error('Invalid response structure:', JSON.stringify(result).slice(0, 500));
       const error = createAiError(
         'invalid_json',
