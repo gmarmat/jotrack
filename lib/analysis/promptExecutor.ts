@@ -119,7 +119,7 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
   try {
     // ⏱️ CRITICAL: Add 60s timeout to prevent indefinite hangs
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second max
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second max (ecosystem analysis needs more time)
     
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -171,7 +171,7 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
     if (error.name === 'AbortError') {
       return {
         success: false,
-        error: 'Claude API call timed out after 60 seconds. Please try again.',
+        error: 'Claude API call timed out after 120 seconds. Please try again.',
       };
     }
     
@@ -195,7 +195,7 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
   try {
     // ⏱️ CRITICAL: Add 60s timeout to prevent indefinite hangs
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second max
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second max (ecosystem analysis needs more time)
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -250,7 +250,7 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
     if (error.name === 'AbortError') {
       return {
         success: false,
-        error: 'OpenAI API call timed out after 60 seconds. Please try again.',
+        error: 'OpenAI API call timed out after 120 seconds. Please try again.',
       };
     }
     
