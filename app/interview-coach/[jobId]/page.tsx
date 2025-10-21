@@ -288,11 +288,12 @@ export default function InterviewCoachPage() {
               }
               
               // Get competitive advantages
-              const competitiveAdvantages = analysisData.matchScoreData?.skillsMatch
-                ? analysisData.matchScoreData.skillsMatch
-                    .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
-                    .slice(0, 3)
+              const skillsMatchArray = Array.isArray(analysisData.matchScoreData?.skillsMatch) 
+                ? analysisData.matchScoreData.skillsMatch 
                 : [];
+              const competitiveAdvantages = skillsMatchArray
+                .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
+                .slice(0, 3);
               
               // Generate red flags
               const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
