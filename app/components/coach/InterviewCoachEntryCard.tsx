@@ -52,14 +52,19 @@ export default function InterviewCoachEntryCard({
           </div>
         </div>
 
-        {/* Feature Tags with Rich Description */}
+        {/* Value Proposition */}
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-2 leading-snug font-medium">
+          Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks.
+        </p>
+
+        {/* Feature Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3 text-[11px] text-gray-600 dark:text-gray-400">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Glassdoor Questions</div>
-          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Reddit Insights</div>
-          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Blind Forums</div>
-          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">AI Answer Scoring (0-100)</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Multi-Source Search</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">AI Scoring (0-100)</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Answer Feedback</div>
           <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">STAR Talk Tracks</div>
           <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">Core Story Extraction</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">3 Interview Types</div>
         </div>
 
         {/* Inline Prerequisites + Button */}
@@ -132,14 +137,19 @@ export default function InterviewCoachEntryCard({
           </div>
         </div>
 
+        {/* Value Proposition */}
+        <p className="text-blue-800 dark:text-blue-200 text-sm mb-2 leading-snug font-medium">
+          Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks.
+        </p>
+
         {/* Feature Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3 text-[11px] text-blue-700 dark:text-blue-300">
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Glassdoor Questions</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Reddit Insights</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Blind Forums</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">AI Answer Scoring (0-100)</div>
+          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Multi-Source Search</div>
+          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">AI Scoring (0-100)</div>
+          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Answer Feedback</div>
           <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">STAR Talk Tracks</div>
           <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Core Story Extraction</div>
+          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">3 Interview Types</div>
         </div>
 
         {/* Inline Message + Button */}
@@ -189,14 +199,19 @@ export default function InterviewCoachEntryCard({
         </div>
       </div>
 
-      {/* Feature Tags with Rich Description */}
+      {/* Value Proposition */}
+      <p className="text-white/90 text-sm mb-2 leading-snug font-medium">
+        Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks.
+      </p>
+
+      {/* Feature Tags */}
       <div className="flex flex-wrap gap-1.5 mb-3 text-[11px]">
-        <div className="bg-white/10 rounded px-2 py-0.5">Glassdoor Questions</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">Reddit Insights</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">Blind Forums</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">AI Answer Scoring (0-100)</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Multi-Source Search</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">AI Scoring (0-100)</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Answer Feedback</div>
         <div className="bg-white/10 rounded px-2 py-0.5">STAR Talk Tracks</div>
         <div className="bg-white/10 rounded px-2 py-0.5">Core Story Extraction</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">3 Interview Types</div>
       </div>
 
       {/* Inline CTA Button */}

@@ -156,13 +156,19 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
         </div>
       </div>
 
-      {/* Feature Tags with Description */}
+      {/* Value Proposition */}
+      <p className="text-white/90 text-sm mb-2 leading-snug font-medium">
+        Optimize your application with our AI algorithm analyzing <span className="font-bold">60+ signals</span> to boost your match score
+      </p>
+
+      {/* Feature Tags */}
       <div className="flex flex-wrap gap-1.5 mb-3 text-[11px]">
         <div className="bg-white/10 rounded px-2 py-0.5">Discovery Questions</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">Profile Building</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Extended Profile</div>
         <div className="bg-white/10 rounded px-2 py-0.5">ATS-Optimized Resume</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">Cover Letter Gen</div>
-        <div className="bg-white/10 rounded px-2 py-0.5">Score Improvement</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Cover Letter Generator</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Score Analysis</div>
+        <div className="bg-white/10 rounded px-2 py-0.5">Gap Bridging</div>
       </div>
 
       {/* Inline CTA Button */}
