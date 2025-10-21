@@ -118,6 +118,12 @@ export const peopleProfiles = sqliteTable('people_profiles', {
   optimizedAt: integer('optimized_at', { mode: 'number' }), // NEW: Timestamp
   isOptimized: integer('is_optimized', { mode: 'number' }).default(0), // NEW: Boolean flag
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
+  // Headhunter support (Migration 009 - Oct 21, 2025)
+  recruiterType: text('recruiter_type'), // 'company' or 'headhunter' (NULL if not recruiter)
+  searchFirmName: text('search_firm_name'), // 'Korn Ferry', 'Heidrick & Struggles', etc.
+  searchFirmTier: text('search_firm_tier'), // 'tier_1', 'tier_2', 'boutique'
+  practiceArea: text('practice_area'), // 'Technology C-Suite', 'Healthcare VP+', etc.
+  placementLevel: text('placement_level'), // 'VP+', 'Director+', 'C-Suite', 'Board'
 });
 
 export const rolesCatalog = sqliteTable('roles_catalog', {

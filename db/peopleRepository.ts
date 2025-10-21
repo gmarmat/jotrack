@@ -28,10 +28,15 @@ export async function getPeopleForJob(jobId: string) {
       title: peopleProfiles.title,
       linkedinUrl: peopleProfiles.linkedinUrl,
       companyId: peopleProfiles.companyId,
-      summary: peopleProfiles.summary,        // NEW: Extracted JSON data
-      rawText: peopleProfiles.rawText,        // NEW: Original pasted text
-      optimizedAt: peopleProfiles.optimizedAt, // NEW: Optimization timestamp
-      isOptimized: peopleProfiles.isOptimized, // NEW: Optimization status
+      summary: peopleProfiles.summary,        // Extracted JSON data
+      rawText: peopleProfiles.rawText,        // Original pasted text
+      optimizedAt: peopleProfiles.optimizedAt, // Optimization timestamp
+      isOptimized: peopleProfiles.isOptimized, // Optimization status
+      recruiterType: peopleProfiles.recruiterType, // Headhunter support
+      searchFirmName: peopleProfiles.searchFirmName, // Search firm
+      searchFirmTier: peopleProfiles.searchFirmTier, // Firm tier
+      practiceArea: peopleProfiles.practiceArea, // Recruiter specialty
+      placementLevel: peopleProfiles.placementLevel, // Placement level
     })
     .from(jobPeopleRefs)
     .innerJoin(peopleProfiles, eq(peopleProfiles.id, jobPeopleRefs.personId))
@@ -51,8 +56,10 @@ export async function savePersonAndLink(
     title?: string;
     linkedinUrl?: string;
     companyId?: string;
-    rawText?: string;      // NEW: Original pasted text
-    isOptimized?: number;  // NEW: Optimization status
+    rawText?: string;      // Original pasted text
+    isOptimized?: number;  // Optimization status
+    recruiterType?: string; // 'company' or 'headhunter' (for recruiters only)
+    searchFirmName?: string; // Search firm name (for headhunters only)
   },
   relType: string
 ) {
@@ -65,8 +72,10 @@ export async function savePersonAndLink(
     title: personData.title,
     linkedinUrl: personData.linkedinUrl,
     companyId: personData.companyId,
-    rawText: personData.rawText,        // NEW: Store pasted text
-    isOptimized: personData.isOptimized || 0, // NEW: Default to unoptimized
+    rawText: personData.rawText,        // Store pasted text
+    isOptimized: personData.isOptimized || 0, // Default to unoptimized
+    recruiterType: personData.recruiterType || null, // Headhunter support
+    searchFirmName: personData.searchFirmName || null, // Search firm
     updatedAt: Math.floor(Date.now() / 1000), // Required field
   });
   

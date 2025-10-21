@@ -46,7 +46,7 @@ export async function POST(
   try {
     const jobId = params.id;
     const body = await request.json();
-    const { name, title, linkedinUrl, relType, manualText } = body;
+    const { name, title, linkedinUrl, relType, manualText, recruiterType, searchFirmName } = body;
     
     if (!name || !relType) {
       return NextResponse.json(
@@ -55,14 +55,17 @@ export async function POST(
       );
     }
     
-    if (!['recruiter', 'hiring_manager', 'peer', 'other'].includes(relType)) {
+    if (!['recruiter', 'headhunter', 'hiring_manager', 'peer', 'other'].includes(relType)) {
       return NextResponse.json(
-        { error: 'Invalid relType. Must be: recruiter, hiring_manager, peer, or other' },
+        { error: 'Invalid relType. Must be: recruiter, headhunter, hiring_manager, peer, or other' },
         { status: 400 }
       );
     }
     
     console.log(`💾 Saving person ${name} for job ${jobId} as ${relType}...`);
+    if (relType === 'headhunter' && searchFirmName) {
+      console.log(`   🎯 Headhunter from ${searchFirmName}`);
+    }
     
     const personId = await savePersonAndLink(
       jobId,
@@ -71,7 +74,9 @@ export async function POST(
         title, 
         linkedinUrl, 
         rawText: manualText, // Store pasted text as rawText (not summary)
-        isOptimized: 0 // Start as unoptimized
+        isOptimized: 0, // Start as unoptimized
+        recruiterType, // 'company' or 'headhunter'
+        searchFirmName, // Search firm name if headhunter
       },
       relType
     );

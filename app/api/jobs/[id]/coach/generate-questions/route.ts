@@ -95,6 +95,30 @@ ${searchResults.slice(0, 10).map((r, i) => `${i + 1}. ${r.content?.substring(0, 
 `
       : '';
 
+    // Step 2.5: Get recruiter info for headhunter context (if recruiter stage)
+    let recruiterType = null;
+    let searchFirmName = null;
+    
+    if (interviewStage === 'recruiter') {
+      try {
+        const peopleRes = await fetch(`${request.nextUrl.origin}/api/jobs/${jobId}/people/manage`);
+        if (peopleRes.ok) {
+          const peopleData = await peopleRes.json();
+          const recruiter = peopleData.people?.find((p: any) => 
+            p.relType === 'recruiter' || p.relType === 'headhunter'
+          );
+          
+          if (recruiter) {
+            recruiterType = recruiter.relType === 'headhunter' ? 'headhunter' : 'company';
+            searchFirmName = recruiter.searchFirmName || null;
+            console.log(`🎯 Recruiter context: ${recruiterType}${searchFirmName ? ` (${searchFirmName})` : ''}`);
+          }
+        }
+      } catch (error) {
+        console.warn('Could not load recruiter context:', error);
+      }
+    }
+
     // Step 3: Generate questions with AI
     const promptName = {
       'recruiter': 'coach-questions-recruiter',
@@ -111,6 +135,8 @@ ${searchResults.slice(0, 10).map((r, i) => `${i + 1}. ${r.content?.substring(0, 
         jobDescription: jdVariant.content,
         companyPrinciples,
         searchContext,
+        recruiterType, // NEW: For headhunter conditional
+        searchFirmName, // NEW: Search firm name
       },
       jobId,
       sourceType: 'jd',

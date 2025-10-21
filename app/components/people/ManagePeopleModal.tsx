@@ -9,7 +9,8 @@ interface Person {
   title: string;
   linkedinUrl: string;
   manualText?: string;
-  role: 'recruiter' | 'hiring_manager' | 'peer' | 'other';
+  role: 'recruiter' | 'headhunter' | 'hiring_manager' | 'peer' | 'other';
+  searchFirmName?: string; // For headhunter role
   fetchStatus?: 'idle' | 'testing' | 'success' | 'failed';
 }
 
@@ -178,6 +179,8 @@ export default function ManagePeopleModal({ jobId, isOpen, onClose, onSave }: Ma
             title: person.title,
             linkedinUrl: person.linkedinUrl,
             relType: person.role,
+            recruiterType: person.role === 'headhunter' ? 'headhunter' : person.role === 'recruiter' ? 'company' : null,
+            searchFirmName: person.role === 'headhunter' ? person.searchFirmName : null,
           }),
         });
         
@@ -470,12 +473,42 @@ export default function ManagePeopleModal({ jobId, isOpen, onClose, onSave }: Ma
                         onChange={(e) => updatePerson(idx, 'role', e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
                       >
-                        <option value="recruiter">Recruiter</option>
+                        <option value="recruiter">Recruiter (Company)</option>
+                        <option value="headhunter">Headhunter (Executive Search)</option>
                         <option value="hiring_manager">Hiring Manager</option>
                         <option value="peer">Peer/Panel</option>
                         <option value="other">Other</option>
                       </select>
+                      {person.role === 'headhunter' && (
+                        <p className="mt-1 text-xs text-purple-600 dark:text-purple-400">
+                          🎯 Executive search firm - we'll tailor interview prep for long-term relationship building
+                        </p>
+                      )}
                     </div>
+                    
+                    {/* Search Firm (if headhunter) */}
+                    {person.role === 'headhunter' && (
+                      <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                        <label className="block text-xs font-medium text-purple-900 dark:text-purple-100 mb-1">
+                          Search Firm Name
+                        </label>
+                        <select
+                          value={(person as any).searchFirmName || ''}
+                          onChange={(e) => updatePerson(idx, 'searchFirmName', e.target.value)}
+                          className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+                        >
+                          <option value="">Select firm...</option>
+                          <option value="Korn Ferry">Korn Ferry</option>
+                          <option value="Heidrick & Struggles">Heidrick & Struggles</option>
+                          <option value="Egon Zehnder">Egon Zehnder</option>
+                          <option value="Spencer Stuart">Spencer Stuart</option>
+                          <option value="Russell Reynolds">Russell Reynolds</option>
+                          <option value="DHR Global">DHR Global</option>
+                          <option value="Boyden">Boyden</option>
+                          <option value="other">Other (will extract from profile)</option>
+                        </select>
+                      </div>
+                    )}
                     
                     {/* Remove Button */}
                     <div className="flex justify-end">
