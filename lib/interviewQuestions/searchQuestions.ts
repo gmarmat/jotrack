@@ -1,4 +1,4 @@
-import { searchWeb } from '@/lib/ai/tavily';
+import { searchWeb } from '@/lib/analysis/tavilySearch';
 
 export interface SearchedQuestion {
   question: string;
@@ -24,12 +24,12 @@ export async function searchInterviewQuestions(
   const query = `${companyName} ${roleTitle} interview questions experiences glassdoor blind`;
   
   try {
-    const searchResults = await searchWeb(query, {
+    const searchResponse = await searchWeb(query, {
       maxResults: 10,
       searchDepth: 'advanced'
     });
     
-    if (!searchResults || searchResults.length === 0) {
+    if (!searchResponse.success || !searchResponse.results || searchResponse.results.length === 0) {
       console.log('⚠️ No search results found');
       return { questions: [], sources: [] };
     }
@@ -38,7 +38,7 @@ export async function searchInterviewQuestions(
     const questions: SearchedQuestion[] = [];
     const sources: string[] = [];
     
-    for (const result of searchResults) {
+    for (const result of searchResponse.results) {
       // Parse content for question patterns
       const content = result.content || '';
       const questionMatches = extractQuestions(content);

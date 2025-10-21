@@ -61,6 +61,84 @@ export async function POST(
     // Extract technical skills from JD for peer questions
     const technicalSkills = extractTechnicalSkills(jobDescription);
     
+    // Load Match Score + Skills Match data (V2.0 - Skills Gap Targeting!)
+    let matchScore = 0;
+    let skillsMatch: any[] = [];
+    let strongSkills: any[] = [];
+    let weakCriticalSkills: any[] = [];
+    
+    try {
+      const matchScoreData = sqlite.prepare(`
+        SELECT match_score_data FROM jobs WHERE id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      if (matchScoreData && matchScoreData.match_score_data) {
+        const parsed = JSON.parse(matchScoreData.match_score_data);
+        matchScore = parsed.matchScore || 0;
+        skillsMatch = parsed.skillsMatch || [];
+        
+        // Identify strong skills (showcase opportunities!)
+        strongSkills = skillsMatch
+          .filter((s: any) => s.matchStrength === 'strong')
+          .sort((a: any, b: any) => 
+            (b.importance === 'critical' ? 2 : b.importance === 'important' ? 1 : 0) -
+            (a.importance === 'critical' ? 2 : a.importance === 'important' ? 1 : 0)
+          )
+          .slice(0, 5); // Top 5 strong skills
+        
+        // Identify weak critical skills (gaps to address!)
+        weakCriticalSkills = skillsMatch
+          .filter((s: any) => s.matchStrength === 'weak' && s.importance === 'critical');
+        
+        console.log('✅ Loaded skills data:', {
+          matchScore,
+          strongSkills: strongSkills.map((s: any) => s.skill),
+          weakSkills: weakCriticalSkills.map((s: any) => s.skill)
+        });
+      }
+    } catch (error) {
+      console.error('⚠️ Failed to load match score (will use generic questions):', error);
+      // Continue without match score - not a blocker
+    }
+    
+    // Load People Profiles analysis for persona-specific questions
+    let peopleProfiles = null;
+    let recruiterProfile = null;
+    let hiringManagerProfile = null;
+    let peerProfile = null;
+    
+    try {
+      const peopleAnalysis = sqlite.prepare(`
+        SELECT result_json FROM people_analyses WHERE job_id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      if (peopleAnalysis && peopleAnalysis.result_json) {
+        peopleProfiles = JSON.parse(peopleAnalysis.result_json);
+        
+        // Extract individual profiles by role
+        if (peopleProfiles?.profiles) {
+          recruiterProfile = peopleProfiles.profiles.find((p: any) => 
+            p.role === 'Recruiter' || p.role === 'recruiter'
+          );
+          hiringManagerProfile = peopleProfiles.profiles.find((p: any) => 
+            p.role === 'Hiring Manager' || p.role === 'hiring_manager'
+          );
+          peerProfile = peopleProfiles.profiles.find((p: any) => 
+            p.role === 'Peer/Panel Interviewer' || p.role === 'peer'
+          );
+          
+          console.log('✅ Loaded people profiles:', {
+            hasRecruiter: !!recruiterProfile,
+            hasHiringManager: !!hiringManagerProfile,
+            hasPeer: !!peerProfile
+          });
+        }
+      }
+    } catch (error) {
+      console.error('⚠️ Failed to load people profiles (will use generic questions):', error);
+      // Continue without people profiles - not a blocker
+    }
+    
     // Determine which personas to generate based on request
     const shouldGenerateRecruiter = persona === 'all' || persona === 'recruiter';
     const shouldGenerateHiringManager = persona === 'all' || persona === 'hiring-manager';
@@ -80,8 +158,16 @@ export async function POST(
         callAiProvider('interview-questions-recruiter', {
           companyName,
           jobTitle,
-          jdSummary
-        }, false, 'v1').catch(err => {
+          jdSummary,
+          recruiterProfile: recruiterProfile || null,  // Pass profile if available
+          // V2.0: Skills Gap Targeting
+          matchScore,
+          strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
+          weakSkills: weakCriticalSkills.map((s: any) => s.skill).join(', '),
+          careerLevel: 'TBD', // TODO: Extract from Tier 3
+          industryTenure: 0,   // TODO: Extract from Tier 3
+          stabilityScore: 100  // TODO: Extract from Tier 3
+        }, false, 'v2').catch(err => { // v1 → v2!
           console.error('Recruiter questions failed:', err);
           return { result: { questions: [] } };
         })
@@ -94,7 +180,8 @@ export async function POST(
           companyName,
           jobTitle,
           jobDescription,
-          resumeSummary: 'TBD - will pull from coach profile in future'
+          resumeSummary: 'TBD - will pull from coach profile in future',
+          hiringManagerProfile: hiringManagerProfile || null  // Pass profile if available
         }, false, 'v1').catch(err => {
           console.error('Hiring Manager questions failed:', err);
           return { result: { questions: [] } };
@@ -108,7 +195,8 @@ export async function POST(
           companyName,
           jobTitle,
           jobDescription,
-          technicalSkills
+          technicalSkills,
+          peerProfile: peerProfile || null  // Pass profile if available
         }, false, 'v1').catch(err => {
           console.error('Peer questions failed:', err);
           return { result: { questions: [] } };

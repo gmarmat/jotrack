@@ -679,6 +679,8 @@ function mapCapabilityToPromptKind(capability: string): any {
     'talk-track-peer': 'talk-track-peer',
     'recommendations': 'recommendations',
     'linkedin-optimization': 'linkedin-optimization',
+    'answer-scoring': 'answer-scoring',
+    'core-stories-extraction': 'core-stories-extraction',
   };
 
   return mapping[capability] || 'analyze';
@@ -748,7 +750,15 @@ function buildPromptVariables(capability: string, inputs: any): any {
       return {
         companyName: inputs.companyName || 'Unknown Company',
         jobTitle: inputs.jobTitle || 'Unknown Role',
-        jdSummary: inputs.jdSummary || ''
+        jdSummary: inputs.jdSummary || '',
+        recruiterProfile: inputs.recruiterProfile || null,
+        // V2.0: Skills Gap Targeting
+        matchScore: inputs.matchScore || 0,
+        strongSkills: inputs.strongSkills || '',
+        weakSkills: inputs.weakSkills || '',
+        careerLevel: inputs.careerLevel || 'Unknown',
+        industryTenure: inputs.industryTenure || 0,
+        stabilityScore: inputs.stabilityScore || 100
       };
 
     case 'interview-questions-hiring-manager':
@@ -756,7 +766,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         companyName: inputs.companyName || 'Unknown Company',
         jobTitle: inputs.jobTitle || 'Unknown Role',
         jobDescription: inputs.jobDescription || '',
-        resumeSummary: inputs.resumeSummary || 'TBD'
+        resumeSummary: inputs.resumeSummary || 'TBD',
+        hiringManagerProfile: inputs.hiringManagerProfile || null
       };
 
     case 'interview-questions-peer':
@@ -764,7 +775,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         companyName: inputs.companyName || 'Unknown Company',
         jobTitle: inputs.jobTitle || 'Unknown Role',
         jobDescription: inputs.jobDescription || '',
-        technicalSkills: inputs.technicalSkills || 'General software engineering'
+        technicalSkills: inputs.technicalSkills || 'General software engineering',
+        peerProfile: inputs.peerProfile || null
       };
 
     case 'writing-style-evaluation':
@@ -781,7 +793,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         interviewQuestion: inputs.interviewQuestion || '',
         jdKeyPoints: inputs.jdKeyPoints || '',
         resumeSummary: inputs.resumeSummary || '',
-        writingStyleProfile: inputs.writingStyleProfile || '{}'
+        writingStyleProfile: inputs.writingStyleProfile || '{}',
+        recruiterProfile: inputs.recruiterProfile || null
       };
 
     case 'talk-track-hiring-manager':
@@ -792,7 +805,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         jobDescription: inputs.jobDescription || '',
         resumeSummary: inputs.resumeSummary || '',
         writingStyleProfile: inputs.writingStyleProfile || '{}',
-        teamContext: inputs.teamContext || 'Not available'
+        teamContext: inputs.teamContext || 'Not available',
+        recruiterProfile: inputs.recruiterProfile || null  // Using same param name for consistency
       };
 
     case 'talk-track-peer':
@@ -802,7 +816,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         interviewQuestion: inputs.interviewQuestion || '',
         technicalSkills: inputs.technicalSkills || 'General software engineering',
         resumeSummary: inputs.resumeSummary || '',
-        writingStyleProfile: inputs.writingStyleProfile || '{}'
+        writingStyleProfile: inputs.writingStyleProfile || '{}',
+        recruiterProfile: inputs.recruiterProfile || null  // Using same param name for consistency
       };
 
     case 'recommendations':
@@ -822,6 +837,21 @@ function buildPromptVariables(capability: string, inputs: any): any {
         currentLinkedInProfile: inputs.currentLinkedInProfile || '',
         resumeSummary: inputs.resumeSummary || '',
         matchMatrixGaps: inputs.matchMatrixGaps || ''
+      };
+
+    case 'answer-scoring':
+      return {
+        answerText: inputs.answerText || '',
+        question: inputs.question || '',
+        jdContext: inputs.jdContext || '',
+        writingStyleProfile: inputs.writingStyleProfile || '{}',
+        interviewerProfile: inputs.interviewerProfile || null
+      };
+
+    case 'core-stories-extraction':
+      return {
+        talkTracks: inputs.talkTracks || '[]',
+        targetStoryCount: inputs.targetStoryCount || 3
       };
 
     default:
@@ -851,6 +881,8 @@ function getMaxTokens(capability: string): number {
     'talk-track-peer': 3000,         // STAR answer + deep technical prep
     'recommendations': 8000,         // Comprehensive recommendations (courses, projects, LinkedIn, prep)
     'linkedin-optimization': 10000,  // Complete profile optimization (headline, about, experience, skills)
+    'answer-scoring': 3000,          // Score breakdown + feedback + follow-up questions
+    'core-stories-extraction': 6000, // Extract 2-3 core stories + story mapping
   };
 
   return limits[capability] || 1000;

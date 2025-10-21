@@ -271,6 +271,28 @@ export async function GET(
       peopleProfiles,
       peopleProfilesMetadata,
     };
+    
+    // Load interview questions (for Interview Coach)
+    try {
+      const interviewQuestionsCache = sqlite.prepare(`
+        SELECT * FROM interview_questions_cache 
+        WHERE company_name = ? 
+        ORDER BY created_at DESC 
+        LIMIT 1
+      `).get(jobData.company) as any;
+      
+      const jobInterviewQuestions = sqlite.prepare(`
+        SELECT * FROM job_interview_questions 
+        WHERE job_id = ? 
+        LIMIT 1
+      `).get(jobId) as any;
+      
+      response.interviewQuestionsCache = interviewQuestionsCache;
+      response.jobInterviewQuestions = jobInterviewQuestions;
+    } catch (error) {
+      console.error('Failed to load interview questions:', error);
+      // Non-fatal - continue without interview questions
+    }
 
     return NextResponse.json(response);
   } catch (error: any) {

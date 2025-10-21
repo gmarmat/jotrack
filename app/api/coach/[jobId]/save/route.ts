@@ -11,17 +11,43 @@ export async function POST(
     const jobId = params.jobId;
     const body = await request.json();
 
-    // Store coach data in coach_state table (NOT coach_sessions - that's for score tracking)
-    const query = `
-      INSERT INTO coach_state (job_id, data_json, updated_at)
-      VALUES (?, ?, ?)
-      ON CONFLICT(job_id) DO UPDATE SET
-        data_json = excluded.data_json,
-        updated_at = excluded.updated_at
-    `;
-
-    const stmt = sqlite.prepare(query);
-    stmt.run(jobId, JSON.stringify(body), Date.now());
+    // Handle both Application Coach (body directly) and Interview Coach (body.interviewCoachJson)
+    let dataJson = body;
+    let interviewCoachJson = '{}';
+    
+    // If body has interviewCoachJson, update Interview Coach data only
+    if (body.interviewCoachJson) {
+      interviewCoachJson = body.interviewCoachJson;
+      
+      // Get existing data_json to preserve it
+      const existing = sqlite.prepare(`SELECT data_json FROM coach_state WHERE job_id = ? LIMIT 1`).get(jobId) as any;
+      dataJson = existing ? existing.data_json : '{}';
+      
+      // Update only interview_coach_json
+      const query = `
+        INSERT INTO coach_state (job_id, data_json, interview_coach_json, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(job_id) DO UPDATE SET
+          interview_coach_json = excluded.interview_coach_json,
+          updated_at = excluded.updated_at
+      `;
+      const stmt = sqlite.prepare(query);
+      stmt.run(jobId, dataJson, interviewCoachJson, Math.floor(Date.now() / 1000));
+    } else {
+      // Update Application Coach data (preserve interview_coach_json)
+      const existing = sqlite.prepare(`SELECT interview_coach_json FROM coach_state WHERE job_id = ? LIMIT 1`).get(jobId) as any;
+      interviewCoachJson = existing?.interview_coach_json || '{}';
+      
+      const query = `
+        INSERT INTO coach_state (job_id, data_json, interview_coach_json, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(job_id) DO UPDATE SET
+          data_json = excluded.data_json,
+          updated_at = excluded.updated_at
+      `;
+      const stmt = sqlite.prepare(query);
+      stmt.run(jobId, JSON.stringify(dataJson), interviewCoachJson, Math.floor(Date.now() / 1000));
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
@@ -40,17 +66,21 @@ export async function GET(
   try {
     const jobId = params.jobId;
 
-    const query = `SELECT data_json FROM coach_state WHERE job_id = ? LIMIT 1`;
+    const query = `SELECT data_json, interview_coach_json FROM coach_state WHERE job_id = ? LIMIT 1`;
     const stmt = sqlite.prepare(query);
     const result = stmt.get(jobId) as any;
 
     if (result) {
       return NextResponse.json({
-        data: JSON.parse(result.data_json),
+        success: true,
+        data: {
+          ...JSON.parse(result.data_json),
+          interview_coach_json: result.interview_coach_json || '{}'
+        }
       });
     }
 
-    return NextResponse.json({ data: null });
+    return NextResponse.json({ success: true, data: null });
   } catch (error: any) {
     console.error('Coach load error:', error);
     return NextResponse.json(

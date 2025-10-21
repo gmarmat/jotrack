@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Sparkles, AlertCircle, ChevronDown, ChevronUp, MessageSquare, X } from 'lucide-react';
+import { Search, Sparkles, AlertCircle, ChevronDown, ChevronUp, MessageSquare, X, Clock } from 'lucide-react';
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import PromptViewer from '@/app/components/ai/PromptViewer';
 import SourcesModal from '@/app/components/ai/SourcesModal';
+import AnalysisExplanation from '@/app/components/ui/AnalysisExplanation';
 
 interface Question {
   question: string;
@@ -187,12 +188,19 @@ export default function InterviewQuestionsCard({
         </h3>
         
         <div className="flex items-center gap-2">
-          {/* Analyzed badge - right before buttons */}
-          {(searchedAt || generatedAt) && (
-            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-              {searchedAt && `Searched ${formatAnalyzedTime(searchedAt)}`}
-              {searchedAt && generatedAt && ' • '}
-              {generatedAt && `Generated ${formatAnalyzedTime(generatedAt)}`}
+          {/* Analyzed badge with cache info */}
+          {searchedAt && (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded flex items-center gap-1">
+              <Clock size={12} />
+              Web: {formatAnalyzedTime(searchedAt)}
+              <span className="text-green-600 dark:text-green-400 font-medium">(cached 90d)</span>
+            </span>
+          )}
+          {generatedAt && (
+            <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-1 rounded flex items-center gap-1">
+              <Sparkles size={12} />
+              AI: {formatAnalyzedTime(generatedAt)}
+              <span className="text-green-600 dark:text-green-400 font-medium">(persisted)</span>
             </span>
           )}
           
@@ -440,6 +448,65 @@ export default function InterviewQuestionsCard({
           </div>
         </div>
       )}
+      
+      {/* Explain: Our Approach */}
+      <AnalysisExplanation>
+        <div className="space-y-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            We don't just scrape a generic list of interview questions. We run a comprehensive, multi-source search and AI analysis to find the most relevant questions for your specific interview.
+          </p>
+          
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-2">🌐 Step 1: Multi-Source Web Search</p>
+            <p className="text-gray-700 dark:text-gray-300 mb-2">We search real interview experiences from:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400 ml-2">
+              <li><strong>Glassdoor</strong>: Company-specific interview reviews and ratings</li>
+              <li><strong>Reddit</strong> (r/cscareerquestions, r/ExperiencedDevs): Recent interview experiences</li>
+              <li><strong>Blind</strong>: Anonymous employee interview tips and patterns</li>
+              <li><strong>Company Blogs</strong>: Official interview prep guides and values</li>
+              <li><strong>LinkedIn</strong>: Interviewer profiles and company culture insights</li>
+            </ul>
+          </div>
+          
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-2">🤖 Step 2: AI-Powered Filtering & Analysis</p>
+            <p className="text-gray-700 dark:text-gray-300 mb-2">We analyze 50-100 questions and:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400 ml-2">
+              <li>Filter by relevance to YOUR role and seniority level</li>
+              <li>Prioritize questions asked in the <strong>last 6 months</strong> (most current)</li>
+              <li>Weight by company culture fit (based on Company Intelligence analysis)</li>
+              <li>Remove outdated, irrelevant, or duplicate questions</li>
+              <li>Cluster similar questions to avoid repetition</li>
+            </ul>
+          </div>
+          
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-2">✨ Step 3: Persona-Specific AI Generation</p>
+            <p className="text-gray-700 dark:text-gray-300 mb-2">After web search, we AI-generate <strong>10 additional questions per interviewer type</strong>:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400 ml-2">
+              <li><strong>👔 Recruiter</strong>: Culture fit, motivation, basic skills verification</li>
+              <li><strong>👨‍💼 Hiring Manager</strong>: Technical depth, leadership, project experience, STAR examples</li>
+              <li><strong>👥 Peer/Panel</strong>: Collaboration, technical problem-solving, system design, team dynamics</li>
+            </ul>
+          </div>
+          
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="font-semibold text-green-900 dark:text-green-100 mb-1">📊 Result: 10-15 High-Quality Questions</p>
+            <p className="text-sm text-green-700 dark:text-green-300">
+              You get a curated, role-specific list of the most relevant, recent, and impactful questions for YOUR interview at THIS company.
+            </p>
+          </div>
+          
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-2">💾 Data Freshness & Caching</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400 ml-2">
+              <li><strong>Web Search</strong>: Cached for 90 days per company (no repeated searches = token savings!)</li>
+              <li><strong>AI Generated Questions</strong>: Persisted to database per job (regenerated only if JD changes significantly)</li>
+              <li><strong>Sources</strong>: Always linked for verification (click "View Sources" to see URLs)</li>
+            </ul>
+          </div>
+        </div>
+      </AnalysisExplanation>
       
       {/* Sources Modal */}
       <SourcesModal

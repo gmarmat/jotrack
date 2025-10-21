@@ -366,7 +366,8 @@ export const coachSessions = sqliteTable('coach_sessions', {
 
 export const coachState = sqliteTable('coach_state', {
   jobId: text('job_id').primaryKey().references(() => jobs.id, { onDelete: 'cascade' }),
-  dataJson: text('data_json').notNull(),  // JSON blob of wizard state
+  dataJson: text('data_json').notNull(),  // JSON blob of Application Coach wizard state
+  interviewCoachJson: text('interview_coach_json').default('{}'),  // JSON blob of Interview Coach state (migration 015)
   updatedAt: integer('updated_at', { mode: 'number' }).notNull(),
 });
 

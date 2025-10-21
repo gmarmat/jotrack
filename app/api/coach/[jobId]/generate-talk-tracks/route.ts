@@ -80,6 +80,42 @@ export async function POST(
     // Extract resume summary (first 1500 chars for context)
     const resumeSummary = resumeContent.substring(0, 1500);
     
+    // Load interviewer profile for persona-specific talk tracks
+    let recruiterProfile = null;
+    try {
+      const peopleAnalysis = sqlite.prepare(`
+        SELECT result_json FROM people_analyses WHERE job_id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      if (peopleAnalysis && peopleAnalysis.result_json) {
+        const peopleProfiles = JSON.parse(peopleAnalysis.result_json);
+        
+        // Find matching profile by persona
+        if (peopleProfiles?.profiles) {
+          if (persona === 'recruiter') {
+            recruiterProfile = peopleProfiles.profiles.find((p: any) => 
+              p.role === 'Recruiter' || p.role === 'recruiter'
+            );
+          } else if (persona === 'hiring-manager') {
+            recruiterProfile = peopleProfiles.profiles.find((p: any) => 
+              p.role === 'Hiring Manager' || p.role === 'hiring_manager'
+            );
+          } else if (persona === 'peer') {
+            recruiterProfile = peopleProfiles.profiles.find((p: any) => 
+              p.role === 'Peer/Panel Interviewer' || p.role === 'peer'
+            );
+          }
+          
+          if (recruiterProfile) {
+            console.log(`✅ Using interviewer profile: ${recruiterProfile.name} (${recruiterProfile.role})`);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ No interviewer profile found (will use generic talk track):', error);
+      // Continue without interviewer profile - not a blocker
+    }
+    
     // Build persona-specific context
     let capability = '';
     let promptInputs: any = {
@@ -87,7 +123,8 @@ export async function POST(
       roleTitle: job.title,
       interviewQuestion: question,
       resumeSummary,
-      writingStyleProfile: JSON.stringify(writingStyleProfile, null, 2)
+      writingStyleProfile: JSON.stringify(writingStyleProfile, null, 2),
+      recruiterProfile: recruiterProfile || null  // Pass interviewer profile if available
     };
     
     if (persona === 'recruiter') {
