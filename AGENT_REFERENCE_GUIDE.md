@@ -480,9 +480,19 @@ tail -f /tmp/server-startup.log | grep "ecosystem\|timeout"
 
 Examples:
   match-score.v1.md
-  interview-questions-recruiter.v1.md
+  coach-questions-recruiter.v1.md  ← Interview Coach (includes headhunter support!)
+  talk-track-recruiter.v1.md       ← Interview Coach
   signal-technical-skills.v1.md
 ```
+
+**Accessing/Editing Prompts**:
+- UI: Settings → Developer Tab → Prompt Editor
+- Organized by category:
+  * Job Analysis (5 prompts): analyze, compare, company, people, matchSignals
+  * Application Coach (4 prompts): improve, discovery, cover-letter, writing-style-evaluation
+  * Interview Coach (6 prompts): coach-questions-*, talk-track-*
+- Total: 15 prompts accessible from Settings
+- Monaco editor with syntax highlighting
 
 **Prompt Template Variables**:
 ```typescript
