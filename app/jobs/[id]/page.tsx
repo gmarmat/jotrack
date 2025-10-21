@@ -1145,21 +1145,48 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">Resume:</span>
                         <button
-                          onClick={() => {/* TODO: Open UI variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: resumeAttachment.id,
+                              filename: `${resumeAttachment.filename} (UI - Raw)`,
+                              textContent: variants.ui || 'No UI variant found',
+                              kind: 'resume'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
                           title="View UI (Raw)"
                         >
                           <Eye size={12} />
                         </button>
                         <button
-                          onClick={() => {/* TODO: Open AI Short variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: resumeAttachment.id,
+                              filename: `${resumeAttachment.filename} (AI Optimized)`,
+                              textContent: variants.ai_optimized || 'No AI Short variant found',
+                              kind: 'resume'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
                           title="View AI Optimized"
                         >
                           <Eye size={12} />
                         </button>
                         <button
-                          onClick={() => {/* TODO: Open AI Long variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: resumeAttachment.id,
+                              filename: `${resumeAttachment.filename} (Detailed)`,
+                              textContent: variants.detailed || 'No AI Long variant found',
+                              kind: 'resume'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
                           title="View Detailed"
                         >
@@ -1177,21 +1204,48 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">JD:</span>
                         <button
-                          onClick={() => {/* TODO: Open UI variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: jdAttachment.id,
+                              filename: `${jdAttachment.filename} (UI - Raw)`,
+                              textContent: variants.ui || 'No UI variant found',
+                              kind: 'jd'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
                           title="View UI (Raw)"
                         >
                           <Eye size={12} />
                         </button>
                         <button
-                          onClick={() => {/* TODO: Open AI Short variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: jdAttachment.id,
+                              filename: `${jdAttachment.filename} (AI Optimized)`,
+                              textContent: variants.ai_optimized || 'No AI Short variant found',
+                              kind: 'jd'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
                           title="View AI Optimized"
                         >
                           <Eye size={12} />
                         </button>
                         <button
-                          onClick={() => {/* TODO: Open AI Long variant directly */}}
+                          onClick={async () => {
+                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
+                            setViewingAttachment({
+                              id: jdAttachment.id,
+                              filename: `${jdAttachment.filename} (Detailed)`,
+                              textContent: variants.detailed || 'No AI Long variant found',
+                              kind: 'jd'
+                            });
+                            setShowViewer(true);
+                          }}
                           className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
                           title="View Detailed"
                         >
