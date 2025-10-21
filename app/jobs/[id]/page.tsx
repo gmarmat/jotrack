@@ -14,7 +14,6 @@ import AttachmentsSection from '@/app/components/attachments/AttachmentsSection'
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
-import ExtractionPromptViewer from '@/app/components/ExtractionPromptViewer';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
@@ -1146,7 +1145,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
             {/* Column 2: Data Pipeline with Scrolling */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with AI Button and Prompt Viewer */}
+              {/* Header with "Analyzed X ago" badge */}
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <span className="text-lg">
@@ -1156,50 +1155,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </span>
                   Data Status
                 </h3>
-                
-                <div className="flex items-center gap-2">
-                  {/* Analyzed timestamp badge */}
-                  {stalenessInfo?.variantsAnalyzedAt && (
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-                      Analyzed {(() => {
-                        const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                        const minutes = Math.floor(ageMs / 60000);
-                        const hours = Math.floor(ageMs / 3600000);
-                        const days = Math.floor(ageMs / 86400000);
-                        
-                        if (minutes < 60) return `${minutes}m ago`;
-                        if (hours < 24) return `${hours}h ago`;
-                        return `${days}d ago`;
-                      })()}
-                    </span>
-                  )}
-                  
-                  {/* View Extraction Prompts */}
-                  <ExtractionPromptViewer jobId={id} />
-                  
-                  {/* AI Analysis Button (Match Score style) */}
-                  <button
-                    onClick={stalenessInfo?.severity === 'no_variants' ? handleRefreshVariants : handleGlobalAnalyze}
-                    disabled={refreshing || analyzing}
-                    className="group relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
-                    title={stalenessInfo?.severity === 'no_variants' ? 'Extract variants (~$0.02)' : 'Analyze all (~$0.05)'}
-                  >
-                    {(refreshing || analyzing) ? (
-                      <svg className="animate-spin h-4 w-4 text-gray-600 dark:text-gray-400" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    )}
-                    {/* Tooltip on hover */}
-                    <span className="absolute top-full right-0 mt-1 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                      {stalenessInfo?.severity === 'no_variants' ? '~$0.02' : '~$0.05'}
-                    </span>
-                  </button>
-                </div>
+                {stalenessInfo?.variantsAnalyzedAt && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Analyzed {(() => {
+                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                      const minutes = Math.floor(ageMs / 60000);
+                      const hours = Math.floor(ageMs / 3600000);
+                      const days = Math.floor(ageMs / 86400000);
+                      
+                      if (minutes < 60) return `${minutes}m ago`;
+                      if (hours < 24) return `${hours}h ago`;
+                      return `${days}d ago`;
+                    })()}
+                  </span>
+                )}
               </div>
               
               {/* Explain: Our Approach (compact) */}
@@ -1208,77 +1177,84 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   How data extraction works:
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Your uploads → Raw (free, local) → AI creates Normalized + Detailed (~$0.02) → Ready for analysis
+                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
                 </p>
+              </div>
+              
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                {stalenessInfo?.message || 'Checking...'}
+              </p>
+              
+              {/* Action Button */}
+              <div className="mb-4">
+                {stalenessInfo?.severity === 'no_variants' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'variants_fresh' && (
+                  <button
+                    onClick={handleGlobalAnalyze}
+                    disabled={analyzing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
+                  >
+                    {analyzing ? 'Analyzing...' : 'Analyze All'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'major' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
               </div>
 
               {/* Quick Access to Variants */}
               {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Preview Variants:</p>
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
                   <div className="flex flex-col gap-1.5">
-                    {/* Resume Variants */}
-                    {attachmentsList.find(a => a.kind === 'resume') && (
-                      <button
-                        onClick={() => {
-                          const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                          if (resumeAttachment) {
-                            setSelectedAttachment({
-                              id: resumeAttachment.id,
-                              filename: resumeAttachment.filename,
-                              kind: resumeAttachment.kind,
-                            });
-                            setVariantViewerOpen(true);
-                          }
-                        }}
-                        className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
-                        title="View resume variants (Raw, Normalized, Detailed)"
-                      >
-                        📄 Resume Variants
-                      </button>
-                    )}
-                    
-                    {/* JD Variants */}
-                    {attachmentsList.find(a => a.kind === 'jd') && (
-                      <button
-                        onClick={() => {
-                          const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                          if (jdAttachment) {
-                            setSelectedAttachment({
-                              id: jdAttachment.id,
-                              filename: jdAttachment.filename,
-                              kind: jdAttachment.kind,
-                            });
-                            setVariantViewerOpen(true);
-                          }
-                        }}
-                        className="text-xs px-3 py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 font-medium transition-colors text-left"
-                        title="View JD variants (Raw, Normalized, Detailed)"
-                      >
-                        📋 JD Variants
-                      </button>
-                    )}
-                    
-                    {/* Cover Letter Variants */}
-                    {attachmentsList.find(a => a.kind === 'cover_letter') && (
-                      <button
-                        onClick={() => {
-                          const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                          if (clAttachment) {
-                            setSelectedAttachment({
-                              id: clAttachment.id,
-                              filename: clAttachment.filename,
-                              kind: clAttachment.kind,
-                            });
-                            setVariantViewerOpen(true);
-                          }
-                        }}
-                        className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
-                        title="View cover letter variants (Raw, Normalized, Detailed)"
-                      >
-                        ✉️ Cover Letter Variants
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                        if (resumeAttachment) {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                      title="View resume variants (raw, AI-optimized, detailed)"
+                    >
+                      📄 Resume Variants
+                    </button>
+                    <button
+                      onClick={() => {
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                        if (jdAttachment) {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
+                      title="View JD variants (raw, AI-optimized, detailed)"
+                    >
+                      💼 JD Variants
+                    </button>
                   </div>
                 </div>
               )}
