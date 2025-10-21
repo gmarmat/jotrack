@@ -69,10 +69,21 @@ export async function POST(
         .set({ interviewQuestionsSearchedAt: now })
         .where(eq(jobs.id, jobId));
       
+      // Parse web intelligence (may be null for old cache entries)
+      let webIntelligence = null;
+      if (cached[0].webIntelligenceJson) {
+        try {
+          webIntelligence = JSON.parse(cached[0].webIntelligenceJson);
+        } catch (error) {
+          console.warn('Failed to parse cached web intelligence:', error);
+        }
+      }
+      
       return NextResponse.json({
         success: true,
         questions: JSON.parse(cached[0].searchedQuestions || '[]'),
         sources: JSON.parse(cached[0].searchSources || '[]'),
+        webIntelligence,  // V2.0: Include if available
         searchedAt: cached[0].searchedAt,
         cached: true,
         cacheExpiresAt: cached[0].expiresAt
@@ -105,6 +116,7 @@ export async function POST(
       roleCategory: roleTitle,
       searchedQuestions: JSON.stringify(questions),
       searchSources: JSON.stringify(sources),
+      webIntelligenceJson: JSON.stringify(webIntelligence), // V2.0: Save rich intelligence!
       searchedAt: now,
       createdAt: now,
       expiresAt
@@ -116,11 +128,17 @@ export async function POST(
       .where(eq(jobs.id, jobId));
     
     console.log(`✅ Cached ${questions.length} questions for 90 days (company: ${normalizedCompany})`);
+    console.log(`✅ Web intelligence:`, {
+      interviewerValidations: Object.keys(webIntelligence.interviewerValidations).length,
+      successPatterns: webIntelligence.successPatterns.length,
+      warnings: webIntelligence.warnings.length
+    });
     
     return NextResponse.json({
       success: true,
       questions,
       sources,
+      webIntelligence,  // V2.0: Return rich intelligence!
       searchedAt: now,
       cached: false,
       cacheExpiresAt: expiresAt

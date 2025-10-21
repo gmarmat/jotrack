@@ -452,6 +452,7 @@ export const interviewQuestionsCache = sqliteTable('interview_questions_cache', 
   roleCategory: text('role_category'),
   searchedQuestions: text('searched_questions'), // JSON array
   searchSources: text('search_sources'),         // JSON array of URLs
+  webIntelligenceJson: text('web_intelligence_json'), // V2.0: Rich intelligence (8 dimensions)
   searchedAt: integer('searched_at', { mode: 'number' }),
   createdAt: integer('created_at', { mode: 'number' }).notNull(),
   expiresAt: integer('expires_at', { mode: 'number' }),
