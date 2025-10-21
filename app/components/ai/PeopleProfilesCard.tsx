@@ -76,7 +76,24 @@ export default function PeopleProfilesCard({
   // Load people count and raw data on mount
   useEffect(() => {
     loadPeopleData();
+    loadInterviewerEvidence();
   }, [jobId]);
+  
+  const [interviewerEvidence, setInterviewerEvidence] = useState<Record<string, Source[]>>({});
+  
+  const loadInterviewerEvidence = async () => {
+    try {
+      // Load web intelligence from interview questions cache
+      const res = await fetch(`/api/jobs/${jobId}/interviewer-evidence`);
+      if (res.ok) {
+        const data = await res.json();
+        setInterviewerEvidence(data.evidence || {});
+        console.log('✅ Loaded interviewer evidence:', Object.keys(data.evidence || {}).length);
+      }
+    } catch (error) {
+      console.log('⚠️ No interviewer evidence found (Interview Coach not run yet)');
+    }
+  };
   
   const loadPeopleData = async () => {
     try {
@@ -235,7 +252,30 @@ export default function PeopleProfilesCard({
   });
   
   // Limit to 4 profiles (2x2 grid) for display
-  const displayProfiles = sortedProfiles.slice(0, 4);
+  const displayProfiles = sortedProfiles.slice(0, 4).map(person => {
+    // Merge interviewer evidence with person data
+    const evidenceFromSearch = interviewerEvidence[person.name] || [];
+    
+    // Create LinkedIn fallback source
+    const linkedInSource: Source = {
+      platform: 'linkedin',
+      quote: person.background && person.background.length > 0 ? person.background[0] : 'LinkedIn Profile',
+      fullQuote: person.background?.join('\n') || '',
+      url: person.linkedInUrl || undefined,
+      dateAccessed: new Date().toISOString().split('T')[0],
+      confidence: 'high',
+      provider: 'manual'
+    };
+    
+    // Merge sources: LinkedIn first, then web evidence
+    const mergedSources = [linkedInSource, ...evidenceFromSearch];
+    
+    return {
+      ...person,
+      sources: mergedSources
+    };
+  });
+  
   const hasMoreProfiles = sortedProfiles.length > 4;
   const totalProfiles = sortedProfiles.length;
   
