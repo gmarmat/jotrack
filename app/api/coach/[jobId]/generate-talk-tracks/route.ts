@@ -4,6 +4,7 @@ import { jobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { callAiProvider } from '@/lib/coach/aiProvider';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { analyzeCompetitiveContext } from '@/lib/interview/signalExtraction';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +117,31 @@ export async function POST(
       // Continue without interviewer profile - not a blocker
     }
     
+    // V2.0: Calculate competitive advantages from Match Score
+    let competitiveAdvantages: string[] = [];
+    try {
+      const matchScoreRow = sqlite.prepare(`
+        SELECT match_score_data FROM jobs WHERE id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      if (matchScoreRow?.match_score_data) {
+        const matchScoreData = JSON.parse(matchScoreRow.match_score_data);
+        const competitiveContext = await analyzeCompetitiveContext(
+          job.title,
+          resumeSummary,
+          matchScoreData.skillsMatch || []
+        );
+        
+        competitiveAdvantages = competitiveContext.userAdvantages.map((adv: any) => 
+          `${adv.uniqueSkill}: ${adv.description} - ${adv.value}`
+        );
+        
+        console.log(`✅ Identified ${competitiveAdvantages.length} competitive advantages`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to calculate competitive advantages (non-blocking):', error);
+    }
+    
     // Build persona-specific context
     let capability = '';
     let promptInputs: any = {
@@ -124,7 +150,8 @@ export async function POST(
       interviewQuestion: question,
       resumeSummary,
       writingStyleProfile: JSON.stringify(writingStyleProfile, null, 2),
-      recruiterProfile: recruiterProfile || null  // Pass interviewer profile if available
+      recruiterProfile: recruiterProfile || null,  // Pass interviewer profile if available
+      competitiveAdvantages: competitiveAdvantages.join('\n') || null  // V2.0: Pass competitive advantages!
     };
     
     if (persona === 'recruiter') {
@@ -144,10 +171,10 @@ export async function POST(
       );
     }
     
-    console.log(`🎭 Calling ${capability} with writing style profile...`);
+    console.log(`🎭 Calling ${capability} with writing style + competitive positioning...`);
     
     // Generate talk track
-    const aiResult = await callAiProvider(capability, promptInputs, false, 'v1');
+    const aiResult = await callAiProvider(capability, promptInputs, false, 'v2'); // v1 → v2!
     
     // Parse result
     let talkTrack;

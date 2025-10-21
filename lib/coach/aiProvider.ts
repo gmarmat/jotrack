@@ -808,7 +808,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         jdKeyPoints: inputs.jdKeyPoints || '',
         resumeSummary: inputs.resumeSummary || '',
         writingStyleProfile: inputs.writingStyleProfile || '{}',
-        recruiterProfile: inputs.recruiterProfile || null
+        recruiterProfile: inputs.recruiterProfile || null,
+        competitiveAdvantages: inputs.competitiveAdvantages || null  // V2.0
       };
 
     case 'talk-track-hiring-manager':
@@ -820,7 +821,8 @@ function buildPromptVariables(capability: string, inputs: any): any {
         resumeSummary: inputs.resumeSummary || '',
         writingStyleProfile: inputs.writingStyleProfile || '{}',
         teamContext: inputs.teamContext || 'Not available',
-        recruiterProfile: inputs.recruiterProfile || null  // Using same param name for consistency
+        recruiterProfile: inputs.recruiterProfile || null,  // Using same param name for consistency
+        competitiveAdvantages: inputs.competitiveAdvantages || null  // V2.0
       };
 
     case 'talk-track-peer':
@@ -828,10 +830,11 @@ function buildPromptVariables(capability: string, inputs: any): any {
         companyName: inputs.companyName || 'Unknown Company',
         roleTitle: inputs.roleTitle || 'Unknown Role',
         interviewQuestion: inputs.interviewQuestion || '',
-        technicalSkills: inputs.technicalSkills || 'General software engineering',
+        technicalSkills: inputs.technicalSkills || 'General domain expertise',
         resumeSummary: inputs.resumeSummary || '',
         writingStyleProfile: inputs.writingStyleProfile || '{}',
-        recruiterProfile: inputs.recruiterProfile || null  // Using same param name for consistency
+        recruiterProfile: inputs.recruiterProfile || null,  // Using same param name for consistency
+        competitiveAdvantages: inputs.competitiveAdvantages || null  // V2.0
       };
 
     case 'recommendations':
