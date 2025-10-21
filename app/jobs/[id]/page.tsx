@@ -11,6 +11,7 @@ import AiShowcase from '@/app/components/jobs/AiShowcase';
 import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
+import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import { type JobStatus } from '@/lib/status';
@@ -971,70 +972,79 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
                 
-                {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
-                <div className="space-y-1.5">
-                  {/* Resume Status */}
-                  {(() => {
-                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                    const hasResume = !!resumeAttachment;
-                    return (
-                      <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
-                        {hasResume ? (
-                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                        ) : (
-                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                        )}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
-                        <span className="truncate text-gray-600 dark:text-gray-400">
-                          {hasResume 
-                            ? `v${resumeAttachment!.version || 1} • ${new Date(resumeAttachment!.created_at || resumeAttachment!.createdAt).toLocaleDateString()}`
-                            : 'Not uploaded'}
-                        </span>
-                      </div>
-                    );
-                  })()}
+                {/* Document Status Table (like screenshot) */}
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
+                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Document Type</div>
+                  </div>
                   
-                  {/* JD Status */}
-                  {(() => {
-                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                    const hasJd = !!jdAttachment;
-                    return (
-                      <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
-                        {hasJd ? (
-                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                        ) : (
-                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                        )}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
-                        <span className="truncate text-gray-600 dark:text-gray-400">
-                          {hasJd 
-                            ? `v${jdAttachment!.version || 1} • ${new Date(jdAttachment!.created_at || jdAttachment!.createdAt).toLocaleDateString()}`
-                            : 'Not uploaded'}
+                  <div className="bg-white dark:bg-gray-900">
+                    {/* Resume Row */}
+                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Resume:</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                          {(() => {
+                            const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                            if (!resumeAttachment) return 'Not uploaded';
+                            
+                            const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
+                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              year: '2-digit' 
+                            }) : '';
+                            
+                            return `v1 • ${date}`;
+                          })()}
                         </span>
                       </div>
-                    );
-                  })()}
-                  
-                  {/* Cover Letter Status (from Resume Coach) */}
-                  {(() => {
-                    const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                    const hasCoverLetter = !!clAttachment;
-                    return (
-                      <div className="flex items-center gap-2 text-xs">
-                        {hasCoverLetter ? (
-                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                        ) : (
-                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                        )}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
-                        <span className="truncate text-gray-600 dark:text-gray-400">
-                          {hasCoverLetter 
-                            ? `v${clAttachment!.version || 1} • ${new Date(clAttachment!.created_at || clAttachment!.createdAt).toLocaleDateString()}`
-                            : 'Not created'}
+                    </div>
+                    
+                    {/* JD Row */}
+                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">JD:</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                          {(() => {
+                            const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                            if (!jdAttachment) return 'Not uploaded';
+                            
+                            const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
+                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              year: '2-digit' 
+                            }) : '';
+                            
+                            return `v1 • ${date}`;
+                          })()}
                         </span>
                       </div>
-                    );
-                  })()}
+                    </div>
+                    
+                    {/* Cover Letter Row */}
+                    <div className="px-3 py-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Cover Letter:</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                          {(() => {
+                            const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                            if (!clAttachment) return 'Not created';
+                            
+                            const timestamp = clAttachment.created_at || clAttachment.createdAt;
+                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              year: '2-digit' 
+                            }) : '';
+                            
+                            return `v1 • ${date}`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -1058,81 +1068,45 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
             {/* Column 2: Data Pipeline with AI Button */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with AI button (standardized) */}
+              {/* Header with Standard AI Button */}
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <span className="text-lg">📄</span>
                   Data Pipeline
                 </h3>
-                {/* AI Button - Standardized */}
-                <div className="text-right">
-                  {stalenessInfo?.severity === 'no_variants' ? (
-                    <button
-                      onClick={handleRefreshVariants}
-                      disabled={refreshing}
-                      className="group relative px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors"
-                      title="Extract AI variants (~$0.02)"
-                    >
-                      {refreshing ? (
-                        <>
-                          <svg className="animate-spin h-3 w-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span className="ml-1">Extracting...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="group-hover:hidden">Extract</span>
-                          <span className="hidden group-hover:inline">~$0.02</span>
-                        </>
-                      )}
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={handleGlobalAnalyze}
-                        disabled={analyzing}
-                        className="group relative px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors mb-1"
-                        title="Analyze all sections (~$0.05)"
-                      >
-                        {analyzing ? (
-                          <>
-                            <svg className="animate-spin h-3 w-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span className="ml-1">Analyzing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="group-hover:hidden">Analyze All</span>
-                            <span className="hidden group-hover:inline">~$0.05</span>
-                          </>
-                        )}
-                      </button>
-                      {stalenessInfo?.variantsAnalyzedAt && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Analyzed {(() => {
-                            const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                            const minutes = Math.floor(ageMs / 60000);
-                            const hours = Math.floor(ageMs / 3600000);
-                            const days = Math.floor(ageMs / 86400000);
-                            
-                            if (minutes < 60) return `${minutes}m ago`;
-                            if (hours < 24) return `${hours}h ago`;
-                            return `${days}d ago`;
-                          })()}
-                        </div>
-                      )}
-                    </>
+                
+                {/* Standard AI Button (like Match Score) */}
+                <div className="flex items-center gap-2">
+                  {/* Analyzed badge */}
+                  {stalenessInfo?.variantsAnalyzedAt && (
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                      Analyzed {(() => {
+                        const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                        const minutes = Math.floor(ageMs / 60000);
+                        const hours = Math.floor(ageMs / 3600000);
+                        const days = Math.floor(ageMs / 86400000);
+                        
+                        if (minutes < 60) return `${minutes}m ago`;
+                        if (hours < 24) return `${hours}h ago`;
+                        return `${days}d ago`;
+                      })()}
+                    </span>
                   )}
+                  
+                  {/* AI Analysis Button */}
+                  <AnalyzeButton
+                    onAnalyze={stalenessInfo?.severity === 'no_variants' ? handleRefreshVariants : handleGlobalAnalyze}
+                    isAnalyzing={refreshing || analyzing}
+                    label={stalenessInfo?.severity === 'no_variants' ? "Extract Variants" : "Analyze All"}
+                    estimatedCost={stalenessInfo?.severity === 'no_variants' ? 0.02 : 0.05}
+                    estimatedSeconds={stalenessInfo?.severity === 'no_variants' ? 15 : 25}
+                  />
                 </div>
               </div>
               
-              {/* Status Message */}
+              {/* Simple Description */}
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                {stalenessInfo?.message || 'Checking...'}
+                Documents will be converted into 3 variants for analysis.
               </p>
 
               {/* Variant Access Icons (Compact) */}
