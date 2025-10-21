@@ -14,6 +14,7 @@ import AttachmentsSection from '@/app/components/attachments/AttachmentsSection'
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
+import PromptViewer from '@/app/components/ai/PromptViewer';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
@@ -1173,32 +1174,13 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </span>
                   )}
                   
-                  {/* View Extraction Prompts Dropdown */}
-                  <div className="relative group">
-                    <button
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title="View extraction prompts"
-                    >
-                      <Eye size={16} className="text-gray-600 dark:text-gray-400" />
-                    </button>
-                    {/* Dropdown menu */}
-                    <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                      <div className="p-2">
-                        <button
-                          onClick={() => window.open('/api/ai/prompts/view?kind=variant-extraction-resume&version=v1', '_blank')}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-700 dark:text-gray-300"
-                        >
-                          📄 Resume Extraction
-                        </button>
-                        <button
-                          onClick={() => window.open('/api/ai/prompts/view?kind=variant-extraction-jd&version=v1', '_blank')}
-                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-700 dark:text-gray-300"
-                        >
-                          📋 JD Extraction
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  {/* View Extraction Prompt */}
+                  <PromptViewer 
+                    promptKind="variant-extraction"
+                    version="v1"
+                    buttonLabel=""
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  />
                   
                   {/* AI Analysis Button (Match Score style) */}
                   <button
