@@ -57,11 +57,18 @@ Write code using:
 
 ### STEP 4: UPDATE GUIDE (Keep Blueprint Current)
 ```
-After implementation:
+⚠️ CRITICAL: ONLY update blueprint AFTER implementation is complete AND user approves!
+
+After implementation AND user sign-off:
   - Update AGENT_REFERENCE_GUIDE.md (relevant sections)
   - Mark planned features as implemented
   - Add new patterns if created
   - Document any new pitfalls discovered
+
+❌ NEVER update blueprint with planned/future features
+❌ NEVER update blueprint before code is written and tested
+❌ NEVER update blueprint without user approval
+✅ ONLY update after: Code → Test → User Approval → Then Blueprint
 ```
 
 ---
