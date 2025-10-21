@@ -11,7 +11,8 @@
 **Name**: JoTrack (Job Application Tracking + AI Interview Coach)  
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
-**Current Phase**: V2.7 - Production-ready with Interview Coach
+**Current Phase**: V2.7 - Production-ready with Interview Coach  
+**Last UI Update**: October 21, 2025 - Compact timeline row, settings modal fix, keyword match optimization
 
 ### The Complete System (High-Level)
 
@@ -1220,8 +1221,24 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 // - Collapsible timeline bar at top clips modal header
 // - pt-16 (64px) provides space for control bar
 // - items-start positions modal at top instead of center
-// - Interview Questions generation: ~50-80 seconds
 ```
+
+### Recent UI Improvements (October 21, 2025)
+
+**1. Compact Timeline Row**
+- Added job title and company name to collapsed timeline
+- Centered job info with compact stacked dates on right
+- Prevents user confusion when scrolling down
+
+**2. Settings Modal Positioning**
+- Fixed clipping issue with collapsible control bar
+- Modal now opens below control bar with proper spacing
+
+**3. Keyword Match Optimization**
+- Replaced word cloud with compact, readable format
+- Reduced font sizes for space efficiency
+- Removed detailed popup for cleaner interface
+- Maintained color coding and tooltips
 
 **Symptoms of Timeout Too Short**:
 - Page reloads but shows dummy/stale data
