@@ -1145,42 +1145,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
             {/* Column 2: Data Pipeline with Scrolling */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with "Analyzed X ago" badge */}
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <span className="text-lg">
-                    {stalenessInfo?.severity === 'fresh' ? '✅' : 
-                     stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
-                     stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
-                  </span>
-                  Data Status
-                </h3>
-                {stalenessInfo?.variantsAnalyzedAt && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Analyzed {(() => {
-                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                      const minutes = Math.floor(ageMs / 60000);
-                      const hours = Math.floor(ageMs / 3600000);
-                      const days = Math.floor(ageMs / 86400000);
-                      
-                      if (minutes < 60) return `${minutes}m ago`;
-                      if (hours < 24) return `${hours}h ago`;
-                      return `${days}d ago`;
-                    })()}
-                  </span>
-                )}
-              </div>
-              
-              {/* Explain: Our Approach (compact) */}
-              <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
-                  How data extraction works:
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
-                </p>
-              </div>
-              
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                <span className="text-lg">
+                  {stalenessInfo?.severity === 'fresh' ? '✅' : 
+                   stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
+                   stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
+                </span>
+                Data Status
+              </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                 {stalenessInfo?.message || 'Checking...'}
               </p>
@@ -1191,7 +1163,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
@@ -1200,7 +1172,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleGlobalAnalyze}
                     disabled={analyzing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {analyzing ? 'Analyzing...' : 'Analyze All'}
                   </button>
@@ -1209,13 +1181,56 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
                 )}
               </div>
 
+              {/* Quick Access to Variants */}
+              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => {
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                        if (resumeAttachment) {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                      title="View resume variants (raw, AI-optimized, detailed)"
+                    >
+                      📄 Resume Variants
+                    </button>
+                    <button
+                      onClick={() => {
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                        if (jdAttachment) {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
+                      title="View JD variants (raw, AI-optimized, detailed)"
+                    >
+                      💼 JD Variants
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {/* Intermediate Status Messages */}
               {(refreshing || analyzing) && (
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
