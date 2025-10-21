@@ -4,7 +4,6 @@
 import mammoth from 'mammoth';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { PDFParse } from 'pdf-parse';
 
 export interface ExtractionResult {
   success: boolean;
@@ -50,38 +49,43 @@ export async function extractFromDocx(filePath: string): Promise<ExtractionResul
 }
 
 /**
- * Extract text from PDF file
+ * Extract text from PDF file using pdfjs-dist (Mozilla PDF.js)
  */
 export async function extractFromPdf(filePath: string): Promise<ExtractionResult> {
   try {
     console.log(`🔍 PDF extraction starting for: ${filePath}`);
+    
+    // Dynamic import to avoid Next.js build issues
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
     
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     console.log(`📁 Reading file: ${absolutePath}`);
     const buffer = readFileSync(absolutePath);
     console.log(`✓ File read, size: ${(buffer.length / 1024).toFixed(1)} KB`);
     
-    console.log(`✓ Creating PDFParse instance...`);
+    // Load PDF document
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(buffer),
+      useSystemFonts: true,
+      standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/',
+    });
     
-    // Create parser instance with data option
-    const parser = new PDFParse({ data: buffer });
-    console.log(`✓ Parser created, extracting text...`);
+    const pdf = await loadingTask.promise;
+    console.log(`✓ PDF loaded: ${pdf.numPages} pages`);
     
-    // Call getText() to extract text
-    const result = await parser.getText();
-    console.log(`✓ getText() complete, text length: ${result.text.length}`);
-    
-    const text = result.text.trim();
-    
-    // Get document info for page count
-    const info = await parser.getInfo();
-    const pageCount = info?.info?.pageCount || info?.numPages || 1;
-    console.log(`✓ PDF info: ${pageCount} pages, ${text.length} chars`);
-    
-    // Cleanup
-    if (parser.destroy) {
-      await parser.destroy();
+    // Extract text from all pages
+    let fullText = '';
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += pageText + '\n';
     }
+    
+    const text = fullText.trim();
+    console.log(`✓ Extracted ${text.length} characters from ${pdf.numPages} pages`);
     
     if (!text || text.length === 0) {
       return {
@@ -93,27 +97,26 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     
     // Count words
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
-    console.log(`✅ PDF extraction complete: ${wordCount} words from ${pageCount} pages`);
+    console.log(`✅ PDF extraction complete: ${wordCount} words from ${pdf.numPages} pages`);
     
     return {
       success: true,
       text,
       metadata: {
-        pageCount,
+        pageCount: pdf.numPages,
         wordCount,
         extractedAt: Date.now(),
       },
     };
   } catch (error: any) {
     console.error('❌ PDF extraction failed:', error);
-    console.error('Error stack:', error.stack);
     
     // Return more helpful error message
     let errorMsg = 'Failed to extract text from PDF';
-    if (error.message?.includes('defineProperty')) {
-      errorMsg = 'PDF parsing failed (corrupted or image-based PDF). Try converting to .docx or .txt format.';
-    } else if (error.message?.includes('encrypted')) {
+    if (error.message?.includes('encrypted')) {
       errorMsg = 'PDF is password-protected. Please remove encryption first.';
+    } else if (error.message?.includes('Invalid PDF')) {
+      errorMsg = 'PDF file is corrupted or invalid. Try re-saving or converting to .docx';
     } else if (error.message) {
       errorMsg = `PDF extraction error: ${error.message}`;
     }
