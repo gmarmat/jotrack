@@ -8,7 +8,6 @@ import SourcesModal, { type Source } from './SourcesModal';
 import AnalyzeButton from './AnalyzeButton';
 import AnalysisExplanation from '../ui/AnalysisExplanation';
 import CleanPeopleModal from '../people/CleanPeopleModal';
-import EvidenceChip, { type Evidence } from './EvidenceChip';
 
 interface PersonProfile {
   name: string;
@@ -18,7 +17,7 @@ interface PersonProfile {
   expertise: string[];
   communicationStyle?: string;
   whatThisMeans: string;
-  evidence?: Evidence[]; // NEW: Array of evidence supporting the insights
+  sources?: Source[]; // Sources for this person (shown in modal)
 }
 
 interface PeopleProfilesCardProps {
@@ -68,6 +67,11 @@ export default function PeopleProfilesCard({
   const [peopleCount, setPeopleCount] = useState(0);
   const [rawPeople, setRawPeople] = useState<any[]>([]);
   const [unoptimizedCount, setUnoptimizedCount] = useState(0);
+  
+  // Person-specific sources modal
+  const [showPersonSourcesModal, setShowPersonSourcesModal] = useState(false);
+  const [selectedPersonSources, setSelectedPersonSources] = useState<Source[]>([]);
+  const [selectedPersonName, setSelectedPersonName] = useState('');
   
   // Load people count and raw data on mount
   useEffect(() => {
@@ -136,23 +140,25 @@ export default function PeopleProfilesCard({
       expertise: ['Technical recruiting', 'Engineering talent', 'Startup hiring'],
       communicationStyle: 'Professional',
       whatThisMeans: 'Jane has deep technical knowledge, so be prepared to discuss technical details and system design. Emphasize your senior-level experience and architectural decisions.',
-      evidence: [
+      sources: [
         {
           platform: 'linkedin',
           quote: 'Led 50+ senior engineering hires',
           fullQuote: 'Led 50+ senior engineering hires at Google, Microsoft, and various startups. Passionate about connecting top technical talent with innovative companies.',
           url: 'https://linkedin.com/in/janedoe',
-          date: '2024-10-01',
-          confidence: 'high'
+          dateAccessed: '2024-10-01',
+          confidence: 'high',
+          provider: 'manual'
         },
         {
           platform: 'glassdoor',
           quote: 'Jane is super technical and asks great questions',
           fullQuote: 'Jane is super technical and asks great questions about system design. She really understands the role and can tell if you\'re a good fit quickly.',
           url: 'https://glassdoor.com/reviews/company',
-          date: '2024-09-15',
+          dateAccessed: '2024-09-15',
           confidence: 'high',
-          author: 'Senior Engineer Candidate'
+          author: 'Senior Engineer Candidate',
+          provider: 'tavily'
         }
       ]
     },
@@ -167,32 +173,35 @@ export default function PeopleProfilesCard({
       expertise: ['System architecture', 'Team scaling', 'Fintech domain'],
       communicationStyle: 'Technical',
       whatThisMeans: 'John will likely focus on scalability, architecture decisions, and your experience building reliable financial systems. Prepare examples of handling high-stakes technical challenges.',
-      evidence: [
+      sources: [
         {
           platform: 'linkedin',
           quote: 'Led engineering teams through 10x growth',
           fullQuote: 'Led engineering teams through 10x growth at FinTech startup. Scaled systems to handle $1B+ in daily transactions.',
           url: 'https://linkedin.com/in/johnsmith',
-          date: '2024-09-20',
-          confidence: 'high'
+          dateAccessed: '2024-09-20',
+          confidence: 'high',
+          provider: 'manual'
         },
         {
           platform: 'reddit',
           quote: 'John is OBSESSED with metrics and data',
           fullQuote: 'John is OBSESSED with metrics and data. He asked for exact numbers on everything - latency, throughput, error rates. Come prepared with quantitative results.',
           url: 'https://reddit.com/r/cscareerquestions',
-          date: '2024-08-10',
+          dateAccessed: '2024-08-10',
           confidence: 'medium',
-          author: 'throwaway_engineer123'
+          author: 'throwaway_engineer123',
+          provider: 'tavily'
         },
         {
           platform: 'blind',
           quote: 'Interviewing with John? Bring your system design A-game',
           fullQuote: 'Interviewing with John? Bring your system design A-game. He went DEEP on distributed systems, consensus algorithms, and failure scenarios.',
           url: 'https://teamblind.com',
-          date: '2024-07-25',
+          dateAccessed: '2024-07-25',
           confidence: 'medium',
-          author: 'Anonymous at Company'
+          author: 'Anonymous at Company',
+          provider: 'tavily'
         }
       ]
     }
@@ -491,22 +500,25 @@ export default function PeopleProfilesCard({
               </div>
             )}
 
-            {/* Evidence Chips - NEW! */}
-            {person.evidence && person.evidence.length > 0 && (
-              <div className="mb-3">
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Evidence:</p>
-                <div className="flex flex-wrap gap-2">
-                  {person.evidence.map((evidence, i) => (
-                    <EvidenceChip key={i} evidence={evidence} />
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* What This Means */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1">💡 What this means for you:</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 italic">{person.whatThisMeans}</p>
+              
+              {/* View Sources Button */}
+              {person.sources && person.sources.length > 0 && (
+                <button
+                  onClick={() => {
+                    setSelectedPersonSources(person.sources || []);
+                    setSelectedPersonName(person.name);
+                    setShowPersonSourcesModal(true);
+                  }}
+                  className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <AlertCircle size={12} />
+                  View Sources ({person.sources.length})
+                </button>
+              )}
             </div>
             </div>
           );
@@ -607,12 +619,21 @@ export default function PeopleProfilesCard({
         }}
       />
       
-      {/* Sources Modal */}
+      {/* Overall Sources Modal */}
       <SourcesModal
         isOpen={showSourcesModal}
         onClose={() => setShowSourcesModal(false)}
         sources={sources}
         title="People Profiles Sources"
+      />
+      
+      {/* Person-Specific Sources Modal */}
+      <SourcesModal
+        isOpen={showPersonSourcesModal}
+        onClose={() => setShowPersonSourcesModal(false)}
+        sources={selectedPersonSources}
+        title={`Evidence for ${selectedPersonName}`}
+        sectionName="Interview Insights"
       />
     </div>
   );
