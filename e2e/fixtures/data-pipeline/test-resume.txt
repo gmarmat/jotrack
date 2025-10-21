@@ -1,0 +1,54 @@
+JOHN DOE
+Senior Software Engineer
+Email: john.doe@example.com | Phone: 555-0123
+LinkedIn: linkedin.com/in/johndoe
+Location: San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Software engineer with 8+ years of experience building scalable web applications and distributed systems. Expertise in Python, React, and AWS cloud infrastructure. Proven track record of leading teams and delivering high-impact projects.
+
+EXPERIENCE
+
+Senior Software Engineer | Tech Company A | January 2020 - Present
+- Led team of 5 engineers to migrate monolithic application to microservices architecture
+- Reduced API response latency by 60% (from 800ms to 320ms) through caching and query optimization
+- Designed and implemented RESTful APIs serving 1M+ requests per day
+- Mentored 3 junior engineers, improving team code quality by 40%
+- Technologies: Python, Django, Docker, Kubernetes, AWS, PostgreSQL, Redis
+
+Software Engineer | Tech Company B | March 2018 - December 2019
+- Developed backend services using Python and Flask framework
+- Built data pipelines processing 100K+ records daily using Apache Airflow
+- Collaborated with frontend team (React) on API integration and GraphQL implementation
+- Reduced infrastructure costs by 30% through AWS optimization
+- Technologies: Python, Flask, PostgreSQL, Redis, AWS Lambda, React, GraphQL
+
+Junior Developer | Startup C | June 2016 - February 2018
+- Built web applications using JavaScript and Node.js
+- Implemented user authentication and authorization systems using JWT
+- Developed RESTful APIs for mobile applications
+- Technologies: Node.js, Express, MongoDB, React, AWS
+
+EDUCATION
+Bachelor of Science in Computer Science | University of Technology | 2016
+GPA: 3.8/4.0
+Relevant Courses: Algorithms, Data Structures, Database Systems, Web Development, Distributed Systems
+
+SKILLS
+Programming Languages: Python, JavaScript, TypeScript, SQL, Go
+Backend Frameworks: Django, Flask, Node.js, Express
+Frontend: React, Redux, HTML/CSS
+Databases: PostgreSQL, MySQL, MongoDB, Redis
+Cloud & DevOps: AWS (EC2, S3, Lambda, RDS), Docker, Kubernetes, CI/CD, Jenkins
+Tools: Git, Jira, Confluence, Datadog
+Methodologies: Agile, Scrum, Test-Driven Development, Microservices Architecture
+
+CERTIFICATIONS
+AWS Certified Solutions Architect - Associate | 2021
+AWS Certified Developer - Associate | 2020
+
+ACHIEVEMENTS
+- Tech Company A Innovation Award for microservices migration (2022)
+- Open source contributor to Django framework (500+ stars on GitHub)
+- Speaker at PyData Conference 2021: "Building Scalable APIs with Django"
+

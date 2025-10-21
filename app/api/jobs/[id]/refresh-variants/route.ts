@@ -43,104 +43,113 @@ interface ProcessedAttachment {
 }
 
 /**
- * Extract structured data from raw text using AI
+ * Create normalized (AI-Short) text variant from raw text
+ * Purpose: Clean, concise text (500-800 words) for efficient AI analysis
  */
-async function extractWithAI(
+async function createNormalizedVariant(
   rawText: string,
   sourceType: 'resume' | 'job_description' | 'cover_letter'
-): Promise<any> {
-  let prompt = '';
+): Promise<{ text: string; wordCount: number }> {
+  const docType = sourceType === 'resume' ? 'resume' : 
+                  sourceType === 'job_description' ? 'job description' : 
+                  'cover letter';
   
-  if (sourceType === 'resume') {
-    prompt = `
-Extract structured information from this resume. Return ONLY valid JSON with no markdown formatting:
+  const prompt = `You are creating a NORMALIZED TEXT variant of a ${docType}.
 
-{
-  "skills": ["skill1", "skill2", ...],
-  "experience": [
-    {
-      "title": "Job Title",
-      "company": "Company Name",
-      "duration": "Jan 2020 - Present",
-      "highlights": ["achievement 1", "achievement 2"]
-    }
-  ],
-  "education": [
-    {
-      "degree": "Degree Name",
-      "institution": "School Name",
-      "year": "2020"
-    }
-  ],
-  "summary": "Brief professional summary"
-}
+TASK: Clean and condense the raw text below into a concise, well-formatted version.
 
-Resume text:
+CRITICAL RULES:
+1. OUTPUT PLAIN TEXT ONLY (no JSON, no markdown formatting, no code blocks)
+2. Remove: Formatting artifacts, redundant whitespace, page numbers, headers/footers
+3. Preserve: ALL meaningful content - skills, experiences, achievements, requirements
+4. Condense: Reduce verbosity but keep ALL facts and details
+5. Fix: Spelling errors, grammar issues, unclear phrasing
+6. Target: 500-800 words (shorter is better if you can preserve all content)
+7. Format: Use simple paragraphs and line breaks for readability
+
+EXAMPLE:
+Input: "Page 1\\n====\\nJOHN    DOE\\nEmail: john@example.com      Phone: 555-1234\\n\\nEXPERIENCE\\nCompany A                                                     2020-Present\\nSenior Engineer\\n- Led team of 5..."
+
+Output: "John Doe - Senior Engineer\\nEmail: john@example.com | Phone: 555-1234\\n\\nEXPERIENCE:\\nSenior Engineer at Company A (2020-Present): Led team of 5 engineers building microservices. Reduced API latency by 60%.\\n\\nSKILLS: Python, Django, AWS, Docker..."
+
+NOW PROCESS THIS ${docType.toUpperCase()}:
+
 ${rawText}
-`;
-  } else if (sourceType === 'job_description') {
-    prompt = `
-Extract structured information from this job description. Return ONLY valid JSON with no markdown formatting:
 
-{
-  "title": "Job Title",
-  "company": "Company Name",
-  "required_skills": ["skill1", "skill2", ...],
-  "preferred_skills": ["skill1", "skill2", ...],
-  "responsibilities": ["resp1", "resp2", ...],
-  "qualifications": ["qual1", "qual2", ...],
-  "summary": "Brief job summary"
-}
+OUTPUT NORMALIZED TEXT BELOW (START YOUR RESPONSE WITH THE CLEANED TEXT, NO PREAMBLE):`;
 
-Job description text:
-${rawText}
-`;
-  } else {
-    // cover_letter
-    prompt = `
-Extract key information from this cover letter. Return ONLY valid JSON with no markdown formatting:
-
-{
-  "target_company": "Company Name",
-  "target_role": "Role Name",
-  "key_points": ["point1", "point2", ...],
-  "motivations": ["motivation1", "motivation2", ...],
-  "summary": "Brief summary"
-}
-
-Cover letter text:
-${rawText}
-`;
-  }
-  
-  const { result } = await callAiProvider('extract_structured_data', {
+  const { result } = await callAiProvider('create_normalized_variant', {
     prompt,
     sourceType,
   }, false, 'v1');
   
-  // Parse JSON from result (handle potential markdown wrapping or direct object)
-  if (typeof result === 'object') {
-    return result; // Already parsed
-  }
+  const text = result.trim();
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
   
-  const jsonMatch = result.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('AI did not return valid JSON');
-  }
-  
-  return JSON.parse(jsonMatch[0]);
+  return { text, wordCount };
 }
 
 /**
- * Compare two variants using AI
+ * Create detailed (AI-Long) text variant from normalized text
+ * Purpose: Enhanced, complete text with expanded abbreviations
+ */
+async function createDetailedVariant(
+  normalizedText: string,
+  sourceType: 'resume' | 'job_description' | 'cover_letter'
+): Promise<{ text: string; wordCount: number }> {
+  const docType = sourceType === 'resume' ? 'resume' : 
+                  sourceType === 'job_description' ? 'job description' : 
+                  'cover letter';
+  
+  const prompt = `You are creating a DETAILED TEXT variant of a ${docType}.
+
+TASK: Enhance the normalized text below by expanding abbreviations and adding clarity.
+
+CRITICAL RULES:
+1. OUTPUT PLAIN TEXT ONLY (no JSON, no markdown formatting, no code blocks)
+2. Expand: Abbreviations, acronyms, unclear terms (K8s → Kubernetes, API → Application Programming Interface)
+3. Add: Context that makes content self-explanatory for AI analysis
+4. Preserve: Original meaning and ALL facts
+5. Enhance: Clarity without changing tone or adding fictional details
+6. Target: Keep under 2000 words
+7. Format: Use simple paragraphs and line breaks for readability
+
+EXAMPLE:
+Input: "Senior Engineer at Company A (2020-Present): Led team of 5 building microservices. Reduced API latency by 60%.\\n\\nSKILLS: Python, Django, AWS, K8s"
+
+Output: "Senior Software Engineer at Company A (2020-Present):\\nLed a team of 5 engineers to architect and build a microservices architecture system. Successfully reduced Application Programming Interface (API) response latency by 60 percent through performance optimization.\\n\\nTECHNICAL SKILLS:\\n- Programming Languages: Python (5+ years experience)\\n- Web Frameworks: Django for backend development\\n- Cloud Infrastructure: Amazon Web Services (AWS)\\n- Container Orchestration: Kubernetes for managing microservices deployment"
+
+NOW PROCESS THIS ${docType.toUpperCase()}:
+
+${normalizedText}
+
+OUTPUT DETAILED TEXT BELOW (START YOUR RESPONSE WITH THE ENHANCED TEXT, NO PREAMBLE):`;
+
+  const { result } = await callAiProvider('create_detailed_variant', {
+    prompt,
+    sourceType,
+  }, false, 'v1');
+  
+  const text = result.trim();
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  
+  return { text, wordCount };
+}
+
+/**
+ * Compare two text variants using AI
  */
 async function compareVariantsWithAI(
-  oldVariant: any,
-  newVariant: any,
+  oldVariant: { text: string } | any,
+  newVariant: { text: string } | any,
   sourceType: string
 ): Promise<ComparisonResult> {
+  // Extract text from variants (handle both old JSON format and new text format)
+  const oldText = oldVariant?.text || JSON.stringify(oldVariant);
+  const newText = newVariant?.text || JSON.stringify(newVariant);
+  
   const prompt = `
-Compare these two ${sourceType} variants and determine what changed.
+Compare these two ${sourceType} versions and determine what changed.
 Return ONLY valid JSON with no markdown formatting:
 
 {
@@ -159,11 +168,11 @@ Significance levels:
 - "minor": Small updates that don't affect qualifications
 - "major": Added/removed skills, changed jobs, updated qualifications
 
-Old variant:
-${JSON.stringify(oldVariant, null, 2)}
+Old version:
+${oldText.substring(0, 2000)}
 
-New variant:
-${JSON.stringify(newVariant, null, 2)}
+New version:
+${newText.substring(0, 2000)}
 `;
 
   const { result } = await callAiProvider('compare_variants', {
@@ -385,18 +394,31 @@ export async function POST(
           }
         }
         
-        console.log(`🔄 Extracting structured data from ${attachment.filename}...`);
+        console.log(`🔄 Creating AI variants from ${attachment.filename}...`);
         
-        // Extract with AI
-        const extracted = await extractWithAI(rawVariant.text, sourceType);
+        // Step 1: Create normalized variant (AI-Short)
+        console.log(`📝 Creating normalized variant...`);
+        const normalized = await createNormalizedVariant(rawVariant.text, sourceType);
         
-        // Calculate cost (rough estimate)
-        const inputTokens = estimateTokens(rawVariant.text);
-        const outputTokens = estimateTokens(JSON.stringify(extracted));
-        const cost = (inputTokens * 0.00015 + outputTokens * 0.0006) / 1000; // GPT-4o Mini pricing
-        totalCost += cost;
+        const normalizedInputTokens = estimateTokens(rawVariant.text);
+        const normalizedOutputTokens = estimateTokens(normalized.text);
+        const normalizedCost = (normalizedInputTokens * 0.00015 + normalizedOutputTokens * 0.0006) / 1000;
+        totalCost += normalizedCost;
         
-        // Get previous ai_optimized variant for comparison
+        console.log(`✅ Normalized: ${normalized.wordCount} words (from ${rawVariant.metadata?.wordCount || 0} raw)`);
+        
+        // Step 2: Create detailed variant (AI-Long)
+        console.log(`📝 Creating detailed variant...`);
+        const detailed = await createDetailedVariant(normalized.text, sourceType);
+        
+        const detailedInputTokens = estimateTokens(normalized.text);
+        const detailedOutputTokens = estimateTokens(detailed.text);
+        const detailedCost = (detailedInputTokens * 0.00015 + detailedOutputTokens * 0.0006) / 1000;
+        totalCost += detailedCost;
+        
+        console.log(`✅ Detailed: ${detailed.wordCount} words`);
+        
+        // Step 3: Compare with previous version (if exists)
         const oldVariant = await getVariant(
           attachment.id,
           sourceType,
@@ -407,39 +429,51 @@ export async function POST(
         
         if (oldVariant) {
           console.log(`🔍 Comparing with previous variant...`);
-          comparison = await compareVariantsWithAI(oldVariant, extracted, sourceType);
+          comparison = await compareVariantsWithAI(oldVariant, normalized, sourceType);
           
           // Add comparison cost
           const compareInputTokens = estimateTokens(
-            JSON.stringify(oldVariant) + JSON.stringify(extracted)
+            (oldVariant.text || JSON.stringify(oldVariant)) + normalized.text
           );
-          const compareOutputTokens = 500; // Estimate for comparison result
+          const compareOutputTokens = 500;
           const compareCost = (compareInputTokens * 0.00015 + compareOutputTokens * 0.0006) / 1000;
           totalCost += compareCost;
         }
         
-        // Save ai_optimized variant
-        const contentHash = createHash('sha256')
-          .update(JSON.stringify(extracted))
+        // Save ai_optimized variant (normalized text)
+        const normalizedHash = createHash('sha256')
+          .update(normalized.text)
           .digest('hex');
         
         await saveVariant({
           sourceId: attachment.id,
           sourceType,
           variantType: 'ai_optimized',
-          content: extracted,
-          contentHash,
-          tokenCount: outputTokens,
+          content: {
+            text: normalized.text,
+            wordCount: normalized.wordCount,
+            variant: 'normalized',
+          },
+          contentHash: normalizedHash,
+          tokenCount: normalizedOutputTokens,
         });
         
-        // Also save detailed variant (same for now, can be enhanced later)
+        // Save detailed variant (enhanced text)
+        const detailedHash = createHash('sha256')
+          .update(detailed.text)
+          .digest('hex');
+        
         await saveVariant({
           sourceId: attachment.id,
           sourceType,
           variantType: 'detailed',
-          content: extracted,
-          contentHash,
-          tokenCount: outputTokens,
+          content: {
+            text: detailed.text,
+            wordCount: detailed.wordCount,
+            variant: 'detailed',
+          },
+          contentHash: detailedHash,
+          tokenCount: detailedOutputTokens,
         });
         
         console.log(`✅ Variants saved for ${attachment.filename}`);

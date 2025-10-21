@@ -1,0 +1,78 @@
+Senior Software Engineer - Backend Platform
+Tech Company A | San Francisco, CA (Remote Friendly)
+
+ABOUT TECH COMPANY A
+We're a fast-growing B2B SaaS company building the future of enterprise data analytics. Our platform processes billions of events daily, serving Fortune 500 customers. We're Series C funded ($50M) and scaling rapidly.
+
+ABOUT THE ROLE
+We're looking for a Senior Software Engineer to join our Platform team. You'll be responsible for designing and building scalable backend services that power our core product. This role will have high visibility and impact - your work will directly affect millions of end users.
+
+WHAT YOU'LL DO
+- Design and implement backend services and RESTful APIs using Python and Django
+- Lead technical discussions and architecture decisions for microservices migration
+- Build and optimize data pipelines processing 100M+ events daily
+- Mentor junior engineers and contribute to engineering culture
+- Collaborate closely with product, frontend, and infrastructure teams
+- Optimize system performance, reliability, and scalability
+- Participate in code reviews, technical planning, and on-call rotation
+
+REQUIRED QUALIFICATIONS
+- 5+ years of professional software engineering experience
+- Strong proficiency in Python and Django or Flask framework
+- Experience with microservices architecture and containerization (Docker, Kubernetes)
+- Solid understanding of RESTful API design and implementation
+- Experience with relational databases (PostgreSQL, MySQL) and query optimization
+- Familiarity with AWS cloud services (EC2, S3, Lambda, RDS)
+- Strong computer science fundamentals (algorithms, data structures)
+- Bachelor's degree in Computer Science or related field (or equivalent experience)
+- Excellent communication skills and ability to work in cross-functional teams
+
+PREFERRED QUALIFICATIONS
+- Experience leading or mentoring engineers
+- Knowledge of React or modern frontend frameworks
+- Experience with high-traffic systems (1M+ requests/day)
+- AWS certifications (Solutions Architect, Developer)
+- Experience with Redis, Elasticsearch, or other NoSQL databases
+- Understanding of CI/CD pipelines and DevOps practices
+- Open source contributions or technical blog writing
+- Experience in B2B SaaS or data analytics domain
+
+TECHNICAL STACK
+Backend: Python, Django, Flask, Celery, SQLAlchemy
+Databases: PostgreSQL, Redis, Elasticsearch
+Infrastructure: AWS (EC2, S3, Lambda, RDS, CloudFormation), Docker, Kubernetes
+Tools: Git, GitHub, Jira, Datadog, PagerDuty
+Methodologies: Agile/Scrum, Microservices, Test-Driven Development
+
+WHAT WE OFFER
+- Competitive salary: $150K - $200K base (depending on experience)
+- Equity package (0.1% - 0.3%)
+- Comprehensive health, dental, and vision insurance
+- 401(k) matching up to 4%
+- Unlimited PTO policy
+- Remote-friendly culture (office available in SF)
+- $3K annual learning budget
+- Latest MacBook Pro and home office setup
+- Team retreats twice per year
+
+INTERVIEW PROCESS
+1. Phone screen with recruiter (30 min)
+2. Technical phone interview with engineer (60 min) - coding + system design
+3. Onsite/Virtual (4 hours):
+   - System design interview (60 min)
+   - Coding interview (60 min)
+   - Behavioral interview with hiring manager (45 min)
+   - Team fit chat with peer engineers (45 min)
+4. Reference checks
+5. Offer
+
+OUR CULTURE
+We value: Innovation, ownership, collaboration, customer obsession, and continuous learning.
+We're building a diverse, inclusive team where everyone can do their best work.
+
+EQUAL OPPORTUNITY
+Tech Company A is an equal opportunity employer. We celebrate diversity and are committed to creating an inclusive environment for all employees.
+
+TO APPLY
+Please submit your resume and a brief note about why you're interested in this role.
+
