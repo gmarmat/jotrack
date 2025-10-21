@@ -1212,6 +1212,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             currentStatus={currentStatus}
             hasMatchScore={(aiData?.matchScore || 0) > 0}
             hasSkillsAnalysis={!!aiData?.skillsMatch}
+            onRefresh={async () => {
+              // Reload analysis data to check prerequisites
+              const response = await fetch(`/api/jobs/${job.id}/analysis-data`);
+              if (response.ok) {
+                const data = await response.json();
+                setAiData(data);
+              }
+            }}
           />
         </div>
 

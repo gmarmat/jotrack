@@ -1,27 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Target, TrendingUp, CheckCircle2, Users, MessageSquare, FileText, Brain } from 'lucide-react';
+import { Target, TrendingUp, CheckCircle2, Users, MessageSquare, FileText, Brain, RefreshCw } from 'lucide-react';
 
 interface InterviewCoachEntryCardProps {
   jobId: string;
   currentStatus: string;
   hasMatchScore: boolean;
   hasSkillsAnalysis: boolean;
+  onRefresh?: () => void; // Callback to refresh parent data
 }
 
 export default function InterviewCoachEntryCard({ 
   jobId, 
   currentStatus, 
   hasMatchScore, 
-  hasSkillsAnalysis 
+  hasSkillsAnalysis,
+  onRefresh 
 }: InterviewCoachEntryCardProps) {
   const router = useRouter();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const hasPrerequisites = hasMatchScore && hasSkillsAnalysis;
   const isPostApplication = currentStatus !== 'ON_RADAR';
   const isAvailable = hasPrerequisites && isPostApplication;
+  
+  const handleRefreshPrereqs = async () => {
+    setIsRefreshing(true);
+    // Trigger parent refresh if provided
+    if (onRefresh) {
+      await onRefresh();
+    }
+    // Small delay for UX feedback
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
   
   // Show disabled state if prerequisites not met
   if (!hasPrerequisites) {
@@ -102,6 +115,17 @@ export default function InterviewCoachEntryCard({
           >
             <span className="text-base">🔒</span>
             <span>Locked</span>
+          </button>
+          
+          {/* Refresh Prerequisites Button */}
+          <button
+            onClick={handleRefreshPrereqs}
+            disabled={isRefreshing}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+            title="Re-check prerequisites"
+          >
+            <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>Check</span>
           </button>
         </div>
       </div>
