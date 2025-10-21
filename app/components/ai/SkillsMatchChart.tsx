@@ -188,7 +188,7 @@ export default function SkillsMatchChart({
         </div>
       </div>
 
-      {/* Keyword-Level Word Cloud */}
+      {/* Compact Keyword Nodes Graph */}
       {topKeywords.length > 0 && (
         <div className="space-y-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -199,18 +199,128 @@ export default function SkillsMatchChart({
             </div>
           </div>
 
-          {/* Word cloud */}
-          <div className="flex flex-wrap gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            {topKeywords.map((skill, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedKeyword(skill)}
-                className={`${getKeywordSize(skill.jdCount)} ${getKeywordColor(skill)} font-medium transition-all hover:scale-110 cursor-pointer`}
-                title={`${skill.term}: JD requires ${skill.jdCount}, You have ${skill.resumeCount} (resume) + ${skill.fullProfileCount || 0} (profile)`}
-              >
-                {skill.term}
-              </button>
-            ))}
+          {/* Compact Nodes Graph */}
+          <div className="relative h-32 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg overflow-hidden">
+            {/* CSS Animations - Optimized for performance */}
+            <style jsx>{`
+              @keyframes float-0 {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-3px); }
+              }
+              @keyframes float-1 {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-2px); }
+              }
+              @keyframes float-2 {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-4px); }
+              }
+              /* Performance optimization - use transform3d for GPU acceleration */
+              .animate-float {
+                will-change: transform;
+                transform: translateZ(0);
+              }
+            `}</style>
+            {/* SVG for connections and nodes */}
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 128">
+              {/* Connection lines - connect similar keywords */}
+              {topKeywords.slice(0, 12).map((skill, idx) => {
+                const x = 30 + (idx % 6) * 60;
+                const y = 30 + Math.floor(idx / 6) * 60;
+                
+                // Find similar keywords (same category or similar importance)
+                const connections = topKeywords.slice(0, 12).slice(idx + 1).filter((otherSkill, otherIdx) => {
+                  // Connect if similar importance level or same status
+                  const similarImportance = Math.abs(skill.jdCount - otherSkill.jdCount) <= 2;
+                  const sameStatus = (
+                    (skill.resumeCount + (skill.fullProfileCount || 0) >= skill.jdCount) === 
+                    (otherSkill.resumeCount + (otherSkill.fullProfileCount || 0) >= otherSkill.jdCount)
+                  );
+                  return similarImportance || sameStatus;
+                }).slice(0, 2).map((otherSkill, otherIdx) => {
+                  const otherX = 30 + ((idx + otherIdx + 1) % 6) * 60;
+                  const otherY = 30 + Math.floor((idx + otherIdx + 1) / 6) * 60;
+                  
+                  return (
+                    <line
+                      key={`${idx}-${idx + otherIdx + 1}`}
+                      x1={x}
+                      y1={y}
+                      x2={otherX}
+                      y2={otherY}
+                      stroke="rgba(156, 163, 175, 0.4)"
+                      strokeWidth="1"
+                      strokeDasharray="2,2"
+                      className="animate-pulse"
+                    />
+                  );
+                });
+                
+                return connections;
+              })}
+
+              {/* Animated nodes */}
+              {topKeywords.slice(0, 12).map((skill, idx) => {
+                const x = 30 + (idx % 6) * 60;
+                const y = 30 + Math.floor(idx / 6) * 60;
+                const size = Math.max(8, Math.min(20, 8 + (skill.jdCount / maxJdCount) * 12));
+                
+                return (
+                  <g key={idx}>
+                    {/* Node circle */}
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={size}
+                      className={`animate-float cursor-pointer transition-all duration-300 hover:r-${size + 2} ${
+                        skill.resumeCount + (skill.fullProfileCount || 0) >= skill.jdCount
+                          ? 'fill-green-500'
+                          : skill.fullProfileCount && skill.fullProfileCount > 0
+                          ? 'fill-yellow-500'
+                          : 'fill-red-500'
+                      }`}
+                      style={{
+                        animation: `float-${idx % 3} 3s ease-in-out infinite`,
+                        animationDelay: `${idx * 0.2}s`
+                      }}
+                      onClick={() => setSelectedKeyword(skill)}
+                    >
+                      <title>{`${skill.term}: JD requires ${skill.jdCount}, You have ${skill.resumeCount} (resume) + ${skill.fullProfileCount || 0} (profile)`}</title>
+                    </circle>
+                    
+                    {/* Node label */}
+                    <text
+                      x={x}
+                      y={y + 4}
+                      textAnchor="middle"
+                      className="animate-float text-xs font-medium fill-gray-700 dark:fill-gray-300 pointer-events-none"
+                      style={{
+                        animation: `float-${idx % 3} 3s ease-in-out infinite`,
+                        animationDelay: `${idx * 0.2}s`
+                      }}
+                    >
+                      {skill.term.length > 8 ? skill.term.substring(0, 8) + '...' : skill.term}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Legend */}
+            <div className="absolute bottom-2 right-2 flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">Match</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">Partial</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">Missing</span>
+              </div>
+            </div>
           </div>
 
           {/* Selected keyword details */}
