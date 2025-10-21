@@ -11,7 +11,6 @@ import AiShowcase from '@/app/components/jobs/AiShowcase';
 import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
-import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
@@ -1144,169 +1143,119 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            {/* Column 2: Data Pipeline with AI Button */}
+            {/* Column 2: Data Pipeline with Scrolling */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with Standard AI Button */}
-              <div className="flex items-center justify-between mb-4">
+              {/* Header with "Analyzed X ago" badge */}
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <span className="text-lg">📄</span>
-                  Data Pipeline
+                  <span className="text-lg">
+                    {stalenessInfo?.severity === 'fresh' ? '✅' : 
+                     stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
+                     stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
+                  </span>
+                  Data Status
                 </h3>
-                
-                {/* Standard AI Button (like Match Score) */}
-                <div className="flex items-center gap-2">
-                  {/* Analyzed badge */}
-                  {stalenessInfo?.variantsAnalyzedAt && (
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-                      Analyzed {(() => {
-                        const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                        const minutes = Math.floor(ageMs / 60000);
-                        const hours = Math.floor(ageMs / 3600000);
-                        const days = Math.floor(ageMs / 86400000);
-                        
-                        if (minutes < 60) return `${minutes}m ago`;
-                        if (hours < 24) return `${hours}h ago`;
-                        return `${days}d ago`;
-                      })()}
-                    </span>
-                  )}
-                  
-                  {/* AI Analysis Button */}
-                  <AnalyzeButton
-                    onAnalyze={stalenessInfo?.severity === 'no_variants' ? handleRefreshVariants : handleGlobalAnalyze}
-                    isAnalyzing={refreshing || analyzing}
-                    label={stalenessInfo?.severity === 'no_variants' ? "Extract Variants" : "Analyze All"}
-                    estimatedCost={stalenessInfo?.severity === 'no_variants' ? 0.02 : 0.05}
-                    estimatedSeconds={stalenessInfo?.severity === 'no_variants' ? 15 : 25}
-                  />
-                </div>
+                {stalenessInfo?.variantsAnalyzedAt && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Analyzed {(() => {
+                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                      const minutes = Math.floor(ageMs / 60000);
+                      const hours = Math.floor(ageMs / 3600000);
+                      const days = Math.floor(ageMs / 86400000);
+                      
+                      if (minutes < 60) return `${minutes}m ago`;
+                      if (hours < 24) return `${hours}h ago`;
+                      return `${days}d ago`;
+                    })()}
+                  </span>
+                )}
               </div>
               
-              {/* Simple Description */}
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-                Convert uploaded docs into Raw (utf-8) and two AI summarized versions (short and long) to use in the app.
+              {/* Explain: Our Approach (compact) */}
+              <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
+                  How data extraction works:
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
+                </p>
+              </div>
+              
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                {stalenessInfo?.message || 'Checking...'}
               </p>
+              
+              {/* Action Button */}
+              <div className="mb-4">
+                {stalenessInfo?.severity === 'no_variants' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'variants_fresh' && (
+                  <button
+                    onClick={handleGlobalAnalyze}
+                    disabled={analyzing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
+                  >
+                    {analyzing ? 'Analyzing...' : 'Analyze All'}
+                  </button>
+                )}
+                {stalenessInfo?.severity === 'major' && (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
+                  >
+                    {refreshing ? 'Extracting...' : 'Refresh Data'}
+                  </button>
+                )}
+              </div>
 
-              {/* Variant Access Icons (Compact) */}
+              {/* Quick Access to Variants */}
               {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
-                <div className="space-y-2">
-                  {/* Resume Variants */}
-                  {(() => {
-                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                    return resumeAttachment ? (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">Resume:</span>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: resumeAttachment.id,
-                              filename: `${resumeAttachment.filename} (UI - Raw)`,
-                              textContent: variants.ui || 'No UI variant found',
-                              kind: 'resume'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
-                          title="View UI (Raw)"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: resumeAttachment.id,
-                              filename: `${resumeAttachment.filename} (AI Optimized)`,
-                              textContent: variants.ai_optimized || 'No AI Short variant found',
-                              kind: 'resume'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
-                          title="View AI Optimized"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${resumeAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: resumeAttachment.id,
-                              filename: `${resumeAttachment.filename} (Detailed)`,
-                              textContent: variants.detailed || 'No AI Long variant found',
-                              kind: 'resume'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
-                          title="View Detailed"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-1">UI / AI-S / AI-L</span>
-                      </div>
-                    ) : null;
-                  })()}
-                  
-                  {/* JD Variants */}
-                  {(() => {
-                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                    return jdAttachment ? (
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-14">JD:</span>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: jdAttachment.id,
-                              filename: `${jdAttachment.filename} (UI - Raw)`,
-                              textContent: variants.ui || 'No UI variant found',
-                              kind: 'jd'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-300 rounded transition-colors"
-                          title="View UI (Raw)"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: jdAttachment.id,
-                              filename: `${jdAttachment.filename} (AI Optimized)`,
-                              textContent: variants.ai_optimized || 'No AI Short variant found',
-                              kind: 'jd'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 text-purple-700 dark:text-purple-300 rounded transition-colors"
-                          title="View AI Optimized"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const variants = await fetch(`/api/attachments/${jdAttachment.id}/variants`).then(r => r.json());
-                            setViewingAttachment({
-                              id: jdAttachment.id,
-                              filename: `${jdAttachment.filename} (Detailed)`,
-                              textContent: variants.detailed || 'No AI Long variant found',
-                              kind: 'jd'
-                            });
-                            setShowViewer(true);
-                          }}
-                          className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-300 rounded transition-colors"
-                          title="View Detailed"
-                        >
-                          <Eye size={12} />
-                        </button>
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 ml-1">UI / AI-S / AI-L</span>
-                      </div>
-                    ) : null;
-                  })()}
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => {
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                        if (resumeAttachment) {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                      title="View resume variants (raw, AI-optimized, detailed)"
+                    >
+                      📄 Resume Variants
+                    </button>
+                    <button
+                      onClick={() => {
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                        if (jdAttachment) {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }
+                      }}
+                      className="text-xs px-3 py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 font-medium transition-colors text-left"
+                      title="View JD variants (raw, AI-optimized, detailed)"
+                    >
+                      📋 JD Variants
+                    </button>
+                  </div>
                 </div>
               )}
               
