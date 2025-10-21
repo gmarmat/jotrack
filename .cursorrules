@@ -1,16 +1,68 @@
 # Cursor AI Rules - JoTrack Development
 
-## 🎯 Core Directive
+## 🚨 MANDATORY FIRST STEP 🚨
 
-**ALWAYS read `AGENT_REFERENCE_GUIDE.md` BEFORE making any changes.**
+**BEFORE doing ANYTHING (planning, coding, analyzing), you MUST:**
 
-This is the single source of truth for:
-- Dependencies & versions
-- Database schema & queries
-- File structure & locations
-- UI/UX standards (colors, icons, badges)
-- AI integration (models, prompts, costs)
-- Common pitfalls & solutions
+1. **Read `AGENT_REFERENCE_GUIDE.md`** (relevant sections)
+2. **Check existing patterns** (grep/search for similar code)
+3. **Verify compliance** (does plan align with guide?)
+
+**This applies to**:
+- ✅ Planning new features (read guide FIRST, then plan)
+- ✅ Analyzing problems (understand current architecture FIRST)
+- ✅ Proposing solutions (check if pattern already exists)
+- ✅ Making ANY code changes
+
+**AGENT_REFERENCE_GUIDE.md is the single source of truth for**:
+- Complete system architecture (ONE system, TWO features)
+- Dependencies & versions (what works, what's broken)
+- Database schema & queries (all tables, relationships)
+- File structure & locations (where everything lives)
+- UI/UX standards (colors, icons, badges, patterns)
+- AI integration (models, prompts, costs, timeouts)
+- Data flow (how features connect)
+- Common pitfalls & solutions (mistakes to avoid)
+
+---
+
+## 🎯 Core Workflow
+
+### STEP 1: READ FIRST (MANDATORY!)
+```
+BEFORE planning headhunter feature:
+  1. Read: AGENT_REFERENCE_GUIDE.md → "Interview Coach Algorithm"
+  2. Read: AGENT_REFERENCE_GUIDE.md → "People Tables"
+  3. Read: AGENT_REFERENCE_GUIDE.md → "Data Flow"
+  4. Check: Is this already partially implemented?
+  5. Verify: Which table should store this data?
+```
+
+### STEP 2: PLAN (Aligned with Guide)
+```
+Create plan that follows:
+  - Database conventions from guide
+  - UI standards from guide
+  - Existing patterns from guide
+  - Testing requirements from guide
+```
+
+### STEP 3: IMPLEMENT (Following Guide)
+```
+Write code using:
+  - Patterns documented in guide
+  - Libraries from "Working" list
+  - Avoiding "Common Pitfalls"
+```
+
+### STEP 4: UPDATE GUIDE (Keep Blueprint Current)
+```
+After implementation:
+  - Update AGENT_REFERENCE_GUIDE.md (relevant sections)
+  - Mark planned features as implemented
+  - Add new patterns if created
+  - Document any new pitfalls discovered
+```
 
 ---
 

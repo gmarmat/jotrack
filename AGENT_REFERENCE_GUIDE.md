@@ -35,7 +35,7 @@ User marks "Applied" when ready
 User marks "Applied"
     ↓
 Interview Coach unlocks
-    ↓ Uses 8 Context Layers:
+    ↓ Uses 7 Context Layers (8 when headhunter implemented):
 1. Match Score Data (from Match Matrix - aggregated)
 2. Company Intelligence (culture, values, news)
 3. People Profiles (recruiter/interviewer insights)
@@ -43,14 +43,14 @@ Interview Coach unlocks
 5. Career Context (level, tenure, goals)
 6. Ecosystem (competitors, market)
 7. Writing Style (tone, voice)
-8. Headhunter Context (if executive search)
+8. PLANNED: Headhunter Context (search firm, specialty match)
     ↓ Generates
 Tailored Questions (30-40) + Optimized Talk Tracks (8-10) + Core Stories (2-3)
     ↓
 User prepares for interview with personalized guidance
 ```
 
-**Key Insight**: Match Matrix signals (60) are skill measurements. Interview Coach layers (8) are context inputs. Match signals AGGREGATE into Interview Coach Layer 1.
+**Key Insight**: Match Matrix signals (60) are skill measurements. Interview Coach layers (7 current, 8 planned) are context inputs. Match signals AGGREGATE into Interview Coach Layer 1.
 
 **This is ONE system with TWO features working together seamlessly.**
 
@@ -80,9 +80,9 @@ User prepares for interview with personalized guidance
 8. Interview Coach unlocks
 9. User adds people (recruiter, hiring manager, etc.)
    → Extracts: Communication style, priorities, red flags
-   → NEW: If headhunter → Also extract search firm, specialty
+   → PLANNED: If headhunter → Also extract search firm, specialty
 10. Generate Questions (persona-specific)
-    → Uses: All 8 context layers
+    → Uses: 7 context layers (8 when headhunter implemented)
     → Output: 30-40 tailored questions
 11. User selects 8-10 questions to prepare
 12. User writes draft answers
@@ -99,7 +99,7 @@ User prepares for interview with personalized guidance
 **Phase 3: Interview Success**
 ```
 17. User aces interview (using optimized talk tracks)
-18. If headhunter with high specialty match:
+18. PLANNED: If headhunter with high specialty match:
     → Builds long-term relationship
     → Gains access to future opportunities
 ```
@@ -131,7 +131,8 @@ User prepares for interview with personalized guidance
 **People Tables** (Interview Coach):
 - people_profiles: Interviewer information
 - job_people_refs: Links people to jobs (with rel_type)
-- Stores: Communication style, priorities, red flags, recruiter_type, search_firm [NEW!]
+- Stores: Communication style, priorities, red flags
+- PLANNED: recruiter_type, search_firm (for headhunter support)
 
 **Coach State Table**: Interview prep progress
 - Selected questions, draft answers, scores, talk tracks, core stories
@@ -168,13 +169,12 @@ Interview Coach uses this as Layers 2 & 6:
 ```
 People extraction generates:
   - recruiter: { style: "Professional", priorities: ["Technical depth"] }
-  - recruiterType: "headhunter" [NEW!]
-  - searchFirm: "Korn Ferry"
+  - PLANNED: recruiterType: "headhunter", searchFirm: "Korn Ferry"
 
-Interview Coach uses this as Layer 3 & 8:
+Interview Coach uses this as Layer 3 (and Layer 8 when implemented):
   - Match communication style (formal vs casual)
-  - If headhunter: Adjust question distribution (60/40)
-  - If headhunter: Add relationship-building guidance
+  - PLANNED: If headhunter → Adjust question distribution (60/40)
+  - PLANNED: If headhunter → Add relationship-building guidance
 ```
 
 ---
@@ -863,14 +863,17 @@ Complete Interview Prep
 
 ---
 
-## 🎯 Interview Coach Algorithm (97/100 → 100/100)
+## 🎯 Interview Coach Algorithm
+
+**Current Status**: 97/100 (7 layers implemented)  
+**Future**: 100/100 (with headhunter support - 8 layers)
 
 **Files**:
 - `INTERVIEW_COACH_COMPLETE_ALGORITHM.md` (1,470 lines - DEFINITIVE)
 - `INTERVIEW_COACH_SIGNALS_BREAKDOWN.md` (complete input system)
 - `UNIFIED_INTERVIEW_ALGORITHM_V3.md` (1,928 lines - implementation)
 
-### 8 Input Layers (Context System)
+### Context Layers (Current: 7, Planned: 8)
 
 **Layer 1: Match Score Data** (From Match Matrix)
 ```typescript
@@ -949,7 +952,7 @@ Complete Interview Prep
 // Used for: Talk track generation (sounds like you, not AI)
 ```
 
-**Layer 8: Headhunter Context** (NEW! - Oct 21, 2025)
+**Layer 8: Headhunter Context** (PLANNED - Not yet implemented!)
 ```typescript
 {
   recruiterType: "headhunter",
@@ -958,6 +961,7 @@ Complete Interview Prep
   dualLensWeights: { jobFit: 0.6, relationship: 0.4 }
 }
 // Used for: Question distribution, dual-objective optimization
+// Status: Analyzed and designed, implementation pending
 ```
 
 ---
@@ -1014,23 +1018,18 @@ Output: Success probability (0-100%)
 
 ---
 
-## 🎯 Headhunter Enhancement Impact
+## 🎯 Headhunter Enhancement (PLANNED - Not Yet Implemented)
 
-**Algorithm Score**:
-- Before: 97/100 (missing recruiter motivation context)
-- After: 100/100 (complete multi-objective optimization)
+**When Implemented, Will Improve Algorithm**:
+- Current: 97/100 (7 layers, missing recruiter motivation context)
+- With Headhunter: 100/100 (8 layers, complete multi-objective optimization)
 
-**Question Quality**:
-- Before: Optimized for THIS role only
-- After: Optimized for THIS role + CAREER (relationship building)
+**Planned Improvements**:
+- Question Quality: THIS role only → THIS role + CAREER (relationship building)
+- Strategic Value: Tactical → Strategic (ace interview + access hidden market)  
+- Differentiator: 7-layer → 8-layer + multi-objective optimization
 
-**Strategic Value**:
-- Before: Tactical (ace this interview)
-- After: Strategic (ace this interview + access hidden market)
-
-**Unique Differentiator**:
-- Before: 7-layer personalization
-- After: 8-layer + multi-objective optimization
+**Status**: Analyzed and designed (Oct 21, 2025), ready to implement (~90 min)
 
 ---
 
@@ -1058,10 +1057,10 @@ Output: Success probability (0-100%)
 
 ---
 
-**Quality Metrics** (Enhanced):
-- Algorithm score: 97/100 → 100/100 (with headhunter support)
-- Input layers: 7 → 8 (headhunter context added)
-- Optimization objectives: 1 → 2 (job success + career relationships)
+**Quality Metrics**:
+- Algorithm score: 97/100 (current) → 100/100 (with planned headhunter support)
+- Input layers: 7 (current) → 8 (when headhunter implemented)
+- Optimization objectives: 1 (current: job success) → 2 (planned: + career relationships)
 - Evidence-based: Every recommendation has JD/Resume citations
 
 ---
