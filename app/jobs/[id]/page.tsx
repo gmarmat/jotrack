@@ -1214,17 +1214,20 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             hasSkillsAnalysis={!!aiData?.skillsMatch}
             onRefresh={async () => {
               // Reload analysis data to check prerequisites
-              const response = await fetch(`/api/jobs/${job.id}/analysis-data`);
-              if (response.ok) {
-                const data = await response.json();
-                // MERGE new data with existing (don't replace everything!)
-                setAiData((prev: any) => ({
-                  ...prev,
-                  ...data,
-                  // Preserve existing data that might not be in API response
-                  companyEcosystem: data.companyEcosystem || prev?.companyEcosystem,
-                  companyIntelligence: data.companyIntelligence || prev?.companyIntelligence,
-                }));
+              try {
+                const response = await fetch(`/api/jobs/${job.id}/analysis-data`);
+                if (response.ok) {
+                  const data = await response.json();
+                  // Only update the specific fields we need for prerequisites
+                  setAiData((prev: any) => ({
+                    ...prev,
+                    matchScore: data.matchScoreData?.overallScore || prev?.matchScore,
+                    skillsMatch: data.matchScoreData?.skillsMatch || prev?.skillsMatch,
+                    matchScoreMetadata: data.matchScoreMetadata || prev?.matchScoreMetadata,
+                  }));
+                }
+              } catch (error) {
+                console.error('Failed to refresh prerequisites:', error);
               }
             }}
           />

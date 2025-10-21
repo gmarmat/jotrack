@@ -80,8 +80,8 @@ export default function InterviewCoachEntryCard({
           <div className="bg-gray-100 dark:bg-gray-800 rounded px-2 py-0.5">3 Interview Types</div>
         </div>
 
-        {/* Inline Prerequisites + Button */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Inline Prerequisites + Check Button */}
+        <div className="flex items-center justify-between gap-3">
           {/* Compact Prerequisites Inline */}
           <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
             <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Needs:</span>
@@ -107,25 +107,16 @@ export default function InterviewCoachEntryCard({
               </span>
             </div>
           </div>
-
-          {/* Inline Locked Button */}
-          <button 
-            disabled 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg font-bold text-sm cursor-not-allowed"
-          >
-            <span className="text-base">🔒</span>
-            <span>Locked</span>
-          </button>
           
           {/* Refresh Prerequisites Button */}
           <button
             onClick={handleRefreshPrereqs}
             disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
             title="Re-check prerequisites"
           >
             <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
-            <span>Check</span>
+            <span>{isRefreshing ? 'Checking...' : 'Re-check'}</span>
           </button>
         </div>
       </div>
