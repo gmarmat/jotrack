@@ -939,130 +939,122 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
           {/* 3-Column Grid with Fixed Heights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[280px]">
-            {/* Column 1: Job Title, Company, Status, Attachments (2-column layout) */}
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex gap-4">
-              {/* Left Sub-Column: Document Status */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
-                    {job.title}
-                  </h1>
-                  <StatusChipDropdown 
-                    jobId={job.id} 
-                    currentStatus={currentStatus}
-                    onStatusChange={handleStatusChange}
-                  />
-                </div>
-                <p className="text-base text-gray-600 dark:text-gray-400 mb-4" data-testid="job-company">
+            {/* Column 1: Simple Layout - Job Title, Company, Status, 3 Doc Rows, Attachments Button */}
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+              {/* Job Title */}
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1" data-testid="job-title">
+                {job.title}
+              </h1>
+              
+              {/* Company and Status */}
+              <div className="flex items-center gap-2 mb-4">
+                <p className="text-base text-gray-600 dark:text-gray-400" data-testid="job-company">
                   {job.company}
                 </p>
-                
-                {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
-                {showProgressHints && attachmentCount === 0 && (
-                  <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
-                    <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
-                    <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
-                    <button 
-                      onClick={dismissHints} 
-                      className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
-                      title="Dismiss all hints"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                
-                {/* Document Status Table (like screenshot) */}
-                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b border-gray-300 dark:border-gray-600">
-                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Document Type</div>
-                  </div>
-                  
-                  <div className="bg-white dark:bg-gray-900">
-                    {/* Resume Row */}
-                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">Resume:</span>
-                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                          {(() => {
-                            const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                            if (!resumeAttachment) return 'Not uploaded';
-                            
-                            const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
-                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                              month: 'numeric', 
-                              day: 'numeric', 
-                              year: '2-digit' 
-                            }) : '';
-                            
-                            return `v1 • ${date}`;
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* JD Row */}
-                    <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">JD:</span>
-                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                          {(() => {
-                            const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                            if (!jdAttachment) return 'Not uploaded';
-                            
-                            const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
-                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                              month: 'numeric', 
-                              day: 'numeric', 
-                              year: '2-digit' 
-                            }) : '';
-                            
-                            return `v1 • ${date}`;
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Cover Letter Row */}
-                    <div className="px-3 py-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">Cover Letter:</span>
-                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                          {(() => {
-                            const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                            if (!clAttachment) return 'Not created';
-                            
-                            const timestamp = clAttachment.created_at || clAttachment.createdAt;
-                            const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                              month: 'numeric', 
-                              day: 'numeric', 
-                              year: '2-digit' 
-                            }) : '';
-                            
-                            return `v1 • ${date}`;
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <span className="text-gray-400">..........</span>
+                <StatusChipDropdown 
+                  jobId={job.id} 
+                  currentStatus={currentStatus}
+                  onStatusChange={handleStatusChange}
+                />
               </div>
               
-              {/* Right Sub-Column: Attachments Button */}
-              <div className="flex items-center">
-                <button
-                  onClick={() => setShowAttachmentsModal(true)}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-xs"
-                  data-testid="attachments-button-header"
-                >
-                  <Paperclip size={14} />
-                  <span>Attachments</span>
-                  {attachmentCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
-                      {attachmentCount}
+              {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
+              {showProgressHints && attachmentCount === 0 && (
+                <div className="mb-4 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+                  <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
+                  <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
+                  <button 
+                    onClick={dismissHints} 
+                    className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
+                    title="Dismiss all hints"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              {/* Document Rows + Attachments Button */}
+              <div className="flex gap-4 flex-1">
+                {/* Left: 3 Document Rows */}
+                <div className="flex-1 space-y-1">
+                  {/* Resume */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Resume:</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {(() => {
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                        if (!resumeAttachment) return 'Not uploaded';
+                        
+                        const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
+                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                          month: 'numeric', 
+                          day: 'numeric', 
+                          year: '2-digit' 
+                        }) : '';
+                        
+                        return `v1 • ${date}`;
+                      })()}
                     </span>
-                  )}
-                </button>
+                  </div>
+                  
+                  {/* JD */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">JD:</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {(() => {
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                        if (!jdAttachment) return 'Not uploaded';
+                        
+                        const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
+                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                          month: 'numeric', 
+                          day: 'numeric', 
+                          year: '2-digit' 
+                        }) : '';
+                        
+                        return `v1 • ${date}`;
+                      })()}
+                    </span>
+                  </div>
+                  
+                  {/* Cover Letter */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Cover Letter:</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {(() => {
+                        const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                        if (!clAttachment) return 'Not created';
+                        
+                        const timestamp = clAttachment.created_at || clAttachment.createdAt;
+                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                          month: 'numeric', 
+                          day: 'numeric', 
+                          year: '2-digit' 
+                        }) : '';
+                        
+                        return `v1 • ${date}`;
+                      })()}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Right: Attachments Button (sized to match 3 rows) */}
+                <div className="flex items-start">
+                  <button
+                    onClick={() => setShowAttachmentsModal(true)}
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-xs"
+                    data-testid="attachments-button-header"
+                  >
+                    <Paperclip size={14} />
+                    <span>Attachments</span>
+                    {attachmentCount > 0 && (
+                      <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                        {attachmentCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
