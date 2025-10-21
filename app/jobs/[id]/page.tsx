@@ -531,6 +531,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         currentStatusEnteredAt={currentStatusEnteredAt || undefined}
         jdAttachmentId={jdAttachmentId}
         onViewJd={handleViewJd}
+        jobTitle={job.title}
+        companyName={job.company}
       />
 
       <div className="max-w-6xl mx-auto px-4 space-y-6 mt-6 pb-8">

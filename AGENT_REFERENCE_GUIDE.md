@@ -1206,6 +1206,20 @@ const timeoutId = setTimeout(() => controller.abort(), 120000);
 // Why this matters:
 // - Company Ecosystem analysis: ~90-120 seconds (JD + web search + 10 companies)
 // - Match Score with large resumes: ~40-60 seconds
+```
+
+### Pitfall 7: Modal Positioning Issues
+```typescript
+// ❌ WRONG - Modal clipped by collapsible control bar
+className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+
+// ✅ CORRECT - Position below control bar
+className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4 pt-16"
+
+// Why this matters:
+// - Collapsible timeline bar at top clips modal header
+// - pt-16 (64px) provides space for control bar
+// - items-start positions modal at top instead of center
 // - Interview Questions generation: ~50-80 seconds
 ```
 
