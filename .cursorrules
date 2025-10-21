@@ -1,11 +1,297 @@
-# Project guardrails
-- Always write/update tests (Vitest for units, Playwright for e2e) for every feature.
-- Never run long shell commands without summarizing what they do.
-- After generating code, run the exact npm script and paste the output.
-- Keep DB schema in /db; migrations must be idempotent and scripted.
-- Use SQLite FTS5 for search; add test data seeds.
-- Definition of Done for any task:
-  1) Code + migration + seed
-  2) Unit tests passing
-  3) Playwright e2e for the user story
-  4) Demo steps I (the user) can click through
+# Cursor AI Rules - JoTrack Development
+
+## 🎯 Core Directive
+
+**ALWAYS read `AGENT_REFERENCE_GUIDE.md` BEFORE making any changes.**
+
+This is the single source of truth for:
+- Dependencies & versions
+- Database schema & queries
+- File structure & locations
+- UI/UX standards (colors, icons, badges)
+- AI integration (models, prompts, costs)
+- Common pitfalls & solutions
+
+---
+
+## 📝 Update Documentation Rule
+
+**CRITICAL**: When making changes to ANY of the following, you MUST update the corresponding section in `AGENT_REFERENCE_GUIDE.md`:
+
+### 1. Dependencies Changed
+```
+IF adding/removing/updating npm packages
+THEN update: AGENT_REFERENCE_GUIDE.md → "Dependencies & Versions"
+```
+
+### 2. Database Schema Modified
+```
+IF changing tables/columns/queries
+THEN update: 
+  - AGENT_REFERENCE_GUIDE.md → "Database Schema"
+  - db/migrations/*.sql (new migration)
+  - db/schema.ts
+```
+
+### 3. API Routes Added/Changed
+```
+IF creating/modifying API endpoints
+THEN update: AGENT_REFERENCE_GUIDE.md → "File Structure" → "API Routes"
+```
+
+### 4. UI Standards Changed
+```
+IF changing colors/icons/badges/buttons
+THEN update: AGENT_REFERENCE_GUIDE.md → "UI/UX Standards"
+```
+
+### 5. AI Models/Prompts Modified
+```
+IF changing model selection or prompts
+THEN update:
+  - AGENT_REFERENCE_GUIDE.md → "AI Integration"
+  - MODEL_SELECTION_ANALYSIS.md (if model changed)
+  - prompts/*.md (if prompt changed)
+```
+
+### 6. Feature Patterns Added
+```
+IF implementing new feature type (not following existing pattern)
+THEN update: AGENT_REFERENCE_GUIDE.md → "Feature Implementation Patterns"
+```
+
+### 7. Common Pitfalls Discovered
+```
+IF encountering new bug pattern or gotcha
+THEN update: AGENT_REFERENCE_GUIDE.md → "Common Pitfalls & Solutions"
+```
+
+### 8. Architecture Changes
+```
+IF changing core data flow or system design
+THEN update:
+  - AGENT_REFERENCE_GUIDE.md → relevant sections
+  - ARCHITECTURE.md
+```
+
+---
+
+## 🚀 Development Workflow
+
+### Before Starting Work
+
+1. **Read Documentation**:
+   ```
+   - Read: AGENT_REFERENCE_GUIDE.md (relevant sections)
+   - Check: Common Pitfalls (section 12)
+   - Review: Pre-Flight Checklist (section 15)
+   ```
+
+2. **Search for Similar Code**:
+   ```
+   - Use grep/search to find existing patterns
+   - Don't reinvent - copy working patterns
+   - Ask: "Has this been done before?"
+   ```
+
+3. **Check Dependencies**:
+   ```
+   - Verify library is in "Working" list
+   - Avoid libraries in "Broken" list
+   - Check version compatibility
+   ```
+
+### During Development
+
+1. **Follow Standards**:
+   ```
+   - Use defined colors (AGENT_REFERENCE_GUIDE.md → UI/UX Standards)
+   - Use correct icons (lucide-react, defined in guide)
+   - Follow naming conventions (kebab-case, PascalCase, etc.)
+   - Use existing patterns (don't create new ones without reason)
+   ```
+
+2. **Database Queries**:
+   ```
+   - ALWAYS filter by is_active = 1 for attachments
+   - ALWAYS check deleted_at IS NULL
+   - ALWAYS use ai_optimized variants (not raw) for AI analysis
+   - Check "Common Pitfalls" section for query examples
+   ```
+
+3. **AI Integration**:
+   ```
+   - Use callAiProvider() (never direct API calls)
+   - Check capability mapping in aiProvider.ts
+   - Verify prompt exists in /prompts/
+   - Use correct variant format: variant.content.text
+   ```
+
+### After Making Changes
+
+1. **Update Documentation** (see rules above)
+
+2. **Write Tests**:
+   ```
+   - Unit tests (Vitest) for logic/functions
+   - E2E tests (Playwright) for user workflows
+   - Both MUST pass before committing
+   ```
+
+3. **Run Linter**:
+   ```
+   npm run lint
+   ```
+
+4. **Test Manually**:
+   ```
+   - Test the happy path
+   - Test error cases
+   - Test with real data (not just mock)
+   ```
+
+5. **Commit Message Format**:
+   ```
+   type: brief description
+
+   DETAILED CHANGES:
+   - Change 1
+   - Change 2
+
+   DOCUMENTATION UPDATED:
+   - AGENT_REFERENCE_GUIDE.md (section X)
+   - OTHER_FILE.md
+
+   TESTS:
+   - Unit tests: passing
+   - E2E tests: passing/designed
+   ```
+
+---
+
+## 🎨 Code Style Standards
+
+### TypeScript
+- Use explicit types (no `any` unless absolutely necessary)
+- Prefer `async/await` over promises
+- Use optional chaining: `obj?.prop ?? default`
+
+### React Components
+- Functional components only
+- Hooks at top of function
+- Effects after functions
+
+### Naming
+- Files: `kebab-case.tsx`
+- Components: `PascalCase`
+- Functions: `camelCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Database: `snake_case`
+
+### File Organization
+```
+/app/api/          → API routes
+/app/components/   → React components
+/lib/              → Business logic
+/db/               → Database (schema, migrations)
+/prompts/          → AI prompts
+/__tests__/        → Unit tests
+/e2e/              → E2E tests
+```
+
+---
+
+## ⚠️ Critical Rules (NEVER VIOLATE)
+
+### 1. PDF Extraction
+```
+❌ NEVER import pdf-parse or pdfjs-dist in Next.js server code
+❌ NEVER try to "fix" PDF extraction with new libraries
+✅ ALWAYS reject PDFs with clear error message
+✅ Guide users to convert PDF → DOCX
+```
+
+### 2. Active Attachments
+```
+❌ NEVER fetch attachments without is_active = 1 filter
+✅ ALWAYS use: eq(attachments.isActive, true)
+✅ ALWAYS check: isNull(attachments.deletedAt)
+```
+
+### 3. AI Variants
+```
+❌ NEVER use 'raw' variants for AI analysis (3x cost!)
+✅ ALWAYS use 'ai_optimized' variants
+✅ ALWAYS check if variant exists before calling AI
+✅ Return clear error: "Click 'Refresh Data' first"
+```
+
+### 4. Model Selection
+```
+❌ NEVER hardcode model names in API calls
+✅ ALWAYS use callAiProvider('capability', inputs)
+✅ Model selection handled in aiProvider.ts
+```
+
+### 5. Testing
+```
+❌ NEVER commit without tests
+✅ ALWAYS write unit tests for logic
+✅ ALWAYS write E2E tests for user flows
+✅ Definition of Done: Code + Tests + Docs
+```
+
+### 6. Documentation
+```
+❌ NEVER skip documentation updates
+✅ ALWAYS update AGENT_REFERENCE_GUIDE.md
+✅ ALWAYS update related docs (see rules above)
+```
+
+---
+
+## 📚 Required Reading (in order)
+
+1. **AGENT_REFERENCE_GUIDE.md** (read relevant sections before working)
+2. **ARCHITECTURE.md** (understand system design)
+3. **MODEL_SELECTION_ANALYSIS.md** (understand AI costs/choices)
+4. **UI_DESIGN_SPEC.md** (understand design system)
+
+---
+
+## 🆘 When Stuck
+
+1. **Check Guide First**: AGENT_REFERENCE_GUIDE.md → Common Pitfalls
+2. **Search Codebase**: Look for similar existing code
+3. **Check Git History**: See how similar problems were solved
+4. **Ask**: "Is this pattern documented? Should I document it?"
+
+---
+
+## 🎯 Success Metrics
+
+Before considering work "done":
+- [ ] AGENT_REFERENCE_GUIDE.md updated (if applicable)
+- [ ] Unit tests written and passing
+- [ ] E2E tests designed (or implemented)
+- [ ] Linter passing
+- [ ] Manual testing completed
+- [ ] Commit message follows format
+- [ ] No new warnings in console
+- [ ] Works in dark mode (if UI change)
+
+---
+
+## 💡 Philosophy
+
+> "Future developers (including AI assistants) should be able to understand decisions by reading documentation, not by reverse-engineering code."
+
+**Every change should**:
+1. Solve the immediate problem
+2. Document the solution (for future reference)
+3. Follow existing patterns (or justify new ones)
+4. Include tests (to prevent regressions)
+
+---
+
+**These rules are automatically loaded by Cursor. Follow them strictly.**

@@ -3,6 +3,7 @@
 
 import mammoth from 'mammoth';
 import { readFileSync } from 'fs';
+import { spawn } from 'child_process';
 import path from 'path';
 
 export interface ExtractionResult {
@@ -49,72 +50,91 @@ export async function extractFromDocx(filePath: string): Promise<ExtractionResul
 }
 
 /**
- * Extract text from PDF file using pdfjs-dist directly
- * Bypasses pdf-parse to avoid Next.js webpack issues
+ * Extract text from PDF file using child process
+ * Spawns standalone Node.js script to bypass Next.js webpack issues
+ * 
+ * Why: pdf-parse and pdfjs-dist break in Next.js server-side bundling
+ * Solution: Run extraction in pure Node.js context via child process
  */
 export async function extractFromPdf(filePath: string): Promise<ExtractionResult> {
   try {
+    const scriptPath = path.join(process.cwd(), 'scripts', 'extract-pdf-standalone.js');
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
-    const buffer = readFileSync(absolutePath);
     
-    console.log(`📄 PDF file read: ${(buffer.length / 1024).toFixed(1)} KB`);
+    console.log(`📄 Spawning PDF extraction process for: ${path.basename(filePath)}`);
     
-    // Import pdfjs-dist directly (Mozilla's PDF.js library)
-    // This is what pdf-parse uses internally, but we bypass the problematic wrapper
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
-    
-    // Disable worker for Node.js environment (workers don't work in server-side)
-    pdfjsLib.GlobalWorkerOptions.workerSrc = false;
-    
-    // Load the PDF document
-    const loadingTask = pdfjsLib.getDocument({ 
-      data: new Uint8Array(buffer),
-      useWorkerFetch: false,  // Disable worker fetch
-      isEvalSupported: false,  // Disable eval
-      useSystemFonts: false,   // Don't need fonts for text extraction
+    const result = await new Promise<{success: boolean, text?: string, error?: string, metadata?: any}>((resolve, reject) => {
+      const child = spawn('node', [scriptPath, absolutePath], {
+        timeout: 30000,  // 30 second timeout
+        maxBuffer: 10 * 1024 * 1024,  // 10MB max output
+        env: { ...process.env, NODE_ENV: 'production' }  // Ensure clean environment
+      });
+      
+      let output = '';
+      let errorOutput = '';
+      
+      child.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+      
+      child.stderr.on('data', (data) => {
+        const msg = data.toString();
+        // Log errors, but extraction info goes to stderr too
+        if (!msg.includes('[PDF Extractor]')) {
+          errorOutput += msg;
+        } else {
+          console.log(msg.trim());  // Pass through extraction logs
+        }
+      });
+      
+      child.on('close', (code) => {
+        if (code === 0) {
+          try {
+            const parsed = JSON.parse(output);
+            resolve(parsed);
+          } catch (e) {
+            reject(new Error(`Failed to parse extraction output: ${output.substring(0, 200)}`));
+          }
+        } else {
+          reject(new Error(`Extraction process failed (code ${code}): ${errorOutput || 'Unknown error'}`));
+        }
+      });
+      
+      child.on('error', (error) => {
+        reject(new Error(`Failed to spawn extraction process: ${error.message}`));
+      });
     });
-    const pdf = await loadingTask.promise;
     
-    console.log(`📖 PDF loaded: ${pdf.numPages} pages`);
-    
-    // Extract text from each page
-    let fullText = '';
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      
-      // Join all text items from the page
-      const pageText = textContent.items
-        .map((item: any) => item.str || '')
-        .join(' ');
-      
-      fullText += pageText + '\n';
+    if (!result.success) {
+      console.error(`❌ PDF extraction failed: ${result.error}`);
+      return {
+        success: false,
+        text: '',
+        error: result.error || 'PDF extraction failed'
+      };
     }
     
-    const text = fullText.trim();
-    
-    console.log(`✅ PDF extracted: ${text.length} chars, ${pdf.numPages} pages`);
+    const text = result.text?.trim() || '';
     
     if (!text || text.length === 0) {
       return {
         success: false,
         text: '',
-        error: '🖼️ PDF parsed but contains no text. File may be image-based (scanned). Use OCR or convert to .docx',
+        error: '🖼️ PDF parsed but contains no text. File may be image-based (scanned). Try converting to .docx',
       };
     }
     
-    // Count words
-    const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+    console.log(`✅ PDF extracted successfully: ${text.length} chars, ${result.metadata?.wordCount || 0} words`);
     
     return {
       success: true,
       text,
-      metadata: {
-        pageCount: pdf.numPages,
-        wordCount,
-        extractedAt: Date.now(),
-      },
+      metadata: result.metadata || {
+        wordCount: text.split(/\s+/).filter(Boolean).length,
+        extractedAt: Date.now()
+      }
     };
+    
   } catch (error: any) {
     console.error('❌ PDF extraction failed:', error);
     console.error('   Error details:', {
