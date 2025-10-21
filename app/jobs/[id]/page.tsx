@@ -14,6 +14,7 @@ import AttachmentsSection from '@/app/components/attachments/AttachmentsSection'
 import AnalyzeButton from '@/app/components/ai/AnalyzeButton';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
+import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
@@ -74,6 +75,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     kind: string;
   } | null>(null);
   const [attachmentsList, setAttachmentsList] = useState<any[]>([]);
+  
+  // Quick preview state for eye icons
+  const [viewingAttachment, setViewingAttachment] = useState<{
+    id: string;
+    filename: string;
+    textContent: string;
+    kind: string;
+  } | null>(null);
   
   // ESC key handler for attachments modal
   useEffect(() => {
@@ -1525,6 +1534,17 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           attachmentId={selectedAttachment.id}
           filename={selectedAttachment.filename}
           kind={selectedAttachment.kind}
+        />
+      )}
+      
+      {/* Quick Preview Modal (Eye Icon) */}
+      {viewingAttachment && (
+        <AttachmentViewerModal
+          isOpen={true}
+          onClose={() => setViewingAttachment(null)}
+          filename={viewingAttachment.filename}
+          content={viewingAttachment.textContent}
+          kind={viewingAttachment.kind}
         />
       )}
     </main>
