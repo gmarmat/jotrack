@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Info } from 'lucide-react';
 
 interface Skill {
@@ -31,7 +30,6 @@ export default function SkillsMatchChart({
   maxSkills = 10,
   maxKeywords = 50 
 }: SkillsMatchChartProps) {
-  const [selectedKeyword, setSelectedKeyword] = useState<Skill | null>(null);
 
   // Default category scores if not provided
   const defaultCategories: CategoryScore[] = categoryScores || [
@@ -202,44 +200,16 @@ export default function SkillsMatchChart({
           {/* Compact Word Cloud */}
           <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             {topKeywords.slice(0, 20).map((skill, idx) => (
-              <button
+              <span
                 key={idx}
-                onClick={() => setSelectedKeyword(skill)}
-                className={`${getKeywordSize(skill.jdCount)} ${getKeywordColor(skill)} font-medium transition-all hover:scale-105 cursor-pointer`}
+                className={`${getKeywordSize(skill.jdCount)} ${getKeywordColor(skill)} font-medium transition-all hover:scale-105`}
                 title={`${skill.term}: JD requires ${skill.jdCount}, You have ${skill.resumeCount} (resume) + ${skill.fullProfileCount || 0} (profile)`}
               >
                 {skill.term}
-              </button>
+              </span>
             ))}
           </div>
 
-          {/* Selected keyword details */}
-          {selectedKeyword && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">{selectedKeyword.term}</div>
-                  <div className="text-gray-700 dark:text-gray-300">
-                    <span className="font-medium">Status:</span> {getKeywordStatus(selectedKeyword)}
-                  </div>
-                  <div className="text-gray-600 dark:text-gray-400 text-xs space-y-0.5">
-                    <div>• JD requires: {selectedKeyword.jdCount} mentions</div>
-                    <div>• Resume has: {selectedKeyword.resumeCount} mentions</div>
-                    {selectedKeyword.fullProfileCount !== undefined && (
-                      <div>• Full profile has: {selectedKeyword.fullProfileCount} additional mentions</div>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedKeyword(null)}
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
