@@ -265,11 +265,15 @@ export async function POST(
         }
         
         // Get raw variant (or extract on-the-fly for existing attachments)
+        console.log(`🔍 Fetching raw variant for ${attachment.filename} (sourceType: ${sourceType})...`);
+        
         let rawVariant = await getVariant(
           attachment.id,
           sourceType,
           'raw'
         );
+        
+        console.log(`   Raw variant result:`, rawVariant ? `Found (has .text: ${!!rawVariant.text})` : 'Not found');
         
         if (!rawVariant || !rawVariant.text) {
           console.log(`📄 No raw variant found, extracting from file: ${attachment.filename}`);
@@ -336,22 +340,51 @@ export async function POST(
             )
             .limit(1);
           
-          // If variant exists and was created recently, assume it's up to date
+          // If variant exists, check if it's the NEW format (text-based)
           if (aiVariantRecord.length > 0) {
-            console.log(`✓ AI variant already exists for ${attachment.filename}, skipping re-extraction`);
-            
-            processed.push({
-              kind: attachment.kind,
-              filename: attachment.filename,
-              extracted: true,
-              significance: 'none',
-              changes: [],
-            });
-            continue;
+            try {
+              const existingContent = JSON.parse(aiVariantRecord[0].content);
+              
+              // Check if it's NEW format: { text: "...", wordCount: 123 }
+              if (existingContent.text && typeof existingContent.text === 'string') {
+                console.log(`✓ AI variant already exists (new format) for ${attachment.filename}, skipping re-extraction`);
+                
+                processed.push({
+                  kind: attachment.kind,
+                  filename: attachment.filename,
+                  extracted: true,
+                  significance: 'none',
+                  changes: [],
+                });
+                continue;
+              }
+              
+              // OLD format detected: { skills: [], experience: [] } or { fit: {...} }
+              console.log(`⚠️ AI variant exists but in OLD format (JSON structure), will recreate as text variant`);
+              
+            } catch (e) {
+              console.error(`⚠️ Could not parse existing variant, will recreate`);
+            }
           }
         }
         
         console.log(`🔄 Creating AI-optimized variant from ${attachment.filename}...`);
+        
+        // Validate raw text exists and is not empty
+        if (!rawVariant.text || typeof rawVariant.text !== 'string' || rawVariant.text.trim().length === 0) {
+          console.error(`❌ Raw variant text is empty or invalid for ${attachment.filename}`);
+          console.error(`   Raw variant structure:`, JSON.stringify(rawVariant).substring(0, 200));
+          
+          processed.push({
+            kind: attachment.kind,
+            filename: attachment.filename,
+            extracted: false,
+            error: 'Raw text extraction returned empty content. File may be corrupted, empty, or in unsupported format. Try converting to .txt and re-uploading.',
+          });
+          continue; // Skip AI extraction for this document
+        }
+        
+        console.log(`✓ Raw text validated: ${rawVariant.text.length} chars, ${rawVariant.metadata?.wordCount || 0} words`);
         
         // Create normalized variant ONLY (2-variant system: Raw + Normalized)
         console.log(`📝 Creating AI-optimized (normalized) variant...`);

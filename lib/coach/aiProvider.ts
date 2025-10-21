@@ -681,6 +681,10 @@ function mapCapabilityToPromptKind(capability: string): any {
     'linkedin-optimization': 'linkedin-optimization',
     'answer-scoring': 'answer-scoring',
     'core-stories-extraction': 'core-stories-extraction',
+    // Data Pipeline variants (use inline prompts, not templates)
+    'create_normalized_variant': 'inline-prompt',
+    'compare_variants': 'inline-prompt',
+    'extract_structured_data': 'inline-prompt',
   };
 
   return mapping[capability] || 'analyze';
@@ -870,6 +874,13 @@ function buildPromptVariables(capability: string, inputs: any): any {
         talkTracks: inputs.talkTracks || '[]',
         targetStoryCount: inputs.targetStoryCount || 3
       };
+
+    // Data Pipeline inline prompts
+    case 'create_normalized_variant':
+    case 'compare_variants':
+    case 'extract_structured_data':
+      // These use inline prompts in refresh-variants/route.ts, return inputs as-is
+      return inputs;
 
     default:
       return common;
