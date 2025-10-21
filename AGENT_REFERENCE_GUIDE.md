@@ -13,6 +13,174 @@
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach
 
+### The Complete System (High-Level)
+
+**JoTrack helps users land jobs through TWO major features**:
+
+**1. Application Coach (Pre-Interview)**
+```
+User uploads Resume + Job Description
+    ↓
+Match Matrix Analysis (60 signals)
+    ↓ Outputs
+Match Score (0-100%) + Strong/Weak Skills + Gaps
+    ↓
+Coach Mode: Resume optimization, Cover letter, Gap recommendations
+    ↓
+User marks "Applied" when ready
+```
+
+**2. Interview Coach (Post-Application)**
+```
+User marks "Applied"
+    ↓
+Interview Coach unlocks
+    ↓ Uses 8 Context Layers:
+1. Match Score Data (from Match Matrix - aggregated)
+2. Company Intelligence (culture, values, news)
+3. People Profiles (recruiter/interviewer insights)
+4. JD Requirements (role responsibilities)
+5. Career Context (level, tenure, goals)
+6. Ecosystem (competitors, market)
+7. Writing Style (tone, voice)
+8. Headhunter Context (if executive search)
+    ↓ Generates
+Tailored Questions (30-40) + Optimized Talk Tracks (8-10) + Core Stories (2-3)
+    ↓
+User prepares for interview with personalized guidance
+```
+
+**Key Insight**: Match Matrix signals (60) are skill measurements. Interview Coach layers (8) are context inputs. Match signals AGGREGATE into Interview Coach Layer 1.
+
+**This is ONE system with TWO features working together seamlessly.**
+
+---
+
+## 🏗️ Complete JoTrack Architecture
+
+### User Journey (Start to Finish)
+
+**Phase 1: Application Prep**
+```
+1. User creates job (title, company, JD, resume)
+2. Data Pipeline: Extract variants (Raw + AI-Optimized)
+3. Match Matrix: 60 signals analyzed
+   → Output: Match Score (78%), Strong Skills, Weak Skills
+4. Company Intelligence: Culture, values, news
+   → Output: Company profile, ecosystem
+5. Skills Analysis: Detailed skill breakdown
+   → Output: Matched, Missing, Bonus skills
+6. Coach Mode: Resume optimization, Cover letter
+   → Output: Improved resume, tailored cover letter
+7. User clicks "Mark as Applied"
+```
+
+**Phase 2: Interview Prep** (Interview Coach)
+```
+8. Interview Coach unlocks
+9. User adds people (recruiter, hiring manager, etc.)
+   → Extracts: Communication style, priorities, red flags
+   → NEW: If headhunter → Also extract search firm, specialty
+10. Generate Questions (persona-specific)
+    → Uses: All 8 context layers
+    → Output: 30-40 tailored questions
+11. User selects 8-10 questions to prepare
+12. User writes draft answers
+13. AI scores answers (0-100)
+    → Asks follow-up questions
+    → Re-scores with new context
+14. AI generates talk tracks (STAR format)
+    → Long-form, cheat sheet, opening/closing
+15. AI extracts 2-3 core stories
+    → Story mapping, adaptation guide
+16. User practices with hide/reveal mode
+```
+
+**Phase 3: Interview Success**
+```
+17. User aces interview (using optimized talk tracks)
+18. If headhunter with high specialty match:
+    → Builds long-term relationship
+    → Gains access to future opportunities
+```
+
+---
+
+## 📊 Data Storage & Flow
+
+### Core Data Tables
+
+**Jobs Table**: Job applications
+- title, company, status, notes
+- Analysis results cached (company_intelligence_data, match_score_data, etc.)
+- Coach status tracking
+
+**Attachments Table**: Uploaded files (resume, JD, cover letter)
+- Versioning (is_active, only one active per type)
+- Soft delete (deleted_at)
+
+**Artifact Variants Table**: Extracted versions
+- Raw (local extraction, free)
+- AI-Optimized (condensed, ~$0.01 per doc)
+
+**Signal Tables** (Match Matrix):
+- ats_signals: 30 universal signals
+- job_dynamic_signals: Up to 30 per job
+- signal_evaluations: Scores with evidence
+
+**People Tables** (Interview Coach):
+- people_profiles: Interviewer information
+- job_people_refs: Links people to jobs (with rel_type)
+- Stores: Communication style, priorities, red flags, recruiter_type, search_firm [NEW!]
+
+**Coach State Table**: Interview prep progress
+- Selected questions, draft answers, scores, talk tracks, core stories
+
+---
+
+## 🔄 How Data Flows Between Features
+
+### Match Matrix → Interview Coach
+```
+Match Matrix generates:
+  - matchScore: 78
+  - strongSkills: ["Product Management", "Data Analysis"]
+  - weakSkills: ["Python", "Machine Learning"]
+
+Interview Coach uses this as Layer 1:
+  - 70% of questions showcase strongSkills
+  - 30% of questions address weakSkills
+  - Success probability weighted by matchScore
+```
+
+### Company Analysis → Interview Coach
+```
+Company Intelligence generates:
+  - culture: { values: ["Innovation"], principles: [...] }
+  - ecosystem: { competitors: [...] }
+
+Interview Coach uses this as Layers 2 & 6:
+  - Questions: "FuelCell values innovation - how do you innovate?"
+  - Talk tracks: "I align with your innovation focus because..."
+```
+
+### People Profiles → Interview Coach
+```
+People extraction generates:
+  - recruiter: { style: "Professional", priorities: ["Technical depth"] }
+  - recruiterType: "headhunter" [NEW!]
+  - searchFirm: "Korn Ferry"
+
+Interview Coach uses this as Layer 3 & 8:
+  - Match communication style (formal vs casual)
+  - If headhunter: Adjust question distribution (60/40)
+  - If headhunter: Add relationship-building guidance
+```
+
+---
+
+**This is ONE system with TWO features working together seamlessly.**
+
 ---
 
 ## 📦 Dependencies & Versions
@@ -607,36 +775,91 @@ return { severity: 'fresh', message: 'Analysis is up to date' };
 
 ---
 
-## 📊 Signal Systems: Match Matrix vs Interview Coach
+## 📊 How JoTrack Uses Data: Two Different Features
 
-### CRITICAL DISTINCTION (READ THIS!)
+### CRITICAL: Understand Data Flow (READ THIS!)
 
-**Match Matrix Signals** (60 total):
-- **Type**: Discrete skill measurements
-- **Purpose**: Measure job fit (skill-by-skill scoring)
-- **Structure**: 30 ATS Standard + 30 Dynamic (job-specific)
-- **Output**: Match Score (0-100%)
-- **Used for**: Application decision, resume optimization
-- **Example**: "Python Programming" = 75/100 (JD: 95, Resume: 75, Gap: 20)
+JoTrack has ONE system with TWO major features that use data differently:
 
-**Interview Coach Context Inputs** (8 layers, NOT "signals"):
-- **Type**: Holistic context layers
-- **Purpose**: Generate personalized interview prep
-- **Structure**: 8 interconnected data sources
-- **Output**: Tailored questions + optimized answers
-- **Used for**: Interview success + career relationship building
-- **Example**: Match Score (78%) + Company Culture + Recruiter Profile → Questions
+---
 
-**Connection**:
+### Feature 1: Match Matrix (Job Fit Analysis)
+
+**Purpose**: "Should I apply? How well do I match this job?"
+
+**Data Type**: **60 Discrete Signals** (skill-by-skill measurements)
+- 30 ATS Standard (universal): "Required Skills Match", "Years of Experience", etc.
+- 30 Dynamic (job-specific): "Python Programming", "B2B SaaS Experience", etc.
+
+**How It Works**:
 ```
-Match Matrix (60 signals)
-    ↓ Aggregates to
+Resume + JD
+    ↓ Extract & Compare
+60 Signals (each scored 0-100)
+    ↓ Weighted Average
+Match Score (78%)
+    ↓ Output
+Strong Skills: [Product Management, Data Analysis]
+Weak Skills: [Python, Machine Learning]
+Gaps: [Specific areas to improve]
+```
+
+**Used For**:
+- Application decision (should I apply?)
+- Resume optimization (what to add/emphasize)
+- Gap identification (what to learn)
+
+---
+
+### Feature 2: Interview Coach (Interview Preparation)
+
+**Purpose**: "How do I ace the interview?"
+
+**Data Type**: **8 Context Layers** (holistic inputs, NOT discrete signals!)
+
+**How It Works**:
+```
+Layer 1: Match Score Data (aggregated from 60 signals)
+Layer 2: Company Intelligence (culture, values, news)
+Layer 3: People Profiles (recruiter style, priorities)
+Layer 4: JD Requirements (role responsibilities)
+Layer 5: Career Context (level, tenure, goals)
+Layer 6: Ecosystem (competitors, market)
+Layer 7: Writing Style (tone, voice)
+Layer 8: Headhunter Context (search firm, specialty match) [NEW!]
+    ↓ Combined
+Personalized Interview Prep
+    ↓ Output
+Tailored Questions (30-40)
+Optimized Talk Tracks (8-10)
+Core Stories (2-3)
+```
+
+**Used For**:
+- Question generation (what will they ask?)
+- Answer optimization (how to respond?)
+- Success probability (will I pass?)
+- Relationship building (long-term value)
+
+---
+
+### How They Connect
+
+**Match Matrix FEEDS INTO Interview Coach**:
+```
+Match Matrix
+    ↓ Produces
 Match Score (78%) + Strong Skills + Weak Skills
-    ↓ FEEDS INTO
-Interview Coach (as Input Layer #1)
-    ↓ Combined with 7 other input layers
-Hyper-Personalized Interview Prep
+    ↓ Becomes
+Interview Coach Input Layer #1
+    ↓ Combined with 7 other layers
+Complete Interview Prep
 ```
+
+**They're Different But Connected**:
+- Match Matrix = 60 individual skill scores (discrete)
+- Interview Coach = 8 context layers (holistic)
+- Match Matrix output → Interview Coach input (aggregated, not discrete)
 
 ---
 
