@@ -1013,7 +1013,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   );
                 })()}
                 
-                {/* Cover Letter Status (from Coach Mode) */}
+                {/* Cover Letter Status (from Resume Coach) */}
                 {(() => {
                   const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
                   const hasCoverLetter = !!clAttachment;
@@ -1192,7 +1192,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* 2.5. Coach Mode Entry Card */}
+        {/* 2.5. Resume Coach Entry Card */}
         <CoachModeEntryCard
           jobId={job.id}
           matchScore={aiData?.matchScore || 0}
@@ -1219,9 +1219,18 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         />
         </div>
 
-        {/* 3.5. Interview Coach Entry Point (Post-Application) */}
-        {currentStatus !== 'ON_RADAR' && (
-          <div className="mt-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-8 shadow-2xl">
+        {/* 3.5. Interview Coach Entry Point (Always Visible!) */}
+        <div className={`mt-6 rounded-2xl p-8 shadow-2xl ${
+          currentStatus === 'ON_RADAR' 
+            ? 'bg-gradient-to-r from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-600 opacity-75'
+            : 'bg-gradient-to-r from-purple-600 to-blue-600'
+        } text-white`}>
+          {currentStatus === 'ON_RADAR' && (
+            <div className="absolute top-4 right-4 bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+              🔒 Complete Resume Coach First
+            </div>
+          )}
+          <div className={currentStatus === 'ON_RADAR' ? 'relative' : ''}>
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h3 className="text-2xl font-bold mb-2 flex items-center gap-2">
@@ -1245,38 +1254,69 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link href={`/interview-coach/${job.id}?type=recruiter`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">📞</span>
-                  <span className="text-lg">Recruiter Screen</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    Culture fit • Motivation • Basics
-                  </span>
-                </button>
-              </Link>
-              
-              <Link href={`/interview-coach/${job.id}?type=hiring-manager`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">👨‍💼</span>
-                  <span className="text-lg">Hiring Manager</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    STAR stories • Leadership • Projects
-                  </span>
-                </button>
-              </Link>
-              
-              <Link href={`/interview-coach/${job.id}?type=peer`}>
-                <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
-                                 hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
-                  <span className="text-3xl">👥</span>
-                  <span className="text-lg">Peer / Panel</span>
-                  <span className="text-xs text-purple-500 group-hover:text-purple-600">
-                    System design • Team collaboration
-                  </span>
-                </button>
-              </Link>
+              {currentStatus === 'ON_RADAR' ? (
+                <>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">📞</span>
+                    <span className="text-lg">Recruiter Screen</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">👨‍💼</span>
+                    <span className="text-lg">Hiring Manager</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">👥</span>
+                    <span className="text-lg">Peer / Panel</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href={`/interview-coach/${job.id}?type=recruiter`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">📞</span>
+                      <span className="text-lg">Recruiter Screen</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        Culture fit • Motivation • Basics
+                      </span>
+                    </button>
+                  </Link>
+                  
+                  <Link href={`/interview-coach/${job.id}?type=hiring-manager`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">👨‍💼</span>
+                      <span className="text-lg">Hiring Manager</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        STAR stories • Leadership • Projects
+                      </span>
+                    </button>
+                  </Link>
+                  
+                  <Link href={`/interview-coach/${job.id}?type=peer`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">👥</span>
+                      <span className="text-lg">Peer / Panel</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        Collaboration • Domain depth
+                      </span>
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
             
             <div className="mt-6 bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
@@ -1292,7 +1332,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </ol>
             </div>
           </div>
-        )}
+        </div>
 
         {/* 4. Timeline Detail - Removed (deprecated) */}
       </div>

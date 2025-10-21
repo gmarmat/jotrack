@@ -25,7 +25,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold text-gray-500 dark:text-gray-400 mb-1">
-              Coach Mode
+              Resume Coach
             </h3>
             <p className="text-sm text-gray-400 dark:text-gray-500">
               Run Match Score or Company Intelligence analysis first to unlock
@@ -54,17 +54,17 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
   const tierConfig = {
     low: {
       bg: 'from-red-500 to-orange-500',
-      text: 'Score Low ({scorePercent}%) - Coach Mode can help bridge gaps',
+      text: 'Score Low ({scorePercent}%) - Resume Coach can help bridge gaps',
       icon: Target,
     },
     medium: {
       bg: 'from-yellow-500 to-amber-500',
-      text: 'Score Medium ({scorePercent}%) - Coach Mode can optimize your application',
+      text: 'Score Medium ({scorePercent}%) - Resume Coach can optimize your application',
       icon: TrendingUp,
     },
     high: {
       bg: 'from-green-500 to-emerald-500',
-      text: 'Score High ({scorePercent}%) - Coach Mode will polish final details',
+      text: 'Score High ({scorePercent}%) - Resume Coach will polish final details',
       icon: CheckCircle2,
     },
   };
@@ -112,10 +112,10 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                Ready for Coach Mode?
+                Ready for Resume Coach?
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Run Match Score analysis first to see how Coach Mode can help you
+                Run Match Score analysis first to see how Resume Coach can help you
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
             data-testid="enter-coach-mode-preview"
             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
-            Preview Coach Mode
+            Preview Resume Coach
           </button>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
           className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md flex items-center gap-2"
         >
           <Sparkles size={20} />
-          Enter Coach Mode
+          Enter Resume Coach
         </button>
       </div>
 
