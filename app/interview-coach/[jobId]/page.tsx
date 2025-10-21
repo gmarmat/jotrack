@@ -10,7 +10,11 @@ import AnswerPracticeWorkspace from '@/app/components/interview-coach/AnswerPrac
 import { CoreStoriesDisplay } from '@/app/components/interview-coach/CoreStoriesDisplay';
 import FinalCheatSheet from '@/app/components/interview-coach/FinalCheatSheet';
 import { ConfidenceScoreCard } from '@/app/components/interview-coach/ConfidenceScoreCard';
+import { SuccessPredictionCard } from '@/app/components/interview-coach/SuccessPredictionCard';
 import { calculateSignalConfidence, calculateOverallConfidence } from '@/lib/interview/confidenceScoring';
+import { predictInterviewSuccess } from '@/lib/interview/successPrediction';
+import { generateWeaknessFramings } from '@/lib/interview/redFlagFraming';
+import { analyzeCareerTrajectory, analyzeCompetitiveContext } from '@/lib/interview/signalExtraction';
 
 type InterviewStep = 'welcome' | 'insights' | 'practice' | 'talk-tracks' | 'core-stories' | 'prep';
 
@@ -255,19 +259,62 @@ export default function InterviewCoachPage() {
       
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Confidence Score Card (V2.0 - Shows before search) */}
+        {/* Confidence Score Card (V2.0 - Shows signal quality) */}
         {analysisData && currentStep === 'welcome' && (
-          <ConfidenceScoreCard 
-            overall={calculateOverallConfidence(
-              calculateSignalConfidence({
-                peopleProfiles: analysisData.peopleProfiles,
-                matchScore: analysisData.matchScoreData,
-                companyIntelligence: analysisData.companyIntelligence,
-                skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
-                webIntelligence: interviewCoachState.questionBank?.webIntelligence
-              })
-            )}
-          />
+          <>
+            <ConfidenceScoreCard 
+              overall={calculateOverallConfidence(
+                calculateSignalConfidence({
+                  peopleProfiles: analysisData.peopleProfiles,
+                  matchScore: analysisData.matchScoreData,
+                  companyIntelligence: analysisData.companyIntelligence,
+                  skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
+                  webIntelligence: interviewCoachState.questionBank?.webIntelligence
+                })
+              )}
+            />
+            
+            {/* Success Prediction Card (V2.0 - Shows win probability) */}
+            {(() => {
+              // Calculate answer scores from interview coach state
+              const answerScores: number[] = [];
+              if (interviewCoachState.answers) {
+                Object.values(interviewCoachState.answers).forEach((ans: any) => {
+                  if (ans.scores && ans.scores.length > 0) {
+                    const latestScore = ans.scores[ans.scores.length - 1];
+                    answerScores.push(latestScore.overall || 0);
+                  }
+                });
+              }
+              
+              // Get competitive advantages
+              const competitiveAdvantages = analysisData.matchScoreData?.skillsMatch
+                ? analysisData.matchScoreData.skillsMatch
+                    .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
+                    .slice(0, 3)
+                : [];
+              
+              // Generate red flags
+              const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
+                ? generateWeaknessFramings(
+                    analysisData.resumeVariant.raw || '',
+                    analysisData.matchScoreData,
+                    analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
+                    interviewCoachState.questionBank?.webIntelligence?.warnings || []
+                  )
+                : [];
+              
+              const prediction = predictInterviewSuccess({
+                matchScore: analysisData.matchScoreData?.matchScore || 0,
+                answerScores,
+                interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
+                redFlags,
+                competitiveAdvantages
+              });
+              
+              return <SuccessPredictionCard prediction={prediction} />;
+            })()}
+          </>
         )}
         
         {currentStep === 'welcome' && (
