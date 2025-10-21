@@ -14,7 +14,7 @@ import AttachmentsSection from '@/app/components/attachments/AttachmentsSection'
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
-import PromptViewer from '@/app/components/ai/PromptViewer';
+import ExtractionPromptViewer from '@/app/components/ExtractionPromptViewer';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
@@ -1174,13 +1174,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </span>
                   )}
                   
-                  {/* View Extraction Prompt */}
-                  <PromptViewer 
-                    promptKind="variant-extraction"
-                    version="v1"
-                    buttonLabel=""
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                  />
+                  {/* View Extraction Prompts */}
+                  <ExtractionPromptViewer jobId={id} />
                   
                   {/* AI Analysis Button (Match Score style) */}
                   <button
@@ -1213,7 +1208,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   How data extraction works:
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Your uploads → 3 AI variants (Raw, Normalized, Detailed) → Ready for sections below
+                  Your uploads → Raw (free, local) → AI creates Normalized + Detailed (~$0.02) → Ready for analysis
                 </p>
               </div>
 
