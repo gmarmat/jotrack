@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sqlite } from '@/db/client';
 import { callAiProvider } from '@/lib/coach/aiProvider';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { generateWeaknessFramings, enhanceFeedbackWithFraming } from '@/lib/interview/redFlagFraming';
+import { analyzeCareerTrajectory } from '@/lib/interview/signalExtraction';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,6 +115,52 @@ export async function POST(
       followUps: scoreData.followUpQuestions?.length || 0,
       testOnly
     });
+    
+    // V2.0: Generate weakness framings for strategic guidance
+    let framings: any[] = [];
+    try {
+      const { resumeVariant } = await getJobAnalysisVariants(jobId);
+      const careerTrajectory = analyzeCareerTrajectory(resumeVariant.aiOptimized || resumeVariant.raw || '');
+      
+      // Load Match Score for skills gap framings
+      const matchScoreRow = sqlite.prepare(`
+        SELECT match_score_data FROM jobs WHERE id = ? LIMIT 1
+      `).get(jobId) as any;
+      
+      const matchScoreData = matchScoreRow?.match_score_data 
+        ? JSON.parse(matchScoreRow.match_score_data) 
+        : null;
+      
+      // Load web warnings from interview_questions_cache
+      const webIntelRow = sqlite.prepare(`
+        SELECT web_intelligence_json FROM interview_questions_cache 
+        WHERE company_name = (SELECT LOWER(company) FROM jobs WHERE id = ? LIMIT 1)
+        LIMIT 1
+      `).get(jobId) as any;
+      
+      const webWarnings = webIntelRow?.web_intelligence_json
+        ? JSON.parse(webIntelRow.web_intelligence_json).warnings || []
+        : [];
+      
+      framings = generateWeaknessFramings(
+        resumeVariant.aiOptimized || resumeVariant.raw || '',
+        matchScoreData,
+        careerTrajectory,
+        webWarnings
+      );
+      
+      // Enhance feedback with relevant framings
+      if (scoreData.feedback?.summary) {
+        scoreData.feedback.framings = framings.filter((f: any) => 
+          scoreData.feedback.summary.toLowerCase().includes(f.weakness.toLowerCase()) ||
+          f.dontSay.some((dont: string) => scoreData.feedback.summary.toLowerCase().includes(dont.toLowerCase()))
+        );
+      }
+      
+      console.log(`✅ Generated ${framings.length} weakness framings, ${scoreData.feedback?.framings?.length || 0} relevant to this answer`);
+    } catch (error) {
+      console.warn('⚠️ Failed to generate framings (non-blocking):', error);
+    }
     
     // If testOnly mode, return score without saving
     if (testOnly) {
