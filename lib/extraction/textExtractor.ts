@@ -55,6 +55,8 @@ export async function extractFromDocx(filePath: string): Promise<ExtractionResul
  * Extract text from PDF file
  */
 export async function extractFromPdf(filePath: string): Promise<ExtractionResult> {
+  let parser: any = null;
+  
   try {
     // Dynamically import pdf-parse to avoid Next.js webpack issues
     if (!pdfParse) {
@@ -64,9 +66,31 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     const buffer = readFileSync(absolutePath);
     
-    const parseFn = pdfParse.default || pdfParse;
-    const data = await parseFn(buffer);
-    const text = data.text.trim();
+    // pdf-parse v2.x uses PDFParse class with { data: buffer }
+    const PDFParseClass = pdfParse.PDFParse || pdfParse.default?.PDFParse;
+    
+    if (!PDFParseClass) {
+      throw new Error('PDFParse class not found in pdf-parse module');
+    }
+    
+    // Create instance with buffer data
+    parser = new PDFParseClass({ data: buffer });
+    
+    // Extract text using getText() method
+    const result = await parser.getText();
+    const text = result.text.trim();
+    
+    // Get page count
+    const info = await parser.getInfo();
+    const pageCount = info?.info?.pageCount || info?.numPages || 1;
+    
+    if (!text || text.length === 0) {
+      return {
+        success: false,
+        text: '',
+        error: 'PDF parsed but no text content found. File might be image-based or encrypted.',
+      };
+    }
     
     // Count words
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
@@ -75,18 +99,38 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
       success: true,
       text,
       metadata: {
-        pageCount: data.numpages,
+        pageCount,
         wordCount,
         extractedAt: Date.now(),
       },
     };
   } catch (error: any) {
     console.error('❌ PDF extraction failed:', error);
+    
+    // Return more helpful error message
+    let errorMsg = 'Failed to extract text from PDF';
+    if (error.message?.includes('defineProperty')) {
+      errorMsg = 'PDF parsing failed (corrupted or image-based PDF). Try converting to .docx or .txt format.';
+    } else if (error.message?.includes('encrypted')) {
+      errorMsg = 'PDF is password-protected. Please remove encryption first.';
+    } else if (error.message) {
+      errorMsg = `PDF extraction error: ${error.message}`;
+    }
+    
     return {
       success: false,
       text: '',
-      error: error.message || 'Failed to extract text from PDF',
+      error: errorMsg,
     };
+  } finally {
+    // Clean up parser resources
+    if (parser && typeof parser.destroy === 'function') {
+      try {
+        await parser.destroy();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    }
   }
 }
 
