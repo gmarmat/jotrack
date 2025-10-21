@@ -180,7 +180,7 @@ export default function VariantViewerModal({
                 <div className="flex-1 overflow-auto p-3 bg-white dark:bg-gray-900">
                   {!getVariant('ai_optimized') ? (
                     <div className="text-xs text-gray-500 dark:text-gray-400 italic">
-                      Click "Refresh Data" to generate
+                      Not available - Click "Refresh Data" in Data Pipeline section
                     </div>
                   ) : (
                     <pre className="text-xs font-mono text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
@@ -206,7 +206,7 @@ export default function VariantViewerModal({
                 <div className="flex-1 overflow-auto p-3 bg-white dark:bg-gray-900">
                   {!getVariant('detailed') ? (
                     <div className="text-xs text-gray-500 dark:text-gray-400 italic">
-                      Click "Refresh Data" to generate
+                      Not created - Using 2-variant system (Raw + AI-Optimized only)
                     </div>
                   ) : (
                     <pre className="text-xs font-mono text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
@@ -222,9 +222,9 @@ export default function VariantViewerModal({
         {/* Footer */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
           <div className="text-xs text-gray-600 dark:text-gray-400">
-            <p className="mb-1"><strong>📄 Raw:</strong> Local text extraction (free, fast)</p>
-            <p className="mb-1"><strong>🤖 AI-Optimized:</strong> Structured data for AI analysis (token-efficient)</p>
-            <p><strong>📋 Detailed:</strong> Full extraction with all metadata</p>
+            <p className="mb-1"><strong>📄 Raw Text:</strong> Local UTF-8 extraction from uploaded file (free, complete, source of truth)</p>
+            <p><strong>🤖 AI-Optimized:</strong> Cleaned & condensed for efficient AI analysis (75% fewer tokens, ~$0.01 per document)</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-2 italic">Using 2-variant system. "Detailed" variant removed to optimize costs.</p>
           </div>
         </div>
       </div>

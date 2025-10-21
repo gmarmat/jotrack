@@ -90,53 +90,6 @@ OUTPUT NORMALIZED TEXT BELOW (START YOUR RESPONSE WITH THE CLEANED TEXT, NO PREA
 }
 
 /**
- * Create detailed (AI-Long) text variant from normalized text
- * Purpose: Enhanced, complete text with expanded abbreviations
- */
-async function createDetailedVariant(
-  normalizedText: string,
-  sourceType: 'resume' | 'job_description' | 'cover_letter'
-): Promise<{ text: string; wordCount: number }> {
-  const docType = sourceType === 'resume' ? 'resume' : 
-                  sourceType === 'job_description' ? 'job description' : 
-                  'cover letter';
-  
-  const prompt = `You are creating a DETAILED TEXT variant of a ${docType}.
-
-TASK: Enhance the normalized text below by expanding abbreviations and adding clarity.
-
-CRITICAL RULES:
-1. OUTPUT PLAIN TEXT ONLY (no JSON, no markdown formatting, no code blocks)
-2. Expand: Abbreviations, acronyms, unclear terms (K8s → Kubernetes, API → Application Programming Interface)
-3. Add: Context that makes content self-explanatory for AI analysis
-4. Preserve: Original meaning and ALL facts
-5. Enhance: Clarity without changing tone or adding fictional details
-6. Target: Keep under 2000 words
-7. Format: Use simple paragraphs and line breaks for readability
-
-EXAMPLE:
-Input: "Senior Engineer at Company A (2020-Present): Led team of 5 building microservices. Reduced API latency by 60%.\\n\\nSKILLS: Python, Django, AWS, K8s"
-
-Output: "Senior Software Engineer at Company A (2020-Present):\\nLed a team of 5 engineers to architect and build a microservices architecture system. Successfully reduced Application Programming Interface (API) response latency by 60 percent through performance optimization.\\n\\nTECHNICAL SKILLS:\\n- Programming Languages: Python (5+ years experience)\\n- Web Frameworks: Django for backend development\\n- Cloud Infrastructure: Amazon Web Services (AWS)\\n- Container Orchestration: Kubernetes for managing microservices deployment"
-
-NOW PROCESS THIS ${docType.toUpperCase()}:
-
-${normalizedText}
-
-OUTPUT DETAILED TEXT BELOW (START YOUR RESPONSE WITH THE ENHANCED TEXT, NO PREAMBLE):`;
-
-  const { result } = await callAiProvider('create_detailed_variant', {
-    prompt,
-    sourceType,
-  }, false, 'v1');
-  
-  const text = result.trim();
-  const wordCount = text.split(/\s+/).filter(Boolean).length;
-  
-  return { text, wordCount };
-}
-
-/**
  * Compare two text variants using AI
  */
 async function compareVariantsWithAI(
@@ -398,10 +351,10 @@ export async function POST(
           }
         }
         
-        console.log(`🔄 Creating AI variants from ${attachment.filename}...`);
+        console.log(`🔄 Creating AI-optimized variant from ${attachment.filename}...`);
         
-        // Step 1: Create normalized variant (AI-Short)
-        console.log(`📝 Creating normalized variant...`);
+        // Create normalized variant ONLY (2-variant system: Raw + Normalized)
+        console.log(`📝 Creating AI-optimized (normalized) variant...`);
         const normalized = await createNormalizedVariant(rawVariant.text, sourceType);
         
         const normalizedInputTokens = estimateTokens(rawVariant.text);
@@ -409,20 +362,9 @@ export async function POST(
         const normalizedCost = (normalizedInputTokens * 0.00015 + normalizedOutputTokens * 0.0006) / 1000;
         totalCost += normalizedCost;
         
-        console.log(`✅ Normalized: ${normalized.wordCount} words (from ${rawVariant.metadata?.wordCount || 0} raw)`);
+        console.log(`✅ AI-Optimized: ${normalized.wordCount} words (from ${rawVariant.metadata?.wordCount || 0} raw) - Cost: $${normalizedCost.toFixed(4)}`);
         
-        // Step 2: Create detailed variant (AI-Long)
-        console.log(`📝 Creating detailed variant...`);
-        const detailed = await createDetailedVariant(normalized.text, sourceType);
-        
-        const detailedInputTokens = estimateTokens(normalized.text);
-        const detailedOutputTokens = estimateTokens(detailed.text);
-        const detailedCost = (detailedInputTokens * 0.00015 + detailedOutputTokens * 0.0006) / 1000;
-        totalCost += detailedCost;
-        
-        console.log(`✅ Detailed: ${detailed.wordCount} words`);
-        
-        // Step 3: Compare with previous version (if exists)
+        // Compare with previous version (if exists)
         const oldVariant = await getVariant(
           attachment.id,
           sourceType,
@@ -442,6 +384,8 @@ export async function POST(
           const compareOutputTokens = 500;
           const compareCost = (compareInputTokens * 0.00015 + compareOutputTokens * 0.0006) / 1000;
           totalCost += compareCost;
+          
+          console.log(`   Similarity: ${(comparison.similarity * 100).toFixed(0)}%, Significance: ${comparison.significance}`);
         }
         
         // Save ai_optimized variant (normalized text)
@@ -460,24 +404,6 @@ export async function POST(
           },
           contentHash: normalizedHash,
           tokenCount: normalizedOutputTokens,
-        });
-        
-        // Save detailed variant (enhanced text)
-        const detailedHash = createHash('sha256')
-          .update(detailed.text)
-          .digest('hex');
-        
-        await saveVariant({
-          sourceId: attachment.id,
-          sourceType,
-          variantType: 'detailed',
-          content: {
-            text: detailed.text,
-            wordCount: detailed.wordCount,
-            variant: 'detailed',
-          },
-          contentHash: detailedHash,
-          tokenCount: detailedOutputTokens,
         });
         
         console.log(`✅ Variants saved for ${attachment.filename}`);
