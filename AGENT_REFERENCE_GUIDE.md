@@ -12,7 +12,7 @@
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach  
-**Last UI Update**: October 21, 2025 - Coach rebranding, two-column coach layout, compact timeline row, settings modal fix, keyword match optimization
+**Last UI Update**: October 21, 2025 - Coach cards with value propositions, two-column layout, compact timeline, settings modal fix
 
 ### The Complete System (High-Level)
 
@@ -1225,13 +1225,15 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 
 ### Recent UI Improvements (October 21, 2025)
 
-**1. Coach Rebranding & Two-Column Layout**
-- Renamed "Coach Mode" → "Resume Coach" for clarity
-- Created two-column layout showcasing both coach features
-- Resume Coach: Pre-application optimization (resume, cover letter, score improvement)
-- Interview Coach: Post-application preparation (questions, answers, talk tracks)
-- Clear prerequisites: Resume Coach needs Match Score OR Company Intel, Interview Coach needs BOTH Match Score AND Skills Analysis
-- Three states: Locked (no prereqs), Waiting (prereqs met but not applied), Available (ready to use)
+**1. Coach Cards with Clear Value Propositions**
+- **Information Hierarchy**: Value Prop → Feature Tags → Action Button
+- **Resume Coach**: "Optimize your application with our AI algorithm analyzing 60+ signals to boost your match score"
+- **Interview Coach**: "Ace interviews with real questions from Glassdoor, Reddit & Blind. AI scores answers, generates STAR talk tracks."
+- **Two-Column Layout**: Side-by-side display of both flagship features
+- **Eye-Catching Badges**: Score % (Resume Coach), Status icons (Locked/Ready/🎯)
+- **Compact Design**: Inline buttons, horizontal prerequisites, pill-style feature tags
+- **Three States**: Locked (shows prereqs), Waiting (prereqs met), Available (ready to use)
+- **Feature Tags**: Sub-features like "ATS-Optimized Resume", "Multi-Source Search", "AI Scoring (0-100)"
 
 **2. Compact Timeline Row**
 - Added job title and company name to collapsed timeline
