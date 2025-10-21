@@ -58,27 +58,39 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
   let parser: any = null;
   
   try {
+    console.log(`🔍 PDF extraction starting for: ${filePath}`);
+    
     // Dynamically import pdf-parse to avoid Next.js webpack issues
     if (!pdfParse) {
+      console.log(`📦 Importing pdf-parse module...`);
       pdfParse = await import('pdf-parse');
+      console.log(`✓ pdf-parse imported, keys:`, Object.keys(pdfParse));
     }
     
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
+    console.log(`📁 Reading file: ${absolutePath}`);
     const buffer = readFileSync(absolutePath);
+    console.log(`✓ File read, size: ${(buffer.length / 1024).toFixed(1)} KB`);
     
     // pdf-parse v2.x uses PDFParse class with { data: buffer }
     const PDFParseClass = pdfParse.PDFParse || pdfParse.default?.PDFParse;
     
     if (!PDFParseClass) {
+      console.error(`❌ PDFParse class not found! Module keys:`, Object.keys(pdfParse));
       throw new Error('PDFParse class not found in pdf-parse module');
     }
     
+    console.log(`✓ PDFParse class found, creating parser...`);
+    
     // Create instance with buffer data
     parser = new PDFParseClass({ data: buffer });
+    console.log(`✓ Parser created, extracting text...`);
     
     // Extract text using getText() method
     const result = await parser.getText();
+    console.log(`✓ getText() completed, result type:`, typeof result);
     const text = result.text.trim();
+    console.log(`✓ Text extracted, length: ${text.length} chars`);
     
     // Get page count
     const info = await parser.getInfo();
