@@ -3,7 +3,7 @@
 import { createHash } from 'crypto';
 import { db } from '@/db/client';
 import { jobs, attachments, userProfile, artifactVariants } from '@/db/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and, isNull, desc } from 'drizzle-orm';
 import { calculateTextSimilarity, assessChangeSignificance } from './similarityCalculator';
 
 export interface StalenessCheck {
@@ -13,6 +13,7 @@ export interface StalenessCheck {
   changedArtifacts?: string[];
   hasVariants?: boolean; // Whether AI-optimized variants exist
   hasAnalysis?: boolean; // Whether full analysis has been run
+  variantsAnalyzedAt?: number; // Unix timestamp of most recent variant creation
 }
 
 /**
@@ -172,12 +173,35 @@ export async function checkAnalysisStaleness(jobId: string): Promise<StalenessCh
   }
 
   // State: FRESH - analysis is up to date
+  // Get the most recent variant timestamp
+  let variantsAnalyzedAt: number | undefined = undefined;
+  if (activeAttachments.length > 0) {
+    const mostRecentVariant = await db
+      .select({
+        createdAt: artifactVariants.createdAt
+      })
+      .from(artifactVariants)
+      .where(
+        and(
+          eq(artifactVariants.isActive, true),
+          eq(artifactVariants.variantType, 'ai_optimized')
+        )
+      )
+      .orderBy(desc(artifactVariants.createdAt))
+      .limit(1);
+    
+    if (mostRecentVariant.length > 0) {
+      variantsAnalyzedAt = mostRecentVariant[0].createdAt;
+    }
+  }
+  
   return {
     isStale: false,
     severity: 'fresh',
     message: 'Analysis is up to date',
     hasVariants: true,
     hasAnalysis: true,
+    variantsAnalyzedAt,
   };
 }
 

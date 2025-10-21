@@ -1539,13 +1539,35 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
       
       {/* Quick Preview Modal (Eye Icon) */}
       {viewingAttachment && (
-        <AttachmentViewerModal
-          isOpen={true}
-          onClose={() => setViewingAttachment(null)}
-          filename={viewingAttachment.filename}
-          content={viewingAttachment.textContent}
-          kind={viewingAttachment.kind}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <span className="font-semibold text-base text-gray-900 dark:text-gray-100">{viewingAttachment.filename}</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full uppercase">
+                  {viewingAttachment.kind}
+                </span>
+              </div>
+              <button
+                onClick={() => setViewingAttachment(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Close"
+              >
+                <X size={20} className="text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-8 bg-gray-50 dark:bg-gray-900">
+              <div className="max-w-full mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
+                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-100 leading-relaxed">
+                  {viewingAttachment.textContent}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
