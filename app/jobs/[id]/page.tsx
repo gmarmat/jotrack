@@ -973,144 +973,159 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
               )}
               
-              {/* Document Rows + Attachments Button */}
-              <div className="flex gap-4 flex-1">
-                {/* Left: 3 Document Rows */}
-                <div className="flex-1 space-y-1">
-                  {/* Resume */}
-                  <div className="flex items-center gap-2 text-xs">
+              {/* Document Rows with Shortened Filenames */}
+              <div className="flex-1 space-y-1">
+                {/* Resume */}
+                <div className="flex items-center gap-2 text-xs">
+                  {(() => {
+                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                    return resumeAttachment ? (
+                      <button
+                        onClick={() => setViewingAttachment({
+                          id: resumeAttachment.id,
+                          filename: resumeAttachment.filename,
+                          textContent: resumeAttachment.text_content || 'No content available',
+                          kind: 'resume'
+                        })}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Preview Resume"
+                      >
+                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                      </button>
+                    ) : (
+                      <div className="w-6 h-6"></div>
+                    );
+                  })()}
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">Resume:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
                     {(() => {
                       const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                      return resumeAttachment ? (
-                        <button
-                          onClick={() => setViewingAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            textContent: resumeAttachment.text_content || 'No content available',
-                            kind: 'resume'
-                          })}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                          title="Preview Resume"
-                        >
-                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                      ) : (
-                        <div className="w-6 h-6"></div>
-                      );
+                      if (!resumeAttachment) return 'Not uploaded';
+                      
+                      const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
+                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                        month: 'numeric', 
+                        day: 'numeric', 
+                        year: '2-digit' 
+                      }) : '';
+                      
+                      // Shorten filename if too long
+                      const filename = resumeAttachment.filename;
+                      const shortenedFilename = filename.length > 20 
+                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
+                        : filename;
+                      
+                      return `${shortenedFilename} • ${date}`;
                     })()}
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Resume:</span>
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {(() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                        if (!resumeAttachment) return 'Not uploaded';
-                        
-                        const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
-                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                          month: 'numeric', 
-                          day: 'numeric', 
-                          year: '2-digit' 
-                        }) : '';
-                        
-                        return `v1 • ${date}`;
-                      })()}
-                    </span>
-                  </div>
-                  
-                  {/* JD */}
-                  <div className="flex items-center gap-2 text-xs">
-                    {(() => {
-                      const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                      return jdAttachment ? (
-                        <button
-                          onClick={() => setViewingAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            textContent: jdAttachment.text_content || 'No content available',
-                            kind: 'jd'
-                          })}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                          title="Preview Job Description"
-                        >
-                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                      ) : (
-                        <div className="w-6 h-6"></div>
-                      );
-                    })()}
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">JD:</span>
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {(() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                        if (!jdAttachment) return 'Not uploaded';
-                        
-                        const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
-                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                          month: 'numeric', 
-                          day: 'numeric', 
-                          year: '2-digit' 
-                        }) : '';
-                        
-                        return `v1 • ${date}`;
-                      })()}
-                    </span>
-                  </div>
-                  
-                  {/* Cover Letter */}
-                  <div className="flex items-center gap-2 text-xs">
-                    {(() => {
-                      const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                      return clAttachment ? (
-                        <button
-                          onClick={() => setViewingAttachment({
-                            id: clAttachment.id,
-                            filename: clAttachment.filename,
-                            textContent: clAttachment.text_content || 'No content available',
-                            kind: 'cover_letter'
-                          })}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                          title="Preview Cover Letter"
-                        >
-                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                      ) : (
-                        <div className="w-6 h-6"></div>
-                      );
-                    })()}
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Cover Letter:</span>
-                    <span className="text-gray-900 dark:text-gray-100">
-                      {(() => {
-                        const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                        if (!clAttachment) return 'Not created';
-                        
-                        const timestamp = clAttachment.created_at || clAttachment.createdAt;
-                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
-                          month: 'numeric', 
-                          day: 'numeric', 
-                          year: '2-digit' 
-                        }) : '';
-                        
-                        return `v1 • ${date}`;
-                      })()}
-                    </span>
-                  </div>
+                  </span>
                 </div>
                 
-                {/* Right: Attachments Button (sized to match 3 rows) */}
-                <div className="flex items-start">
-                  <button
-                    onClick={() => setShowAttachmentsModal(true)}
-                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2 text-xs"
-                    data-testid="attachments-button-header"
-                  >
-                    <Paperclip size={14} />
-                    <span>Attachments</span>
-                    {attachmentCount > 0 && (
-                      <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
-                        {attachmentCount}
-                      </span>
-                    )}
-                  </button>
+                {/* JD */}
+                <div className="flex items-center gap-2 text-xs">
+                  {(() => {
+                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                    return jdAttachment ? (
+                      <button
+                        onClick={() => setViewingAttachment({
+                          id: jdAttachment.id,
+                          filename: jdAttachment.filename,
+                          textContent: jdAttachment.text_content || 'No content available',
+                          kind: 'jd'
+                        })}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Preview Job Description"
+                      >
+                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                      </button>
+                    ) : (
+                      <div className="w-6 h-6"></div>
+                    );
+                  })()}
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">JD:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                      if (!jdAttachment) return 'Not uploaded';
+                      
+                      const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
+                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                        month: 'numeric', 
+                        day: 'numeric', 
+                        year: '2-digit' 
+                      }) : '';
+                      
+                      // Shorten filename if too long
+                      const filename = jdAttachment.filename;
+                      const shortenedFilename = filename.length > 20 
+                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
+                        : filename;
+                      
+                      return `${shortenedFilename} • ${date}`;
+                    })()}
+                  </span>
                 </div>
+                
+                {/* Cover Letter */}
+                <div className="flex items-center gap-2 text-xs">
+                  {(() => {
+                    const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                    return clAttachment ? (
+                      <button
+                        onClick={() => setViewingAttachment({
+                          id: clAttachment.id,
+                          filename: clAttachment.filename,
+                          textContent: clAttachment.text_content || 'No content available',
+                          kind: 'cover_letter'
+                        })}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Preview Cover Letter"
+                      >
+                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                      </button>
+                    ) : (
+                      <div className="w-6 h-6"></div>
+                    );
+                  })()}
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">Cover Letter:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                      if (!clAttachment) return 'Not created';
+                      
+                      const timestamp = clAttachment.created_at || clAttachment.createdAt;
+                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                        month: 'numeric', 
+                        day: 'numeric', 
+                        year: '2-digit' 
+                      }) : '';
+                      
+                      // Shorten filename if too long
+                      const filename = clAttachment.filename;
+                      const shortenedFilename = filename.length > 20 
+                        ? `${filename.substring(0, 8)}...${filename.substring(filename.lastIndexOf('.'))}`
+                        : filename;
+                      
+                      return `${shortenedFilename} • ${date}`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Attachments Button at Bottom */}
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowAttachmentsModal(true)}
+                  className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                  data-testid="attachments-button-header"
+                >
+                  <Paperclip size={14} />
+                  <span>Attachments</span>
+                  {attachmentCount > 0 && (
+                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                      {attachmentCount}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -1152,20 +1167,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
               </div>
               
-              {/* Detailed Description */}
-              <div className="mb-4">
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  AI extracts 3 document variants for comprehensive analysis:
-                </p>
-                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 ml-2">
-                  <li>• <strong>UI (Raw):</strong> Original uploaded text</li>
-                  <li>• <strong>AI Short:</strong> Optimized, concise version</li>
-                  <li>• <strong>AI Long:</strong> Detailed, comprehensive version</li>
-                </ul>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  Click "Analyze All" to process all sections with these variants.
-                </p>
-              </div>
+              {/* Simple Description */}
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                AI converts documents into 3 variants (Raw, Short, Long) for analysis. Click "Analyze All" to process all sections.
+              </p>
 
               {/* Variant Access Icons (Compact) */}
               {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
