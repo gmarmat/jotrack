@@ -135,12 +135,12 @@ export default function VariantViewerModal({
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-4 p-4 h-full">
-              {/* Column 1: Raw Text */}
+              {/* Column 1: Raw */}
               <div className="flex flex-col border border-blue-200 dark:border-blue-800 rounded-lg overflow-hidden">
                 <div className="bg-blue-100 dark:bg-blue-900/30 px-3 py-2 border-b border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2">
                     <FileText size={16} className="text-blue-600 dark:text-blue-400" />
-                    <span className="font-medium text-sm text-blue-900 dark:text-blue-200">Raw Text</span>
+                    <span className="font-medium text-sm text-blue-900 dark:text-blue-200">Raw</span>
                   </div>
                   {getVariant('raw') && (
                     <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
@@ -161,12 +161,12 @@ export default function VariantViewerModal({
                 </div>
               </div>
 
-              {/* Column 2: AI-Optimized */}
+              {/* Column 2: Normalized */}
               <div className="flex flex-col border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
                 <div className="bg-purple-100 dark:bg-purple-900/30 px-3 py-2 border-b border-purple-200 dark:border-purple-800">
                   <div className="flex items-center gap-2">
                     <Zap size={16} className="text-purple-600 dark:text-purple-400" />
-                    <span className="font-medium text-sm text-purple-900 dark:text-purple-200">AI-Optimized</span>
+                    <span className="font-medium text-sm text-purple-900 dark:text-purple-200">Normalized</span>
                   </div>
                   {getVariant('ai_optimized') && (
                     <div className="text-xs text-purple-700 dark:text-purple-300 mt-1">
@@ -220,7 +220,7 @@ export default function VariantViewerModal({
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
           <div className="text-xs text-gray-600 dark:text-gray-400">
             <p className="mb-1"><strong>📄 Raw:</strong> Local text extraction (free, fast)</p>
-            <p className="mb-1"><strong>🤖 AI-Optimized:</strong> Structured data for AI analysis (token-efficient)</p>
+            <p className="mb-1"><strong>🤖 Normalized:</strong> Structured data for AI analysis (token-efficient)</p>
             <p><strong>📋 Detailed:</strong> Full extraction with all metadata</p>
           </div>
         </div>
