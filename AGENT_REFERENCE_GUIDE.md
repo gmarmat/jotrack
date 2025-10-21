@@ -12,7 +12,7 @@
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach  
-**Last UI Update**: October 21, 2025 - Coach cards with value propositions, two-column layout, compact timeline, settings modal fix
+**Last UI Update**: October 21, 2025 - Sources UX with evidence chips, coach cards, two-column layout, API provider transparency
 
 ### The Complete System (High-Level)
 
@@ -180,9 +180,31 @@ Interview Coach uses this as Layer 3 & 8:
   - Include closing guidance (staying on radar) ✅
 ```
 
+### Interview Coach → People Profiles (Retroactive Enhancement) ⭐ NEW
+```
+Interview Coach searches for questions (Tavily):
+  - "Fortive interview questions Glassdoor Reddit"
+  - "John Smith Fortive interview" (for each interviewer)
+
+webIntelligence.ts extracts (ALREADY HAPPENING):
+  - interviewerValidations: {
+      "John Smith": {
+        sources: [
+          { source: "Reddit", quote: "John is OBSESSED with metrics", url: "..." },
+          { source: "Blind", quote: "Bring your A-game", url: "..." }
+        ]
+      }
+    }
+
+People Profiles uses this for Sources Modal:
+  - Shows evidence chips with real Glassdoor/Reddit/Blind quotes
+  - Progressive enhancement: Gets richer after Interview Coach runs
+  - ZERO additional cost (reuses existing search data)
+```
+
 ---
 
-**This is ONE system with TWO features working together seamlessly.**
+**This is ONE system with TWO features working together seamlessly, with data flowing BOTH directions.**
 
 ---
 
@@ -1249,6 +1271,15 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 - Reduced font sizes for space efficiency
 - Removed detailed popup for cleaner interface
 - Maintained color coding and tooltips
+
+**5. Sources UX with Evidence Chips**
+- Created EvidenceChip component for inline quote display
+- Enhanced SourcesModal with API provider badges (Tavily, Anthropic, OpenAI, Local, Manual)
+- Smart display logic: Evidence chips for people insights, traditional list for company facts
+- Platform icons: LinkedIn (📊), Glassdoor (🔍), Reddit (💬), Blind (🎯)
+- Progressive disclosure: Short quote inline, full details on click
+- Trust indicators: Tavily = recent/live, Anthropic = AI-sourced, Manual = user provided
+- Zero-cost approach: Leverage existing Interview Coach search data (webIntelligence.interviewerValidations)
 
 **Symptoms of Timeout Too Short**:
 - Page reloads but shows dummy/stale data
