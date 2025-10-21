@@ -18,7 +18,9 @@ export default function StatusChipDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -44,6 +46,17 @@ export default function StatusChipDropdown({
       return;
     }
     setSelectedStatus(status);
+  };
+
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX
+      });
+    }
+    setIsOpen(!isOpen);
   };
 
   const handleConfirm = async () => {
@@ -76,15 +89,16 @@ export default function StatusChipDropdown({
   };
 
   return (
-    <div className="relative" ref={dropdownRef} data-testid="status-chip-dropdown">
+    <div className="relative" data-testid="status-chip-dropdown">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         data-testid="status-chip-trigger"
       >
         <StatusBadge status={currentStatus} />
         <svg 
-          className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -94,7 +108,11 @@ export default function StatusChipDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
+        <div 
+          ref={dropdownRef}
+          className="fixed w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] max-h-[400px] overflow-y-auto"
+          style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+        >
           <div className="p-2">
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-2">
               Change Status
