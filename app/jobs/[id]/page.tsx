@@ -1216,49 +1216,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 )}
               </div>
 
-              {/* Quick Access to Variants */}
-              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
-                  <div className="flex flex-col gap-1.5">
-                    <button
-                      onClick={() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                        if (resumeAttachment) {
-                          setSelectedAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            kind: resumeAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
-                      title="View resume variants (raw, AI-optimized, detailed)"
-                    >
-                      📄 Resume Variants
-                    </button>
-                    <button
-                      onClick={() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                        if (jdAttachment) {
-                          setSelectedAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            kind: jdAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
-                      title="View JD variants (raw, AI-optimized, detailed)"
-                    >
-                      💼 JD Variants
-                    </button>
-                  </div>
-                </div>
-              )}
-              
               {/* Intermediate Status Messages */}
               {(refreshing || analyzing) && (
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
