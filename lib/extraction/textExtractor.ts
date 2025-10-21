@@ -4,9 +4,7 @@
 import mammoth from 'mammoth';
 import { readFileSync } from 'fs';
 import path from 'path';
-
-// Dynamic import for pdf-parse to avoid Next.js webpack issues
-let pdfParse: any = null;
+import { PDFParse } from 'pdf-parse';
 
 export interface ExtractionResult {
   success: boolean;
@@ -55,46 +53,35 @@ export async function extractFromDocx(filePath: string): Promise<ExtractionResul
  * Extract text from PDF file
  */
 export async function extractFromPdf(filePath: string): Promise<ExtractionResult> {
-  let parser: any = null;
-  
   try {
     console.log(`🔍 PDF extraction starting for: ${filePath}`);
-    
-    // Dynamically import pdf-parse to avoid Next.js webpack issues
-    if (!pdfParse) {
-      console.log(`📦 Importing pdf-parse module...`);
-      pdfParse = await import('pdf-parse');
-      console.log(`✓ pdf-parse imported, keys:`, Object.keys(pdfParse));
-    }
     
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     console.log(`📁 Reading file: ${absolutePath}`);
     const buffer = readFileSync(absolutePath);
     console.log(`✓ File read, size: ${(buffer.length / 1024).toFixed(1)} KB`);
     
-    // pdf-parse v2.x uses PDFParse class with { data: buffer }
-    const PDFParseClass = pdfParse.PDFParse || pdfParse.default?.PDFParse;
+    console.log(`✓ Creating PDFParse instance...`);
     
-    if (!PDFParseClass) {
-      console.error(`❌ PDFParse class not found! Module keys:`, Object.keys(pdfParse));
-      throw new Error('PDFParse class not found in pdf-parse module');
-    }
-    
-    console.log(`✓ PDFParse class found, creating parser...`);
-    
-    // Create instance with buffer data
-    parser = new PDFParseClass({ data: buffer });
+    // Create parser instance with data option
+    const parser = new PDFParse({ data: buffer });
     console.log(`✓ Parser created, extracting text...`);
     
-    // Extract text using getText() method
+    // Call getText() to extract text
     const result = await parser.getText();
-    console.log(`✓ getText() completed, result type:`, typeof result);
-    const text = result.text.trim();
-    console.log(`✓ Text extracted, length: ${text.length} chars`);
+    console.log(`✓ getText() complete, text length: ${result.text.length}`);
     
-    // Get page count
+    const text = result.text.trim();
+    
+    // Get document info for page count
     const info = await parser.getInfo();
     const pageCount = info?.info?.pageCount || info?.numPages || 1;
+    console.log(`✓ PDF info: ${pageCount} pages, ${text.length} chars`);
+    
+    // Cleanup
+    if (parser.destroy) {
+      await parser.destroy();
+    }
     
     if (!text || text.length === 0) {
       return {
@@ -106,6 +93,7 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     
     // Count words
     const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+    console.log(`✅ PDF extraction complete: ${wordCount} words from ${pageCount} pages`);
     
     return {
       success: true,
@@ -118,6 +106,7 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     };
   } catch (error: any) {
     console.error('❌ PDF extraction failed:', error);
+    console.error('Error stack:', error.stack);
     
     // Return more helpful error message
     let errorMsg = 'Failed to extract text from PDF';
@@ -134,15 +123,6 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
       text: '',
       error: errorMsg,
     };
-  } finally {
-    // Clean up parser resources
-    if (parser && typeof parser.destroy === 'function') {
-      try {
-        await parser.destroy();
-      } catch (e) {
-        // Ignore cleanup errors
-      }
-    }
   }
 }
 
