@@ -938,234 +938,357 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
           {/* 3-Column Grid with Fixed Heights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[280px]">
-            {/* Column 1: Job Title, Company, Status, Attachments */}
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
-                  {job.title}
-                </h1>
-                <StatusChipDropdown 
-                  jobId={job.id} 
-                  currentStatus={currentStatus}
-                  onStatusChange={handleStatusChange}
-                />
-              </div>
-              <p className="text-base text-gray-600 dark:text-gray-400 mb-4" data-testid="job-company">
-                {job.company}
-              </p>
-              
-              {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
-              {showProgressHints && attachmentCount === 0 && (
-                <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
-                  <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
-                  <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
-                  <button 
-                    onClick={dismissHints} 
-                    className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
-                    title="Dismiss all hints"
-                  >
-                    ×
-                  </button>
+            {/* Column 1: Job Title, Company, Status, Attachments (2-column layout) */}
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex gap-4">
+              {/* Left Sub-Column: Document Status */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
+                    {job.title}
+                  </h1>
+                  <StatusChipDropdown 
+                    jobId={job.id} 
+                    currentStatus={currentStatus}
+                    onStatusChange={handleStatusChange}
+                  />
                 </div>
-              )}
-              
-              {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
-              <div className="mb-3 space-y-1.5">
-                {/* Resume Status */}
-                {(() => {
-                  const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                  const hasResume = !!resumeAttachment;
-                  return (
-                    <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
-                      {hasResume ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasResume 
-                          ? `v${resumeAttachment!.version || 1} • ${new Date(resumeAttachment!.created_at || resumeAttachment!.createdAt).toLocaleDateString()}`
-                          : 'Not uploaded'}
-                      </span>
-                    </div>
-                  );
-                })()}
+                <p className="text-base text-gray-600 dark:text-gray-400 mb-4" data-testid="job-company">
+                  {job.company}
+                </p>
                 
-                {/* JD Status */}
-                {(() => {
-                  const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                  const hasJd = !!jdAttachment;
-                  return (
-                    <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
-                      {hasJd ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasJd 
-                          ? `v${jdAttachment!.version || 1} • ${new Date(jdAttachment!.created_at || jdAttachment!.createdAt).toLocaleDateString()}`
-                          : 'Not uploaded'}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
+                {showProgressHints && attachmentCount === 0 && (
+                  <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+                    <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
+                    <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
+                    <button 
+                      onClick={dismissHints} 
+                      className="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full w-4 h-4 flex items-center justify-center text-purple-600 dark:text-purple-300 font-bold"
+                      title="Dismiss all hints"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
                 
-                {/* Cover Letter Status (from Resume Coach) */}
-                {(() => {
-                  const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                  const hasCoverLetter = !!clAttachment;
-                  return (
-                    <div className="flex items-center gap-2 text-xs">
-                      {hasCoverLetter ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasCoverLetter 
-                          ? `v${clAttachment!.version || 1} • ${new Date(clAttachment!.created_at || clAttachment!.createdAt).toLocaleDateString()}`
-                          : 'Not created'}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
+                <div className="space-y-1.5">
+                  {/* Resume Status */}
+                  {(() => {
+                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                    const hasResume = !!resumeAttachment;
+                    return (
+                      <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
+                        {hasResume ? (
+                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                        ) : (
+                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
+                        <span className="truncate text-gray-600 dark:text-gray-400">
+                          {hasResume 
+                            ? `v${resumeAttachment!.version || 1} • ${new Date(resumeAttachment!.created_at || resumeAttachment!.createdAt).toLocaleDateString()}`
+                            : 'Not uploaded'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* JD Status */}
+                  {(() => {
+                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                    const hasJd = !!jdAttachment;
+                    return (
+                      <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
+                        {hasJd ? (
+                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                        ) : (
+                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
+                        <span className="truncate text-gray-600 dark:text-gray-400">
+                          {hasJd 
+                            ? `v${jdAttachment!.version || 1} • ${new Date(jdAttachment!.created_at || jdAttachment!.createdAt).toLocaleDateString()}`
+                            : 'Not uploaded'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Cover Letter Status (from Resume Coach) */}
+                  {(() => {
+                    const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                    const hasCoverLetter = !!clAttachment;
+                    return (
+                      <div className="flex items-center gap-2 text-xs">
+                        {hasCoverLetter ? (
+                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                        ) : (
+                          <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
+                        <span className="truncate text-gray-600 dark:text-gray-400">
+                          {hasCoverLetter 
+                            ? `v${clAttachment!.version || 1} • ${new Date(clAttachment!.created_at || clAttachment!.createdAt).toLocaleDateString()}`
+                            : 'Not created'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
               
-              {/* Attachments Button */}
-              <button
-                onClick={() => setShowAttachmentsModal(true)}
-                className={`${COLUMN_BUTTON_CLASS} flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 justify-center`}
-                data-testid="attachments-button-header"
-              >
-                <Paperclip size={16} />
-                <span>Attachments</span>
-                {attachmentCount > 0 && (
-                  <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
-                    {attachmentCount}
-                  </span>
-                )}
-              </button>
+              {/* Right Sub-Column: Attachments Button */}
+              <div className="flex items-end">
+                <button
+                  onClick={() => setShowAttachmentsModal(true)}
+                  className="px-4 py-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex flex-col items-center gap-2"
+                  data-testid="attachments-button-header"
+                >
+                  <Paperclip size={20} />
+                  <span className="text-xs">Attachments</span>
+                  {attachmentCount > 0 && (
+                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                      {attachmentCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Column 2: Data Pipeline with Scrolling */}
+            {/* Column 2: Data Pipeline with AI Button */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with "Analyzed X ago" badge */}
-              <div className="flex items-center justify-between mb-3">
+              {/* Header with AI Extract button */}
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <span className="text-lg">
-                    {stalenessInfo?.severity === 'fresh' ? '✅' : 
-                     stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
-                     stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
-                  </span>
-                  Data Status
+                  <span className="text-lg">📄</span>
+                  Data Pipeline
                 </h3>
-                {stalenessInfo?.variantsAnalyzedAt && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Analyzed {(() => {
-                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                      const minutes = Math.floor(ageMs / 60000);
-                      const hours = Math.floor(ageMs / 3600000);
-                      const days = Math.floor(ageMs / 86400000);
-                      
-                      if (minutes < 60) return `${minutes}m ago`;
-                      if (hours < 24) return `${hours}h ago`;
-                      return `${days}d ago`;
-                    })()}
-                  </span>
+                {/* AI Extract Button */}
+                {stalenessInfo?.severity === 'no_variants' ? (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors flex items-center gap-1"
+                  >
+                    {refreshing ? (
+                      <>
+                        <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Extracting...
+                      </>
+                    ) : (
+                      <>⚡ Extract (~$0.02)</>
+                    )}
+                  </button>
+                ) : (
+                  <div className="text-right">
+                    <button
+                      onClick={handleGlobalAnalyze}
+                      disabled={analyzing}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors mb-1"
+                    >
+                      {analyzing ? 'Analyzing...' : '⚡ AI'}
+                    </button>
+                    {stalenessInfo?.variantsAnalyzedAt && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {(() => {
+                          const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                          const minutes = Math.floor(ageMs / 60000);
+                          const hours = Math.floor(ageMs / 3600000);
+                          const days = Math.floor(ageMs / 86400000);
+                          
+                          if (minutes < 60) return `${minutes}m ago`;
+                          if (hours < 24) return `${hours}h ago`;
+                          return `${days}d ago`;
+                        })()}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               
-              {/* Explain: Our Approach (compact) */}
-              <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
-                  How data extraction works:
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
-                </p>
+            {/* Column 2: Data Pipeline with Variants */}
+            <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
+              {/* Header with AI Extract button */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span className="text-lg">📄</span>
+                  Data Pipeline
+                </h3>
+                {/* AI Extract Button */}
+                {stalenessInfo?.severity === 'no_variants' ? (
+                  <button
+                    onClick={handleRefreshVariants}
+                    disabled={refreshing}
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors flex items-center gap-1"
+                  >
+                    {refreshing ? (
+                      <>
+                        <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Extracting...
+                      </>
+                    ) : (
+                      <>⚡ Extract (~$0.02)</>
+                    )}
+                  </button>
+                ) : (
+                  <div className="text-right">
+                    <button
+                      onClick={handleGlobalAnalyze}
+                      disabled={analyzing}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium text-xs transition-colors mb-1"
+                    >
+                      {analyzing ? 'Analyzing...' : '⚡ AI'}
+                    </button>
+                    {stalenessInfo?.variantsAnalyzedAt && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {(() => {
+                          const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
+                          const minutes = Math.floor(ageMs / 60000);
+                          const hours = Math.floor(ageMs / 3600000);
+                          const days = Math.floor(ageMs / 86400000);
+                          
+                          if (minutes < 60) return `${minutes}m ago`;
+                          if (hours < 24) return `${hours}h ago`;
+                          return `${days}d ago`;
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+              {/* Status Message */}
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
                 {stalenessInfo?.message || 'Checking...'}
               </p>
-              
-              {/* Action Button */}
-              <div className="mb-4">
-                {stalenessInfo?.severity === 'no_variants' && (
-                  <button
-                    onClick={handleRefreshVariants}
-                    disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
-                  >
-                    {refreshing ? 'Extracting...' : 'Refresh Data'}
-                  </button>
-                )}
-                {stalenessInfo?.severity === 'variants_fresh' && (
-                  <button
-                    onClick={handleGlobalAnalyze}
-                    disabled={analyzing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
-                  >
-                    {analyzing ? 'Analyzing...' : 'Analyze All'}
-                  </button>
-                )}
-                {stalenessInfo?.severity === 'major' && (
-                  <button
-                    onClick={handleRefreshVariants}
-                    disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
-                  >
-                    {refreshing ? 'Extracting...' : 'Refresh Data'}
-                  </button>
-                )}
-              </div>
 
-              {/* Quick Access to Variants */}
-              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
-                  <div className="flex flex-col gap-1.5">
-                    <button
-                      onClick={() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                        if (resumeAttachment) {
+              {/* Variant Access Icons (Resume) */}
+              {(() => {
+                const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                return resumeAttachment && stalenessInfo?.hasVariants ? (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Resume:</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
                           setSelectedAttachment({
                             id: resumeAttachment.id,
                             filename: resumeAttachment.filename,
                             kind: resumeAttachment.kind,
                           });
                           setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
-                      title="View resume variants (raw, AI-optimized, detailed)"
-                    >
-                      📄 Resume Variants
-                    </button>
-                    <button
-                      onClick={() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                        if (jdAttachment) {
+                          // TODO: Set default tab to 'ui' (raw)
+                        }}
+                        className="p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
+                        title="View UI (Raw)"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">UI (Raw)</span>
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                          // TODO: Set default tab to 'ai_optimized'
+                        }}
+                        className="p-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 transition-colors"
+                        title="View AI Optimized"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Short</span>
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedAttachment({
+                            id: resumeAttachment.id,
+                            filename: resumeAttachment.filename,
+                            kind: resumeAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                          // TODO: Set default tab to 'detailed'
+                        }}
+                        className="p-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 transition-colors"
+                        title="View Detailed"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Long</span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+              
+              {/* Variant Access Icons (JD) */}
+              {(() => {
+                const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                return jdAttachment && stalenessInfo?.hasVariants ? (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">JD:</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
                           setSelectedAttachment({
                             id: jdAttachment.id,
                             filename: jdAttachment.filename,
                             kind: jdAttachment.kind,
                           });
                           setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
-                      title="View JD variants (raw, AI-optimized, detailed)"
-                    >
-                      💼 JD Variants
-                    </button>
+                        }}
+                        className="p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
+                        title="View UI (Raw)"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">UI (Raw)</span>
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }}
+                        className="p-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 transition-colors"
+                        title="View AI Optimized"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Short</span>
+                      
+                      <button
+                        onClick={() => {
+                          setSelectedAttachment({
+                            id: jdAttachment.id,
+                            filename: jdAttachment.filename,
+                            kind: jdAttachment.kind,
+                          });
+                          setVariantViewerOpen(true);
+                        }}
+                        className="p-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800 transition-colors"
+                        title="View Detailed"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Long</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
               
               {/* Intermediate Status Messages */}
               {(refreshing || analyzing) && (
