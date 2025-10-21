@@ -1217,7 +1217,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               const response = await fetch(`/api/jobs/${job.id}/analysis-data`);
               if (response.ok) {
                 const data = await response.json();
-                setAiData(data);
+                // MERGE new data with existing (don't replace everything!)
+                setAiData((prev: any) => ({
+                  ...prev,
+                  ...data,
+                  // Preserve existing data that might not be in API response
+                  companyEcosystem: data.companyEcosystem || prev?.companyEcosystem,
+                  companyIntelligence: data.companyIntelligence || prev?.companyIntelligence,
+                }));
               }
             }}
           />
