@@ -1173,30 +1173,32 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </span>
                   )}
                   
-                  {/* View Extraction Info Button */}
-                  <button
-                    onClick={() => {
-                      alert(
-                        'Data Extraction Process:\n\n' +
-                        '1. RAW: Extract text using local libraries (pdf-parse, mammoth)\n' +
-                        '   • Free and fast\n' +
-                        '   • UTF-8 plain text\n\n' +
-                        '2. NORMALIZED: AI cleanup and structuring\n' +
-                        '   • Remove formatting artifacts\n' +
-                        '   • Extract key sections\n' +
-                        '   • Token-optimized for analysis\n\n' +
-                        '3. DETAILED: Full AI extraction\n' +
-                        '   • Complete metadata\n' +
-                        '   • All skills, experience, requirements\n' +
-                        '   • Used for comprehensive analysis\n\n' +
-                        'Cost: ~$0.02 total for all 3 variants per document'
-                      );
-                    }}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="How extraction works"
-                  >
-                    <Eye size={16} className="text-gray-600 dark:text-gray-400" />
-                  </button>
+                  {/* View Extraction Prompts Dropdown */}
+                  <div className="relative group">
+                    <button
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      title="View extraction prompts"
+                    >
+                      <Eye size={16} className="text-gray-600 dark:text-gray-400" />
+                    </button>
+                    {/* Dropdown menu */}
+                    <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="p-2">
+                        <button
+                          onClick={() => window.open('/api/ai/prompts/view?kind=variant-extraction-resume&version=v1', '_blank')}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-700 dark:text-gray-300"
+                        >
+                          📄 Resume Extraction
+                        </button>
+                        <button
+                          onClick={() => window.open('/api/ai/prompts/view?kind=variant-extraction-jd&version=v1', '_blank')}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-700 dark:text-gray-300"
+                        >
+                          📋 JD Extraction
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   
                   {/* AI Analysis Button (Match Score style) */}
                   <button
