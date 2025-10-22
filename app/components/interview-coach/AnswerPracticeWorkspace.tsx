@@ -27,6 +27,14 @@ export default function AnswerPracticeWorkspace({
   interviewCoachState,
   setInterviewCoachState
 }: Props) {
+  // Debug logging
+  console.log('🎯 AnswerPracticeWorkspace Debug:', {
+    selectedQuestions,
+    selectedQuestionsLength: selectedQuestions?.length,
+    interviewCoachState: interviewCoachState ? 'loaded' : 'not loaded',
+    questionBankSynthesized: interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0
+  });
+
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(
     selectedQuestions[0] || null
   );
@@ -34,6 +42,18 @@ export default function AnswerPracticeWorkspace({
   const [scoring, setScoring] = useState(false);
   const [generatingAi, setGeneratingAi] = useState<Record<number, boolean>>({});
   const [testingImpact, setTestingImpact] = useState<Record<number, boolean>>({});
+
+  // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
+  useEffect(() => {
+    if (selectedQuestions.length === 0 && interviewCoachState?.questionBank?.synthesizedQuestions?.length > 0) {
+      console.log('🔄 Auto-populating selectedQuestions from synthesizedQuestions');
+      const updated = {
+        ...interviewCoachState,
+        selectedQuestions: interviewCoachState.questionBank.synthesizedQuestions
+      };
+      setInterviewCoachState(updated);
+    }
+  }, [selectedQuestions.length, interviewCoachState?.questionBank?.synthesizedQuestions, interviewCoachState, setInterviewCoachState]);
 
   const currentQuestionData = selectedQuestion 
     ? interviewCoachState.answers?.[selectedQuestion]
@@ -269,6 +289,28 @@ export default function AnswerPracticeWorkspace({
       setScoring(false);
     }
   };
+
+  if (!selectedQuestions || selectedQuestions.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+          No Questions Selected
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          You need to complete the Insights step first to generate interview questions.
+        </p>
+        <button 
+          onClick={() => setInterviewCoachState({
+            ...interviewCoachState,
+            currentStep: 'insights'
+          })}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+        >
+          Go to Insights
+        </button>
+      </div>
+    );
+  }
 
   if (!selectedQuestion) {
     return (
