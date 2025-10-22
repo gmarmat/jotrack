@@ -12,7 +12,7 @@
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach  
-**Last UI Update**: October 21, 2025 - Coach cards with value propositions, two-column layout, compact timeline, settings modal fix
+**Last UI Update**: October 21, 2025 - Coach cards with value propositions, two-column layout, compact timeline, settings modal fix, Interview Coach comprehensive fixes
 
 ### The Complete System (High-Level)
 
@@ -1231,6 +1231,81 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 - **Interview Coach**: "Ace interviews with real questions from Glassdoor, Reddit & Blind. AI scores answers, generates STAR talk tracks."
 - **Two-Column Layout**: Side-by-side display of both flagship features
 - **Eye-Catching Badges**: Score % (Resume Coach), Status icons (Locked/Ready/🎯)
+
+**2. Interview Coach Comprehensive Fixes (October 21, 2025)**
+
+**Critical Issues Resolved**:
+- **React Hooks Order Violation**: Fixed early returns placed between hooks causing "Rendered more hooks than during the previous render"
+- **Invalid Step Logic**: Fixed `currentStep` being set to `'select'` (non-existent component) causing blank screens
+- **Missing Fallback Protection**: Added step validation and fallback components for invalid states
+
+**Valid Interview Coach Steps**:
+```typescript
+const validSteps = ['welcome', 'insights', 'practice', 'talk-tracks', 'core-stories', 'prep'];
+```
+
+**Step Logic (CRITICAL)**:
+```typescript
+// ✅ CORRECT: Resume from saved step
+if (savedState.currentStep) {
+  setCurrentStep(savedState.currentStep);
+} else if (savedState.questionBank) {
+  setCurrentStep('insights'); // ✅ Fixed: was 'select' which doesn't exist
+}
+
+// ✅ PROTECTION: Ensure valid step
+if (!validSteps.includes(currentStep)) {
+  console.warn(`Invalid currentStep: ${currentStep}, defaulting to 'welcome'`);
+  setCurrentStep('welcome');
+}
+```
+
+**Component Mapping**:
+- `'welcome'` → `WelcomeSearch` component
+- `'insights'` → `SearchInsights` component  
+- `'practice'` → `AnswerPracticeWorkspace` component
+- `'talk-tracks'` → Talk tracks display
+- `'core-stories'` → `CoreStoriesDisplay` component
+- `'prep'` → `FinalCheatSheet` component
+
+**Fallback Protection**:
+- Invalid step → Shows "Step Not Found" with reset button
+- Console warnings for debugging
+- Auto-correction to valid steps
+
+**Rules of Hooks Compliance**:
+- ALL hooks declared BEFORE any conditional returns
+- Early returns only AFTER all hooks
+- No hooks between conditional returns
+
+**Troubleshooting Guide for Future Development**:
+
+**Common Interview Coach Issues**:
+1. **Blank Screen**: Check if `currentStep` is valid (`validSteps` array)
+2. **React Hooks Error**: Ensure no early returns between hooks
+3. **Step Not Found**: Add component case or fix step logic
+4. **Data Loading**: Check if `analysisData` and `jobData` are loaded
+
+**Debug Checklist**:
+```typescript
+// Check current step
+console.log('Current step:', currentStep);
+console.log('Valid steps:', validSteps);
+
+// Check data loading
+console.log('Job data loaded:', !!jobData);
+console.log('Analysis data loaded:', !!analysisData);
+
+// Check interview coach state
+console.log('Interview coach state:', interviewCoachState);
+```
+
+**Prevention Rules**:
+- ✅ Always validate `currentStep` against `validSteps`
+- ✅ Add fallback components for invalid states
+- ✅ Follow Rules of Hooks strictly
+- ✅ Test all step transitions
+- ✅ Add console warnings for debugging
 - **Compact Design**: Inline buttons, horizontal prerequisites, pill-style feature tags
 - **Three States**: Locked (shows prereqs), Waiting (prereqs met), Available (ready to use)
 - **Feature Tags**: Sub-features like "ATS-Optimized Resume", "Multi-Source Search", "AI Scoring (0-100)"
