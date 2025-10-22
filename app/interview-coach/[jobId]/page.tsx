@@ -109,7 +109,7 @@ export default function InterviewCoachPage() {
         if (savedState.currentStep) {
           setCurrentStep(savedState.currentStep);
         } else if (savedState.questionBank) {
-          setCurrentStep('select');
+          setCurrentStep('insights'); // Fixed: was 'select' which doesn't exist
         }
       }
     } catch (error) {
@@ -206,6 +206,13 @@ export default function InterviewCoachPage() {
         </div>
       </div>
     );
+  }
+
+  // Ensure we always have a valid step
+  const validSteps = ['welcome', 'insights', 'practice', 'talk-tracks', 'core-stories', 'prep'];
+  if (!validSteps.includes(currentStep)) {
+    console.warn(`Invalid currentStep: ${currentStep}, defaulting to 'welcome'`);
+    setCurrentStep('welcome');
   }
   
   // Breadcrumb
@@ -409,6 +416,24 @@ export default function InterviewCoachPage() {
             storyMapping={interviewCoachState.storyMapping || {}}
             onBack={() => setCurrentStep('core-stories')}
           />
+        )}
+        
+        {/* Fallback for any invalid step */}
+        {!['welcome', 'insights', 'practice', 'talk-tracks', 'core-stories', 'prep'].includes(currentStep) && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+              Step Not Found
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Current step: <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{currentStep}</code>
+            </p>
+            <button 
+              onClick={() => setCurrentStep('welcome')}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              Go to Welcome
+            </button>
+          </div>
         )}
       </div>
     </div>
