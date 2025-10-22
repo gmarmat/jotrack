@@ -1285,6 +1285,61 @@ const attachments = await db.select()
   ));
 ```
 
+### Pitfall 3: JD AI-Optimized Variant Display Issues
+**Problem**: Multiple AI-optimized variants exist, modal selects wrong one (structured JSON instead of readable text)
+
+**Root Cause**: `getVariant()` function selects first variant instead of one with `text` field
+
+**Solution**: Enhanced variant selection logic in `VariantViewerModal.tsx`:
+```typescript
+// ❌ WRONG (selects first variant)
+const getVariant = (type: string) => {
+  return variants.find(v => v.variantType === type);
+};
+
+// ✅ CORRECT (prefers variants with text field)
+const getVariant = (type: string) => {
+  const variantsOfType = variants.filter(v => v.variantType === type);
+  if (variantsOfType.length === 0) return undefined;
+  
+  // For ai_optimized, prefer variants with text field
+  if (type === 'ai_optimized') {
+    const withText = variantsOfType.find(v => v.content?.text && typeof v.content.text === 'string');
+    if (withText) return withText;
+  }
+  
+  // Fallback to most recent (highest createdAt)
+  return variantsOfType.sort((a, b) => b.createdAt - a.createdAt)[0];
+};
+```
+
+**Prevention**: Always check variant content structure before display
+
+### Pitfall 4: Interview Coach Function Naming Issues
+**Problem**: `ReferenceError: Can't find variable: handleSearch` in WelcomeSearch component
+
+**Root Cause**: Inconsistent function naming - `handleStartSearch()` vs `handleSearch()`
+
+**Solution**: Ensure consistent function naming across all Interview Coach components:
+```typescript
+// ✅ CORRECT (consistent naming)
+const handleStartSearch = async () => { /* ... */ };
+
+// In useEffect auto-trigger:
+useEffect(() => {
+  if (!existingQuestionBank && !autoTriggered && !searching) {
+    handleStartSearch(); // ✅ Use correct function name
+  }
+}, [existingQuestionBank, autoTriggered, searching]);
+
+// In restart button:
+onClick={() => {
+  handleStartSearch(); // ✅ Use correct function name
+}}
+```
+
+**Prevention**: Always use exact function names, avoid abbreviations
+
 ### Pitfall 3: Not Checking for AI-Optimized Variants
 ```typescript
 // ❌ WRONG (uses raw, costs 3x more tokens)

@@ -37,7 +37,7 @@ export default function WelcomeSearch({
     if (!existingQuestionBank && !autoTriggered && !searching) {
       console.log('🚀 Auto-triggering Interview Coach search...');
       setAutoTriggered(true);
-      handleSearch();
+      handleStartSearch();
     }
   }, [existingQuestionBank, autoTriggered, searching]);
 
