@@ -397,6 +397,35 @@ Before making ANY UI changes:
 - Locked State: Gray with dashed border (neutral, disabled)
 - Waiting State: Blue gradient with solid border (progress, almost ready)
 
+### Question Management (Interview Coach)
+
+#### Question Selection Checkboxes
+```css
+/* Selected question styling */
+.ring-2.ring-yellow-400
+
+/* Checkbox styling */
+.w-4.h-4.text-yellow-400.bg-white/20.border-white/30.rounded
+```
+
+#### Custom Question Badges
+```css
+/* Custom badge */
+.bg-purple-500.text-white.text-xs.rounded-full
+
+/* Category badge */
+.bg-blue-500.text-white.text-xs.rounded-full
+```
+
+#### Question Management Buttons
+```css
+/* Add Custom Question */
+.bg-yellow-400.text-purple-600.hover:bg-yellow-300
+
+/* Continue Button */
+.bg-white.text-purple-600.hover:bg-purple-50
+```
+
 ---
 
 **Last Updated**: 2025-10-21

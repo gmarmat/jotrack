@@ -106,12 +106,7 @@ export default function WelcomeSearch({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          personas: { 
-            [persona]: true,
-            'hiring-manager': persona === 'hiring-manager',
-            'peer': persona === 'peer',
-            'recruiter': persona === 'recruiter'
-          } 
+          persona: persona  // Fixed: API expects 'persona' not 'personas'
         })
       });
 
@@ -119,6 +114,16 @@ export default function WelcomeSearch({
       
       const generateData = await generateRes.json();
       setProgress({ step: 'Complete! Preparing questions...', percent: 100 });
+      
+      console.log('🔍 Generate Data Debug:', {
+        hasQuestions: !!generateData.questions,
+        hasThemes: !!generateData.themes,
+        hasSynthesizedQuestions: !!generateData.synthesizedQuestions,
+        themesLength: generateData.themes?.length || 0,
+        synthesizedLength: generateData.synthesizedQuestions?.length || 0,
+        questionsKeys: Object.keys(generateData.questions || {}),
+        fullGenerateData: generateData
+      });
       
       // Combine results
       const totalQuestions = (searchData.questions?.length || 0) + 
@@ -160,12 +165,14 @@ export default function WelcomeSearch({
             sampleQuestions: []
           }
         ],
-        synthesizedQuestions: generateData.synthesizedQuestions || [
-          'Tell me about yourself',
-          persona === 'recruiter' ? `Why ${companyName}?` : `What's your ${persona === 'hiring-manager' ? 'leadership' : 'collaboration'} style?`,
-          'Describe a challenging project or stakeholder conflict',
-          persona === 'recruiter' ? 'What are your salary expectations?' : 'How do you handle disagreements with team members?'
-        ]
+        synthesizedQuestions: generateData.synthesizedQuestions && generateData.synthesizedQuestions.length > 0 
+          ? generateData.synthesizedQuestions 
+          : [
+              'Tell me about yourself',
+              persona === 'recruiter' ? `Why ${companyName}?` : `What's your ${persona === 'hiring-manager' ? 'leadership' : 'collaboration'} style?`,
+              'Describe a challenging project or stakeholder conflict',
+              persona === 'recruiter' ? 'What are your salary expectations?' : 'How do you handle disagreements with team members?'
+            ]
       };
       
       // Transition to insights page (not immediate selection)

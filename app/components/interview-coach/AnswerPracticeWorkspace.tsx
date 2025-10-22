@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Wand2, TestTube, Check, Edit2, ArrowUp, ArrowDown, Minus, Send, Sparkles } from 'lucide-react';
-import StoryRehearsalMode from './StoryRehearsalMode';
 
 interface DiscoveryAnswer {
   question: string;
@@ -45,12 +44,6 @@ export default function AnswerPracticeWorkspace({
   const [scoring, setScoring] = useState(false);
   const [generatingAi, setGeneratingAi] = useState<Record<number, boolean>>({});
   const [testingImpact, setTestingImpact] = useState<Record<number, boolean>>({});
-  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
-  const [showDiscoveryQuestions, setShowDiscoveryQuestions] = useState<Record<string, boolean>>({});
-  const [realTimeFeedback, setRealTimeFeedback] = useState<string>('');
-  const [wordCount, setWordCount] = useState(0);
-  const [typingTimer, setTypingTimer] = useState<NodeJS.Timeout | null>(null);
-  const [showStoryRehearsal, setShowStoryRehearsal] = useState(false);
 
   // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
   useEffect(() => {
@@ -64,91 +57,6 @@ export default function AnswerPracticeWorkspace({
       setInterviewCoachState(updated);
     }
   }, [selectedQuestions.length, interviewCoachState?.questionBank?.synthesizedQuestions, interviewCoachState, setInterviewCoachState]);
-
-  // Enhanced error handling and fallback logic
-  useEffect(() => {
-    if (!interviewCoachState?.questionBank) {
-      console.warn('⚠️ No questionBank found in interviewCoachState');
-      return;
-    }
-
-    // Check for multiple question sources and prioritize
-    const availableQuestions = 
-      interviewCoachState.questionBank.synthesizedQuestions ||
-      interviewCoachState.questionBank.webQuestions ||
-      interviewCoachState.questionBank.aiQuestions?.recruiter?.questions ||
-      [];
-
-    if (availableQuestions.length > 0 && selectedQuestions.length === 0) {
-      console.log('🔄 Found available questions, auto-populating:', availableQuestions);
-      const updated = {
-        ...interviewCoachState,
-        selectedQuestions: availableQuestions
-      };
-      setInterviewCoachState(updated);
-    }
-  }, [interviewCoachState, selectedQuestions.length, setInterviewCoachState]);
-
-  // Real-time feedback logic
-  const generateRealTimeFeedback = (text: string) => {
-    const words = text.trim().split(/\s+/).filter(word => word.length > 0);
-    const wordCount = words.length;
-    setWordCount(wordCount);
-    
-    let feedback = '';
-    
-    if (wordCount === 0) {
-      feedback = 'Start writing your answer...';
-    } else if (wordCount < 50) {
-      feedback = '💡 Add more detail - aim for 150-300 words for a strong answer';
-    } else if (wordCount < 100) {
-      feedback = '📈 Good start! Add specific examples and metrics';
-    } else if (wordCount < 200) {
-      feedback = '✅ Good length! Make sure to include STAR structure';
-    } else if (wordCount < 300) {
-      feedback = '🎯 Excellent length! Review for clarity and impact';
-    } else {
-      feedback = '⚠️ Consider condensing - aim for 200-300 words';
-    }
-    
-    // Check for STAR structure
-    const hasSituation = /\b(situation|context|background|challenge|problem)\b/i.test(text);
-    const hasTask = /\b(task|goal|objective|responsibility|role)\b/i.test(text);
-    const hasAction = /\b(action|did|implemented|created|led|managed|developed)\b/i.test(text);
-    const hasResult = /\b(result|outcome|impact|improved|increased|reduced|achieved)\b/i.test(text);
-    
-    if (wordCount > 50) {
-      if (hasSituation && hasTask && hasAction && hasResult) {
-        feedback += ' | ✅ STAR structure detected!';
-      } else {
-        const missing = [];
-        if (!hasSituation) missing.push('Situation');
-        if (!hasTask) missing.push('Task');
-        if (!hasAction) missing.push('Action');
-        if (!hasResult) missing.push('Result');
-        feedback += ` | ⚠️ Add: ${missing.join(', ')}`;
-      }
-    }
-    
-    setRealTimeFeedback(feedback);
-  };
-
-  // Handle text changes with debounced feedback
-  const handleTextChange = (text: string) => {
-    setDraftAnswer(text);
-    
-    // Clear existing timer
-    if (typingTimer) {
-      clearTimeout(typingTimer);
-    }
-    
-    // Set new timer for real-time feedback
-    const timer = setTimeout(() => {
-      generateRealTimeFeedback(text);
-    }, 1000); // 1 second delay
-    
-    setTypingTimer(timer);
-  };
 
   const currentQuestionData = selectedQuestion 
     ? interviewCoachState.answers?.[selectedQuestion]
@@ -387,84 +295,40 @@ export default function AnswerPracticeWorkspace({
 
   if (!selectedQuestions || selectedQuestions.length === 0) {
     // Check if we have any questions in questionBank that we can use
-    const availableQuestions = interviewCoachState?.questionBank?.synthesizedQuestions || 
-                              interviewCoachState?.questionBank?.webQuestions || 
-                              [];
+    const availableQuestions = interviewCoachState?.questionBank?.synthesizedQuestions?.filter(q => q && (typeof q === 'string' || q.question)) || [];
     
     if (availableQuestions.length > 0) {
       console.log('🔄 Found available questions, auto-populating:', availableQuestions);
-      const updated = {
-        ...interviewCoachState,
+      // Auto-populate selectedQuestions from synthesizedQuestions
+      setInterviewCoachState(prev => ({
+        ...prev,
         selectedQuestions: availableQuestions
-      };
-      setInterviewCoachState(updated);
+      }));
       return null; // Let the component re-render with the new data
     }
     
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-        <div className="text-6xl mb-4">🤔</div>
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
           No Questions Selected
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {interviewCoachState?.questionBank ? 
-            'Questions are available but not loaded. Let\'s fix this!' : 
-            'You need to complete the Insights step first to generate interview questions.'
-          }
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          You need to complete the Insights step first to generate interview questions.
         </p>
-        
-        {interviewCoachState?.questionBank && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Auto-Recovery Available</h3>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-              We found questions in your data. Click below to auto-load them.
-            </p>
-            <button
-              onClick={() => {
-                const availableQuestions = 
-                  interviewCoachState.questionBank.synthesizedQuestions ||
-                  interviewCoachState.questionBank.webQuestions ||
-                  [];
-                if (availableQuestions.length > 0) {
-                  const updated = {
-                    ...interviewCoachState,
-                    selectedQuestions: availableQuestions
-                  };
-                  setInterviewCoachState(updated);
-                }
-              }}
-              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
-            >
-              🔄 Auto-Load Questions
-            </button>
-          </div>
-        )}
-        
         <div className="text-sm text-gray-500 mb-4">
-          <strong>Debug Info:</strong><br/>
-          questionBank exists: {interviewCoachState?.questionBank ? 'Yes' : 'No'}<br/>
+          Debug: questionBank exists: {interviewCoachState?.questionBank ? 'Yes' : 'No'}<br/>
           synthesizedQuestions: {interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0}<br/>
           webQuestions: {interviewCoachState?.questionBank?.webQuestions?.length || 0}
         </div>
-        
-        <div className="flex gap-3 justify-center">
-          <button 
-            onClick={() => setInterviewCoachState({
-              ...interviewCoachState,
-              currentStep: 'insights'
-            })}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Go to Insights
-          </button>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Refresh Page
-          </button>
-        </div>
+        <button 
+          onClick={() => setInterviewCoachState({
+            ...interviewCoachState,
+            currentStep: 'insights'
+          })}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+        >
+          Go to Insights
+        </button>
       </div>
     );
   }
@@ -559,7 +423,7 @@ export default function AnswerPracticeWorkspace({
 
           <textarea
             value={draftAnswer}
-            onChange={(e) => handleTextChange(e.target.value)}
+            onChange={(e) => setDraftAnswer(e.target.value)}
             placeholder={`Write your STAR story here (200-300 words):
 
 SITUATION: What was the context? (Company, team size, timeline)
@@ -577,20 +441,6 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:text-xs
                      focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
           />
-          
-          {/* Real-time feedback */}
-          {realTimeFeedback && (
-            <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-blue-700 dark:text-blue-300">
-                  {realTimeFeedback}
-                </div>
-                <div className="text-xs text-blue-600 dark:text-blue-400">
-                  {wordCount} words
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex gap-3 mt-4">
             <button
@@ -611,78 +461,33 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                 </>
               )}
             </button>
-            
-            <button
-              onClick={() => setShowStoryRehearsal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
-                       hover:bg-blue-700 transition-colors font-medium"
-            >
-              🎭 Practice Mode
-            </button>
           </div>
 
-          {/* Score Breakdown - Progressive Disclosure */}
+          {/* Score Breakdown */}
           {latestScore && (
             <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                  Score Breakdown
-                </h4>
-                <button
-                  onClick={() => setShowAdvancedFeatures(!showAdvancedFeatures)}
-                  className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-                >
-                  {showAdvancedFeatures ? 'Hide Details' : 'Show Details'}
-                </button>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                Score Breakdown
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>⭐ STAR Structure: {latestScore.breakdown?.star || 0}/25</div>
+                <div>📊 Specificity: {latestScore.breakdown?.specificity || 0}/25</div>
+                <div>🎯 Relevance: {latestScore.breakdown?.relevance || 0}/20</div>
+                <div>💬 Clarity: {latestScore.breakdown?.clarity || 0}/10</div>
               </div>
-              
-              {/* Basic Score Display */}
-              <div className="text-center mb-3">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {latestScore.overall}/100
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {latestScore.overall >= 80 ? 'Excellent!' : 
-                   latestScore.overall >= 60 ? 'Good, room for improvement' : 
-                   'Needs work'}
-                </div>
-              </div>
-              
-              {/* Detailed Breakdown - Progressive Disclosure */}
-              {showAdvancedFeatures && (
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>⭐ STAR Structure: {latestScore.breakdown?.star || 0}/25</div>
-                  <div>📊 Specificity: {latestScore.breakdown?.specificity || 0}/25</div>
-                  <div>🎯 Relevance: {latestScore.breakdown?.relevance || 0}/20</div>
-                  <div>💬 Clarity: {latestScore.breakdown?.clarity || 0}/10</div>
-                </div>
-              )}
             </div>
           )}
         </div>
 
-        {/* Section 2: Discovery Questions (Grid) - Progressive Disclosure */}
+        {/* Section 2: Discovery Questions (Grid) */}
         {latestScore && currentQuestionData.discoveryQuestions && (
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-md font-bold text-gray-900 dark:text-white">
-                💬 Discovery Questions ({Object.keys(currentQuestionData.discoveryAnswers || {}).length} remaining)
-              </h4>
-              <button
-                onClick={() => setShowDiscoveryQuestions(prev => ({
-                  ...prev,
-                  [selectedQuestion]: !prev[selectedQuestion]
-                }))}
-                className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-              >
-                {showDiscoveryQuestions[selectedQuestion] ? 'Hide Questions' : 'Show Questions'}
-              </button>
-            </div>
+            <h4 className="text-md font-bold text-gray-900 dark:text-white mb-3">
+              💬 Discovery Questions ({Object.keys(currentQuestionData.discoveryAnswers || {}).length} remaining)
+            </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Answer these to improve your score. These questions stay the same - no regeneration!
             </p>
-            
-            {showDiscoveryQuestions[selectedQuestion] && (
 
             {/* Discovery Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -858,27 +663,9 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                 )}
               </button>
             </div>
-            )}
           </div>
         )}
       </div>
-      
-      {/* Story Rehearsal Mode Modal */}
-      {showStoryRehearsal && (
-        <StoryRehearsalMode
-          stories={[
-            {
-              title: 'Current Answer',
-              category: 'Interview Response',
-              situation: draftAnswer.split('SITUATION:')[1]?.split('TASK:')[0]?.trim() || 'Your situation context',
-              task: draftAnswer.split('TASK:')[1]?.split('ACTION:')[0]?.trim() || 'Your task description',
-              action: draftAnswer.split('ACTION:')[1]?.split('RESULT:')[0]?.trim() || 'Your action steps',
-              result: draftAnswer.split('RESULT:')[1]?.trim() || 'Your results and outcomes'
-            }
-          ]}
-          onClose={() => setShowStoryRehearsal(false)}
-        />
-      )}
     </div>
   );
 }

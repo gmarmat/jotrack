@@ -1,0 +1,22 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Tell me about a time you led a team through a difficult project.",
+      "category": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q2", 
+      "text": "How would you design a scalable microservices architecture?",
+      "category": "technical",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q3",
+      "text": "Describe a situation where you had to work with a difficult stakeholder.",
+      "category": "situational", 
+      "difficulty": "medium"
+    }
+  ]
+}

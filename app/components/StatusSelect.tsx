@@ -56,9 +56,10 @@ export default function StatusSelect({ jobId, initialStatus, onStatusChange }: S
         disabled={isSaving}
         className="min-w-[140px] px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none"
         data-testid={`status-select-${jobId}`}
+        style={{ zIndex: 1000 }}
       >
         {ORDERED_STATUSES.map((key) => (
-          <option key={key} value={key}>
+          <option key={key} value={key} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
             {STATUS_LABELS[key]}
           </option>
         ))}

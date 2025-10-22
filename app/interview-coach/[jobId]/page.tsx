@@ -119,43 +119,7 @@ export default function InterviewCoachPage() {
     }
   };
   
-  // Smart auto-advance logic
-  const checkAndAdvanceStep = useCallback((newState: any) => {
-    // Auto-advance from Search to Insights when questions are found
-    if (currentStep === 'welcome' && newState.questionBank?.synthesizedQuestions?.length > 0) {
-      console.log('🚀 Auto-advancing from Search to Insights');
-      setTimeout(() => setCurrentStep('insights'), 2000); // Give user time to see completion
-    }
-    
-    // Auto-advance from Insights to Practice when questions are selected
-    if (currentStep === 'insights' && newState.selectedQuestions?.length > 0) {
-      console.log('🚀 Auto-advancing from Insights to Practice');
-      setTimeout(() => setCurrentStep('practice'), 1500);
-    }
-    
-    // Auto-advance from Practice to Talk Tracks when answers are scored
-    if (currentStep === 'practice' && newState.answers && Object.keys(newState.answers).length > 0) {
-      const hasScoredAnswers = Object.values(newState.answers).some((answer: any) => 
-        answer.scores && answer.scores.length > 0
-      );
-      if (hasScoredAnswers) {
-        console.log('🚀 Auto-advancing from Practice to Talk Tracks');
-        setTimeout(() => setCurrentStep('talk-tracks'), 2000);
-      }
-    }
-    
-    // Auto-advance from Talk Tracks to Core Stories when talk tracks are generated
-    if (currentStep === 'talk-tracks' && newState.talkTracks) {
-      console.log('🚀 Auto-advancing from Talk Tracks to Core Stories');
-      setTimeout(() => setCurrentStep('core-stories'), 1500);
-    }
-    
-    // Auto-advance from Core Stories to Cheat Sheet when stories are mapped
-    if (currentStep === 'core-stories' && newState.coreStories) {
-      console.log('🚀 Auto-advancing from Core Stories to Cheat Sheet');
-      setTimeout(() => setCurrentStep('prep'), 1500);
-    }
-  }, [currentStep]);
+  // Removed auto-advance logic - let users control their own flow
   
   // Auto-save Interview Coach state
   const debouncedSave = useCallback(
@@ -170,15 +134,14 @@ export default function InterviewCoachPage() {
           })
         });
         
-        // Check for auto-advancement opportunities
-        checkAndAdvanceStep(state);
+        // Auto-advance removed - users control their own flow
       } catch (error) {
         console.error('Auto-save failed:', error);
       } finally {
         setSaving(false);
       }
     }, 2000),
-    [jobId, checkAndAdvanceStep]
+    [jobId]
   );
   
   useEffect(() => {
@@ -204,24 +167,21 @@ export default function InterviewCoachPage() {
     setCurrentStep('insights');
   };
   
-  const handleInsightsComplete = () => {
-    // Auto-select the 4 synthesized questions (no user selection needed!)
-    const synthesizedQuestions = interviewCoachState.questionBank?.synthesizedQuestions || [];
-    
+  const handleInsightsComplete = (selectedQuestions: string[]) => {
     console.log('🎯 handleInsightsComplete Debug:', {
-      synthesizedQuestions,
-      synthesizedQuestionsLength: synthesizedQuestions.length,
+      selectedQuestions,
+      selectedQuestionsLength: selectedQuestions.length,
       questionBank: interviewCoachState.questionBank ? 'exists' : 'missing',
       currentInterviewCoachState: interviewCoachState
     });
     
     const updated = {
       ...interviewCoachState,
-      selectedQuestions: synthesizedQuestions,
+      selectedQuestions: selectedQuestions,
       currentStep: 'practice',
       progress: {
         ...interviewCoachState.progress,
-        questionsSelected: synthesizedQuestions.length
+        questionsSelected: selectedQuestions.length
       }
     };
     

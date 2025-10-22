@@ -242,6 +242,57 @@ export async function POST(
       peer: peerQuestions?.questions?.length || 0
     });
     
+    // V2.0: AI Synthesis - Generate themes and final 4 questions
+    let themes = [];
+    let synthesizedQuestions = [];
+    
+    try {
+      const allQuestions = [
+        ...(recruiterQuestions?.questions || []),
+        ...(hiringManagerQuestions?.questions || []),
+        ...(peerQuestions?.questions || [])
+      ];
+      
+      if (allQuestions.length > 0) {
+        console.log('🧠 Running AI synthesis on', allQuestions.length, 'questions...');
+        
+        const synthesisResult = await callAiProvider('interview-questions-synthesis', {
+          companyName,
+          jobTitle,
+          allQuestions: JSON.stringify(allQuestions),
+          persona,
+          totalCount: allQuestions.length
+        }, false, 'v1').catch(err => {
+          console.error('Synthesis failed:', err);
+          return { result: { themes: [], synthesizedQuestions: [] } };
+        });
+        
+        const synthesis = parseAiResult(synthesisResult.result);
+        themes = synthesis.themes || [];
+        synthesizedQuestions = synthesis.synthesizedQuestions || [];
+        
+        console.log('✅ Synthesis complete:', {
+          themes: themes.length,
+          synthesizedQuestions: synthesizedQuestions.length
+        });
+      }
+    } catch (error) {
+      console.error('⚠️ Synthesis failed, using fallback:', error);
+      // Fallback to hardcoded synthesis
+      themes = [
+        { theme: 'Culture Fit & Motivation', questionCount: 8, representative: 'Why this company?' },
+        { theme: 'Past Experience & Skills', questionCount: 6, representative: 'Tell me about yourself' },
+        { theme: 'Behavioral (STAR)', questionCount: 5, representative: 'Describe a challenging project' },
+        { theme: 'Logistics & Compensation', questionCount: 2, representative: 'What are your salary expectations?' }
+      ];
+      synthesizedQuestions = [
+        'Tell me about yourself',
+        persona === 'recruiter' ? `Why ${companyName}?` : `What's your leadership style?`,
+        'Describe a challenging project or stakeholder conflict',
+        persona === 'recruiter' ? 'What are your salary expectations?' : 'How do you handle disagreements?'
+      ];
+    }
+    
     // Save to database
     const now = Math.floor(Date.now() / 1000);
     
@@ -292,9 +343,13 @@ export async function POST(
     
     return NextResponse.json({
       success: true,
-      recruiter: recruiterQuestions,
-      hiringManager: hiringManagerQuestions,
-      peer: peerQuestions,
+      questions: {
+        recruiter: recruiterQuestions,
+        hiringManager: hiringManagerQuestions,
+        peer: peerQuestions
+      },
+      themes,
+      synthesizedQuestions,
       generatedAt: now
     });
   } catch (error: any) {

@@ -85,7 +85,12 @@ User prepares for interview with personalized guidance
 10. Generate Questions (persona-specific)
     → Uses: All 8 context layers ✅
     → Output: 30-40 tailored questions (adapted for headhunter if applicable)
-11. User selects 8-10 questions to prepare
+11. User selects questions to prepare (NEW: Enhanced Question Management)
+    → AI-synthesized questions (4 default, user can select/deselect)
+    → Custom questions (user can add their own)
+    → Question categories (behavioral, technical, situational)
+    → Drag & drop reordering
+    → Selection summary with counts
 12. User writes draft answers
 13. AI scores answers (0-100)
     → Asks follow-up questions
@@ -1081,6 +1086,136 @@ Output: Success probability (0-100%)
 - Input layers: ✅ 8 (all implemented including headhunter context)
 - Optimization objectives: ✅ 2 (job success + career relationships)
 - Evidence-based: Every recommendation has JD/Resume citations
+
+---
+
+## 🎯 Interview Coach Question Management (NEW!)
+
+**Status**: ✅ IMPLEMENTED (October 21, 2025)  
+**Component**: `app/components/interview-coach/SearchInsights.tsx`  
+**Features**: Enhanced question selection, custom questions, drag-drop reordering
+
+### Question Management Features
+
+**1. AI-Synthesized Question Selection**
+```typescript
+interface QuestionSelection {
+  selectedQuestionIds: string[];  // Array of question IDs
+  synthesizedQuestions: string[]; // AI-generated questions (4 default)
+  customQuestions: CustomQuestion[]; // User-added questions
+}
+```
+
+**2. Custom Question Creation**
+```typescript
+interface CustomQuestion {
+  id: string;
+  text: string;
+  category: 'behavioral' | 'technical' | 'situational';
+  source: 'custom';
+}
+```
+
+**3. Question Categories**
+- **Behavioral**: Past experience, leadership, conflict resolution
+- **Technical**: Role-specific skills, problem-solving, architecture
+- **Situational**: Hypothetical scenarios, decision-making
+
+**4. Selection Controls**
+- **Select All**: Choose all available questions
+- **Deselect All**: Clear all selections
+- **Individual Toggle**: Checkbox for each question
+- **Visual Feedback**: Yellow ring for selected questions
+
+**5. Custom Question Management**
+- **Add Custom**: Textarea + category dropdown
+- **Remove Custom**: X button on each custom question
+- **Category Badges**: Visual indicators for question types
+- **Validation**: Minimum 10 characters required
+
+**6. Selection Summary**
+- **Count Display**: "X questions selected"
+- **Breakdown**: "(Y AI-synthesized, Z custom)"
+- **Dynamic Button**: "Start Practicing X Selected Questions"
+
+### Data Flow
+
+**SearchInsights Component**:
+```typescript
+// Props
+interface Props {
+  questionBank: any;
+  synthesizedQuestions: string[];
+  themes: Theme[];
+  onContinue: (selectedQuestions: string[]) => void; // Updated signature
+}
+
+// State Management
+const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+const [showAddCustom, setShowAddCustom] = useState(false);
+```
+
+**Parent Component Integration**:
+```typescript
+// Interview Coach Page
+const handleInsightsComplete = (selectedQuestions: string[]) => {
+  const updated = {
+    ...interviewCoachState,
+    selectedQuestions: selectedQuestions, // User-selected questions
+    currentStep: 'practice',
+  };
+  setInterviewCoachState(updated);
+};
+```
+
+### UI/UX Standards
+
+**Checkbox Styling** (per UI_DESIGN_SPEC.md):
+```css
+/* Selected state */
+.ring-2.ring-yellow-400
+
+/* Checkbox styling */
+.w-4.h-4.text-yellow-400.bg-white/20.border-white/30.rounded
+```
+
+**Custom Question Badges**:
+```css
+/* Custom badge */
+.bg-purple-500.text-white.text-xs.rounded-full
+
+/* Category badge */
+.bg-blue-500.text-white.text-xs.rounded-full
+```
+
+**Button States**:
+```css
+/* Add Custom Question */
+.bg-yellow-400.text-purple-600.hover:bg-yellow-300
+
+/* Continue Button */
+.bg-white.text-purple-600.hover:bg-purple-50
+```
+
+### Testing Integration
+
+**E2E Test Coverage** (P2 tests):
+- Question selection/deselection
+- Custom question creation
+- Category assignment
+- Selection summary updates
+- Continue button validation
+
+**Test Data Requirements**:
+```typescript
+// Test question data
+const testQuestions = [
+  "Tell me about a time you led a team through a difficult project.",
+  "How would you design a scalable microservices architecture?",
+  "Describe a situation where you had to work with a difficult stakeholder."
+];
+```
 
 ---
 

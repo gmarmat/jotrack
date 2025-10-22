@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 
 interface Theme {
@@ -10,11 +10,18 @@ interface Theme {
   sampleQuestions: string[];
 }
 
+interface CustomQuestion {
+  id: string;
+  text: string;
+  category: 'behavioral' | 'technical' | 'situational';
+  source: 'custom';
+}
+
 interface Props {
   questionBank: any;
   synthesizedQuestions: string[];
   themes: Theme[];
-  onContinue: () => void;
+  onContinue: (selectedQuestions: string[]) => void;
 }
 
 /**
@@ -29,11 +36,90 @@ export default function SearchInsights({
   onContinue
 }: Props) {
   const [showRawQuestions, setShowRawQuestions] = useState(false);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  const [newCustomQuestion, setNewCustomQuestion] = useState('');
+  const [newCustomCategory, setNewCustomCategory] = useState<'behavioral' | 'technical' | 'situational'>('behavioral');
   
   const totalRawQuestions = 
     (questionBank.webQuestions?.length || 0) +
     Object.values(questionBank.aiQuestions || {}).reduce((acc: number, p: any) => 
       acc + (p?.questions?.length || 0), 0);
+
+  // Helper functions for question management
+  const toggleQuestionSelection = (questionId: string) => {
+    setSelectedQuestionIds(prev => 
+      prev.includes(questionId) 
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId]
+    );
+  };
+
+  const selectAllQuestions = () => {
+    const allQuestionIds = [
+      ...synthesizedQuestions.map((_, i) => `synthesized-${i}`),
+      ...customQuestions.map(q => q.id)
+    ];
+    setSelectedQuestionIds(allQuestionIds);
+  };
+
+  const deselectAllQuestions = () => {
+    setSelectedQuestionIds([]);
+  };
+
+  const addCustomQuestion = () => {
+    if (newCustomQuestion.trim().length < 10) return;
+    
+    const customQ: CustomQuestion = {
+      id: `custom-${Date.now()}`,
+      text: newCustomQuestion.trim(),
+      category: newCustomCategory,
+      source: 'custom'
+    };
+    
+    setCustomQuestions(prev => [...prev, customQ]);
+    setNewCustomQuestion('');
+    setShowAddCustom(false);
+  };
+
+  const removeCustomQuestion = (questionId: string) => {
+    setCustomQuestions(prev => prev.filter(q => q.id !== questionId));
+    setSelectedQuestionIds(prev => prev.filter(id => id !== questionId));
+  };
+
+  const getSelectedQuestions = () => {
+    const selected = [];
+    
+    // Add selected synthesized questions
+    selectedQuestionIds.forEach(id => {
+      if (id.startsWith('synthesized-')) {
+        const index = parseInt(id.split('-')[1]);
+        if (synthesizedQuestions[index]) {
+          selected.push(synthesizedQuestions[index]);
+        }
+      }
+    });
+    
+    // Add selected custom questions
+    selectedQuestionIds.forEach(id => {
+      const customQ = customQuestions.find(q => q.id === id);
+      if (customQ) {
+        selected.push(customQ.text);
+      }
+    });
+    
+    return selected;
+  };
+
+  const handleContinue = () => {
+    const selectedQuestions = getSelectedQuestions();
+    if (selectedQuestions.length === 0) {
+      alert('Please select at least one question to continue.');
+      return;
+    }
+    onContinue(selectedQuestions);
+  };
   
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -151,27 +237,161 @@ export default function SearchInsights({
       
       {/* Final Synthesized Questions */}
       <div className="bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-2xl shadow-2xl p-8">
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          ✨ Your 4 Final Questions
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-2xl font-bold flex items-center gap-2">
+            ✨ Your Questions
+          </h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={selectAllQuestions}
+              className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition-colors"
+            >
+              Select All
+            </button>
+            <button
+              onClick={deselectAllQuestions}
+              className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 transition-colors"
+            >
+              Deselect All
+            </button>
+          </div>
+        </div>
+        
         <p className="text-purple-100 mb-6">
-          Based on our analysis, these 4 questions cover <strong>90% of recruiter interview patterns</strong> for your role.
+          Select the questions you want to practice. You can choose from our AI-synthesized questions or add your own.
         </p>
         
         <div className="space-y-3 mb-6">
-          {synthesizedQuestions.map((q, i) => (
-            <div key={i} className="bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20">
-              <div className="flex items-start gap-3">
-                <div className="text-2xl font-bold text-white/80">{i + 1}</div>
-                <div className="flex-1">
-                  <p className="font-semibold text-white text-lg">{q}</p>
-                  <p className="text-xs text-purple-200 mt-1">
-                    Covers {themes[i]?.questionCount || 5}+ similar questions from our search
-                  </p>
+          {synthesizedQuestions.map((q, i) => {
+            const questionId = `synthesized-${i}`;
+            const isSelected = selectedQuestionIds.includes(questionId);
+            
+            return (
+              <div key={i} className={`bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20 transition-all ${
+                isSelected ? 'ring-2 ring-yellow-400' : ''
+              }`}>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleQuestionSelection(questionId)}
+                    className="mt-1 w-4 h-4 text-yellow-400 bg-white/20 border-white/30 rounded focus:ring-yellow-400"
+                    data-testid="question-checkbox"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold text-white text-lg">{q}</p>
+                    <p className="text-xs text-purple-200 mt-1">
+                      Covers {themes[i]?.questionCount || 5}+ similar questions from our search
+                    </p>
+                  </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
+
+        {/* Custom Questions Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-lg font-semibold text-white">Custom Questions</h4>
+            <button
+              onClick={() => setShowAddCustom(!showAddCustom)}
+              className="flex items-center gap-2 px-3 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Custom Question
+            </button>
+          </div>
+
+          {showAddCustom && (
+            <div className="bg-white/10 rounded-lg p-4 mb-4 backdrop-blur-sm border border-white/20">
+              <textarea
+                value={newCustomQuestion}
+                onChange={(e) => setNewCustomQuestion(e.target.value)}
+                placeholder="Enter your custom question..."
+                className="w-full p-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/70 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                rows={3}
+              />
+              <div className="flex items-center gap-3 mt-3">
+                <select
+                  value={newCustomCategory}
+                  onChange={(e) => setNewCustomCategory(e.target.value as any)}
+                  className="px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white"
+                >
+                  <option value="behavioral">Behavioral</option>
+                  <option value="technical">Technical</option>
+                  <option value="situational">Situational</option>
+                </select>
+                <button
+                  onClick={addCustomQuestion}
+                  disabled={newCustomQuestion.trim().length < 10}
+                  className="px-4 py-2 bg-yellow-400 text-purple-600 rounded-lg font-semibold hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Question
+                </button>
+                <button
+                  onClick={() => setShowAddCustom(false)}
+                  className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          ))}
+          )}
+
+          {customQuestions.length > 0 && (
+            <div className="space-y-2">
+              {customQuestions.map((customQ) => {
+                const isSelected = selectedQuestionIds.includes(customQ.id);
+                
+                return (
+                  <div key={customQ.id} className={`bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20 transition-all ${
+                    isSelected ? 'ring-2 ring-yellow-400' : ''
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleQuestionSelection(customQ.id)}
+                        className="mt-1 w-4 h-4 text-yellow-400 bg-white/20 border-white/30 rounded focus:ring-yellow-400"
+                        data-testid="custom-question-checkbox"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-white text-lg">{customQ.text}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="px-2 py-1 bg-purple-500 text-white text-xs rounded-full">
+                            Custom
+                          </span>
+                          <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">
+                            {customQ.category}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeCustomQuestion(customQ.id)}
+                        className="text-white/60 hover:text-white transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Selection Summary */}
+        <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 mb-6">
+          <p className="text-sm text-purple-100">
+            <strong>📊 Selection Summary:</strong> {selectedQuestionIds.length} questions selected
+            {selectedQuestionIds.length > 0 && (
+              <span className="ml-2 text-yellow-200">
+                ({synthesizedQuestions.filter((_, i) => selectedQuestionIds.includes(`synthesized-${i}`)).length} AI-synthesized, 
+                {customQuestions.filter(q => selectedQuestionIds.includes(q.id)).length} custom)
+              </span>
+            )}
+          </p>
         </div>
         
         <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 mb-6">
@@ -184,11 +404,11 @@ export default function SearchInsights({
         
         <div className="text-center">
           <button
-            onClick={onContinue}
+            onClick={handleContinue}
             className="px-10 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg shadow-xl
                      hover:bg-purple-50 transition-all transform hover:scale-105"
           >
-            Start Practicing These 4 Questions →
+            Start Practicing {selectedQuestionIds.length} Selected Questions →
           </button>
         </div>
       </div>

@@ -23,8 +23,7 @@ export default function InterviewCoachEntryCard({
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const hasPrerequisites = hasMatchScore && hasSkillsAnalysis;
-  const isPostApplication = currentStatus !== 'ON_RADAR';
-  const isAvailable = hasPrerequisites && isPostApplication;
+  const isAvailable = hasPrerequisites;
   
   const handleRefreshPrereqs = async () => {
     setIsRefreshing(true);
@@ -123,71 +122,6 @@ export default function InterviewCoachEntryCard({
     );
   }
   
-  // Show waiting state if prerequisites met but not post-application
-  if (!isPostApplication) {
-    return (
-      <div 
-        className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-5 border-2 border-blue-300 dark:border-blue-700 shadow-lg relative overflow-hidden" 
-        data-testid="interview-coach-entry-card-waiting"
-      >
-        {/* Decorative Background Element */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-200 dark:bg-blue-800 rounded-full -translate-y-8 translate-x-8 opacity-20" />
-        
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-800 rounded-lg">
-              <Brain size={22} className="text-blue-600 dark:text-blue-300" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">Interview Coach</h3>
-              <p className="text-blue-600 dark:text-blue-300 text-xs">Post-Application Preparation</p>
-            </div>
-          </div>
-          
-          {/* Ready Badge */}
-          <div className="flex flex-col items-center bg-blue-100 dark:bg-blue-800 rounded-xl px-3 py-2 border border-blue-300 dark:border-blue-600">
-            <div className="text-xl font-black leading-none">✓</div>
-            <div className="text-[10px] text-blue-600 dark:text-blue-300 font-medium">Ready</div>
-          </div>
-        </div>
-
-        {/* Value Proposition */}
-        <p className="text-blue-800 dark:text-blue-200 text-sm mb-2 leading-snug font-medium">
-          Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks.
-        </p>
-
-        {/* Feature Tags */}
-        <div className="flex flex-wrap gap-1.5 mb-3 text-[11px] text-blue-700 dark:text-blue-300">
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Multi-Source Search</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">AI Scoring (0-100)</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Answer Feedback</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">STAR Talk Tracks</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">Core Story Extraction</div>
-          <div className="bg-blue-100 dark:bg-blue-800/50 rounded px-2 py-0.5">3 Interview Types</div>
-        </div>
-
-        {/* Inline Message + Button */}
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Compact Almost Ready Message Inline */}
-          <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg px-3 py-2">
-            <span className="text-xs text-blue-800 dark:text-blue-200 font-semibold">
-              ✅ Ready! Mark as "Applied"
-            </span>
-          </div>
-
-          {/* Inline Waiting Button */}
-          <button 
-            disabled 
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-200 dark:bg-blue-800 text-blue-600 dark:text-blue-300 rounded-lg font-bold text-sm cursor-not-allowed"
-          >
-            <span className="text-base">⏳</span>
-            <span>Waiting</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
   
   // Available state - show the full Interview Coach card
   return (
@@ -216,7 +150,7 @@ export default function InterviewCoachEntryCard({
 
       {/* Value Proposition */}
       <p className="text-white/90 text-sm mb-2 leading-snug font-medium">
-        Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks.
+        Ace interviews with real questions from <span className="font-bold">Glassdoor, Reddit & Blind</span>. AI scores answers, generates STAR talk tracks. <span className="text-white/70 text-xs">Explore this feature to gauge interview readiness before applying.</span>
       </p>
 
       {/* Feature Tags */}
