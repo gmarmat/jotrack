@@ -119,6 +119,44 @@ export default function InterviewCoachPage() {
     }
   };
   
+  // Smart auto-advance logic
+  const checkAndAdvanceStep = useCallback((newState: any) => {
+    // Auto-advance from Search to Insights when questions are found
+    if (currentStep === 'welcome' && newState.questionBank?.synthesizedQuestions?.length > 0) {
+      console.log('🚀 Auto-advancing from Search to Insights');
+      setTimeout(() => setCurrentStep('insights'), 2000); // Give user time to see completion
+    }
+    
+    // Auto-advance from Insights to Practice when questions are selected
+    if (currentStep === 'insights' && newState.selectedQuestions?.length > 0) {
+      console.log('🚀 Auto-advancing from Insights to Practice');
+      setTimeout(() => setCurrentStep('practice'), 1500);
+    }
+    
+    // Auto-advance from Practice to Talk Tracks when answers are scored
+    if (currentStep === 'practice' && newState.answers && Object.keys(newState.answers).length > 0) {
+      const hasScoredAnswers = Object.values(newState.answers).some((answer: any) => 
+        answer.scores && answer.scores.length > 0
+      );
+      if (hasScoredAnswers) {
+        console.log('🚀 Auto-advancing from Practice to Talk Tracks');
+        setTimeout(() => setCurrentStep('talk-tracks'), 2000);
+      }
+    }
+    
+    // Auto-advance from Talk Tracks to Core Stories when talk tracks are generated
+    if (currentStep === 'talk-tracks' && newState.talkTracks) {
+      console.log('🚀 Auto-advancing from Talk Tracks to Core Stories');
+      setTimeout(() => setCurrentStep('core-stories'), 1500);
+    }
+    
+    // Auto-advance from Core Stories to Cheat Sheet when stories are mapped
+    if (currentStep === 'core-stories' && newState.coreStories) {
+      console.log('🚀 Auto-advancing from Core Stories to Cheat Sheet');
+      setTimeout(() => setCurrentStep('prep'), 1500);
+    }
+  }, [currentStep]);
+  
   // Auto-save Interview Coach state
   const debouncedSave = useCallback(
     debounce(async (state: any) => {
@@ -131,13 +169,16 @@ export default function InterviewCoachPage() {
             interviewCoachJson: JSON.stringify(state)
           })
         });
+        
+        // Check for auto-advancement opportunities
+        checkAndAdvanceStep(state);
       } catch (error) {
         console.error('Auto-save failed:', error);
       } finally {
         setSaving(false);
       }
     }, 2000),
-    [jobId]
+    [jobId, checkAndAdvanceStep]
   );
   
   useEffect(() => {
@@ -228,14 +269,52 @@ export default function InterviewCoachPage() {
     setCurrentStep('welcome');
   }
   
-  // Breadcrumb
+  // Enhanced breadcrumb with progress indicators
   const steps = [
-    { id: 'welcome', label: 'Search', icon: '🔍' },
-    { id: 'insights', label: 'Insights', icon: '🤖', count: interviewCoachState.questionBank?.synthesizedQuestions?.length },
-    { id: 'practice', label: 'Practice', icon: '📝', count: interviewCoachState.selectedQuestions.length },
-    { id: 'talk-tracks', label: 'Talk Tracks', icon: '✨' },
-    { id: 'core-stories', label: 'Core Stories', icon: '🧠' },
-    { id: 'prep', label: 'Cheat Sheet', icon: '📄' }
+    { 
+      id: 'welcome', 
+      label: 'Search', 
+      icon: '🔍', 
+      status: interviewCoachState.questionBank ? 'completed' : (currentStep === 'welcome' ? 'active' : 'pending'),
+      description: 'Find interview questions'
+    },
+    { 
+      id: 'insights', 
+      label: 'Insights', 
+      icon: '🤖', 
+      count: interviewCoachState.questionBank?.synthesizedQuestions?.length,
+      status: interviewCoachState.questionBank?.synthesizedQuestions?.length > 0 ? 'completed' : (currentStep === 'insights' ? 'active' : 'pending'),
+      description: 'AI analysis & filtering'
+    },
+    { 
+      id: 'practice', 
+      label: 'Practice', 
+      icon: '📝', 
+      count: interviewCoachState.selectedQuestions?.length || 0,
+      status: interviewCoachState.answers && Object.keys(interviewCoachState.answers).length > 0 ? 'completed' : (currentStep === 'practice' ? 'active' : 'pending'),
+      description: 'Write & score answers'
+    },
+    { 
+      id: 'talk-tracks', 
+      label: 'Talk Tracks', 
+      icon: '✨',
+      status: interviewCoachState.talkTracks ? 'completed' : (currentStep === 'talk-tracks' ? 'active' : 'pending'),
+      description: 'STAR format stories'
+    },
+    { 
+      id: 'core-stories', 
+      label: 'Core Stories', 
+      icon: '🧠',
+      status: interviewCoachState.coreStories ? 'completed' : (currentStep === 'core-stories' ? 'active' : 'pending'),
+      description: 'Story mapping'
+    },
+    { 
+      id: 'prep', 
+      label: 'Cheat Sheet', 
+      icon: '📄',
+      status: interviewCoachState.cheatSheet ? 'completed' : (currentStep === 'prep' ? 'active' : 'pending'),
+      description: 'Final prep guide'
+    }
   ];
   
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
@@ -272,14 +351,15 @@ export default function InterviewCoachPage() {
           <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-2">
             {steps.map((step, index) => {
               const isActive = step.id === currentStep;
-              const isCompleted = index < currentStepIndex;
-              const isAccessible = index <= currentStepIndex;
+              const isCompleted = step.status === 'completed';
+              const isAccessible = index <= currentStepIndex || isCompleted;
               
               return (
                 <div key={step.id} className="flex items-center">
                   <button
                     onClick={() => isAccessible && setCurrentStep(step.id as InterviewStep)}
                     disabled={!isAccessible}
+                    title={step.description}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
                       isActive
                         ? 'bg-white text-purple-600 shadow-lg'

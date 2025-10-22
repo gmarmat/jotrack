@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Sparkles, Check, Clock } from 'lucide-react';
 
 interface Props {
@@ -22,6 +22,7 @@ export default function WelcomeSearch({
 }: Props) {
   const [searching, setSearching] = useState(false);
   const [progress, setProgress] = useState({ step: '', percent: 0 });
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
   const personaTitles = {
     'recruiter': { icon: '📞', title: 'Recruiter Screen', focus: 'Culture Fit & Motivation' },
@@ -30,6 +31,15 @@ export default function WelcomeSearch({
   };
 
   const currentPersona = personaTitles[persona];
+
+  // Auto-trigger search if no existing question bank
+  useEffect(() => {
+    if (!existingQuestionBank && !autoTriggered && !searching) {
+      console.log('🚀 Auto-triggering Interview Coach search...');
+      setAutoTriggered(true);
+      handleSearch();
+    }
+  }, [existingQuestionBank, autoTriggered, searching]);
 
   // If questions already searched, show completion state
   if (existingQuestionBank) {
@@ -236,18 +246,34 @@ export default function WelcomeSearch({
 
             {/* Call to action */}
             <div className="text-center">
-              <button
-                onClick={handleStartSearch}
-                className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
-                         hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
-                         transform hover:scale-105"
-              >
-                <Search className="inline w-5 h-5 mr-2" />
-                Find Interview Questions
-              </button>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
-              </p>
+              {!autoTriggered ? (
+                <>
+                  <button
+                    onClick={handleStartSearch}
+                    className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
+                             hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
+                             transform hover:scale-105"
+                  >
+                    <Search className="inline w-5 h-5 mr-2" />
+                    Find Interview Questions
+                  </button>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
+                    ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-purple-100 to-blue-100 
+                                   dark:from-purple-900/50 dark:to-blue-900/50 text-purple-700 dark:text-purple-300 
+                                   font-bold text-lg rounded-xl border border-purple-200 dark:border-purple-700">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                    Auto-searching...
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
+                    🚀 Automatically finding the best questions for you
+                  </p>
+                </>
+              )}
             </div>
           </>
         ) : (
