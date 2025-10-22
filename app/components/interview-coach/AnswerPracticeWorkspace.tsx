@@ -696,4 +696,3 @@ function generatePlaceholder(question: string): string {
   
   return "e.g., 'Be specific with names, numbers, and concrete details (20-50 words)'";
 }
-}
