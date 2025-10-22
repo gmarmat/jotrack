@@ -193,6 +193,47 @@ export default function InterviewCoachPage() {
     setInterviewCoachState(updated);
     setCurrentStep('practice');
   };
+
+  const handleRestartInterviewCoach = async () => {
+    if (!confirm('Are you sure you want to restart the Interview Coach analysis? This will clear all current progress and start fresh.')) {
+      return;
+    }
+    
+    try {
+      // Clear the interview coach state
+      const resetState = {
+        persona,
+        currentStep: 'welcome',
+        progress: {
+          questionsFound: 0,
+          questionsSelected: 0,
+          answersScored: 0,
+          storiesExtracted: 0
+        },
+        questionBank: null,
+        selectedQuestions: [],
+        answers: {},
+        talkTracks: null,
+        coreStories: null,
+        cheatSheet: null
+      };
+      
+      setInterviewCoachState(resetState);
+      setCurrentStep('welcome');
+      
+      // Save the reset state to database
+      await fetch(`/api/coach/${jobId}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interviewCoachState: resetState })
+      });
+      
+      console.log('🔄 Interview Coach restarted successfully');
+    } catch (error) {
+      console.error('❌ Failed to restart Interview Coach:', error);
+      alert('Failed to restart Interview Coach. Please try again.');
+    }
+  };
   
   // Show loading state (AFTER all hooks)
   if (loading) {
@@ -299,12 +340,23 @@ export default function InterviewCoachPage() {
               </div>
             </div>
             
-            {saving && (
-              <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span className="text-sm">Saving...</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRestartInterviewCoach}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+                title="Restart Interview Coach analysis"
+              >
+                <span>🔄</span>
+                <span>Restart Analysis</span>
+              </button>
+              
+              {saving && (
+                <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span className="text-sm">Saving...</span>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Breadcrumb */}

@@ -68,13 +68,29 @@ export default function WelcomeSearch({
               </div>
             </div>
 
-            <button
-              onClick={() => onSearchComplete(existingQuestionBank)}
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
-                       hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
-            >
-              Continue to Question Selection →
-            </button>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => onSearchComplete(existingQuestionBank)}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
+                         hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
+              >
+                Continue to Question Selection →
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (confirm('Restart search with fresh data? This will clear cached results and search again.')) {
+                    setSearching(true);
+                    setProgress({ step: 'Starting fresh search...', percent: 0 });
+                    triggerSearch();
+                  }
+                }}
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg
+                         hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold"
+              >
+                🔄 Restart Search
+              </button>
+            </div>
           </div>
         </div>
       </div>
