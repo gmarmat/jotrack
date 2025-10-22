@@ -167,6 +167,13 @@ export default function InterviewCoachPage() {
     // Auto-select the 4 synthesized questions (no user selection needed!)
     const synthesizedQuestions = interviewCoachState.questionBank?.synthesizedQuestions || [];
     
+    console.log('🎯 handleInsightsComplete Debug:', {
+      synthesizedQuestions,
+      synthesizedQuestionsLength: synthesizedQuestions.length,
+      questionBank: interviewCoachState.questionBank ? 'exists' : 'missing',
+      currentInterviewCoachState: interviewCoachState
+    });
+    
     const updated = {
       ...interviewCoachState,
       selectedQuestions: synthesizedQuestions,
@@ -176,6 +183,12 @@ export default function InterviewCoachPage() {
         questionsSelected: synthesizedQuestions.length
       }
     };
+    
+    console.log('🎯 Updated state:', {
+      selectedQuestions: updated.selectedQuestions,
+      selectedQuestionsLength: updated.selectedQuestions.length
+    });
+    
     setInterviewCoachState(updated);
     setCurrentStep('practice');
   };

@@ -47,6 +47,7 @@ export default function AnswerPracticeWorkspace({
   useEffect(() => {
     if (selectedQuestions.length === 0 && interviewCoachState?.questionBank?.synthesizedQuestions?.length > 0) {
       console.log('🔄 Auto-populating selectedQuestions from synthesizedQuestions');
+      console.log('🔄 Available synthesizedQuestions:', interviewCoachState.questionBank.synthesizedQuestions);
       const updated = {
         ...interviewCoachState,
         selectedQuestions: interviewCoachState.questionBank.synthesizedQuestions
@@ -291,6 +292,21 @@ export default function AnswerPracticeWorkspace({
   };
 
   if (!selectedQuestions || selectedQuestions.length === 0) {
+    // Check if we have any questions in questionBank that we can use
+    const availableQuestions = interviewCoachState?.questionBank?.synthesizedQuestions || 
+                              interviewCoachState?.questionBank?.webQuestions || 
+                              [];
+    
+    if (availableQuestions.length > 0) {
+      console.log('🔄 Found available questions, auto-populating:', availableQuestions);
+      const updated = {
+        ...interviewCoachState,
+        selectedQuestions: availableQuestions
+      };
+      setInterviewCoachState(updated);
+      return null; // Let the component re-render with the new data
+    }
+    
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
@@ -299,6 +315,11 @@ export default function AnswerPracticeWorkspace({
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           You need to complete the Insights step first to generate interview questions.
         </p>
+        <div className="text-sm text-gray-500 mb-4">
+          Debug: questionBank exists: {interviewCoachState?.questionBank ? 'Yes' : 'No'}<br/>
+          synthesizedQuestions: {interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0}<br/>
+          webQuestions: {interviewCoachState?.questionBank?.webQuestions?.length || 0}
+        </div>
         <button 
           onClick={() => setInterviewCoachState({
             ...interviewCoachState,
