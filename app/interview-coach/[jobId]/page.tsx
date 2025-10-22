@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowLeft, Check } from 'lucide-react';
 import WelcomeSearch from '@/app/components/interview-coach/WelcomeSearch';
 import SearchInsights from '@/app/components/interview-coach/SearchInsights';
 import AnswerPracticeWorkspace from '@/app/components/interview-coach/AnswerPracticeWorkspace';
@@ -66,6 +66,7 @@ export default function InterviewCoachPage() {
   });
   
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   // Load job data and Interview Coach state
   useEffect(() => {
@@ -79,11 +80,21 @@ export default function InterviewCoachPage() {
       const job = await jobRes.json();
       setJobData(job);
       
+      console.log('📊 Interview Coach - Loading analysis data...');
+      
       // Load analysis data (for confidence scoring)
       const analysisRes = await fetch(`/api/jobs/${jobId}/analysis-data`);
       if (analysisRes.ok) {
         const analysis = await analysisRes.json();
+        console.log('✅ Analysis data loaded:', {
+          hasMatchScore: !!analysis.matchScoreData,
+          hasSkillsMatch: !!analysis.matchScoreData?.skillsMatch,
+          skillsMatchType: typeof analysis.matchScoreData?.skillsMatch,
+          hasPeopleProfiles: !!analysis.peopleProfiles
+        });
         setAnalysisData(analysis);
+      } else {
+        console.error('❌ Failed to load analysis data:', analysisRes.status);
       }
       
       // Load Interview Coach state
@@ -102,9 +113,39 @@ export default function InterviewCoachPage() {
         }
       }
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error('❌ Failed to load Interview Coach data:', error);
+    } finally {
+      setLoading(false);
     }
   };
+  
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-lg">Loading Interview Coach...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error if no job data
+  if (!jobData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <p className="text-lg mb-4">Failed to load job data</p>
+          <Link href={`/jobs/${jobId}`}>
+            <button className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold">
+              Go Back
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
   
   // Auto-save Interview Coach state
   const debouncedSave = useCallback(
