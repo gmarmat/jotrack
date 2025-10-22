@@ -119,34 +119,6 @@ export default function InterviewCoachPage() {
     }
   };
   
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-lg">Loading Interview Coach...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Show error if no job data
-  if (!jobData) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-        <div className="text-white text-center">
-          <p className="text-lg mb-4">Failed to load job data</p>
-          <Link href={`/jobs/${jobId}`}>
-            <button className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold">
-              Go Back
-            </button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-  
   // Auto-save Interview Coach state
   const debouncedSave = useCallback(
     debounce(async (state: any) => {
@@ -208,8 +180,32 @@ export default function InterviewCoachPage() {
     setCurrentStep('practice');
   };
   
+  // Show loading state (AFTER all hooks)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-lg">Loading Interview Coach...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error if no job data (AFTER all hooks)
   if (!jobData) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+        <div className="text-white text-center">
+          <p className="text-lg mb-4">Failed to load job data</p>
+          <Link href={`/jobs/${jobId}`}>
+            <button className="px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold">
+              Go Back
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
   }
   
   // Breadcrumb
