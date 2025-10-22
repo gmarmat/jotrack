@@ -35,9 +35,11 @@ export default function AnswerPracticeWorkspace({
     questionBankSynthesized: interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0
   });
 
-  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(
-    selectedQuestions[0] || null
-  );
+  const [selectedQuestion, setSelectedQuestion] = useState<string | null>(() => {
+    if (selectedQuestions.length === 0) return null;
+    const firstQuestion = selectedQuestions[0];
+    return typeof firstQuestion === 'string' ? firstQuestion : firstQuestion?.question || null;
+  });
   const [draftAnswer, setDraftAnswer] = useState('');
   const [scoring, setScoring] = useState(false);
   const [generatingAi, setGeneratingAi] = useState<Record<number, boolean>>({});
@@ -349,16 +351,20 @@ export default function AnswerPracticeWorkspace({
           Selected Questions ({selectedQuestions.length})
         </h3>
         <div className="space-y-3">
-          {selectedQuestions.map((qId) => {
-            const qData = interviewCoachState.answers?.[qId];
+          {selectedQuestions.map((questionObj, index) => {
+            // Handle both object format {question, source, url, category} and string format
+            const questionText = typeof questionObj === 'string' ? questionObj : questionObj?.question || `Question ${index + 1}`;
+            const questionId = typeof questionObj === 'string' ? questionObj : questionObj?.question || `question-${index}`;
+            
+            const qData = interviewCoachState.answers?.[questionId];
             const qScore = qData?.scores?.[qData.scores.length - 1]?.overall || 0;
             const hasScore = qScore > 0;
-            const isActive = qId === selectedQuestion;
+            const isActive = questionId === selectedQuestion;
             
             return (
               <button
-                key={qId}
-                onClick={() => setSelectedQuestion(qId)}
+                key={questionId}
+                onClick={() => setSelectedQuestion(questionId)}
                 className={`w-full text-left p-3 rounded-lg transition-all ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 ring-2 ring-purple-500'
@@ -371,7 +377,7 @@ export default function AnswerPracticeWorkspace({
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {qId}
+                      {questionText}
                     </p>
                     {hasScore && (
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
@@ -392,7 +398,13 @@ export default function AnswerPracticeWorkspace({
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              {selectedQuestion}
+              {(() => {
+                // Find the question text from selectedQuestions array
+                const questionObj = selectedQuestions.find(q => 
+                  (typeof q === 'string' ? q : q?.question) === selectedQuestion
+                );
+                return typeof questionObj === 'string' ? questionObj : questionObj?.question || selectedQuestion;
+              })()}
             </h3>
             {latestScore && (
               <div className="flex items-center gap-2">
