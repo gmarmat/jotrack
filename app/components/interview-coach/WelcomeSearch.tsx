@@ -82,7 +82,7 @@ export default function WelcomeSearch({
                   if (confirm('Restart search with fresh data? This will clear cached results and search again.')) {
                     setSearching(true);
                     setProgress({ step: 'Starting fresh search...', percent: 0 });
-                    triggerSearch();
+                    handleStartSearch();
                   }
                 }}
                 className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg

@@ -69,7 +69,17 @@ export default function VariantViewerModal({
   };
 
   const getVariant = (type: string) => {
-    return variants.find(v => v.variantType === type);
+    const variantsOfType = variants.filter(v => v.variantType === type);
+    if (variantsOfType.length === 0) return undefined;
+    
+    // For ai_optimized, prefer variants with text field
+    if (type === 'ai_optimized') {
+      const withText = variantsOfType.find(v => v.content?.text && typeof v.content.text === 'string');
+      if (withText) return withText;
+    }
+    
+    // Fallback to most recent (highest createdAt)
+    return variantsOfType.sort((a, b) => b.createdAt - a.createdAt)[0];
   };
 
   const formatContent = (variant: Variant | undefined) => {
