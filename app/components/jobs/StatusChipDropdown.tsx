@@ -18,7 +18,9 @@ export default function StatusChipDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<JobStatus | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -44,6 +46,17 @@ export default function StatusChipDropdown({
       return;
     }
     setSelectedStatus(status);
+  };
+
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX
+      });
+    }
+    setIsOpen(!isOpen);
   };
 
   const handleConfirm = async () => {
@@ -76,15 +89,16 @@ export default function StatusChipDropdown({
   };
 
   return (
-    <div className="relative" ref={dropdownRef} data-testid="status-chip-dropdown">
+    <div className="relative" data-testid="status-chip-dropdown">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         data-testid="status-chip-trigger"
       >
         <StatusBadge status={currentStatus} />
         <svg 
-          className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -94,9 +108,13 @@ export default function StatusChipDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div 
+          ref={dropdownRef}
+          className="fixed w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] max-h-[400px] overflow-y-auto"
+          style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+        >
           <div className="p-2">
-            <div className="text-xs font-semibold text-gray-500 mb-2 px-2">
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-2">
               Change Status
             </div>
             
@@ -108,10 +126,10 @@ export default function StatusChipDropdown({
                   disabled={isSaving}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
                     status === currentStatus
-                      ? 'bg-blue-50 text-blue-700 font-medium'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
                       : selectedStatus === status
-                      ? 'bg-green-50 text-green-700'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                   } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                   data-testid={`status-option-${status}`}
                 >
@@ -128,7 +146,7 @@ export default function StatusChipDropdown({
                       type="checkbox"
                       checked
                       readOnly
-                      className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                      className="w-4 h-4 text-green-600 dark:text-green-400 rounded focus:ring-green-500 dark:focus:ring-green-400"
                       data-testid={`status-checkbox-${status}`}
                     />
                   )}
@@ -137,11 +155,11 @@ export default function StatusChipDropdown({
             </div>
 
             {selectedStatus && selectedStatus !== currentStatus && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleConfirm}
                   disabled={isSaving}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   data-testid="confirm-status-change"
                 >
                   {isSaving ? (

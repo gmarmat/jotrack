@@ -19,7 +19,7 @@ interface CollapsibleHorizontalTimelineProps {
   currentStatusEnteredAt?: number;
   jdAttachmentId?: string | null;
   onViewJd?: () => void;
-  // Job info for compact view
+  // Job info for collapsed view
   jobTitle?: string;
   companyName?: string;
 }
@@ -137,21 +137,21 @@ export default function CollapsibleHorizontalTimeline({
             </span>
           </div>
 
-          {/* Center: Job Title & Company */}
-          <div className="flex-1 flex flex-col items-center justify-center mx-4 min-w-0">
-            {jobTitle && (
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-xs">
-                {jobTitle}
-              </h2>
-            )}
-            {companyName && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-xs">
-                {companyName}
-              </p>
-            )}
-          </div>
+          {/* Center: Job Title + Company (NEW!) */}
+          {(jobTitle || companyName) && (
+            <div className="flex-1 text-center px-4">
+              <div className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                {jobTitle || 'Untitled'}
+              </div>
+              {companyName && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                  {companyName}
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* Right: Compact Dates & Actions */}
+          {/* Right: Header Actions */}
           <div className="flex items-center gap-2">
             {/* Quick Actions */}
             <div className="flex items-center gap-1">
@@ -181,32 +181,33 @@ export default function CollapsibleHorizontalTimeline({
             {/* Divider */}
             <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
 
-            {/* Compact Metadata - Stacked Dates */}
-            <div className="flex flex-col items-end text-xs text-gray-600 dark:text-gray-400">
+            {/* Metadata (Vertical Stack for Compact Layout) */}
+            <div className="flex flex-col items-end gap-0.5 text-[10px] leading-tight">
               {createdAt && (
-                <div className="text-right">
-                  <span className="font-medium">Created: {formatDateTime(createdAt)}</span>
-                </div>
+                <span className="text-gray-600 dark:text-gray-400 font-medium">
+                  {formatDateTime(createdAt)}
+                </span>
               )}
-              {updatedAt && (
-                <div className="text-right">
-                  <span className="font-medium">Updated: {formatDateTime(updatedAt)}</span>
-                </div>
-              )}
-              
-              {/* Delta Chip */}
-              {delta && (
-                <div 
-                  className={`px-2 py-0.5 rounded-full font-semibold text-xs mt-1 ${
-                    delta.isStale
-                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                  }`}
-                  title={`In current status for ${delta.days} days`}
-                >
-                  {delta.label}
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                {updatedAt && (
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
+                    {formatDateTime(updatedAt)}
+                  </span>
+                )}
+                {/* Delta Chip */}
+                {delta && (
+                  <div 
+                    className={`px-1.5 py-0.5 rounded-full font-semibold text-[9px] ${
+                      delta.isStale
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                    }`}
+                    title={`In current status for ${delta.days} days`}
+                  >
+                    {delta.label}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Divider */}

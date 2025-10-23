@@ -14,6 +14,7 @@ import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
+import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
@@ -74,6 +75,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
     kind: string;
   } | null>(null);
   const [attachmentsList, setAttachmentsList] = useState<any[]>([]);
+  
+  // Quick preview state for eye icons
+  const [viewingAttachment, setViewingAttachment] = useState<{
+    id: string;
+    filename: string;
+    textContent: string;
+    kind: string;
+  } | null>(null);
   
   // ESC key handler for attachments modal
   useEffect(() => {
@@ -529,6 +538,8 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         currentStatusDelta={delta?.label}
         postingUrl={job.posting_url || job.postingUrl}
         createdAt={job.created_at || job.createdAt}
+        jobTitle={job.title}
+        companyName={job.company}
         updatedAt={job.updated_at || job.updatedAt}
         currentStatusEnteredAt={currentStatusEnteredAt || undefined}
         jdAttachmentId={jdAttachmentId}
@@ -940,25 +951,28 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border dark:border-gray-700 overflow-hidden">
           {/* 3-Column Grid with Fixed Heights */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[280px]">
-            {/* Column 1: Job Title, Company, Status, Attachments */}
+            {/* Column 1: Simple Layout - Job Title, Company, Status, 3 Doc Rows, Attachments Button */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100" data-testid="job-title">
-                  {job.title}
-                </h1>
+              {/* Job Title */}
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1" data-testid="job-title">
+                {job.title}
+              </h1>
+              
+              {/* Company and Status */}
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-base text-gray-600 dark:text-gray-400 flex-1" data-testid="job-company">
+                  {job.company}
+                </p>
                 <StatusChipDropdown 
                   jobId={job.id} 
                   currentStatus={currentStatus}
                   onStatusChange={handleStatusChange}
                 />
               </div>
-              <p className="text-base text-gray-600 dark:text-gray-400 mb-4" data-testid="job-company">
-                {job.company}
-              </p>
               
               {/* Progression Hint #1: Upload (per UI_DESIGN_SYSTEM dismissible pattern) */}
               {showProgressHints && attachmentCount === 0 && (
-                <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
+                <div className="mb-4 flex items-center gap-2 px-2.5 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-full text-xs border border-purple-200 dark:border-purple-700">
                   <span className="w-4 h-4 flex items-center justify-center bg-purple-600 text-white rounded-full font-bold text-[10px]">1</span>
                   <span className="flex-1 text-gray-700 dark:text-gray-300">Upload Resume + JD</span>
                   <button 
@@ -971,126 +985,178 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 </div>
               )}
               
-              {/* Document Status Indicators (per TERMINOLOGY_GUIDE) */}
-              <div className="mb-3 space-y-1.5">
-                {/* Resume Status */}
-                {(() => {
-                  const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
-                  const hasResume = !!resumeAttachment;
-                  return (
-                    <div data-testid="resume-status" className="flex items-center gap-2 text-xs">
-                      {hasResume ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">Resume:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasResume 
-                          ? `v${resumeAttachment!.version || 1} • ${new Date((resumeAttachment!.created_at || resumeAttachment!.createdAt) * 1000).toLocaleDateString()}`
-                          : 'Not uploaded'}
-                      </span>
-                    </div>
-                  );
-                })()}
+              {/* Document Rows with Shortened Filenames */}
+              <div className="flex-1 space-y-1">
+                {/* Resume */}
+                <div className="flex items-center gap-2 text-xs">
+                  {(() => {
+                    const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                    return resumeAttachment ? (
+                      <button
+                        onClick={() => setViewingAttachment({
+                          id: resumeAttachment.id,
+                          filename: resumeAttachment.filename,
+                          textContent: resumeAttachment.text_content || 'No content available',
+                          kind: 'resume'
+                        })}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Preview Resume"
+                      >
+                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                      </button>
+                    ) : (
+                      <div className="w-6 h-6"></div>
+                    );
+                  })()}
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">Resume:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                      if (!resumeAttachment) return 'Not uploaded';
+                      
+                      const timestamp = resumeAttachment.created_at || resumeAttachment.createdAt;
+                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                        month: 'numeric', 
+                        day: 'numeric', 
+                        year: '2-digit' 
+                      }) : '';
+                      
+                      // Better filename shortening: first few + last few + extension
+                      const filename = resumeAttachment.filename;
+                      const extension = filename.substring(filename.lastIndexOf('.'));
+                      const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+                      const shortenedFilename = filename.length > 20 
+                        ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
+                        : filename;
+                      
+                      return `${shortenedFilename} • ${date}`;
+                    })()}
+                  </span>
+                </div>
                 
-                {/* JD Status */}
-                {(() => {
-                  const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
-                  const hasJd = !!jdAttachment;
-                  return (
-                    <div data-testid="jd-status" className="flex items-center gap-2 text-xs">
-                      {hasJd ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
-                      ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">JD:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasJd 
-                          ? `v${jdAttachment!.version || 1} • ${new Date((jdAttachment!.created_at || jdAttachment!.createdAt) * 1000).toLocaleDateString()}`
-                          : 'Not uploaded'}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {/* JD */}
+                <div className="flex items-center gap-2 text-xs">
+                  {(() => {
+                    const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                    return jdAttachment ? (
+                      <button
+                        onClick={() => setViewingAttachment({
+                          id: jdAttachment.id,
+                          filename: jdAttachment.filename,
+                          textContent: jdAttachment.text_content || 'No content available',
+                          kind: 'jd'
+                        })}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Preview Job Description"
+                      >
+                        <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                      </button>
+                    ) : (
+                      <div className="w-6 h-6"></div>
+                    );
+                  })()}
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">JD:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {(() => {
+                      const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                      if (!jdAttachment) return 'Not uploaded';
+                      
+                      const timestamp = jdAttachment.created_at || jdAttachment.createdAt;
+                      const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                        month: 'numeric', 
+                        day: 'numeric', 
+                        year: '2-digit' 
+                      }) : '';
+                      
+                      // Better filename shortening: first few + last few + extension
+                      const filename = jdAttachment.filename;
+                      const extension = filename.substring(filename.lastIndexOf('.'));
+                      const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+                      const shortenedFilename = filename.length > 20 
+                        ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
+                        : filename;
+                      
+                      return `${shortenedFilename} • ${date}`;
+                    })()}
+                  </span>
+                </div>
                 
-                {/* Cover Letter Status (from Coach Mode) */}
-                {(() => {
-                  const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
-                  const hasCoverLetter = !!clAttachment;
-                  return (
-                    <div className="flex items-center gap-2 text-xs">
-                      {hasCoverLetter ? (
-                        <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                  {/* Cover Letter */}
+                  <div className="flex items-center gap-2 text-xs">
+                    {(() => {
+                      const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                      return clAttachment ? (
+                        <button
+                          onClick={() => setViewingAttachment({
+                            id: clAttachment.id,
+                            filename: clAttachment.filename,
+                            textContent: clAttachment.text_content || 'No content available',
+                            kind: 'cover_letter'
+                          })}
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="Preview Cover Letter"
+                        >
+                          <Eye size={12} className="text-gray-600 dark:text-gray-400" />
+                        </button>
                       ) : (
-                        <X size={14} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-gray-900 dark:text-gray-100">Cover Letter:</span>
-                      <span className="truncate text-gray-600 dark:text-gray-400">
-                        {hasCoverLetter 
-                          ? `v${clAttachment!.version || 1} • ${new Date((clAttachment!.created_at || clAttachment!.createdAt) * 1000).toLocaleDateString()}`
-                          : 'Not created'}
-                      </span>
-                    </div>
-                  );
-                })()}
+                        <div className="w-6 h-6"></div>
+                      );
+                    })()}
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">CL:</span>
+                    <span className="text-gray-900 dark:text-gray-100">
+                      {(() => {
+                        const clAttachment = attachmentsList.find(a => a.kind === 'cover_letter');
+                        if (!clAttachment) return 'None';
+                        
+                        const timestamp = clAttachment.created_at || clAttachment.createdAt;
+                        const date = timestamp ? new Date(timestamp).toLocaleDateString('en-US', { 
+                          month: 'numeric', 
+                          day: 'numeric', 
+                          year: '2-digit' 
+                        }) : '';
+                        
+                        // Better filename shortening: first few + last few + extension
+                        const filename = clAttachment.filename;
+                        const extension = filename.substring(filename.lastIndexOf('.'));
+                        const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+                        const shortenedFilename = filename.length > 20 
+                          ? `${nameWithoutExt.substring(0, 6)}...${nameWithoutExt.substring(nameWithoutExt.length - 4)}${extension}`
+                          : filename;
+                        
+                        return `${shortenedFilename} • ${date}`;
+                      })()}
+                    </span>
+                  </div>
               </div>
               
-              {/* Attachments Button */}
-              <button
-                onClick={() => setShowAttachmentsModal(true)}
-                className={`${COLUMN_BUTTON_CLASS} flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 justify-center`}
-                data-testid="attachments-button-header"
-              >
-                <Paperclip size={16} />
-                <span>Attachments</span>
-                {attachmentCount > 0 && (
-                  <span className="ml-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
-                    {attachmentCount}
-                  </span>
-                )}
-              </button>
+              {/* Attachments Button at Bottom */}
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowAttachmentsModal(true)}
+                  className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                  data-testid="attachments-button-header"
+                >
+                  <Paperclip size={14} />
+                  <span>Attachments</span>
+                  {attachmentCount > 0 && (
+                    <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
+                      {attachmentCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Column 2: Data Pipeline with Scrolling */}
             <div className="p-6 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col">
-              {/* Header with "Analyzed X ago" badge */}
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                  <span className="text-lg">
-                    {stalenessInfo?.severity === 'fresh' ? '✅' : 
-                     stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
-                     stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
-                  </span>
-                  Data Status
-                </h3>
-                {stalenessInfo?.variantsAnalyzedAt && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Analyzed {(() => {
-                      const ageMs = Date.now() - (stalenessInfo.variantsAnalyzedAt * 1000);
-                      const minutes = Math.floor(ageMs / 60000);
-                      const hours = Math.floor(ageMs / 3600000);
-                      const days = Math.floor(ageMs / 86400000);
-                      
-                      if (minutes < 60) return `${minutes}m ago`;
-                      if (hours < 24) return `${hours}h ago`;
-                      return `${days}d ago`;
-                    })()}
-                  </span>
-                )}
-              </div>
-              
-              {/* Explain: Our Approach (compact) */}
-              <div className="mb-3 p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="font-semibold text-xs text-blue-900 dark:text-blue-200 mb-1">
-                  How data extraction works:
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  Your uploads → 3 AI variants (raw, normalized, detailed) → Ready for sections below
-                </p>
-              </div>
-              
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                <span className="text-lg">
+                  {stalenessInfo?.severity === 'fresh' ? '✅' : 
+                   stalenessInfo?.severity === 'variants_fresh' ? '🌟' : 
+                   stalenessInfo?.severity === 'major' ? '⚠️' : '📄'}
+                </span>
+                Data Status
+              </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                 {stalenessInfo?.message || 'Checking...'}
               </p>
@@ -1101,7 +1167,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
@@ -1110,7 +1176,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleGlobalAnalyze}
                     disabled={analyzing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {analyzing ? 'Analyzing...' : 'Analyze All'}
                   </button>
@@ -1119,7 +1185,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <button
                     onClick={handleRefreshVariants}
                     disabled={refreshing}
-                    className={`${COLUMN_BUTTON_CLASS} bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50`}
+                    className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {refreshing ? 'Extracting...' : 'Refresh Data'}
                   </button>
@@ -1133,7 +1199,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   <div className="flex flex-col gap-1.5">
                     <button
                       onClick={() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume');
+                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
                         if (resumeAttachment) {
                           setSelectedAttachment({
                             id: resumeAttachment.id,
@@ -1150,7 +1216,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     </button>
                     <button
                       onClick={() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd');
+                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
                         if (jdAttachment) {
                           setSelectedAttachment({
                             id: jdAttachment.id,
@@ -1194,45 +1260,16 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* 2.5. Coach Modes - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Resume Coach */}
-          <CoachModeEntryCard
-            jobId={job.id}
-            matchScore={aiData?.matchScore || 0}
-            coachStatus={job.coachStatus || 'not_started'}
-            hasBasicAnalysis={
-              (aiData?.matchScore || 0) > 0 || 
-              !!job.companyIntelligenceData
-            }
-          />
-          
-          {/* Interview Coach */}
-          <InterviewCoachEntryCard
-            jobId={job.id}
-            currentStatus={currentStatus}
-            hasMatchScore={(aiData?.matchScore || 0) > 0}
-            hasSkillsAnalysis={!!aiData?.skillsMatch}
-            onRefresh={async () => {
-              // Reload analysis data to check prerequisites
-              try {
-                const response = await fetch(`/api/jobs/${job.id}/analysis-data`);
-                if (response.ok) {
-                  const data = await response.json();
-                  // Only update the specific fields we need for prerequisites
-                  setAiData((prev: any) => ({
-                    ...prev,
-                    matchScore: data.matchScoreData?.overallScore || prev?.matchScore,
-                    skillsMatch: data.matchScoreData?.skillsMatch || prev?.skillsMatch,
-                    matchScoreMetadata: data.matchScoreMetadata || prev?.matchScoreMetadata,
-                  }));
-                }
-              } catch (error) {
-                console.error('Failed to refresh prerequisites:', error);
-              }
-            }}
-          />
-        </div>
+        {/* 2.5. Resume Coach Entry Card */}
+        <CoachModeEntryCard
+          jobId={job.id}
+          matchScore={aiData?.matchScore || 0}
+          coachStatus={job.coachStatus || 'not_started'}
+          hasBasicAnalysis={
+            (aiData?.matchScore || 0) > 0 || 
+            !!job.companyIntelligenceData
+          }
+        />
 
         {/* 3. AI Showcase: Full-width grid */}
         <div id="ai-showcase">
@@ -1250,6 +1287,120 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         />
         </div>
 
+        {/* 3.5. Interview Coach Entry Point (Always Visible!) */}
+        <div className={`mt-6 rounded-2xl p-8 shadow-2xl ${
+          currentStatus === 'ON_RADAR' 
+            ? 'bg-gradient-to-r from-gray-400 to-gray-500 dark:from-gray-700 dark:to-gray-600 opacity-75'
+            : 'bg-gradient-to-r from-purple-600 to-blue-600'
+        } text-white`}>
+          {currentStatus === 'ON_RADAR' && (
+            <div className="absolute top-4 right-4 bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">
+              🔒 Complete Resume Coach First
+            </div>
+          )}
+          <div className={currentStatus === 'ON_RADAR' ? 'relative' : ''}>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                  🎯 Interview Scheduled?
+                </h3>
+                <p className="text-purple-100 mb-2">
+                  Let's help you ace it! Interview Coach will:
+                </p>
+                <ul className="text-sm text-purple-100 space-y-1 ml-4 list-disc">
+                  <li>Search Glassdoor, Reddit, Blind for real interview questions</li>
+                  <li>Help you draft & score answers (0-100 with AI feedback)</li>
+                  <li>Generate professional STAR talk tracks</li>
+                  <li>Extract 2-3 core stories that cover 90% of questions</li>
+                </ul>
+              </div>
+              <div className="hidden md:block bg-white/20 rounded-xl p-4 backdrop-blur-sm text-center">
+                <div className="text-3xl font-bold">2-3</div>
+                <div className="text-xs text-purple-100">Core Stories</div>
+                <div className="text-xs text-purple-200 mt-1">cover 90%</div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentStatus === 'ON_RADAR' ? (
+                <>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">📞</span>
+                    <span className="text-lg">Recruiter Screen</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">👨‍💼</span>
+                    <span className="text-lg">Hiring Manager</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                  <button 
+                    disabled
+                    className="w-full bg-white/50 text-gray-500 dark:text-gray-400 px-6 py-4 rounded-xl font-semibold
+                               shadow-lg flex flex-col items-center gap-2 cursor-not-allowed">
+                    <span className="text-3xl grayscale opacity-50">👥</span>
+                    <span className="text-lg">Peer / Panel</span>
+                    <span className="text-xs text-gray-400">🔒 Locked</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href={`/interview-coach/${job.id}?type=recruiter`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">📞</span>
+                      <span className="text-lg">Recruiter Screen</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        Culture fit • Motivation • Basics
+                      </span>
+                    </button>
+                  </Link>
+                  
+                  <Link href={`/interview-coach/${job.id}?type=hiring-manager`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">👨‍💼</span>
+                      <span className="text-lg">Hiring Manager</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        STAR stories • Leadership • Projects
+                      </span>
+                    </button>
+                  </Link>
+                  
+                  <Link href={`/interview-coach/${job.id}?type=peer`}>
+                    <button className="w-full bg-white text-purple-600 px-6 py-4 rounded-xl font-semibold
+                                     hover:bg-purple-50 transition-all shadow-lg flex flex-col items-center gap-2 group">
+                      <span className="text-3xl">👥</span>
+                      <span className="text-lg">Peer / Panel</span>
+                      <span className="text-xs text-purple-500 group-hover:text-purple-600">
+                        Collaboration • Domain depth
+                      </span>
+                    </button>
+                  </Link>
+                </>
+              )}
+            </div>
+            
+            <div className="mt-6 bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+              <p className="text-sm text-purple-50 font-medium mb-2">
+                💡 What happens when you click:
+              </p>
+              <ol className="text-xs text-purple-100 space-y-1 ml-4 list-decimal">
+                <li>We search interview questions (Glassdoor, Reddit, Blind) - 30 seconds</li>
+                <li>You select 5-8 questions to prepare</li>
+                <li>Draft answers, get AI scores (0-100), improve with follow-ups</li>
+                <li>Generate STAR talk tracks when ready</li>
+                <li>Extract 2-3 core stories to memorize</li>
+              </ol>
+            </div>
+          </div>
+        </div>
 
         {/* 4. Timeline Detail - Removed (deprecated) */}
       </div>
@@ -1309,6 +1460,39 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           filename={selectedAttachment.filename}
           kind={selectedAttachment.kind}
         />
+      )}
+      
+      {/* Quick Preview Modal (Eye Icon) */}
+      {viewingAttachment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <span className="font-semibold text-base text-gray-900 dark:text-gray-100">{viewingAttachment.filename}</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full uppercase">
+                  {viewingAttachment.kind}
+                </span>
+              </div>
+              <button
+                onClick={() => setViewingAttachment(null)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Close"
+              >
+                <X size={20} className="text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-auto p-8 bg-gray-50 dark:bg-gray-900">
+              <div className="max-w-full mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8">
+                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800 dark:text-gray-100 leading-relaxed">
+                  {viewingAttachment.textContent}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );

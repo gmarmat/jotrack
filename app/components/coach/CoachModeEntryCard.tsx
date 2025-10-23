@@ -112,10 +112,10 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                Ready for Coach Mode?
+                Ready for Resume Coach?
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Run Match Score analysis first to see how Coach Mode can help you
+                Run Match Score analysis first to see how Resume Coach can help you
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
             data-testid="enter-coach-mode-preview"
             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
           >
-            Preview Coach Mode
+            Preview Resume Coach
           </button>
         </div>
       </div>
@@ -149,10 +149,35 @@ export default function CoachModeEntryCard({ jobId, matchScore = 0, coachStatus 
           </div>
         </div>
         
-        {/* Score Badge - Eye-catching */}
-        <div className="flex flex-col items-center bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/30">
-          <div className="text-2xl font-black leading-none">{scorePercent}%</div>
-          <div className="text-[10px] text-white/80 font-medium">Current</div>
+        <button
+          onClick={() => router.push(`/coach/${jobId}`)}
+          data-testid="enter-coach-mode"
+          className="px-8 py-3 bg-white text-purple-600 rounded-xl font-semibold hover:bg-gray-100 transition-colors shadow-md flex items-center gap-2"
+        >
+          <Sparkles size={20} />
+          Enter Resume Coach
+        </button>
+      </div>
+
+      {/* Quick Preview of What's Inside */}
+      <div className="mt-4 pt-4 border-t border-white/20">
+        <div className="grid grid-cols-4 gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full" />
+            <span>Discovery Questions</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full" />
+            <span>Score Improvement</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full" />
+            <span>Resume Generator</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full" />
+            <span>Interview Prep</span>
+          </div>
         </div>
       </div>
 
