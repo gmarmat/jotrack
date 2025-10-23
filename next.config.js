@@ -2,6 +2,11 @@
 const nextConfig = {
   transpilePackages: ["mammoth"],
   
+  // Always use port 3000
+  env: {
+    PORT: '3000'
+  },
+  
   // Disable aggressive caching in development to prevent CSS loading issues
   ...(process.env.NODE_ENV === 'development' && {
     // Force CSS recompilation on every request

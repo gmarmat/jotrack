@@ -78,17 +78,19 @@ export async function POST(
         skillsMatch = parsed.skillsMatch || [];
         
         // Identify strong skills (showcase opportunities!)
-        strongSkills = skillsMatch
-          .filter((s: any) => s.matchStrength === 'strong')
-          .sort((a: any, b: any) => 
-            (b.importance === 'critical' ? 2 : b.importance === 'important' ? 1 : 0) -
-            (a.importance === 'critical' ? 2 : a.importance === 'important' ? 1 : 0)
-          )
-          .slice(0, 5); // Top 5 strong skills
-        
-        // Identify weak critical skills (gaps to address!)
-        weakCriticalSkills = skillsMatch
-          .filter((s: any) => s.matchStrength === 'weak' && s.importance === 'critical');
+        if (Array.isArray(skillsMatch)) {
+          strongSkills = skillsMatch
+            .filter((s: any) => s.matchStrength === 'strong')
+            .sort((a: any, b: any) => 
+              (b.importance === 'critical' ? 2 : b.importance === 'important' ? 1 : 0) -
+              (a.importance === 'critical' ? 2 : a.importance === 'important' ? 1 : 0)
+            )
+            .slice(0, 5); // Top 5 strong skills
+          
+          // Identify weak critical skills (gaps to address!)
+          weakCriticalSkills = skillsMatch
+            .filter((s: any) => s.matchStrength === 'weak' && s.importance === 'critical');
+        }
         
         console.log('✅ Loaded skills data:', {
           matchScore,
@@ -159,7 +161,13 @@ export async function POST(
           companyName,
           jobTitle,
           jdSummary,
-          recruiterProfile: recruiterProfile || null,  // Pass profile if available
+          // Recruiter Profile (flattened for template)
+          recruiterProfileName: recruiterProfile?.name || 'Unknown',
+          recruiterProfileTitle: recruiterProfile?.currentTitle || 'Unknown',
+          recruiterProfileCommunicationStyle: recruiterProfile?.communicationStyle || 'Not specified',
+          recruiterProfileKeyPriorities: recruiterProfile?.keyPriorities || 'Not specified',
+          recruiterProfileRedFlags: recruiterProfile?.redFlags || 'Not specified',
+          recruiterProfileInterviewApproach: recruiterProfile?.whatThisMeans || 'Not specified',
           // V2.0: Skills Gap Targeting
           matchScore,
           strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
@@ -167,7 +175,7 @@ export async function POST(
           careerLevel: 'TBD', // TODO: Extract from Tier 3
           industryTenure: 0,   // TODO: Extract from Tier 3
           stabilityScore: 100  // TODO: Extract from Tier 3
-        }, false, 'v2').catch(err => { // v1 → v2!
+        }, false, 'v1').catch(err => { // Fixed: Use v1 since file is v1.md
           console.error('Recruiter questions failed:', err);
           return { result: { questions: [] } };
         })
@@ -181,7 +189,13 @@ export async function POST(
           jobTitle,
           jobDescription,
           resumeSummary: 'TBD - will pull from coach profile in future',
-          hiringManagerProfile: hiringManagerProfile || null,  // Pass profile if available
+          // Hiring Manager Profile (flattened for template)
+          hiringManagerProfileName: hiringManagerProfile?.name || 'Unknown',
+          hiringManagerProfileTitle: hiringManagerProfile?.currentTitle || 'Unknown',
+          hiringManagerProfileCommunicationStyle: hiringManagerProfile?.communicationStyle || 'Not specified',
+          hiringManagerProfileKeyPriorities: hiringManagerProfile?.keyPriorities || 'Not specified',
+          hiringManagerProfileRedFlags: hiringManagerProfile?.redFlags || 'Not specified',
+          hiringManagerProfileInterviewApproach: hiringManagerProfile?.whatThisMeans || 'Not specified',
           // V2.0: Skills Gap Targeting
           matchScore,
           strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
@@ -189,7 +203,7 @@ export async function POST(
           careerLevel: 'TBD', // TODO: Extract from Tier 3
           industryTenure: 0,   // TODO: Extract from Tier 3
           stabilityScore: 100  // TODO: Extract from Tier 3
-        }, false, 'v2').catch(err => { // v1 → v2!
+        }, false, 'v1').catch(err => { // Fixed: Use v1 since file is v1.md
           console.error('Hiring Manager questions failed:', err);
           return { result: { questions: [] } };
         })
@@ -203,7 +217,13 @@ export async function POST(
           jobTitle,
           jobDescription,
           technicalSkills,
-          peerProfile: peerProfile || null,  // Pass profile if available
+          // Peer Profile (flattened for template)
+          peerProfileName: peerProfile?.name || 'Unknown',
+          peerProfileTitle: peerProfile?.currentTitle || 'Unknown',
+          peerProfileCommunicationStyle: peerProfile?.communicationStyle || 'Not specified',
+          peerProfileKeyPriorities: peerProfile?.keyPriorities || 'Not specified',
+          peerProfileRedFlags: peerProfile?.redFlags || 'Not specified',
+          peerProfileInterviewApproach: peerProfile?.whatThisMeans || 'Not specified',
           // V2.0: Skills Gap Targeting
           matchScore,
           strongSkills: strongSkills.map((s: any) => `${s.skill} (${s.yearsExperience || 0} years)`).join(', '),
@@ -211,7 +231,7 @@ export async function POST(
           careerLevel: 'TBD', // TODO: Extract from Tier 3
           industryTenure: 0,   // TODO: Extract from Tier 3
           stabilityScore: 100  // TODO: Extract from Tier 3
-        }, false, 'v2').catch(err => { // v1 → v2!
+        }, false, 'v1').catch(err => { // Fixed: Use v1 since file is v1.md
           console.error('Peer questions failed:', err);
           return { result: { questions: [] } };
         })
@@ -267,9 +287,16 @@ export async function POST(
           return { result: { themes: [], synthesizedQuestions: [] } };
         });
         
-        const synthesis = parseAiResult(synthesisResult.result);
-        themes = synthesis.themes || [];
-        synthesizedQuestions = synthesis.synthesizedQuestions || [];
+        // Better error handling for synthesis
+        if (synthesisResult && synthesisResult.result) {
+          const synthesis = parseAiResult(synthesisResult.result);
+          themes = synthesis.themes || [];
+          synthesizedQuestions = synthesis.synthesizedQuestions || [];
+        } else {
+          console.warn('Synthesis returned empty result, using fallback');
+          themes = [];
+          synthesizedQuestions = [];
+        }
         
         console.log('✅ Synthesis complete:', {
           themes: themes.length,
@@ -290,6 +317,17 @@ export async function POST(
         persona === 'recruiter' ? `Why ${companyName}?` : `What's your leadership style?`,
         'Describe a challenging project or stakeholder conflict',
         persona === 'recruiter' ? 'What are your salary expectations?' : 'How do you handle disagreements?'
+      ];
+    }
+    
+    // Ensure we always have questions (final fallback)
+    if (synthesizedQuestions.length === 0) {
+      console.warn('⚠️ No synthesized questions, using basic fallback');
+      synthesizedQuestions = [
+        'Tell me about yourself',
+        `Why are you interested in working at ${companyName}?`,
+        'Describe a challenging project or conflict you\'ve faced',
+        'What are your salary expectations?'
       ];
     }
     

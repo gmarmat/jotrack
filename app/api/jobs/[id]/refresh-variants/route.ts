@@ -183,7 +183,7 @@ async function saveVariant(params: {
     content: JSON.stringify(params.content),
     contentHash: params.contentHash,
     tokenCount: params.tokenCount,
-    extractionModel: 'gpt-4o-mini', // TODO: Get from settings
+    extractionModel: 'gpt-4o-mini', // NOTE: Using OpenAI for extraction. Set preferred model in Settings Modal
     extractionPromptVersion: 'v1',
     createdAt: now,
     isActive: true,

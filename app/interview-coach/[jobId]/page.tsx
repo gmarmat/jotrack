@@ -16,7 +16,7 @@ import { predictInterviewSuccess } from '@/lib/interview/successPrediction';
 import { generateWeaknessFramings } from '@/lib/interview/redFlagFraming';
 import { analyzeCareerTrajectory, analyzeCompetitiveContext } from '@/lib/interview/signalExtraction';
 
-type InterviewStep = 'welcome' | 'insights' | 'practice' | 'talk-tracks' | 'core-stories' | 'prep';
+type InterviewStep = 'welcome' | 'practice' | 'talk-tracks';
 
 /**
  * Interview Coach Page - Redesigned with Step-Based Flow
@@ -68,10 +68,21 @@ export default function InterviewCoachPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  // Sticky header scroll state
+  const [isHeaderCompact, setIsHeaderCompact] = useState(false);
+  
   // Load job data and Interview Coach state
   useEffect(() => {
     loadData();
   }, [jobId]);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsHeaderCompact(window.scrollY > 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const loadData = async () => {
     try {
@@ -109,7 +120,7 @@ export default function InterviewCoachPage() {
         if (savedState.currentStep) {
           setCurrentStep(savedState.currentStep);
         } else if (savedState.questionBank) {
-          setCurrentStep('insights'); // Fixed: was 'select' which doesn't exist
+          setCurrentStep('practice'); // Skip insights, go directly to practice
         }
       }
     } catch (error) {
@@ -152,47 +163,26 @@ export default function InterviewCoachPage() {
   
   // Step handlers
   const handleSearchComplete = (questionBank: any) => {
+    // Auto-select all synthesized questions for practice
+    const selectedQuestions = questionBank.synthesizedQuestions || [];
+    
     const updated = {
       ...interviewCoachState,
       questionBank,
-      currentStep: 'insights',
+      selectedQuestions,
+      currentStep: 'practice',
       progress: {
         ...interviewCoachState.progress,
         questionsFound: (questionBank.webQuestions?.length || 0) + 
                        Object.values(questionBank.aiQuestions || {}).reduce((acc: number, p: any) => 
-                         acc + (p?.questions?.length || 0), 0)
-      }
-    };
-    setInterviewCoachState(updated);
-    setCurrentStep('insights');
-  };
-  
-  const handleInsightsComplete = (selectedQuestions: string[]) => {
-    console.log('🎯 handleInsightsComplete Debug:', {
-      selectedQuestions,
-      selectedQuestionsLength: selectedQuestions.length,
-      questionBank: interviewCoachState.questionBank ? 'exists' : 'missing',
-      currentInterviewCoachState: interviewCoachState
-    });
-    
-    const updated = {
-      ...interviewCoachState,
-      selectedQuestions: selectedQuestions,
-      currentStep: 'practice',
-      progress: {
-        ...interviewCoachState.progress,
+                         acc + (p?.questions?.length || 0), 0),
         questionsSelected: selectedQuestions.length
       }
     };
-    
-    console.log('🎯 Updated state:', {
-      selectedQuestions: updated.selectedQuestions,
-      selectedQuestionsLength: updated.selectedQuestions.length
-    });
-    
     setInterviewCoachState(updated);
     setCurrentStep('practice');
   };
+  
 
   const handleRestartInterviewCoach = async () => {
     if (!confirm('Are you sure you want to restart the Interview Coach analysis? This will clear all current progress and start fresh.')) {
@@ -264,7 +254,7 @@ export default function InterviewCoachPage() {
   }
 
   // Ensure we always have a valid step
-  const validSteps = ['welcome', 'insights', 'practice', 'talk-tracks', 'core-stories', 'prep'];
+  const validSteps = ['welcome', 'practice', 'talk-tracks'];
   if (!validSteps.includes(currentStep)) {
     console.warn(`Invalid currentStep: ${currentStep}, defaulting to 'welcome'`);
     setCurrentStep('welcome');
@@ -274,22 +264,14 @@ export default function InterviewCoachPage() {
   const steps = [
     { 
       id: 'welcome', 
-      label: 'Search', 
+      label: 'Search & Discover', 
       icon: '🔍', 
       status: interviewCoachState.questionBank ? 'completed' : (currentStep === 'welcome' ? 'active' : 'pending'),
       description: 'Find interview questions'
     },
     { 
-      id: 'insights', 
-      label: 'Insights', 
-      icon: '🤖', 
-      count: interviewCoachState.questionBank?.synthesizedQuestions?.length,
-      status: interviewCoachState.questionBank?.synthesizedQuestions?.length > 0 ? 'completed' : (currentStep === 'insights' ? 'active' : 'pending'),
-      description: 'AI analysis & filtering'
-    },
-    { 
       id: 'practice', 
-      label: 'Practice', 
+      label: 'Practice & Score', 
       icon: '📝', 
       count: interviewCoachState.selectedQuestions?.length || 0,
       status: interviewCoachState.answers && Object.keys(interviewCoachState.answers).length > 0 ? 'completed' : (currentStep === 'practice' ? 'active' : 'pending'),
@@ -301,20 +283,6 @@ export default function InterviewCoachPage() {
       icon: '✨',
       status: interviewCoachState.talkTracks ? 'completed' : (currentStep === 'talk-tracks' ? 'active' : 'pending'),
       description: 'STAR format stories'
-    },
-    { 
-      id: 'core-stories', 
-      label: 'Core Stories', 
-      icon: '🧠',
-      status: interviewCoachState.coreStories ? 'completed' : (currentStep === 'core-stories' ? 'active' : 'pending'),
-      description: 'Story mapping'
-    },
-    { 
-      id: 'prep', 
-      label: 'Cheat Sheet', 
-      icon: '📄',
-      status: interviewCoachState.cheatSheet ? 'completed' : (currentStep === 'prep' ? 'active' : 'pending'),
-      description: 'Final prep guide'
     }
   ];
   
@@ -322,7 +290,43 @@ export default function InterviewCoachPage() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
+      {/* Sticky Compact Header (appears on scroll) */}
+      <div
+        className={`fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg transition-all duration-300 z-40 ${
+          isHeaderCompact ? 'py-2' : '-translate-y-full'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <h2 className="text-sm font-semibold truncate">Interview Coach</h2>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-purple-100 truncate">
+              <span>{jobData?.title}</span>
+              <span>@</span>
+              <span>{jobData?.company}</span>
+            </div>
+          </div>
+          
+          {/* Compact step indicator */}
+          <div className="flex items-center gap-2">
+            {steps.map((step, index) => {
+              const isActive = step.id === currentStep;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentStep(step.id as InterviewStep)}
+                  className={`text-xs px-2 py-1 rounded transition-colors ${
+                    isActive ? 'bg-white text-purple-600 font-medium' : 'text-purple-100 hover:text-white'
+                  }`}
+                >
+                  {step.icon}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -335,7 +339,7 @@ export default function InterviewCoachPage() {
               <div>
                 <h1 className="text-2xl font-bold">Interview Coach</h1>
                 <p className="text-sm text-purple-100">
-                  {jobData.title} at {jobData.company}
+                  {jobData?.title} at {jobData?.company}
                 </p>
               </div>
             </div>
@@ -347,7 +351,7 @@ export default function InterviewCoachPage() {
                 title="Restart Interview Coach analysis"
               >
                 <span>🔄</span>
-                <span>Restart Analysis</span>
+                <span>Restart</span>
               </button>
               
               {saving && (
@@ -359,8 +363,8 @@ export default function InterviewCoachPage() {
             </div>
           </div>
           
-          {/* Breadcrumb */}
-          <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-2">
+          {/* Breadcrumb - Compact version */}
+          <div className="mt-6 flex items-center gap-1 overflow-x-auto pb-2">
             {steps.map((step, index) => {
               const isActive = step.id === currentStep;
               const isCompleted = step.status === 'completed';
@@ -372,7 +376,7 @@ export default function InterviewCoachPage() {
                     onClick={() => isAccessible && setCurrentStep(step.id as InterviewStep)}
                     disabled={!isAccessible}
                     title={step.description}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all ${
                       isActive
                         ? 'bg-white text-purple-600 shadow-lg'
                         : isCompleted
@@ -380,16 +384,11 @@ export default function InterviewCoachPage() {
                         : 'bg-white/10 text-purple-200 cursor-not-allowed'
                     }`}
                   >
-                    {isCompleted ? <Check className="w-4 h-4" /> : <span>{step.icon}</span>}
+                    {isCompleted ? <Check className="w-3 h-3" /> : <span className="text-xs">{step.icon}</span>}
                     <span>{step.label}</span>
-                    {step.count !== undefined && step.count > 0 && (
-                      <span className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        {step.count}
-                      </span>
-                    )}
                   </button>
                   {index < steps.length - 1 && (
-                    <div className="w-8 h-0.5 bg-white/20 mx-1" />
+                    <div className="w-4 h-0.5 bg-white/20 mx-0.5" />
                   )}
                 </div>
               );
@@ -408,64 +407,6 @@ export default function InterviewCoachPage() {
       
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Confidence Score Card (V2.0 - Shows signal quality) */}
-        {analysisData && currentStep === 'welcome' && (
-          <>
-            <ConfidenceScoreCard 
-              overall={calculateOverallConfidence(
-                calculateSignalConfidence({
-                  peopleProfiles: analysisData.peopleProfiles,
-                  matchScore: analysisData.matchScoreData,
-                  companyIntelligence: analysisData.companyIntelligence,
-                  skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
-                  webIntelligence: interviewCoachState.questionBank?.webIntelligence
-                })
-              )}
-            />
-            
-            {/* Success Prediction Card (V2.0 - Shows win probability) */}
-            {(() => {
-              // Calculate answer scores from interview coach state
-              const answerScores: number[] = [];
-              if (interviewCoachState.answers) {
-                Object.values(interviewCoachState.answers).forEach((ans: any) => {
-                  if (ans.scores && ans.scores.length > 0) {
-                    const latestScore = ans.scores[ans.scores.length - 1];
-                    answerScores.push(latestScore.overall || 0);
-                  }
-                });
-              }
-              
-              // Get competitive advantages
-              const skillsMatchArray = Array.isArray(analysisData.matchScoreData?.skillsMatch) 
-                ? analysisData.matchScoreData.skillsMatch 
-                : [];
-              const competitiveAdvantages = skillsMatchArray
-                .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
-                .slice(0, 3);
-              
-              // Generate red flags
-              const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
-                ? generateWeaknessFramings(
-                    analysisData.resumeVariant.raw || '',
-                    analysisData.matchScoreData,
-                    analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
-                    interviewCoachState.questionBank?.webIntelligence?.warnings || []
-                  )
-                : [];
-              
-              const prediction = predictInterviewSuccess({
-                matchScore: analysisData.matchScoreData?.matchScore || 0,
-                answerScores,
-                interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
-                redFlags,
-                competitiveAdvantages
-              });
-              
-              return <SuccessPredictionCard prediction={prediction} />;
-            })()}
-          </>
-        )}
         
         {currentStep === 'welcome' && (
           <WelcomeSearch
@@ -475,17 +416,10 @@ export default function InterviewCoachPage() {
             roleTitle={jobData.title}
             onSearchComplete={handleSearchComplete}
             existingQuestionBank={interviewCoachState.questionBank}
+            analysisData={analysisData}
           />
         )}
         
-        {currentStep === 'insights' && (
-          <SearchInsights
-            questionBank={interviewCoachState.questionBank}
-            synthesizedQuestions={interviewCoachState.questionBank?.synthesizedQuestions || []}
-            themes={interviewCoachState.questionBank?.themes || []}
-            onContinue={handleInsightsComplete}
-          />
-        )}
         
         {currentStep === 'practice' && (
           <AnswerPracticeWorkspace
@@ -507,24 +441,8 @@ export default function InterviewCoachPage() {
           </div>
         )}
         
-        {currentStep === 'core-stories' && (
-          <CoreStoriesDisplay
-            coreStories={interviewCoachState.coreStories || []}
-            storyMapping={interviewCoachState.storyMapping || {}}
-          />
-        )}
-        
-        {currentStep === 'prep' && (
-          <FinalCheatSheet
-            coreStories={interviewCoachState.coreStories || []}
-            talkTracks={Object.values(interviewCoachState.talkTracks || {})}
-            storyMapping={interviewCoachState.storyMapping || {}}
-            onBack={() => setCurrentStep('core-stories')}
-          />
-        )}
-        
         {/* Fallback for any invalid step */}
-        {!['welcome', 'insights', 'practice', 'talk-tracks', 'core-stories', 'prep'].includes(currentStep) && (
+        {!['welcome', 'practice', 'talk-tracks'].includes(currentStep) && (
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
             <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
               Step Not Found
@@ -540,6 +458,7 @@ export default function InterviewCoachPage() {
             </button>
           </div>
         )}
+
       </div>
     </div>
   );

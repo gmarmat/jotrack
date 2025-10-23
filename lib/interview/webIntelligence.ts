@@ -251,6 +251,9 @@ export function extractWebIntelligence(
       /["']([^"']+\?)/g,  // Quoted questions
       /Q:\s*([^?\n]+\?)/gi,  // Q: format
       /asked\s+["']([^"']+\?)/gi,  // "They asked..."
+      /(?:Question|Q)\s*[:#]?\s*([^.!?\n]{10,200}\?)/gi,  // "Question:" format
+      /(?:Tell me about|Describe|Explain|What|Why|How|When|Where)\s+[^.!?\n]{10,200}\?/gi,  // Common starters
+      /([^.!?\n]{20,200}\?)/g,  // Any sentence ending with ?
     ];
     
     questionPatterns.forEach(pattern => {

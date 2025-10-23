@@ -56,7 +56,7 @@ export function generateWeaknessFramings(
   // ==========================================
   // 2. SKILLS GAP (Critical Skills Missing)
   // ==========================================
-  if (matchScoreData?.skillsMatch) {
+  if (matchScoreData?.skillsMatch && Array.isArray(matchScoreData.skillsMatch)) {
     const weakCriticalSkills = matchScoreData.skillsMatch.filter(
       (s: any) => s.matchStrength === 'weak' && s.importance === 'critical'
     );

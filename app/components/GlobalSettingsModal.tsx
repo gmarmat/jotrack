@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { X, Key, Database, Sliders, Code, Sparkles, Download, Upload, Trash2, Clock, RefreshCw, Check } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { getEstimatedJobCost, getModelDisplayName, formatCost, calculateMonthlyCost } from '@/lib/pricing';
+import { usePricing } from '@/lib/hooks/usePricing';
+import ModelPricingComparison from './ai/ModelPricingComparison';
 
 const PromptEditor = dynamic(() => import('./ai/PromptEditor'), { ssr: false });
 
@@ -136,7 +139,17 @@ export default function GlobalSettingsModal({ isOpen, onClose, initialTab = 'ai'
 function AITab() {
   const [networkEnabled, setNetworkEnabled] = useState(false);
   const [provider, setProvider] = useState('claude');
-  const [claudeModel, setClaudeModel] = useState('claude-3-5-sonnet-20240620');
+  const [claudeModel, setClaudeModel] = useState('claude-3-sonnet-20240229'); // Sonnet 3.5 - best balance
+  
+  // Dynamic pricing hook
+  const pricing = usePricing(claudeModel, 'claude');
+  
+  // Update pricing when model changes
+  useEffect(() => {
+    const currentModel = provider === 'claude' ? claudeModel : openaiModel;
+    pricing.updateModel(currentModel, provider as 'claude' | 'openai');
+  }, [provider, claudeModel, openaiModel, pricing]);
+  
   const [claudeKey, setClaudeKey] = useState('');
   const [hasExistingClaudeKey, setHasExistingClaudeKey] = useState(false);
   const [isSavingClaude, setIsSavingClaude] = useState(false);
@@ -164,7 +177,7 @@ function AITab() {
           const data = await res.json();
           setNetworkEnabled(data.networkEnabled || false);
           setProvider(data.provider || 'claude');
-          setClaudeModel(data.claudeModel || 'claude-3-5-sonnet-20240620');
+          setClaudeModel(data.claudeModel || 'claude-3-sonnet-20240229'); // Sonnet 3.5
           setOpenaiModel(data.openaiModel || 'gpt-4o-mini');
           setHasExistingClaudeKey(!!data.hasClaudeKey);
           setHasExistingTavilyKey(!!data.hasTavilyKey);
@@ -327,7 +340,7 @@ function AITab() {
           <li>• <strong>Claude/OpenAI</strong> - Analyzes documents and generates insights</li>
         </ul>
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-          All keys stored encrypted, never sent to browser. Cost: ~$0.24 per job analysis.
+          All keys stored encrypted, never sent to browser. Cost: ~{pricing.formatJobCost()} per job analysis.
         </p>
       </div>
 
@@ -427,6 +440,7 @@ function AITab() {
                     ) : (
                       <>
                         <optgroup label="Recommended">
+                          <option value="claude-3-sonnet-20240229">3 Sonnet (Recommended) ~ $0.003/job</option>
                           <option value="claude-3-5-sonnet-20240620">3.5 Sonnet ~ $0.03/job</option>
                         </optgroup>
                         <optgroup label="Budget">
@@ -622,20 +636,13 @@ function AITab() {
               <div className="col-span-2 pt-2 border-t border-purple-200 dark:border-purple-800">
                 <p className="text-gray-600 dark:text-gray-400">Total per job:</p>
                 <p className="text-lg font-bold text-purple-900 dark:text-purple-300">
-                  ~${(
-                    (provider === 'claude' 
-                      ? claudeModel.includes('sonnet') ? 0.03 : claudeModel.includes('haiku') ? 0.01 : 0.15
-                      : openaiModel.includes('mini') ? 0.02 : openaiModel.includes('gpt-4o') ? 0.10 : 1.00) +
-                    (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
-                  ).toFixed(2)}
+                  {pricing.formatJobCost()}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  50 jobs/year = ${(
-                    ((provider === 'claude' 
-                      ? claudeModel.includes('sonnet') ? 0.03 : claudeModel.includes('haiku') ? 0.01 : 0.15
-                      : openaiModel.includes('mini') ? 0.02 : openaiModel.includes('gpt-4o') ? 0.10 : 1.00) +
-                    (hasExistingTavilyKey || tavilyKey ? 0.01 : 0)
-                  ) * 50).toFixed(2)} (vs $500+ interview coach!)
+                  Model: {pricing.displayName}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  50 jobs/year = {formatCost(pricing.jobCost * 50)} (vs $500+ interview coach!)
                 </p>
               </div>
             </div>
@@ -659,13 +666,31 @@ function AITab() {
           </div>
           <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <p className="text-xs text-green-700 dark:text-green-400">Est. Cost</p>
-            <p className="text-lg font-bold text-green-900 dark:text-green-300">$2.34</p>
+            <p className="text-lg font-bold text-green-900 dark:text-green-300">
+              {pricing.formatMonthlyCost()}
+            </p>
             <p className="text-xs text-green-600 dark:text-green-400">this month</p>
           </div>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
           Note: Usage tracking will be implemented in v2.8. These are sample values.
         </p>
+      </div>
+
+      {/* Model Pricing Comparison */}
+      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <ModelPricingComparison 
+          onModelSelect={(model) => {
+            if (model.includes('claude')) {
+              setClaudeModel(model);
+              setProvider('claude');
+            } else {
+              setOpenaiModel(model);
+              setProvider('openai');
+            }
+          }}
+          selectedModel={provider === 'claude' ? claudeModel : openaiModel}
+        />
       </div>
     </div>
   );

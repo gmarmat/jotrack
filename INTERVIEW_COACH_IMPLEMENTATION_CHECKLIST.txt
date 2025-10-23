@@ -1,0 +1,176 @@
+================================================================================
+  IMPLEMENTATION CHECKLIST - "Help User WIN" Strategy
+================================================================================
+
+PHILOSOPHY: Our app helps users ACE interviews through support, not judgment
+
+================================================================================
+  PRIORITY 1: MODEL FETCHING (QUICK WIN - 15 minutes)
+================================================================================
+
+[ ] 1.1 Open: lib/coach/aiProvider.ts
+[ ] 1.2 Replace lines 385-438: Delete async validateModel + fetchClaudeModels calls
+[ ] 1.3 Add simple synchronous validateModel (just check ALLOWED_MODELS)
+[ ] 1.4 Update line 484 in callAiProvider: Remove await, make synchronous
+[ ] 1.5 Test: Score an answer → should be faster (no model fetching logs)
+
+FILES TO CHANGE:
+  - lib/coach/aiProvider.ts (lines 385-438, 484)
+
+BENEFITS:
+  ✅ Removes 2-3 seconds latency per call
+  ✅ Eliminates unnecessary API calls
+  ✅ Trusts user's persisted settings
+
+================================================================================
+  PRIORITY 2: IMPACT EXPLANATION (MEDIUM - 30 minutes)
+================================================================================
+
+[ ] 2.1 Open: app/api/interview-coach/[jobId]/score-answer/route.ts
+[ ] 2.2 Add generateScoringExplanation() helper function
+[ ] 2.3 After re-scoring, calculate delta and call generateScoringExplanation()
+[ ] 2.4 Add impactExplanation to JSON response
+[ ] 2.5 Open: app/components/interview-coach/AnswerPracticeWorkspace.tsx
+[ ] 2.6 Display impactExplanation when scoreImprovement !== 0
+[ ] 2.7 Test: Get -6 score impact → see explanation of what changed and why
+
+FILES TO CHANGE:
+  - app/api/interview-coach/[jobId]/score-answer/route.ts
+  - app/components/interview-coach/AnswerPracticeWorkspace.tsx
+
+BENEFITS:
+  ✅ Removes confusion ("Why -6 points?")
+  ✅ Builds understanding of scoring
+  ✅ Actionable next steps
+
+================================================================================
+  PRIORITY 3: DISCOVERY QUESTIONS REFRAME (MEDIUM - 30 minutes)
+================================================================================
+
+[ ] 3.1 Open: prompts/answer-scoring.v1.md
+[ ] 3.2 Find "Follow-Up Question Generation" section
+[ ] 3.3 Replace with "Discovery Questions Strategy" section (from guide)
+[ ] 3.4 Change all questions to help user WIN (positive framing)
+[ ] 3.5 Add score-level based questions (< 60, 60-74, 75+)
+[ ] 3.6 Remove negative questions, add reframing
+[ ] 3.7 Test: Generate follow-up questions → should feel supportive not accusatory
+
+FILES TO CHANGE:
+  - prompts/answer-scoring.v1.md
+
+BENEFITS:
+  ✅ Questions help user tell better story
+  ✅ More comfortable with discovery process
+  ✅ Less likely to get defensive
+
+================================================================================
+  PRIORITY 4: AI SUGGEST BUTTON (HIGH - 1.5 hours)
+================================================================================
+
+[ ] 4.1 Create: app/api/interview-coach/[jobId]/suggest-answer/route.ts
+[ ] 4.2 Create: prompts/suggest-answer.v1.md
+[ ] 4.3 Open: app/components/interview-coach/AnswerPracticeWorkspace.tsx
+[ ] 4.4 Add state: suggestedAnswer, suggestingAnswer
+[ ] 4.5 Add handler: handleSuggestAnswer()
+[ ] 4.6 Add UI: AI Suggest button + suggested answer display
+[ ] 4.7 Add "Use This" button to populate textarea with suggestion
+[ ] 4.8 Test: Click "AI Suggest" → get believable contextual answer
+[ ] 4.9 Test: Click "Use This" → answer appears in textarea
+
+FILES TO CHANGE/CREATE:
+  - app/api/interview-coach/[jobId]/suggest-answer/route.ts (new)
+  - prompts/suggest-answer.v1.md (new)
+  - app/components/interview-coach/AnswerPracticeWorkspace.tsx (add UI)
+
+BENEFITS:
+  ✅ Users can see strong answers as inspiration
+  ✅ Learn what good looks like
+  ✅ Feel supported, not just critiqued
+  ✅ Key differentiator: "Help users WIN"
+
+================================================================================
+  TESTING CHECKLIST
+================================================================================
+
+Fix 1 (Model Fetching):
+  [ ] Score answer → no "Fetching latest Claude models" in terminal
+  [ ] Response time faster (< 10 seconds vs 12-15)
+  [ ] Settings still respected (uses claudeModel from DB)
+
+Fix 2 (Impact Explanation):
+  [ ] Initial score: 58
+  [ ] Answer discovery questions with less impressive info
+  [ ] Re-score: 52 (impact: -6)
+  [ ] See explanation: "Score decreased by 6 points..."
+  [ ] See next step: "Find a better example or reframe this one"
+
+Fix 3 (Discovery Reframe):
+  [ ] Questions feel positive and supportive
+  [ ] "What made you proud?" vs "What went wrong?"
+  [ ] No guilt-tripping language
+  [ ] User feels coached, not attacked
+
+Fix 4 (AI Suggest):
+  [ ] "AI Suggest" button visible and clickable
+  [ ] Generates answer in 2-5 seconds
+  [ ] Answer is believable (aligns with resume)
+  [ ] Answer is contextual (mentions company/role)
+  [ ] "Use This" button works
+  [ ] Suggested answer appears in textarea
+  [ ] User can edit before scoring
+
+================================================================================
+  IMPLEMENTATION ORDER
+================================================================================
+
+Day 1 (2 hours):
+  - Fix 1: Model Fetching (15 min) ✓ QUICK WIN
+  - Fix 2: Impact Explanation (30 min) ✓ USER CLARITY
+  - Fix 3: Discovery Reframe (30 min) ✓ MINDSET SHIFT
+  
+Day 2 (1.5 hours):
+  - Fix 4: AI Suggest Button (90 min) ✓ CORE FEATURE
+
+Day 3 (1 hour):
+  - Test all 4 fixes end-to-end
+  - Verify E2E tests still pass
+  - Manual testing with real Fortive job
+
+================================================================================
+  KEY PRINCIPLES WHILE IMPLEMENTING
+================================================================================
+
+✅ DO:
+  - Help users WIN interviews
+  - Support with suggestions and coaching
+  - Frame feedback as helpful, not judgmental
+  - Make believable suggestions aligned with resume
+  - Provide explanations for score changes
+  - Use positive language
+
+❌ DON'T:
+  - Fabricate experiences that can be googled
+  - Suggest claims that contradict LinkedIn
+  - Make defensive users feel worse
+  - Leave score changes unexplained
+  - Give generic platitude suggestions
+  - Make answers sound robotic
+
+================================================================================
+  REFERENCE FILES
+================================================================================
+
+Full implementation guide:
+  → INTERVIEW_COACH_THREE_FIXES.md (451 lines)
+
+Current state document:
+  → INTERVIEW_COACH_CURRENT_STATE.md
+
+Scoring prompt:
+  → prompts/answer-scoring.v1.md
+
+========================================
+STATUS: Ready to implement
+ESTIMATED TIME: 3.5 hours total
+IMPACT: Game-changing UX (helps users WIN)
+================================================================================

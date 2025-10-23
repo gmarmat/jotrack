@@ -41,9 +41,11 @@ export default function AnswerPracticeWorkspace({
     return typeof firstQuestion === 'string' ? firstQuestion : firstQuestion?.question || null;
   });
   const [draftAnswer, setDraftAnswer] = useState('');
-  const [scoring, setScoring] = useState(false);
+  const [scoring, setScoring] = useState<Record<string, boolean>>({});
   const [generatingAi, setGeneratingAi] = useState<Record<number, boolean>>({});
   const [testingImpact, setTestingImpact] = useState<Record<number, boolean>>({});
+  const [suggestedAnswer, setSuggestedAnswer] = useState<string | null>(null);
+  const [suggestingAnswer, setSuggestingAnswer] = useState(false);
 
   // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
   useEffect(() => {
@@ -72,8 +74,28 @@ export default function AnswerPracticeWorkspace({
   useEffect(() => {
     if (selectedQuestion && currentQuestionData) {
       setDraftAnswer(currentQuestionData.mainStory || '');
+    } else if (selectedQuestion && !currentQuestionData) {
+      // Clear draft answer if no data for this question
+      setDraftAnswer('');
     }
-  }, [selectedQuestion]);
+  }, [selectedQuestion, currentQuestionData]);
+
+  // Auto-save when draft answer changes (debounced)
+  useEffect(() => {
+    if (!selectedQuestion || !draftAnswer.trim()) return;
+    
+    const timeoutId = setTimeout(() => {
+      setInterviewCoachState((prev: any) => {
+        const updated = { ...prev };
+        updated.answers = updated.answers || {};
+        updated.answers[selectedQuestion] = updated.answers[selectedQuestion] || {};
+        updated.answers[selectedQuestion].mainStory = draftAnswer;
+        return updated;
+      });
+    }, 1000); // Auto-save after 1 second of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [draftAnswer, selectedQuestion, setInterviewCoachState]);
 
   const handleScoreAnswer = async () => {
     if (!selectedQuestion || !draftAnswer.trim()) {
@@ -82,7 +104,7 @@ export default function AnswerPracticeWorkspace({
     }
 
     try {
-      setScoring(true);
+      setScoring(prev => ({ ...prev, [selectedQuestion]: true }));
       
       const currentIteration = (currentQuestionData?.scores?.length || 0) + 1;
       
@@ -136,12 +158,37 @@ export default function AnswerPracticeWorkspace({
         return updated;
       });
 
-      alert(`✅ Scored! ${result.score.overall}/100`);
+      // Removed popup alert - score is shown in the UI
       
     } catch (error: any) {
       alert(`Scoring failed: ${error.message}`);
     } finally {
-      setScoring(false);
+      setScoring(prev => ({ ...prev, [selectedQuestion]: false }));
+    }
+  };
+
+  const handleSuggestAnswer = async () => {
+    if (!selectedQuestion) return;
+    
+    setSuggestingAnswer(true);
+    try {
+      const response = await fetch(`/api/interview-coach/${jobId}/suggest-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: selectedQuestion,
+          currentAnswer: draftAnswer
+        })
+      });
+      
+      if (!response.ok) throw new Error('AI suggestion failed');
+      
+      const data = await response.json();
+      setSuggestedAnswer(data.suggestedAnswer);
+    } catch (error: any) {
+      alert(`AI Suggest failed: ${error.message}`);
+    } finally {
+      setSuggestingAnswer(false);
     }
   };
 
@@ -211,11 +258,20 @@ export default function AnswerPracticeWorkspace({
       setInterviewCoachState((prev: any) => {
         const updated = { ...prev };
         const currentAnswer = updated.answers[selectedQuestion].discoveryAnswers[discoveryIndex];
+        
+        // Calculate impact delta (new score - previous score)
+        const newScore = result.score?.overall || 0;
+        const previousScore = latestScore?.overall || 0;
+        const delta = newScore - previousScore;
+        
+        // Use impactExplanation from backend (not from feedback array)
+        const explanation = result.impactExplanation || 'Impact tested';
+        
         updated.answers[selectedQuestion].discoveryAnswers[discoveryIndex] = {
           ...currentAnswer,
-          impact: result.score.overall - latestScore.overall,
-          newScore: result.score.overall,
-          explanation: result.score.feedback?.[0] || 'Impact calculated',
+          impact: delta,
+          newScore: newScore,
+          explanation: explanation,
           status: 'tested'
         };
         return updated;
@@ -248,7 +304,7 @@ export default function AnswerPracticeWorkspace({
 
   const handleSaveAndRescore = async () => {
     try {
-      setScoring(true);
+      setScoring(prev => ({ ...prev, [selectedQuestion]: true }));
       
       // Combine main answer + all discovery answers
       const discoveryAnswers = currentQuestionData.discoveryAnswers || {};
@@ -289,7 +345,7 @@ export default function AnswerPracticeWorkspace({
     } catch (error: any) {
       alert(`Re-scoring failed: ${error.message}`);
     } finally {
-      setScoring(false);
+      setScoring(prev => ({ ...prev, [selectedQuestion]: false }));
     }
   };
 
@@ -348,7 +404,7 @@ export default function AnswerPracticeWorkspace({
         <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
           Selected Questions ({selectedQuestions.length})
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="question-list">
           {selectedQuestions.map((questionObj, index) => {
             // Handle both object format {question, source, url, category} and string format
             const questionText = typeof questionObj === 'string' ? questionObj : questionObj?.question || `Question ${index + 1}`;
@@ -362,7 +418,20 @@ export default function AnswerPracticeWorkspace({
             return (
               <button
                 key={questionId}
-                onClick={() => setSelectedQuestion(questionId)}
+                data-testid={`question-item-${index}`}
+                onClick={() => {
+                  // Auto-save current answer before switching
+                  if (selectedQuestion && draftAnswer.trim()) {
+                    setInterviewCoachState((prev: any) => {
+                      const updated = { ...prev };
+                      updated.answers = updated.answers || {};
+                      updated.answers[selectedQuestion] = updated.answers[selectedQuestion] || {};
+                      updated.answers[selectedQuestion].mainStory = draftAnswer;
+                      return updated;
+                    });
+                  }
+                  setSelectedQuestion(questionId);
+                }}
                 className={`w-full text-left p-3 rounded-lg transition-all ${
                   isActive
                     ? 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 ring-2 ring-purple-500'
@@ -374,14 +443,24 @@ export default function AnswerPracticeWorkspace({
                     {hasScore ? (qScore >= 75 ? '✅' : '🟡') : '⭕'}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
                       {questionText}
                     </p>
-                    {hasScore && (
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        Score: {qScore}/100
+                    <div className="mt-1 space-y-1">
+                      {hasScore && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Score: {qScore}/100
+                        </p>
+                      )}
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                          Theme: {getQuestionTheme(questionText)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        {getQuestionImportance(questionText)}
                       </p>
-                    )}
+                    </div>
                   </div>
                 </div>
               </button>
@@ -445,11 +524,11 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleScoreAnswer}
-              disabled={scoring || !draftAnswer.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg
+              disabled={scoring[selectedQuestion] || !draftAnswer.trim()}
+              className="flex-1 flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg
                        hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              {scoring ? (
+              {scoring[selectedQuestion] ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   Analyzing...
@@ -461,7 +540,53 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                 </>
               )}
             </button>
+            
+            <button
+              onClick={handleSuggestAnswer}
+              disabled={suggestingAnswer || !selectedQuestion}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
+                       hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              title="AI will generate a contextual example answer to help you win"
+            >
+              {suggestingAnswer ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Suggesting...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4" />
+                  AI Suggest
+                </>
+              )}
+            </button>
           </div>
+
+          {/* Suggested Answer Display */}
+          {suggestedAnswer && (
+            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex justify-between items-start mb-3">
+                <p className="font-semibold text-blue-900 dark:text-blue-100">
+                  💡 AI Suggested Answer
+                </p>
+                <button
+                  onClick={() => {
+                    setDraftAnswer(suggestedAnswer);
+                    setSuggestedAnswer(null);
+                  }}
+                  className="text-sm text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 underline"
+                >
+                  Use This
+                </button>
+              </div>
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-3 leading-relaxed">
+                {suggestedAnswer}
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 italic">
+                This is an inspirational example. Adapt it to your voice and experience - authenticity is key!
+              </p>
+            </div>
+          )}
 
           {/* Score Breakdown */}
           {latestScore && (
@@ -486,7 +611,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
               💬 Discovery Questions ({Object.keys(currentQuestionData.discoveryAnswers || {}).length} remaining)
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Answer these to improve your score. These questions stay the same - no regeneration!
+              Answer these additional questions to help improve your score on this answer.
             </p>
 
             {/* Discovery Grid */}
@@ -645,12 +770,12 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
             <div className="mt-6 flex justify-center">
               <button
                 onClick={handleSaveAndRescore}
-                disabled={scoring}
+                disabled={scoring[selectedQuestion]}
                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 
                          text-white rounded-lg hover:from-purple-700 hover:to-blue-700 
                          disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm"
               >
-                {scoring ? (
+                {scoring[selectedQuestion] ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     Re-scoring Full Answer...
@@ -668,6 +793,52 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
       </div>
     </div>
   );
+}
+
+// Helper: Get question theme
+function getQuestionTheme(question: string): string {
+  const q = question.toLowerCase();
+  
+  if (q.includes('tell me about yourself') || q.includes('walk me through')) {
+    return 'Background';
+  }
+  if (q.includes('why') && (q.includes('company') || q.includes('role'))) {
+    return 'Motivation';
+  }
+  if (q.includes('describe') || q.includes('challenging') || q.includes('conflict')) {
+    return 'Behavioral';
+  }
+  if (q.includes('salary') || q.includes('expectations')) {
+    return 'Compensation';
+  }
+  if (q.includes('leadership') || q.includes('manage')) {
+    return 'Leadership';
+  }
+  
+  return 'General';
+}
+
+// Helper: Get question importance explanation
+function getQuestionImportance(question: string): string {
+  const q = question.toLowerCase();
+  
+  if (q.includes('tell me about yourself')) {
+    return 'Sets the tone - shows career progression and key achievements';
+  }
+  if (q.includes('why') && q.includes('company')) {
+    return 'Tests genuine interest and cultural fit alignment';
+  }
+  if (q.includes('describe') || q.includes('challenging')) {
+    return 'Demonstrates problem-solving skills and STAR methodology';
+  }
+  if (q.includes('salary')) {
+    return 'Logistics question - shows negotiation readiness';
+  }
+  if (q.includes('leadership')) {
+    return 'Assesses management style and team dynamics';
+  }
+  
+  return 'Core interview question - practice thoroughly';
 }
 
 // Helper: Generate smart placeholders based on question type

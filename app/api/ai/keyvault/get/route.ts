@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       networkEnabled: settings.networkEnabled || false,
       provider: settings.provider || 'claude',
       // Claude settings
-      claudeModel: settings.claudeModel || 'claude-3-5-sonnet-20240620',
+      claudeModel: settings.claudeModel || 'claude-3-sonnet-20240229', // Sonnet 3.5
       hasClaudeKey: !!settings.claudeKey,
       // OpenAI settings
       openaiModel: settings.openaiModel || 'gpt-4o-mini',
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       // Tavily settings
       hasTavilyKey: !!settings.tavilyKey,
       // Legacy support
-      model: settings.model || settings.claudeModel || 'claude-3-5-sonnet-20240620',
+      model: settings.model || settings.claudeModel || 'claude-3-sonnet-20240229', // Sonnet 3.5
       hasApiKey: !!(settings.apiKey || settings.claudeKey || settings.openaiKey),
     });
   } catch (error) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       { 
         networkEnabled: false,
         provider: 'claude',
-        claudeModel: 'claude-3-5-sonnet-20240620',
+        claudeModel: 'claude-3-sonnet-20240229', // Sonnet 3.5
         hasClaudeKey: false,
         openaiModel: 'gpt-4o-mini',
         hasOpenaiKey: false,

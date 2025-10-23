@@ -19,7 +19,7 @@ export interface GuardrailCheckResult {
 
 const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 const ESTIMATED_TOKENS_PER_ANALYSIS = 2000;
-const COST_PER_1K_TOKENS = 0.002; // $0.002 per 1K tokens for gpt-4o-mini
+const COST_PER_1K_TOKENS = 0.002; // Pricing varies by model - check Settings Modal for current model costs
 
 // In-memory store for last analysis times (would be better in Redis for production)
 const lastAnalysisMap = new Map<string, { hash: string; timestamp: number }>();

@@ -2,6 +2,7 @@
 
 import { Sparkles, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { getEstimatedJobCost, formatCost } from '@/lib/pricing';
 
 interface AnalyzeButtonProps {
   onAnalyze: () => void | Promise<void>;
@@ -100,10 +101,8 @@ export default function AnalyzeButton({
   const remainingSeconds = Math.max(0, estimatedSeconds - elapsedSeconds);
   const isOverEstimate = elapsedSeconds > estimatedSeconds && !isCompleting;
 
-  // Format cost for display
-  const costDisplay = estimatedCost >= 0.01 
-    ? `$${estimatedCost.toFixed(2)}` 
-    : `${(estimatedCost * 100).toFixed(1)}¢`;
+  // Format cost for display using pricing utility
+  const costDisplay = formatCost(estimatedCost);
 
   return (
     <button

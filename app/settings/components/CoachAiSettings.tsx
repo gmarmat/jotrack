@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Lock, Unlock, Check, AlertCircle } from 'lucide-react';
+import { getEstimatedJobCost, getModelDisplayName, formatCost } from '@/lib/pricing';
 
 export default function CoachAiSettings() {
   const [loading, setLoading] = useState(true);
@@ -223,7 +224,7 @@ export default function CoachAiSettings() {
               <span className="font-medium">Estimated Cost:</span> ${usage.estimatedCost}
             </p>
             <p className="text-xs text-gray-500 mt-2">
-              Costs are approximate based on gpt-4o-mini pricing. Actual costs may vary.
+              Costs are approximate based on {getModelDisplayName(model)} pricing. Actual costs may vary.
             </p>
           </div>
         </div>

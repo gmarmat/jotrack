@@ -33,6 +33,11 @@ export async function searchInterviewQuestions(
     `${companyName} ${roleTitle} interview questions site:glassdoor.com`,
     `${companyName} interview experience site:reddit.com`,
     `${companyName} ${roleTitle} interview site:teamblind.com`,
+    `${companyName} interview questions`,
+    `${companyName} ${roleTitle} interview`,
+    `${companyName} interview process`,
+    `${companyName} interview tips`,
+    `${companyName} interview experience`,
   ];
   
   // Add interviewer-specific searches if names provided

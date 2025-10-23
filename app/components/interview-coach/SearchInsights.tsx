@@ -174,24 +174,14 @@ export default function SearchInsights({
           </div>
         </div>
         
-        {/* Raw questions toggle */}
-        <button
-          onClick={() => setShowRawQuestions(!showRawQuestions)}
-          className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 mb-4"
-        >
-          {showRawQuestions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {showRawQuestions ? 'Hide' : 'View'} all {totalRawQuestions} raw questions
-        </button>
-        
-        {showRawQuestions && (
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 max-h-64 overflow-y-auto text-sm space-y-1">
-            {questionBank.webQuestions?.map((q: any, i: number) => (
-              <div key={i} className="text-gray-700 dark:text-gray-300">
-                • {q.question} <span className="text-xs text-gray-500">({q.source})</span>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Compact breakdown */}
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          <p>
+            Found <strong>{questionBank.webQuestions?.length || 0} web questions</strong> from Glassdoor/Reddit/Blind, 
+            generated <strong>{Object.values(questionBank.aiQuestions || {}).reduce((acc: number, p: any) => acc + (p?.questions?.length || 0), 0)} AI questions</strong>, 
+            and synthesized into <strong>{synthesizedQuestions.length} final questions</strong> for practice.
+          </p>
+        </div>
       </div>
       
       {/* Theme Clustering */}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Sparkles, Check, Clock } from 'lucide-react';
+import { Search, Sparkles, Check, Clock, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 
 interface Props {
   jobId: string;
@@ -10,6 +10,7 @@ interface Props {
   roleTitle: string;
   onSearchComplete: (questionBank: any) => void;
   existingQuestionBank?: any;
+  analysisData?: any; // For stats display
 }
 
 export default function WelcomeSearch({
@@ -18,11 +19,19 @@ export default function WelcomeSearch({
   companyName,
   roleTitle,
   onSearchComplete,
-  existingQuestionBank
+  existingQuestionBank,
+  analysisData
 }: Props) {
   const [searching, setSearching] = useState(false);
-  const [progress, setProgress] = useState({ step: '', percent: 0 });
-  const [autoTriggered, setAutoTriggered] = useState(false);
+  const [searchComplete, setSearchComplete] = useState(false);
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [expandedSections, setExpandedSections] = useState({
+    webQuestions: false,
+    aiQuestions: false,
+    finalQuestions: false,
+    signals: false,
+    customQuestion: false
+  });
 
   const personaTitles = {
     'recruiter': { icon: '📞', title: 'Recruiter Screen', focus: 'Culture Fit & Motivation' },
@@ -32,78 +41,21 @@ export default function WelcomeSearch({
 
   const currentPersona = personaTitles[persona];
 
-  // Auto-trigger search if no existing question bank
-  useEffect(() => {
-    if (!existingQuestionBank && !autoTriggered && !searching) {
-      console.log('🚀 Auto-triggering Interview Coach search...');
-      setAutoTriggered(true);
-      handleStartSearch();
-    }
-  }, [existingQuestionBank, autoTriggered, searching]);
-
-  // If questions already searched, show completion state
-  if (existingQuestionBank) {
-    const questionCount = 
-      (existingQuestionBank.webQuestions?.length || 0) +
-      (existingQuestionBank.aiQuestions?.recruiter?.questions?.length || 0) +
-      (existingQuestionBank.aiQuestions?.hiringManager?.questions?.length || 0) +
-      (existingQuestionBank.aiQuestions?.peer?.questions?.length || 0);
-
-    return (
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <div className="text-center">
-            <div className="text-6xl mb-4">✅</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Questions Already Found!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              We found <strong>{questionCount} questions</strong> for you.
-            </p>
-            
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-center gap-2 text-sm text-green-700 dark:text-green-300">
-                <Clock size={16} />
-                Cached - no repeat search needed!
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => onSearchComplete(existingQuestionBank)}
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
-                         hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
-              >
-                Continue to Question Selection →
-              </button>
-              
-              <button
-                onClick={() => {
-                  if (confirm('Restart search with fresh data? This will clear cached results and search again.')) {
-                    setSearching(true);
-                    setProgress({ step: 'Starting fresh search...', percent: 0 });
-                    handleStartSearch();
-                  }
-                }}
-                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg
-                         hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold"
-              >
-                🔄 Restart Search
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Format timestamp helper
+  const formatTimestamp = (timestamp: number) => {
+    if (!timestamp || timestamp === 0) return 'Never';
+    // Handle both seconds and milliseconds
+    const ms = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+    return new Date(ms).toLocaleString();
+  };
 
   const handleStartSearch = async () => {
     try {
       setSearching(true);
+      setSearchComplete(false);
+      setSearchResults(null);
       
       // Step 1: Web search
-      setProgress({ step: 'Searching Glassdoor, Reddit, Blind...', percent: 20 });
-      
       const searchRes = await fetch(`/api/jobs/${jobId}/interview-questions/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,35 +63,17 @@ export default function WelcomeSearch({
       });
 
       if (!searchRes.ok) throw new Error('Web search failed');
-      
       const searchData = await searchRes.json();
-      setProgress({ step: 'Web search complete! Analyzing patterns...', percent: 50 });
       
       // Step 2: Generate AI questions
-      setProgress({ step: 'Generating persona-specific questions...', percent: 70 });
-      
       const generateRes = await fetch(`/api/jobs/${jobId}/interview-questions/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          persona: persona  // Fixed: API expects 'persona' not 'personas'
-        })
+        body: JSON.stringify({ persona })
       });
 
       if (!generateRes.ok) throw new Error('AI generation failed');
-      
       const generateData = await generateRes.json();
-      setProgress({ step: 'Complete! Preparing questions...', percent: 100 });
-      
-      console.log('🔍 Generate Data Debug:', {
-        hasQuestions: !!generateData.questions,
-        hasThemes: !!generateData.themes,
-        hasSynthesizedQuestions: !!generateData.synthesizedQuestions,
-        themesLength: generateData.themes?.length || 0,
-        synthesizedLength: generateData.synthesizedQuestions?.length || 0,
-        questionsKeys: Object.keys(generateData.questions || {}),
-        fullGenerateData: generateData
-      });
       
       // Combine results
       const totalQuestions = (searchData.questions?.length || 0) + 
@@ -153,34 +87,7 @@ export default function WelcomeSearch({
         searchedAt: searchData.searchedAt,
         generatedAt: generateData.generatedAt,
         persona,
-        // AI Synthesis data (for insights page)
-        // TODO: Backend should return these, using smart defaults for now
-        themes: generateData.themes || [
-          { 
-            theme: 'Culture Fit & Motivation', 
-            questionCount: Math.ceil(totalQuestions * 0.35), 
-            representative: persona === 'recruiter' ? 'Why this company?' : 'Tell me about your leadership style',
-            sampleQuestions: searchData.questions?.slice(0, 3).map((q: any) => q.question) || []
-          },
-          { 
-            theme: 'Past Experience & Skills', 
-            questionCount: Math.ceil(totalQuestions * 0.30), 
-            representative: 'Tell me about yourself',
-            sampleQuestions: searchData.questions?.slice(3, 6).map((q: any) => q.question) || []
-          },
-          { 
-            theme: 'Behavioral (STAR)', 
-            questionCount: Math.ceil(totalQuestions * 0.25), 
-            representative: 'Describe a challenging project or conflict',
-            sampleQuestions: searchData.questions?.slice(6, 9).map((q: any) => q.question) || []
-          },
-          { 
-            theme: 'Logistics & Compensation', 
-            questionCount: Math.ceil(totalQuestions * 0.10), 
-            representative: 'What are your salary expectations?',
-            sampleQuestions: []
-          }
-        ],
+        themes: generateData.themes || [],
         synthesizedQuestions: generateData.synthesizedQuestions && generateData.synthesizedQuestions.length > 0 
           ? generateData.synthesizedQuestions 
           : [
@@ -191,167 +98,447 @@ export default function WelcomeSearch({
             ]
       };
       
-      // Transition to insights page (not immediate selection)
-      setTimeout(() => {
-        onSearchComplete(questionBank);
-      }, 1000);
+      setSearching(false);
+      setSearchComplete(true);
+      setSearchResults(questionBank);
       
     } catch (error: any) {
       alert(`Search failed: ${error.message}`);
       setSearching(false);
-      setProgress({ step: '', percent: 0 });
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto">
-      <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 
-                    rounded-2xl shadow-xl p-8 border border-purple-200 dark:border-purple-800">
-        
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{currentPersona.icon}</div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {currentPersona.title} Interview Prep
-          </h2>
-          <p className="text-lg text-purple-600 dark:text-purple-400 font-medium">
-            {currentPersona.focus}
+  // If questions already searched, show completion state with progressive disclosure
+  if (existingQuestionBank) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Welcome Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Welcome to Interview Coach
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+            We'll help you prep and ace your interview with personalized questions and guidance
           </p>
         </div>
 
-        {!searching ? (
-          <>
-            {/* Welcome content */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Let's find the best interview questions
-              </h3>
-              
-              <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🌐</span>
-                  <div>
-                    <p className="font-semibold">Multi-Source Web Search</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Search Glassdoor, Reddit, Blind for real interview experiences at {companyName}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🤖</span>
-                  <div>
-                    <p className="font-semibold">AI Analysis & Filtering</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Analyze 50-100 questions, filter by relevance to {roleTitle} role
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">✨</span>
-                  <div>
-                    <p className="font-semibold">Persona-Specific Generation</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Generate 10 additional questions tailored for {currentPersona.title}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mt-4">
-                <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
-                  <Check size={16} />
-                  <strong>Result: 10-15 high-quality questions curated for YOUR interview</strong>
-                </p>
-              </div>
-            </div>
-
-            {/* Call to action */}
+        {/* How It Works */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              {!autoTriggered ? (
-                <>
-                  <button
-                    onClick={handleStartSearch}
-                    className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
-                             hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
-                             transform hover:scale-105"
-                  >
-                    <Search className="inline w-5 h-5 mr-2" />
-                    Find Interview Questions
-                  </button>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                    ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-purple-100 to-blue-100 
-                                   dark:from-purple-900/50 dark:to-blue-900/50 text-purple-700 dark:text-purple-300 
-                                   font-bold text-lg rounded-xl border border-purple-200 dark:border-purple-700">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
-                    Auto-searching...
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                    🚀 Automatically finding the best questions for you
-                  </p>
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Search in progress */}
-            <div className="text-center space-y-6">
-              <div className="text-4xl animate-pulse">🔍</div>
-              
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {progress.step}
-              </h3>
-              
-              {/* Progress bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000 ease-out"
-                  style={{ width: `${progress.percent}%` }}
-                />
-              </div>
-              
+              <div className="text-4xl mb-3">🔍</div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Questions</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {progress.percent}% complete
+                Search online sources and generate AI questions tailored to your role
               </p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-3">📝</div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. Practice & Score</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Write STAR stories and get AI feedback to improve your answers
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-3">✨</div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Talk Tracks</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Get detailed talking points and memorize key stories
+              </p>
+            </div>
+          </div>
+        </div>
 
-              {/* Live status updates */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 text-left space-y-2 text-sm">
-                <div className={`flex items-center gap-2 ${progress.percent >= 20 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 20 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />}
-                  Searching Glassdoor reviews
+        {/* Search Results with Progressive Disclosure */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Search Results</h2>
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <Clock size={16} />
+              Last run: {formatTimestamp(existingQuestionBank.searchedAt)}
+            </div>
+          </div>
+
+          {/* Web Questions Section */}
+          <div className="mb-6">
+            <button
+              onClick={() => setExpandedSections(prev => ({ ...prev, webQuestions: !prev.webQuestions }))}
+              className="flex items-center justify-between w-full p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-600" />
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  Web Search Complete
+                </span>
+                <span className="text-sm text-blue-600 dark:text-blue-400">
+                  Found {existingQuestionBank.webQuestions?.length || 0} questions
+                </span>
+              </div>
+              {expandedSections.webQuestions ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </button>
+            
+            {expandedSections.webQuestions && (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+                {existingQuestionBank.webQuestions?.slice(0, 3).map((q: any, index: number) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{index + 1}.</span>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{q.question}</p>
+                      {q.source && (
+                        <a 
+                          href={q.source} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors mt-1"
+                        >
+                          {new URL(q.source).hostname.replace('www.', '')}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {existingQuestionBank.webQuestions?.length > 3 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    ...and {existingQuestionBank.webQuestions.length - 3} more questions
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* AI Questions Section */}
+          <div className="mb-6">
+            <button
+              onClick={() => setExpandedSections(prev => ({ ...prev, aiQuestions: !prev.aiQuestions }))}
+              className="flex items-center justify-between w-full p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-600" />
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  AI Generation Complete
+                </span>
+                <span className="text-sm text-purple-600 dark:text-purple-400">
+                  Generated {Object.values(existingQuestionBank.aiQuestions || {}).reduce((acc: number, p: any) => acc + (p?.questions?.length || 0), 0)} questions
+                </span>
+              </div>
+              {expandedSections.aiQuestions ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </button>
+            
+            {expandedSections.aiQuestions && (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-4">
+                {Object.entries(existingQuestionBank.aiQuestions || {}).map(([personaName, data]: [string, any]) => (
+                  <div key={personaName} className="border-l-4 border-purple-300 pl-4">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-3 capitalize flex items-center gap-2">
+                      {personaName === 'recruiter' && '📞 Recruiter Questions'}
+                      {personaName === 'hiring_manager' && '👨‍💼 Hiring Manager Questions'}
+                      {personaName === 'peer' && '👥 Peer/Panel Questions'}
+                    </h4>
+                    <div className="space-y-2">
+                      {data?.questions?.map((q: any, index: number) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400 min-w-fit">{index + 1}.</span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {typeof q === 'string' ? q : q.question || q}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Final Questions Section - WITH RATIONALE */}
+          <div className="mb-6">
+            <button
+              onClick={() => setExpandedSections(prev => ({ ...prev, finalQuestions: !prev.finalQuestions }))}
+              className="flex items-center justify-between w-full p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-600" />
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  Final Questions Selected
+                </span>
+                <span className="text-sm text-green-600 dark:text-green-400">
+                  {existingQuestionBank.synthesizedQuestions?.length || 0} questions ready for practice
+                </span>
+              </div>
+              {expandedSections.finalQuestions ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </button>
+            
+            {expandedSections.finalQuestions && (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-4">
+                {/* Insights */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-l-4 border-blue-400">
+                  <h5 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">How We Selected These Questions</h5>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                    We analyzed <strong>{Object.values(existingQuestionBank.aiQuestions || {}).reduce((acc: number, p: any) => acc + (p?.questions?.length || 0), 0)} AI-generated questions</strong> and <strong>{existingQuestionBank.webQuestions?.length || 0} web questions</strong> to identify the most representative topics. These {existingQuestionBank.synthesizedQuestions?.length || 0} questions cover ~90% of likely interview scenarios for this role.
+                  </p>
                 </div>
-                <div className={`flex items-center gap-2 ${progress.percent >= 30 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 30 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />}
-                  Searching Reddit experiences
+                
+                {/* Signals Used */}
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border-l-4 border-purple-400">
+                  <h5 className="font-semibold text-purple-900 dark:text-purple-300 mb-3">Signals Used in Selection</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-purple-800 dark:text-purple-200">
+                    <div>✓ Job Description: {existingQuestionBank?.sources?.filter((s: any) => s.source === 'jd')?.length || 0} keywords aligned</div>
+                    <div>✓ Company: {companyName} culture & values</div>
+                    <div>✓ Resume: {existingQuestionBank?.themes?.length || 0} skill themes identified</div>
+                    <div>✓ Interviewer: {persona} profile preferences</div>
+                  </div>
                 </div>
-                <div className={`flex items-center gap-2 ${progress.percent >= 40 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 40 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />}
-                  Searching Blind discussions
+                
+                {/* Final Questions */}
+                <div>
+                  <h5 className="font-semibold text-gray-900 dark:text-white mb-3">Questions to Practice</h5>
+                  <div className="space-y-3">
+                    {existingQuestionBank.synthesizedQuestions?.map((q: string, index: number) => (
+                      <div key={index} className="bg-white dark:bg-gray-600/30 p-3 rounded border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-start gap-3">
+                          <span className="text-sm font-bold text-purple-600 dark:text-purple-400 min-w-fit">{index + 1}.</span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{q}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className={`flex items-center gap-2 ${progress.percent >= 50 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 50 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full animate-spin" />}
-                  Analyzing question patterns
+              </div>
+            )}
+          </div>
+
+          {/* Continue Button */}
+          <div className="text-center">
+            <button
+              onClick={() => onSearchComplete(existingQuestionBank)}
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
+                       hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
+            >
+              Continue to Practice →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Welcome Header */}
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          Welcome to Interview Coach
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+          We'll help you prep and ace your interview with personalized questions and guidance
+        </p>
+      </div>
+
+      {/* How It Works */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="text-center">
+            <div className="text-4xl mb-3">🔍</div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Questions</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Search online sources and generate AI questions tailored to your role
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl mb-3">📝</div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. Practice & Score</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Write STAR stories and get AI feedback to improve your answers
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl mb-3">✨</div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Talk Tracks</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Get detailed talking points and memorize key stories
+            </p>
+          </div>
+        </div>
+
+        {/* Signals We Use - Collapsible */}
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <button
+            onClick={() => setExpandedSections(prev => ({ ...prev, signals: !prev.signals }))}
+            className="flex items-center justify-between w-full p-6 text-left hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors rounded-lg"
+          >
+            <h3 className="font-semibold text-gray-900 dark:text-white">Signals We Use</h3>
+            {expandedSections.signals ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </button>
+          
+          {expandedSections.signals && (
+            <div className="px-6 pb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
+                <div>• Job Description keywords and requirements</div>
+                <div>• Company culture and values</div>
+                <div>• Resume experience and skills</div>
+                <div>• Interviewer profiles and preferences</div>
+                <div>• Your writing style for natural delivery</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Custom Question Input */}
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <button
+            onClick={() => setExpandedSections(prev => ({ ...prev, customQuestion: !prev.customQuestion }))}
+            className="flex items-center justify-between w-full p-6 text-left hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors rounded-lg"
+          >
+            <h3 className="font-semibold text-gray-900 dark:text-white">Add Custom Question</h3>
+            {expandedSections.customQuestion ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </button>
+          
+          {expandedSections.customQuestion && (
+            <div className="px-6 pb-6">
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Have a specific question you want to practice? Add it here and we'll help you prepare for it.
+                </p>
+                <textarea
+                  placeholder="Enter your custom interview question here..."
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+                <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                  Add Question
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search Button */}
+      <div className="text-center">
+        <button
+          onClick={handleStartSearch}
+          disabled={searching}
+          className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
+                   hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
+                   transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <Search className="inline w-5 h-5 mr-2" />
+          {searching ? 'Searching...' : 'Begin Search & Analysis'}
+        </button>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+          ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
+        </p>
+      </div>
+
+      {/* Search in Progress */}
+      {searching && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="text-center space-y-6">
+            <div className="text-4xl animate-pulse">🔍</div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              Searching for your interview questions...
+            </h3>
+            
+            {/* Three Status Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">🌐</div>
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Searching Online Sources</h4>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">Glassdoor, Reddit, Blind</p>
+                  <div className="mt-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
                 </div>
-                <div className={`flex items-center gap-2 ${progress.percent >= 70 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 70 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />}
-                  Generating AI questions ({currentPersona.title})
+              </div>
+              
+              <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">🤖</div>
+                  <h4 className="font-semibold text-purple-800 dark:text-purple-300 mb-1">Generating Relevant Questions</h4>
+                  <p className="text-xs text-purple-600 dark:text-purple-400">AI-powered analysis</p>
+                  <div className="mt-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mx-auto"></div>
+                  </div>
                 </div>
-                <div className={`flex items-center gap-2 ${progress.percent >= 100 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
-                  {progress.percent >= 100 ? <Check size={16} /> : <div className="w-4 h-4 border-2 border-gray-300 rounded-full" />}
-                  Finalizing question list
+              </div>
+              
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">✨</div>
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 mb-1">Synthesizing Final Questions</h4>
+                  <p className="text-xs text-green-600 dark:text-green-400">Curating best questions</p>
+                  <div className="mt-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mx-auto"></div>
+                  </div>
                 </div>
               </div>
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search Complete */}
+      {searchComplete && searchResults && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="text-center space-y-6">
+            <div className="text-6xl">🎉</div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Search Complete!
+            </h3>
+            
+            {/* Source Breakdown */}
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                <div className="font-semibold text-blue-800 dark:text-blue-300 text-2xl">
+                  {searchResults.webQuestions?.length || 0}
+                </div>
+                <div className="text-xs text-blue-600 dark:text-blue-400">Web Questions</div>
+              </div>
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
+                <div className="font-semibold text-purple-800 dark:text-purple-300 text-2xl">
+                  {Object.values(searchResults.aiQuestions || {}).reduce((acc: number, p: any) => acc + (p?.questions?.length || 0), 0)}
+                </div>
+                <div className="text-xs text-purple-600 dark:text-purple-400">AI Generated</div>
+              </div>
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                <div className="font-semibold text-green-800 dark:text-green-300 text-2xl">
+                  {searchResults.synthesizedQuestions?.length || 0}
+                </div>
+                <div className="text-xs text-green-600 dark:text-green-400">Final Questions</div>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <p className="text-sm text-green-700 dark:text-green-300">
+                ✅ Questions found successfully! Ready to proceed to practice.
+              </p>
+            </div>
+            
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => onSearchComplete(searchResults)}
+                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
+                         hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
+              >
+                Continue to Practice →
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSearchComplete(false);
+                  setSearchResults(null);
+                }}
+                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg
+                         hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold"
+              >
+                🔄 Search Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

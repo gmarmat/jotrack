@@ -20,14 +20,12 @@ const ALGORITHM = 'aes-256-cbc';
 // v1.3: Model allowlist for safety
 // v2.7: Added o1-preview for advanced reasoning
 // v2.8: Added Claude models
-// v2.9: Added Claude Sonnet 4.5 (latest)
 const ALLOWED_MODELS = [
   // OpenAI
   'gpt-4o-mini', 'gpt-4o', 'o1-preview', 'gpt-4-turbo', 'gpt-3.5-turbo',
   // Claude/Anthropic
   'claude-3-5-sonnet-20240620', 'claude-3-5-sonnet-20241022', 'claude-3-opus-20240229',
-  'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
-  'claude-sonnet-4-5-20250929' // Latest Claude Sonnet 4.5
+  'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'
 ];
 
 export interface AiSettings {
@@ -196,7 +194,7 @@ export async function getAiProviderConfig(): Promise<AiProviderConfig | null> {
   
   if (settings.provider === 'claude') {
     apiKey = settings.claudeKey || settings.apiKey; // Fallback to legacy
-    model = settings.claudeModel || settings.model || 'claude-3-sonnet-20240229'; // Default to Sonnet 3.5
+    model = settings.claudeModel || settings.model || 'claude-3-5-sonnet-20240620';
   } else {
     apiKey = settings.openaiKey || settings.apiKey; // Fallback to legacy
     model = settings.openaiModel || settings.model || 'gpt-4o-mini';
@@ -385,19 +383,57 @@ async function fetchClaudeModels(apiKey: string): Promise<string[]> {
 }
 
 /**
-/**
- * v1.4: Simplified validation - trust persisted settings, no auto-recovery API calls
- * Only validates model is in allowlist. If invalid, user must update Settings.
+ * v1.3: Validate model against allowlist with auto-recovery
  */
-function validateModel(model: string): string {
+async function validateModel(model: string, config: AiProviderConfig): Promise<string> {
+  
   if (ALLOWED_MODELS.includes(model)) {
-    return model;  // ✅ Valid, use it directly
+    return model;
   }
   
+  console.warn(`⚠️ Model "${model}" not in allowlist, attempting auto-recovery...`);
+  
+  // Auto-recovery for Claude models
+  if (config.provider === 'claude' && model.startsWith('claude')) {
+    console.log('🔍 Fetching latest Claude models from API...');
+    const availableModels = await fetchClaudeModels(config.apiKey);
+    
+    if (availableModels.length > 0) {
+      console.log(`📋 Found ${availableModels.length} Claude models:`, availableModels);
+      
+      // Try to find the best mid-tier model (priority order)
+      const preferredModels = [
+        'claude-3-5-sonnet-20240620',  // Best balance
+        'claude-3-5-sonnet-20241022',  // Newer
+        'claude-3-sonnet-20240229',    // Fallback
+      ];
+      
+      for (const preferred of preferredModels) {
+        if (availableModels.includes(preferred)) {
+          console.log(`✅ Auto-selected model: ${preferred}`);
+          
+          // Update settings with corrected model
+          const settings = await getAiSettings();
+          await saveAiSettings({ ...settings, claudeModel: preferred });
+          
+          return preferred;
+        }
+      }
+      
+      // If none of preferred found, use first Sonnet model
+      const sonnetModel = availableModels.find(m => m.includes('sonnet'));
+      if (sonnetModel) {
+        console.log(`✅ Auto-selected Sonnet model: ${sonnetModel}`);
+        const settings = await getAiSettings();
+        await saveAiSettings({ ...settings, claudeModel: sonnetModel });
+        return sonnetModel;
+      }
+    }
+  }
+  
+  // If auto-recovery fails, throw error with helpful message
   throw new Error(
-    `❌ Model "${model}" not supported.\n` +
-    `Allowed: ${ALLOWED_MODELS.join(', ')}\n` +
-    `Fix: Go to Settings → AI Configuration to select a valid model`
+    `Model "${model}" is not allowed. Supported models: ${ALLOWED_MODELS.join(', ')}`
   );
 }
 
@@ -445,8 +481,8 @@ export async function callAiProvider(
   }
 
   // v1.3: Validate model with auto-recovery
-  // v1.4: Simplified validation - trust settings, no API calls
-  config.model = validateModel(config.model);
+  const validatedModel = await validateModel(config.model, config);
+  config.model = validatedModel; // Use corrected model
 
   // Map capability to prompt kind
   const promptKind = mapCapabilityToPromptKind(capability);
@@ -474,7 +510,7 @@ export async function callAiProvider(
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: config.model, // Use only settings, no fallback
+        model: config.model || 'claude-3-5-sonnet-20240620',
         max_tokens: getMaxTokens(capability),
         messages: [
           {
@@ -549,7 +585,7 @@ export async function callAiProvider(
         Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify({
-        model: config.model, // Use only settings, no fallback
+        model: config.model || 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

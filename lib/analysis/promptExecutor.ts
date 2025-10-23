@@ -129,7 +129,7 @@ async function callClaudeApi(prompt: string, apiKey: string, model: string): Pro
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: model || 'claude-3-5-sonnet-20240620',
+        model: model, // Must come from settings - no fallback allowed
         max_tokens: 8000,
         temperature: 0.3,
         system: 'You are an expert career advisor and analyst. Follow the prompt instructions exactly and return only valid JSON.',
@@ -204,7 +204,7 @@ async function callOpenAiApi(prompt: string, apiKey: string, model: string): Pro
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: model || 'gpt-4o-mini',
+        model: model, // Must come from settings - no fallback allowed
         messages: [
           {
             role: 'system',

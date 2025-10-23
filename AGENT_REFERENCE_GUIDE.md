@@ -3,6 +3,7 @@
 **Purpose**: Single source of truth for AI assistants working on this codebase  
 **Last Updated**: October 21, 2025  
 **Status**: Living document - update after major changes
+**Recent Updates**: Fixed Interview Coach template placeholder issues, AI synthesis step, and web search limitations
 
 ---
 
@@ -390,16 +391,18 @@ import {
 
 ## 🤖 AI Integration
 
-### Current Model Usage (as of Oct 21, 2025)
+### Current Model Usage (as of Jan 2025)
 
-**Primary Model**: Claude 3.5 Sonnet (claude-3-5-sonnet-20241022)  
-**Fallback**: GPT-4o-mini (gpt-4-turbo-2024-04-09)
+**Primary Model**: Claude Sonnet 4.5 (claude-3-5-sonnet-20241022)  
+**Fallback**: Claude Haiku 4.5 (claude-3-5-haiku-20241022)
 
-**Cost per 1M tokens**:
-- Claude 3.5 Sonnet: $3 input / $15 output
-- Claude 3.5 Haiku: $0.25 input / $1.25 output  
-- GPT-4o: $2.50 input / $10 output
-- GPT-4o-mini: $0.15 input / $0.60 output
+**Cost per 1M tokens** (see [ANTHROPIC_PRICING_2025.md](ANTHROPIC_PRICING_2025.md) for complete pricing):
+- Claude Sonnet 4.5: $3 input / $15 output
+- Claude Haiku 4.5: $1 input / $5 output  
+- Claude Sonnet 3.7: $3 input / $15 output (fallback)
+- Claude Haiku 3.5: $0.80 input / $4 output (fallback)
+
+**Pricing Reference**: See `ANTHROPIC_PRICING_2025.md` for complete Anthropic pricing tables, batch processing discounts, and cost optimization strategies.
 
 ### When to Use Which Model
 
@@ -1412,6 +1415,26 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 // - pt-16 (64px) provides space for control bar
 // - items-start positions modal at top instead of center
 ```
+
+### Recent Interview Coach Fixes (October 21, 2025)
+
+**Critical Issues Resolved**:
+- **Template Placeholder Replacement**: Fixed nested object passing to templates - now passes flattened strings (recruiterProfileName, recruiterProfileTitle, etc.)
+- **AI Synthesis Step**: Improved error handling and fallback logic to ensure themes and synthesized questions are always returned
+- **Web Search Limitation**: Broadened search queries from 3 to 8 queries and improved question extraction patterns
+- **Auto-Navigation Issues**: Removed auto-trigger search and auto-move to Insights - now user-controlled flow
+
+**Technical Changes**:
+- Updated `app/api/jobs/[id]/interview-questions/generate/route.ts` to pass flattened profile data
+- Enhanced `lib/interviewQuestions/searchQuestions.ts` with broader search queries
+- Improved `lib/interview/webIntelligence.ts` with better question extraction patterns
+- Modified `app/components/interview-coach/WelcomeSearch.tsx` to remove auto-navigation
+
+**Results**:
+- ✅ Template placeholders now properly replaced
+- ✅ AI synthesis step working (themes and synthesized questions returned)
+- ✅ Web search finding multiple questions instead of just 1
+- ✅ User-controlled flow instead of auto-navigation
 
 ### Recent UI Improvements (October 21, 2025)
 

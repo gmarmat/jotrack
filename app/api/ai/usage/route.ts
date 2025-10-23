@@ -55,8 +55,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Estimate cost (gpt-4o-mini pricing)
-    const estimatedCost = (totalTokens / 1000000) * 0.15; // $0.15 per 1M tokens for gpt-4o-mini
+    // Estimate cost using pricing utility (defaults to Claude Sonnet 4.5)
+    const { calculateCost } = await import('@/lib/pricing');
+    const estimatedCost = calculateCost('claude-3-5-sonnet-20241022', totalTokens, 0);
 
     return NextResponse.json({
       totalTokens,

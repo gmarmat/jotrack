@@ -12,6 +12,31 @@ interface RouteContext {
 }
 
 /**
+ * Generate human-readable explanation for score changes
+ */
+function generateScoringExplanation(data: {
+  oldScore: number;
+  newScore: number;
+  delta: number;
+  feedback?: any;
+}): string {
+  const { oldScore, newScore, delta, feedback } = data;
+  
+  let explanation = '';
+  
+  if (delta === 0) {
+    explanation = 'Score unchanged. Your answers confirmed your initial narrative.';
+  } else if (delta > 0) {
+    explanation = `+${delta}pts! Discovery answers strengthened your narrative with more context.`;
+  } else {
+    explanation = `${delta}pts. Discovery revealed gaps (scope/quantification). Refine your example.`;
+  }
+  
+  return explanation;
+}
+
+
+/**
  * POST /api/interview-coach/[jobId]/score-answer
  * Scores user's draft answer and generates follow-up questions
  * Preserves all iterations in coach_state.interview_coach_json
@@ -23,7 +48,7 @@ export async function POST(
   try {
     const jobId = context.params.jobId;
     const body = await request.json();
-    const { questionId, answerText, iteration = 1, testOnly = false } = body;
+    const { questionId, answerText, iteration = 1, testOnly = false, followUpQA } = body;
     
     if (!questionId || !answerText) {
       return NextResponse.json(
@@ -88,13 +113,25 @@ export async function POST(
       answerLength: answerText.length
     });
     
+    // If this is a discovery question impact test, combine answers for context
+    let enhancedAnswer = answerText;
+    if (testOnly && followUpQA && followUpQA.question && followUpQA.answer) {
+      console.log(`📝 Adding discovery context to answer for impact test...`);
+      enhancedAnswer = `${answerText}\n\nAdditional context from follow-up:\nQ: ${followUpQA.question}\nA: ${followUpQA.answer}`;
+      console.log(`📊 Enhanced answer length: ${enhancedAnswer.length}`);
+    }
+    
     // Score answer with AI
     const aiResult = await callAiProvider('answer-scoring', {
-      answerText,
-      question: questionId, // Pass question text for context
+      answerText: enhancedAnswer,
+      question: questionId,
       jdContext,
       writingStyleProfile: writingStyle ? JSON.stringify(writingStyle) : '{}',
-      interviewerProfile: interviewerProfile || null  // Pass interviewer profile if available
+      interviewerProfileName: interviewerProfile?.name || '',
+      interviewerProfileRole: interviewerProfile?.role || '',
+      interviewerProfileCommunicationStyle: interviewerProfile?.communicationStyle || '',
+      interviewerProfileKeyPriorities: interviewerProfile?.keyPriorities || '',
+      interviewerProfileRedFlags: interviewerProfile?.redFlags || ''
     }, false, 'v1');
     
     // Parse result
@@ -109,11 +146,27 @@ export async function POST(
       scoreData = aiResult.result;
     }
     
+    // Comprehensive defensive check
+    if (!scoreData) {
+      console.error('❌ scoreData is null/undefined:', { aiResult });
+      throw new Error('AI failed to return scoring data');
+    }
+    
+    // Ensure feedback object exists to prevent undefined errors
+    scoreData.feedback = scoreData.feedback || {};
+    
+    // Ensure score arrays exist
+    if (!scoreData.iterations) scoreData.iterations = [];
+    if (!scoreData.scores) scoreData.scores = [];
+    if (!scoreData.followUpQuestions) scoreData.followUpQuestions = [];
+    
     console.log('✅ Answer scored:', {
       overall: scoreData.overall,
       category: scoreData.scoreCategory,
       followUps: scoreData.followUpQuestions?.length || 0,
-      testOnly
+      testOnly,
+      hasIterations: Array.isArray(scoreData.iterations),
+      hasScores: Array.isArray(scoreData.scores)
     });
     
     // V2.0: Generate weakness framings for strategic guidance
@@ -142,12 +195,15 @@ export async function POST(
         ? JSON.parse(webIntelRow.web_intelligence_json).warnings || []
         : [];
       
-      framings = generateWeaknessFramings(
-        resumeVariant.aiOptimized || resumeVariant.raw || '',
-        matchScoreData,
-        careerTrajectory,
-        webWarnings
-      );
+      // Only call if we have valid inputs
+      if (resumeVariant && careerTrajectory) {
+        framings = generateWeaknessFramings(
+          resumeVariant.aiOptimized || resumeVariant.raw || '',
+          matchScoreData,
+          careerTrajectory,
+          webWarnings
+        );
+      }
       
       // Enhance feedback with relevant framings
       if (scoreData.feedback?.summary) {
@@ -155,31 +211,28 @@ export async function POST(
           scoreData.feedback.summary.toLowerCase().includes(f.weakness.toLowerCase()) ||
           f.dontSay.some((dont: string) => scoreData.feedback.summary.toLowerCase().includes(dont.toLowerCase()))
         );
+      } else {
+        // Initialize feedback object if it doesn't exist
+        if (!scoreData.feedback) {
+          scoreData.feedback = {};
+        }
+        scoreData.feedback.framings = scoreData.feedback.framings || [];
       }
       
       console.log(`✅ Generated ${framings.length} weakness framings, ${scoreData.feedback?.framings?.length || 0} relevant to this answer`);
     } catch (error) {
       console.warn('⚠️ Failed to generate framings (non-blocking):', error);
-    }
-    
-    // If testOnly mode, return score without saving
-    if (testOnly) {
-      return NextResponse.json({
-        success: true,
-        score: scoreData,
-        iteration,
-        testOnly: true,
-        metadata: {
-          tokensUsed: aiResult.tokensUsed || 0,
-          cost: aiResult.cost || 0
-        }
-      });
+      // Ensure feedback exists even if framing generation fails
+      if (!scoreData.feedback) {
+        scoreData.feedback = {};
+      }
+      scoreData.feedback.framings = [];
     }
     
     // Save to coach_state.interview_coach_json (APPEND, don't replace!)
     const now = Math.floor(Date.now() / 1000);
     
-    // Get current interview coach data
+    // Get current interview coach data (needed for BOTH testOnly and regular modes)
     let interviewCoachData: any = {};
     if (coachStateRow?.interview_coach_json) {
       try {
@@ -198,6 +251,44 @@ export async function POST(
       followUpAnswers: [],
       status: 'draft'
     };
+    
+    // Calculate impact explanation for score changes (before modifying scores array)
+    let impactExplanation = '';
+    const previousScores = interviewCoachData.answers[questionId]?.scores;
+    if (previousScores && previousScores.length > 0) {
+      const previousScore = previousScores[previousScores.length - 1]; // Last existing score
+      const newScore = scoreData.overall;
+      const delta = newScore - previousScore.overall;
+      impactExplanation = generateScoringExplanation({
+        oldScore: previousScore.overall,
+        newScore,
+        delta,
+        feedback: scoreData.feedback
+      });
+    }
+    
+    // If testOnly mode, return with impact explanation
+    if (testOnly) {
+      return NextResponse.json({
+        success: true,
+        score: scoreData,
+        impactExplanation,
+        iteration,
+        testOnly: true,
+        metadata: {
+          tokensUsed: aiResult.tokensUsed || 0,
+          cost: aiResult.cost || 0
+        }
+      });
+    }
+    
+    // Defensive check before push
+    if (!Array.isArray(interviewCoachData.answers[questionId].iterations)) {
+      interviewCoachData.answers[questionId].iterations = [];
+    }
+    if (!Array.isArray(interviewCoachData.answers[questionId].scores)) {
+      interviewCoachData.answers[questionId].scores = [];
+    }
     
     // Append iteration (preserve all history!)
     interviewCoachData.answers[questionId].iterations.push({
@@ -244,6 +335,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       score: scoreData,
+      impactExplanation,
       iteration,
       savedAt: now,
       metadata: {
@@ -254,7 +346,7 @@ export async function POST(
   } catch (error: any) {
     console.error('❌ Answer scoring failed:', error);
     return NextResponse.json(
-      { error: `Scoring failed: ${error.message}` },
+      { error: `Scoring failed: ${error.message}\n\nTip: Check Settings → AI Configuration → Select preferred model and test` },
       { status: 500 }
     );
   }
