@@ -1,0 +1,31 @@
+[
+  {
+    "id": "peer-tech-001",
+    "name": "Strong Technical Answer with Collaboration",
+    "persona": "peer",
+    "theme": "technical",
+    "answer": "In my role as a Senior Software Engineer at TechFlow, I was part of a team that needed to refactor our legacy codebase to improve maintainability and performance. The situation was challenging because we had 200K lines of legacy code with no documentation and tight deadlines for new features. My task was to lead the refactoring effort while maintaining team collaboration and ensuring code quality. I took action by creating a refactoring plan with the team, establishing coding standards, implementing automated testing, and setting up code review processes. I also organized knowledge sharing sessions and pair programming sessions to ensure everyone understood the new patterns. The result was a 40% reduction in bug rates, 50% improvement in development velocity, and successful delivery of 3 major features on time. The team also reported higher job satisfaction due to working with cleaner, more maintainable code.",
+    "expectedScores": {
+      "overall": 88,
+      "subscores": {
+        "structure": 90,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 85,
+        "company": 80,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent technical answer with collaboration and team focus",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

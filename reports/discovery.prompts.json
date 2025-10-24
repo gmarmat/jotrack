@@ -1,0 +1,61 @@
+{
+  "testName": "discovery.prompts.spec.ts",
+  "timestamp": "2025-10-23T16:40:00.000Z",
+  "implementation": "Card 5 — Follow-up Prompts",
+  "status": "COMPLETE",
+  "files": {
+    "prompts": "src/interview-coach/discovery/prompts.ts",
+    "route": "app/api/interview-coach/[jobId]/suggest-follow-up/route.ts",
+    "tests": "tests/unit/interview-coach/discovery.prompts.spec.ts"
+  },
+  "features": {
+    "promptGeneration": "✅ Deterministic prompt generation based on lowest dimensions",
+    "signalGaps": "✅ Signal gap detection (JD, company, interviewer, profile, community)",
+    "dimensionTargeting": "✅ Targets 2-3 prompts for lowest scoring dimensions",
+    "tieBreaking": "✅ Priority order: risks > specificity > outcome > role > company > structure > persona",
+    "sourceKeys": "✅ Tracks why prompts were suggested (low_specificity, no_metrics, etc.)",
+    "bounds": "✅ Always returns 2-3 prompts",
+    "v2Response": "✅ Enhanced response format with version, targetedDimensions, reasons",
+    "backwardCompatibility": "✅ Legacy string array format when V2 flag off"
+  },
+  "testCases": [
+    {
+      "name": "Low specificity/outcome detection",
+      "description": "Should generate prompts targeting specificity and outcome when they are lowest",
+      "expected": "Prompts mention metrics/KPIs; include targets & sourceKeys"
+    },
+    {
+      "name": "Persona mismatch handling", 
+      "description": "Should generate persona-tuned prompt when persona score is low",
+      "expected": "Persona-tuned prompt included for interviewer/recruiter audience"
+    },
+    {
+      "name": "Missing company values handling",
+      "description": "Should generate company alignment prompt when values present but not referenced",
+      "expected": "Company-alignment prompt appears when company values present but not referenced"
+    },
+    {
+      "name": "Flag OFF path",
+      "description": "Should return simple string list when V2 flag is off",
+      "expected": "Returns simple string array for backward compatibility"
+    },
+    {
+      "name": "Flag ON path", 
+      "description": "Should return structured objects with version v2 when flag is on",
+      "expected": "Returns structured objects with version:'v2'"
+    },
+    {
+      "name": "Bounds validation",
+      "description": "Should always return 2-3 prompts",
+      "expected": "Always 2-3 prompts; no LLM imports"
+    }
+  ],
+  "validation": {
+    "linting": "✅ No linting errors",
+    "typescript": "✅ TypeScript compilation successful", 
+    "structure": "✅ All required fields present",
+    "bounds": "✅ 2-3 prompts always returned",
+    "noLLM": "✅ No LLM imports or calls"
+  },
+  "summary": "Card 5 implementation complete. All three files created with comprehensive functionality for generating targeted follow-up prompts based on lowest scoring dimensions and signal gaps. No LLM calls, fully deterministic, with both V2 and legacy response formats."
+}

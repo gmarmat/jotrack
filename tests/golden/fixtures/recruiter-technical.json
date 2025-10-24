@@ -1,0 +1,147 @@
+[
+  {
+    "id": "recruiter-tech-001",
+    "name": "Strong Technical Answer with STAR Format",
+    "persona": "recruiter",
+    "theme": "technical",
+    "answer": "In my previous role as a Senior Software Engineer at TechCorp, I was tasked with optimizing our API response times that were averaging 800ms. The situation was critical because our mobile app users were experiencing poor performance, leading to a 15% drop in user engagement. I took action by implementing Redis caching, database query optimization, and API response compression. I also introduced connection pooling and implemented async processing for non-critical operations. The result was a 65% reduction in API response times to 280ms, which improved our mobile app performance scores from 3.2 to 4.7 stars and increased user engagement by 23% over the next quarter.",
+    "expectedScores": {
+      "overall": 92,
+      "subscores": {
+        "structure": 95,
+        "specificity": 90,
+        "outcome": 95,
+        "role": 85,
+        "company": 80,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent technical answer with clear STAR format, specific metrics, and strong outcomes",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-tech-002",
+    "name": "Good Technical Answer with Some Gaps",
+    "persona": "recruiter",
+    "theme": "technical",
+    "answer": "I worked on improving our system performance at my last company. The situation was that our application was running slowly and users were complaining. I decided to implement caching and optimize our database queries. I also added some monitoring tools to track performance. The result was that the system ran much faster and users were happier. We saw improvements in response times and overall system stability.",
+    "expectedScores": {
+      "overall": 72,
+      "subscores": {
+        "structure": 75,
+        "specificity": 60,
+        "outcome": 70,
+        "role": 70,
+        "company": 65,
+        "persona": 75,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Good technical answer but lacks specific metrics and detailed outcomes",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-tech-003",
+    "name": "Weak Technical Answer with Vague Details",
+    "persona": "recruiter",
+    "theme": "technical",
+    "answer": "I had to fix some bugs in our system. There were performance issues and I worked on making it better. I used different tools and techniques to improve things. Eventually it worked better and the team was happy with the results.",
+    "expectedScores": {
+      "overall": 45,
+      "subscores": {
+        "structure": 50,
+        "specificity": 35,
+        "outcome": 40,
+        "role": 50,
+        "company": 40,
+        "persona": 55,
+        "risks": 50
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Weak technical answer with very vague details and no specific metrics",
+      "difficulty": "hard",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-tech-004",
+    "name": "Excellent Technical Answer with Complex Problem",
+    "persona": "recruiter",
+    "theme": "technical",
+    "answer": "At my current role as a Principal Engineer at DataFlow Inc, I was faced with a critical scalability challenge where our real-time analytics pipeline was failing under peak load of 2M events per minute. The situation required immediate action as we were losing 15% of data during traffic spikes, costing the company approximately $50K in lost insights monthly. I led a cross-functional team of 6 engineers to redesign our event processing architecture. We implemented Apache Kafka for event streaming, introduced horizontal scaling with Kubernetes, and built a custom sharding strategy that distributed load across 12 processing nodes. I also implemented circuit breakers and auto-scaling policies. The result was a 300% improvement in processing capacity to 6M events per minute, 99.9% data integrity, and a 40% reduction in infrastructure costs. This solution enabled us to onboard 3 new enterprise clients worth $2M in annual recurring revenue.",
+    "expectedScores": {
+      "overall": 96,
+      "subscores": {
+        "structure": 98,
+        "specificity": 95,
+        "outcome": 98,
+        "role": 90,
+        "company": 95,
+        "persona": 95,
+        "risks": 90
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Exceptional technical answer with complex problem, detailed solution, and impressive business impact",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-tech-005",
+    "name": "Technical Answer with Leadership Elements",
+    "persona": "recruiter",
+    "theme": "technical",
+    "answer": "As a Tech Lead at InnovateCorp, I was responsible for migrating our monolithic application to microservices architecture. The situation was that our 15-year-old system was becoming increasingly difficult to maintain and scale, with deployment times taking 4+ hours and frequent production incidents. I led a team of 8 developers through a 6-month migration project. We started by identifying service boundaries, implementing API gateways, and gradually decomposing the monolith. I established coding standards, implemented CI/CD pipelines, and created comprehensive testing strategies. We also introduced monitoring and logging across all services. The result was a 75% reduction in deployment time to 45 minutes, 60% fewer production incidents, and improved system scalability that supported 5x more concurrent users. The team's productivity increased by 40% due to better development workflows.",
+    "expectedScores": {
+      "overall": 89,
+      "subscores": {
+        "structure": 90,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 95,
+        "company": 85,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Strong technical answer with leadership elements and team management",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

@@ -1287,6 +1287,28 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         />
         </div>
 
+        {/* 3.4. V2 Interview Coach Entry Button */}
+        {process.env.NEXT_PUBLIC_INTERVIEW_V2 === '1' && (
+          <div className="mt-6 rounded-2xl p-6 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                  🚀 Interview Coach V2
+                </h3>
+                <p className="text-blue-100 text-sm">
+                  New flow with subscores, flags, confidence, and core stories.
+                </p>
+              </div>
+              <Link
+                href={`/interview-coach/${job.id}`}
+                className="inline-flex items-center rounded-md bg-white text-blue-600 px-6 py-3 font-semibold hover:bg-blue-50 transition-colors shadow-lg"
+              >
+                Open Interview Coach V2
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* 3.5. Interview Coach Entry Point (Always Visible!) */}
         <div className={`mt-6 rounded-2xl p-8 shadow-2xl ${
           currentStatus === 'ON_RADAR' 

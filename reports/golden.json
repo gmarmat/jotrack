@@ -1,0 +1,1170 @@
+{
+  "timestamp": "2025-10-23T17:09:33.884Z",
+  "version": "2.0",
+  "totalFixtures": 26,
+  "passedFixtures": 0,
+  "failedFixtures": 26,
+  "mae": {
+    "overall": 8.5,
+    "subscores": {
+      "structure": 5,
+      "specificity": 4.153846153846154,
+      "outcome": 4.153846153846154,
+      "role": 14.807692307692308,
+      "company": 14.038461538461538,
+      "persona": 7.115384615384615,
+      "risks": 7.884615384615385
+    }
+  },
+  "results": [
+    {
+      "fixtureId": "recruiter-tech-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 92,
+        "subscores": {
+          "structure": 95,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 85,
+          "company": 80,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 11,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 10,
+          "company": 10,
+          "persona": 10,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-tech-002",
+      "passed": false,
+      "actualScores": {
+        "overall": 74,
+        "subscores": {
+          "structure": 85,
+          "specificity": 60,
+          "outcome": 70,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 72,
+        "subscores": {
+          "structure": 75,
+          "specificity": 60,
+          "outcome": 70,
+          "role": 70,
+          "company": 65,
+          "persona": 75,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 2,
+        "subscores": {
+          "structure": 10,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 5,
+          "company": 5,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": true,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-tech-003",
+      "passed": false,
+      "actualScores": {
+        "overall": 74,
+        "subscores": {
+          "structure": 85,
+          "specificity": 60,
+          "outcome": 70,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 45,
+        "subscores": {
+          "structure": 50,
+          "specificity": 35,
+          "outcome": 40,
+          "role": 50,
+          "company": 40,
+          "persona": 55,
+          "risks": 50
+        }
+      },
+      "errors": {
+        "overall": 29,
+        "subscores": {
+          "structure": 35,
+          "specificity": 25,
+          "outcome": 30,
+          "role": 25,
+          "company": 30,
+          "persona": 25,
+          "risks": 25
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-tech-004",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 96,
+        "subscores": {
+          "structure": 98,
+          "specificity": 95,
+          "outcome": 98,
+          "role": 90,
+          "company": 95,
+          "persona": 95,
+          "risks": 90
+        }
+      },
+      "errors": {
+        "overall": 15,
+        "subscores": {
+          "structure": 8,
+          "specificity": 10,
+          "outcome": 8,
+          "role": 15,
+          "company": 25,
+          "persona": 15,
+          "risks": 15
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-tech-005",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 89,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 95,
+          "company": 85,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 8,
+        "subscores": {
+          "structure": 0,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 20,
+          "company": 15,
+          "persona": 10,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-lead-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 91,
+        "subscores": {
+          "structure": 90,
+          "specificity": 88,
+          "outcome": 95,
+          "role": 95,
+          "company": 85,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 10,
+        "subscores": {
+          "structure": 0,
+          "specificity": 3,
+          "outcome": 5,
+          "role": 20,
+          "company": 15,
+          "persona": 10,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-lead-002",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 83,
+        "subscores": {
+          "structure": 85,
+          "specificity": 80,
+          "outcome": 85,
+          "role": 90,
+          "company": 75,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 2,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 15,
+          "company": 5,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": true,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-lead-003",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 88,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 95,
+          "company": 85,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 7,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 20,
+          "company": 15,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-lead-004",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 90,
+        "subscores": {
+          "structure": 88,
+          "specificity": 85,
+          "outcome": 95,
+          "role": 95,
+          "company": 90,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 9,
+        "subscores": {
+          "structure": 2,
+          "specificity": 0,
+          "outcome": 5,
+          "role": 20,
+          "company": 20,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-lead-005",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 92,
+        "subscores": {
+          "structure": 90,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 95,
+          "company": 90,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 11,
+        "subscores": {
+          "structure": 0,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 20,
+          "company": 20,
+          "persona": 10,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-behav-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 89,
+        "subscores": {
+          "structure": 95,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 85,
+          "company": 80,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 8,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 10,
+          "company": 10,
+          "persona": 10,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-behav-002",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 82,
+        "subscores": {
+          "structure": 85,
+          "specificity": 80,
+          "outcome": 85,
+          "role": 80,
+          "company": 75,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "errors": {
+        "overall": 1,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 5,
+          "company": 5,
+          "persona": 5,
+          "risks": 0
+        }
+      },
+      "withinTolerance": {
+        "overall": true,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-behav-003",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 87,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 85,
+          "company": 85,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 6,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 10,
+          "company": 15,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-behav-004",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 85,
+        "subscores": {
+          "structure": 85,
+          "specificity": 80,
+          "outcome": 85,
+          "role": 90,
+          "company": 80,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 4,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 15,
+          "company": 10,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "recruiter-behav-005",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 80,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 88,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 85,
+          "company": 90,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 7,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 10,
+          "company": 20,
+          "persona": 5,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-tech-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 93,
+        "subscores": {
+          "structure": 95,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 95,
+          "company": 85,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 12,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 20,
+          "company": 15,
+          "persona": 5,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-tech-002",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 88,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 90,
+          "company": 80,
+          "persona": 85,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 7,
+        "subscores": {
+          "structure": 0,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 15,
+          "company": 10,
+          "persona": 0,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-tech-003",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 91,
+        "subscores": {
+          "structure": 90,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 95,
+          "company": 90,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 10,
+        "subscores": {
+          "structure": 0,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 20,
+          "company": 20,
+          "persona": 0,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-tech-004",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 89,
+        "subscores": {
+          "structure": 85,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 90,
+          "company": 85,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 8,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 15,
+          "company": 15,
+          "persona": 0,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-tech-005",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 87,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 90,
+          "company": 80,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 6,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 15,
+          "company": 10,
+          "persona": 0,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-lead-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 94,
+        "subscores": {
+          "structure": 95,
+          "specificity": 90,
+          "outcome": 95,
+          "role": 95,
+          "company": 90,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 13,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 20,
+          "company": 20,
+          "persona": 5,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-lead-002",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 86,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 95,
+          "company": 80,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 5,
+        "subscores": {
+          "structure": 5,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 20,
+          "company": 10,
+          "persona": 0,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "hm-behav-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 81,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 85,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 87,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 90,
+          "company": 85,
+          "persona": 85,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 6,
+        "subscores": {
+          "structure": 0,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 15,
+          "company": 15,
+          "persona": 0,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "peer-tech-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 80,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 75,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 88,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 85,
+          "company": 80,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 8,
+        "subscores": {
+          "structure": 0,
+          "specificity": 0,
+          "outcome": 0,
+          "role": 10,
+          "company": 10,
+          "persona": 15,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "peer-lead-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 80,
+        "subscores": {
+          "structure": 90,
+          "specificity": 85,
+          "outcome": 90,
+          "role": 75,
+          "company": 70,
+          "persona": 75,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 85,
+        "subscores": {
+          "structure": 85,
+          "specificity": 80,
+          "outcome": 85,
+          "role": 85,
+          "company": 80,
+          "persona": 90,
+          "risks": 80
+        }
+      },
+      "errors": {
+        "overall": 5,
+        "subscores": {
+          "structure": 5,
+          "specificity": 5,
+          "outcome": 5,
+          "role": 10,
+          "company": 10,
+          "persona": 15,
+          "risks": 5
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    },
+    {
+      "fixtureId": "peer-behav-001",
+      "passed": false,
+      "actualScores": {
+        "overall": 75,
+        "subscores": {
+          "structure": 90,
+          "specificity": 65,
+          "outcome": 75,
+          "role": 75,
+          "company": 70,
+          "persona": 75,
+          "risks": 75
+        }
+      },
+      "expectedScores": {
+        "overall": 86,
+        "subscores": {
+          "structure": 85,
+          "specificity": 85,
+          "outcome": 85,
+          "role": 80,
+          "company": 80,
+          "persona": 90,
+          "risks": 85
+        }
+      },
+      "errors": {
+        "overall": 11,
+        "subscores": {
+          "structure": 5,
+          "specificity": 20,
+          "outcome": 10,
+          "role": 5,
+          "company": 10,
+          "persona": 15,
+          "risks": 10
+        }
+      },
+      "withinTolerance": {
+        "overall": false,
+        "subscores": false
+      }
+    }
+  ],
+  "summary": {
+    "overallMAE": 8.5,
+    "worstDimension": "role",
+    "bestDimension": "specificity"
+  }
+}

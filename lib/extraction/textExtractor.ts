@@ -57,7 +57,7 @@ export async function extractFromPdf(filePath: string): Promise<ExtractionResult
     console.log(`🔍 PDF extraction starting for: ${filePath}`);
     
     // Dynamic import to avoid Next.js build issues
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const pdfjsLib = await import('pdfjs-dist');
     
     const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
     console.log(`📁 Reading file: ${absolutePath}`);

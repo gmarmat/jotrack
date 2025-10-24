@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-10-23T16:51:22.800Z",
+  "testSuite": "Core Stories Synthesis (Mock)",
+  "version": "v2",
+  "tests": {
+    "basic_synthesis": "PASS",
+    "70_30_rule": "PASS",
+    "persona_variants": "PASS",
+    "coverage_mapping": "PASS",
+    "determinism": "PASS"
+  },
+  "coverage": {
+    "70/30 rule": "VERIFIED",
+    "persona variants": "VERIFIED",
+    "coverage mapping": "VERIFIED",
+    "determinism": "VERIFIED"
+  },
+  "performance": {
+    "deterministic": true,
+    "noLLMCalls": true,
+    "fastExecution": true
+  },
+  "results": {
+    "storiesGenerated": 4,
+    "themesCovered": 4,
+    "totalThemes": 6,
+    "strongStoriesCount": 4
+  }
+}

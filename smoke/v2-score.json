@@ -1,0 +1,8 @@
+{
+  "error": "Request validation failed",
+  "code": "VALIDATION_ERROR",
+  "issues": [
+    "Invalid input"
+  ],
+  "timestamp": 1761241752113
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "id": "peer-lead-001",
+    "name": "Leadership Answer with Peer Influence",
+    "persona": "peer",
+    "theme": "leadership",
+    "answer": "As a Senior Developer at InnovateCorp, I noticed that our team was struggling with code quality and technical debt, but there was no formal process to address these issues. The situation was affecting our ability to deliver features quickly and reliably. My task was to influence my peers to adopt better practices without having formal authority. I took action by starting with small wins, demonstrating the benefits of better practices through examples, and gradually building consensus among team members. I also organized informal lunch-and-learn sessions, created documentation for best practices, and mentored junior developers. The result was that the team voluntarily adopted code review processes, implemented automated testing, and established technical debt tracking. Our bug rates decreased by 45%, and team satisfaction with code quality increased significantly.",
+    "expectedScores": {
+      "overall": 85,
+      "subscores": {
+        "structure": 85,
+        "specificity": 80,
+        "outcome": 85,
+        "role": 85,
+        "company": 80,
+        "persona": 90,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Good leadership answer with peer influence and informal leadership",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

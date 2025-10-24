@@ -4,11 +4,79 @@ import { interviewQuestionsCache, jobs } from '@/db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 import { searchInterviewQuestions } from '@/lib/interviewQuestions/searchQuestions';
 import { v4 as uuidv4 } from 'uuid';
+import { createHash } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 interface RouteContext {
   params: { id: string };
+}
+
+// Evidence DTO for interview questions
+type EvidenceFields = {
+  sourceUrl?: string;      // e.g., Glassdoor / Reddit link for 'search', or 'generated' for synth
+  snippet?: string;        // short excerpt or "generated from JD/resume/context"
+  fetchedAt: string;       // ISO timestamp
+  cacheKey: string;        // `${company}:${role}:${hash(questionText)}`
+};
+
+// In-memory cache for evidence fields (TODO: replace with DB cache)
+const memoryQCache = new Map<string, { items: any[]; fetchedAt: number }>();
+
+// TTL: 21 days for company+role community questions
+const CACHE_TTL_DAYS = 21;
+const CACHE_TTL_MS = CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
+
+/**
+ * Generate cache key for evidence fields
+ */
+function generateCacheKey(company: string, role: string, questionText: string): string {
+  const hash = createHash('md5').update(questionText).digest('hex').substring(0, 8);
+  return `${company.toLowerCase()}:${role.toLowerCase()}:${hash}`;
+}
+
+/**
+ * Add evidence fields to questions
+ */
+function addEvidenceFields(
+  questions: any[], 
+  companyName: string, 
+  roleTitle: string, 
+  sources: string[] = [],
+  isFromCache: boolean = false,
+  cachedFetchedAt?: number
+): any[] {
+  const now = new Date().toISOString();
+  const fetchedAt = isFromCache && cachedFetchedAt ? new Date(cachedFetchedAt * 1000).toISOString() : now;
+  
+  return questions.map((question, index) => {
+    const cacheKey = generateCacheKey(companyName, roleTitle, question.question || question);
+    
+    // For search results, try to get source URL and snippet
+    let sourceUrl: string | undefined;
+    let snippet: string | undefined;
+    
+    if (sources.length > 0) {
+      // Use first available source, or cycle through if we have more questions than sources
+      sourceUrl = sources[index % sources.length];
+      snippet = sourceUrl ? `Found on ${new URL(sourceUrl).hostname}` : undefined;
+    }
+    
+    return {
+      ...question,
+      sourceUrl,
+      snippet,
+      fetchedAt,
+      cacheKey
+    };
+  });
+}
+
+/**
+ * Check if cache entry is still fresh
+ */
+function isCacheFresh(fetchedAt: number): boolean {
+  return Date.now() - fetchedAt < CACHE_TTL_MS;
 }
 
 export async function POST(
@@ -79,10 +147,24 @@ export async function POST(
         }
       }
       
+      // Parse cached questions and sources
+      const cachedQuestions = JSON.parse(cached[0].searchedQuestions || '[]');
+      const cachedSources = JSON.parse(cached[0].searchSources || '[]');
+      
+      // Add evidence fields to cached questions
+      const questionsWithEvidence = addEvidenceFields(
+        cachedQuestions,
+        companyName,
+        roleTitle,
+        cachedSources,
+        true, // isFromCache
+        cached[0].searchedAt
+      );
+      
       return NextResponse.json({
         success: true,
-        questions: JSON.parse(cached[0].searchedQuestions || '[]'),
-        sources: JSON.parse(cached[0].searchSources || '[]'),
+        questions: questionsWithEvidence,
+        sources: cachedSources,
         webIntelligence,  // V2.0: Include if available
         searchedAt: cached[0].searchedAt,
         cached: true,
@@ -107,6 +189,15 @@ export async function POST(
       });
     }
     
+    // Add evidence fields to fresh questions
+    const questionsWithEvidence = addEvidenceFields(
+      questions,
+      companyName,
+      roleTitle,
+      sources,
+      false // isFromCache
+    );
+    
     // Cache results (90 days)
     const expiresAt = now + (90 * 24 * 60 * 60); // 90 days from now
     
@@ -114,7 +205,7 @@ export async function POST(
       id: uuidv4(),
       companyName: normalizedCompany,
       roleCategory: roleTitle,
-      searchedQuestions: JSON.stringify(questions),
+      searchedQuestions: JSON.stringify(questionsWithEvidence), // Store with evidence fields
       searchSources: JSON.stringify(sources),
       webIntelligenceJson: JSON.stringify(webIntelligence), // V2.0: Save rich intelligence!
       searchedAt: now,
@@ -136,7 +227,7 @@ export async function POST(
     
     return NextResponse.json({
       success: true,
-      questions,
+      questions: questionsWithEvidence, // Return with evidence fields
       sources,
       webIntelligence,  // V2.0: Return rich intelligence!
       searchedAt: now,

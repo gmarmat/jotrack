@@ -4,6 +4,21 @@ import { callAiProvider } from '@/lib/coach/aiProvider';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
 import { generateWeaknessFramings, enhanceFeedbackWithFraming } from '@/lib/interview/redFlagFraming';
 import { analyzeCareerTrajectory } from '@/lib/interview/signalExtraction';
+import { 
+  scoreAnswer, 
+  type ScoringContext, 
+  summarizeImprovements 
+} from '@/src/interview-coach/scoring';
+import { 
+  JobIdParamSchema, 
+  ScoreAnswerRequestSchema, 
+  ScoreAnswerResponseSchema,
+  validateRequest, 
+  validateResponse, 
+  mapErrorToResponse,
+  normalizeCategory
+} from '@/src/interview-coach/http/schema';
+import { logCoachEvent, logCoachError, extractCoachMetrics } from '@/src/interview-coach/telemetry';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,22 +55,71 @@ function generateScoringExplanation(data: {
  * POST /api/interview-coach/[jobId]/score-answer
  * Scores user's draft answer and generates follow-up questions
  * Preserves all iterations in coach_state.interview_coach_json
+ * 
+ * V2: Supports enhanced scoring with subscores, flags, confidence, and deltas
  */
 export async function POST(
   request: NextRequest,
   context: RouteContext
 ) {
   try {
-    const jobId = context.params.jobId;
-    const body = await request.json();
-    const { questionId, answerText, iteration = 1, testOnly = false, followUpQA } = body;
-    
-    if (!questionId || !answerText) {
+    // Validate job ID parameter
+    const jobIdValidation = validateRequest(JobIdParamSchema, context.params);
+    if (!jobIdValidation.success) {
       return NextResponse.json(
-        { error: 'questionId and answerText required' },
+        { 
+          error: jobIdValidation.error.message,
+          code: jobIdValidation.error.code,
+          issues: jobIdValidation.error.issues,
+          timestamp: Date.now()
+        },
         { status: 400 }
       );
     }
+    const jobId = jobIdValidation.data.jobId;
+
+    // Parse request body with safe defaults
+    const raw = await request.json().catch(() => ({}));
+    const isV2 = process.env.INTERVIEW_V2 === '1';
+
+    const body = {
+      // legacy aliases
+      questionId: raw.questionId ?? raw.question ?? 'custom',
+      answer: raw.answer ?? raw.answerText ?? '',
+      persona: raw.persona ?? 'hiring-manager',
+      jdCore: Array.isArray(raw.jdCore) ? raw.jdCore : (raw.jdCore ? [raw.jdCore] : []),
+      companyValues: Array.isArray(raw.companyValues) ? raw.companyValues : (raw.companyValues ? [raw.companyValues] : []),
+      userProfile: raw.userProfile ?? {},
+      matchMatrix: raw.matchMatrix ?? null,
+      evidenceQuality: raw.evidenceQuality ?? null,
+      previous: raw.previous ?? null,
+    };
+
+    if (!body.answer || typeof body.answer !== 'string' || !body.answer.trim()) {
+      return NextResponse.json({ success: false, error: 'Missing answer' }, { status: 400 });
+    }
+
+    const persona = body.persona as 'recruiter' | 'hiring-manager' | 'peer';
+    
+    // Extract fields from body
+    const { 
+      answer, 
+      jdCore, 
+      companyValues, 
+      userProfile, 
+      matchMatrix, 
+      evidenceQuality,
+      previous,
+      questionId, 
+      answerText, 
+      iteration = 1, 
+      testOnly = false, 
+      followUpQA 
+    } = body;
+    
+    // Use V2 or legacy answer text
+    const answerTextToUse = isV2 ? answer : answerText;
+    const questionIdToUse = isV2 ? 'v2-answer' : questionId;
     
     console.log(`📊 Scoring answer for question ${questionId} (iteration ${iteration})...`);
     
@@ -169,6 +233,72 @@ export async function POST(
       hasScores: Array.isArray(scoreData.scores)
     });
     
+    // V2: Enhanced scoring with subscores, flags, confidence
+    let v2Result = null;
+    if (isV2Request && process.env.INTERVIEW_V2 === '1') {
+      console.log('🚀 V2 scoring enabled - computing enhanced metrics...');
+      
+      // Build ScoringContext for V2 scoring
+      const scoringContext: ScoringContext = {
+        answer: answerTextToUse,
+        persona: persona as 'recruiter' | 'hm' | 'peer',
+        jdCore,
+        companyValues,
+        userProfile,
+        matchMatrix,
+        styleProfileId: null // Could be extracted from coach state if needed
+      };
+      
+      // Get V2 scoring result
+      const v2Scoring = scoreAnswer(scoringContext);
+      
+      // Compute confidence metrics
+      const signalsCoverage = deriveSignalsCoverage(scoringContext);
+      const evidenceQualityValue = evidenceQuality ?? 0.6; // Safe default
+      const { confidence, reasons } = computeConfidence({
+        signalsCoverage,
+        evidenceQuality: evidenceQualityValue
+      });
+      
+      // Compute deltas if previous scores provided
+      let deltas = null;
+      if (previous) {
+        deltas = {
+          overall: v2Scoring.overall - (previous.overall || 0),
+          ...Object.fromEntries(
+            Object.entries(v2Scoring.subscores).map(([key, value]) => [
+              key, 
+              value - (previous.subscores?.[key] || 0)
+            ])
+          )
+        };
+      }
+      
+      // Clamp all scores to valid ranges
+      const clampScore = (score: number) => Math.max(0, Math.min(100, score));
+      const clampConfidence = (conf: number) => Math.max(0, Math.min(1, conf));
+      
+      v2Result = {
+        score: clampScore(v2Scoring.overall),
+        subscores: Object.fromEntries(
+          Object.entries(v2Scoring.subscores).map(([key, value]) => [key, clampScore(value)])
+        ),
+        flags: v2Scoring.flags,
+        confidence: clampConfidence(confidence),
+        confidenceReasons: reasons,
+        deltas,
+        version: "v2"
+      };
+      
+      console.log('✅ V2 scoring complete:', {
+        overall: v2Result.score,
+        subscores: Object.keys(v2Result.subscores).length,
+        flags: v2Result.flags.length,
+        confidence: v2Result.confidence,
+        hasDeltas: !!deltas
+      });
+    }
+    
     // V2.0: Generate weakness framings for strategic guidance
     let framings: any[] = [];
     try {
@@ -269,7 +399,7 @@ export async function POST(
     
     // If testOnly mode, return with impact explanation
     if (testOnly) {
-      return NextResponse.json({
+      const response: any = {
         success: true,
         score: scoreData,
         impactExplanation,
@@ -279,7 +409,42 @@ export async function POST(
           tokensUsed: aiResult.tokensUsed || 0,
           cost: aiResult.cost || 0
         }
+      };
+      
+      // V2: Always ensure V2 fields are present
+      const v2Fields = {
+        score: scoreData.overall,
+        subscores: scoreData.subscores || {},
+        flags: scoreData.flags || [],
+        confidence: scoreData.confidence || 0.5,
+        version: 'v2'
+      };
+      
+      // Generate improvement summary with guard
+      const improvements = summarizeImprovements?.(scoreData?.subscores, scoreData?.flags) ?? { 
+        summary: '', 
+        cta: '', 
+        targeted: [] 
+      };
+      
+      // Normalize category
+      const category = normalizeCategory?.(scoreData?.category) ?? 'needs-improvement';
+      
+      // Merge V2 fields with response
+      Object.assign(response, v2Fields);
+      Object.assign(response, {
+        improvementSummary: improvements.summary,
+        improvementCTA: improvements.cta,
+        targetedDimensions: improvements.targeted,
+        scoreCategory: category
       });
+      
+      // Add any additional V2 enhancements if available
+      if (v2Result) {
+        Object.assign(response, v2Result);
+      }
+      
+      return NextResponse.json(response);
     }
     
     // Defensive check before push
@@ -332,7 +497,7 @@ export async function POST(
     
     console.log(`💾 Saved score iteration ${iteration} for question ${questionId}`);
     
-    return NextResponse.json({
+    const response: any = {
       success: true,
       score: scoreData,
       impactExplanation,
@@ -342,11 +507,83 @@ export async function POST(
         tokensUsed: aiResult.tokensUsed || 0,
         cost: aiResult.cost || 0
       }
+    };
+    
+    // V2: Always ensure V2 fields are present
+    const v2Fields = {
+      score: scoreData.overall,
+      subscores: scoreData.subscores || {},
+      flags: scoreData.flags || [],
+      confidence: scoreData.confidence || 0.5,
+      version: 'v2'
+    };
+    
+    // Generate improvement summary with guard
+    const improvements = summarizeImprovements?.(scoreData?.subscores, scoreData?.flags) ?? { 
+      summary: '', 
+      cta: '', 
+      targeted: [] 
+    };
+    
+    // Normalize category
+    const category = normalizeCategory?.(scoreData?.category) ?? 'needs-improvement';
+    
+    // Merge V2 fields with response
+    Object.assign(response, v2Fields);
+    Object.assign(response, {
+      improvementSummary: improvements.summary,
+      improvementCTA: improvements.cta,
+      targetedDimensions: improvements.targeted,
+      scoreCategory: category
     });
+    
+    // Add any additional V2 enhancements if available
+    if (v2Result) {
+      Object.assign(response, v2Result);
+    }
+    
+    // Validate response schema during development/testing
+    const isValidResponse = validateResponse(ScoreAnswerResponseSchema, response);
+    if (!isValidResponse) {
+      console.warn('⚠️ Response validation failed - returning response anyway');
+    }
+    
+    // Log telemetry event
+    const metrics = extractCoachMetrics(response);
+    logCoachEvent({
+      route: 'score-answer',
+      persona: persona || 'unknown',
+      durationMs: 0, // Duration would need to be measured from start
+      ...metrics,
+      metadata: { 
+        answer: answer || answerText, 
+        questionId: questionIdToUse, 
+        iteration, 
+        testOnly 
+      }
+    });
+    
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error('❌ Answer scoring failed:', error);
+    
+    // Log error telemetry
+    logCoachError('score-answer', persona || 'unknown', error, { 
+      questionId: questionIdToUse, 
+      iteration, 
+      testOnly 
+    });
+    
+    // Map error to standardized format
+    const errorResponse = mapErrorToResponse(error);
+    
+    // Add helpful tip for common AI errors
+    if (errorResponse.code === 'AI_ERROR') {
+      errorResponse.message += '\n\nTip: Check Settings → AI Configuration → Select preferred model and test';
+    }
+    
     return NextResponse.json(
-      { error: `Scoring failed: ${error.message}\n\nTip: Check Settings → AI Configuration → Select preferred model and test` },
+      errorResponse,
       { status: 500 }
     );
   }

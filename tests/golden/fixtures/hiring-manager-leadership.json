@@ -1,0 +1,60 @@
+[
+  {
+    "id": "hm-lead-001",
+    "name": "Strong Leadership Answer with Strategic Vision",
+    "persona": "hiring-manager",
+    "theme": "leadership",
+    "answer": "As a Director of Engineering at TechCorp, I was tasked with transforming our engineering organization from a traditional waterfall approach to a modern agile methodology across 5 product teams and 60 engineers. The situation was challenging because we had missed 3 major product launches in the past year and team morale was at an all-time low. My task was to not only implement agile practices but also rebuild team confidence and improve delivery velocity. I took action by establishing cross-functional teams, implementing Scrum ceremonies, creating a center of excellence for agile practices, and investing heavily in automation and tooling. I also established clear metrics for success and created a culture of continuous improvement through regular retrospectives. The result was a 200% improvement in delivery velocity, 95% on-time delivery rate, and team satisfaction scores increased from 4.2 to 8.5. We also successfully launched 4 major products in the following year, generating $10M in new revenue.",
+    "expectedScores": {
+      "overall": 94,
+      "subscores": {
+        "structure": 95,
+        "specificity": 90,
+        "outcome": 95,
+        "role": 95,
+        "company": 90,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent leadership answer with strategic vision and organizational transformation",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "hm-lead-002",
+    "name": "Leadership Answer with Team Development",
+    "persona": "hiring-manager",
+    "theme": "leadership",
+    "answer": "In my role as a Senior Engineering Manager at ScaleUp, I inherited a team of 15 developers with varying skill levels and low engagement scores. The situation required immediate attention because we were falling behind on critical projects and had high turnover rates. My task was to develop the team's capabilities while improving retention and project delivery. I took action by conducting individual assessments, creating personalized development plans, implementing mentorship programs, and establishing regular feedback sessions. I also introduced pair programming, code review processes, and technical training programs. The result was a 60% reduction in turnover, 80% improvement in code quality metrics, and successful delivery of all critical projects on time. The team also grew from 15 to 22 members through internal promotions and successful hiring.",
+    "expectedScores": {
+      "overall": 86,
+      "subscores": {
+        "structure": 85,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 95,
+        "company": 80,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Strong leadership answer with team development and capability building",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

@@ -1,0 +1,147 @@
+[
+  {
+    "id": "recruiter-lead-001",
+    "name": "Strong Leadership Answer with Clear Impact",
+    "persona": "recruiter",
+    "theme": "leadership",
+    "answer": "In my role as Engineering Manager at TechStart, I was faced with a situation where our development team was struggling with low morale and high turnover rates of 30% annually. The task was to rebuild team culture and improve retention while maintaining productivity. I took action by implementing weekly one-on-ones, establishing clear career development paths, and introducing flexible work arrangements. I also organized team-building activities and created a mentorship program pairing senior developers with juniors. Additionally, I worked with HR to improve our recognition programs and competitive compensation packages. The result was a dramatic improvement: turnover dropped to 8% within 12 months, team satisfaction scores increased from 6.2 to 8.7, and we achieved 95% of our quarterly deliverables on time, compared to 70% previously.",
+    "expectedScores": {
+      "overall": 91,
+      "subscores": {
+        "structure": 90,
+        "specificity": 88,
+        "outcome": 95,
+        "role": 95,
+        "company": 85,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent leadership answer with clear problem, solution, and measurable outcomes",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-lead-002",
+    "name": "Leadership Answer with Conflict Resolution",
+    "persona": "recruiter",
+    "theme": "leadership",
+    "answer": "At my previous company, I had to deal with a conflict between two senior developers that was affecting the entire team's productivity. The situation arose from a disagreement over technical architecture decisions that escalated into personal conflicts. My task was to resolve this conflict and get the team back on track. I took action by meeting with each developer individually to understand their perspectives, then facilitated a structured mediation session. I also implemented a decision-making framework for technical disagreements and established regular team retrospectives. The result was that both developers found common ground, the conflict was resolved, and team productivity increased by 25%. We also established better communication protocols that prevented similar conflicts in the future.",
+    "expectedScores": {
+      "overall": 83,
+      "subscores": {
+        "structure": 85,
+        "specificity": 80,
+        "outcome": 85,
+        "role": 90,
+        "company": 75,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Good leadership answer focusing on conflict resolution and team management",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-lead-003",
+    "name": "Leadership Answer with Strategic Thinking",
+    "persona": "recruiter",
+    "theme": "leadership",
+    "answer": "As a Director of Engineering at ScaleCorp, I was tasked with transforming our development organization to support rapid growth from 50 to 200 engineers over 18 months. The situation was complex because we needed to maintain code quality and delivery velocity while scaling the team. My approach involved restructuring teams into domain-focused squads, implementing standardized development practices, and establishing a center of excellence for architecture. I also created a comprehensive onboarding program and invested heavily in automation and tooling. We introduced metrics-driven development practices and established clear success criteria for each team. The result was successful scaling to 200 engineers with improved delivery velocity of 40%, reduced bug rates by 35%, and maintained 98% code coverage across all products.",
+    "expectedScores": {
+      "overall": 88,
+      "subscores": {
+        "structure": 85,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 95,
+        "company": 85,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Strong leadership answer with strategic thinking and organizational transformation",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-lead-004",
+    "name": "Leadership Answer with Innovation Focus",
+    "persona": "recruiter",
+    "theme": "leadership",
+    "answer": "In my role as VP of Engineering at InnovateLabs, I identified an opportunity to establish an innovation lab within our engineering organization. The situation was that we were becoming too focused on maintenance and incremental improvements, missing opportunities for breakthrough innovations. My task was to create a structure that would foster innovation while maintaining our core product development. I took action by allocating 20% of our engineering capacity to innovation projects, creating a cross-functional innovation team, and establishing partnerships with universities and research institutions. I also implemented a stage-gate process for innovation projects and created incentives for breakthrough thinking. The result was the development of 3 new product lines that generated $5M in new revenue, 15 patents filed, and a 60% increase in employee engagement scores related to innovation and creativity.",
+    "expectedScores": {
+      "overall": 90,
+      "subscores": {
+        "structure": 88,
+        "specificity": 85,
+        "outcome": 95,
+        "role": 95,
+        "company": 90,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent leadership answer with innovation focus and strategic vision",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-lead-005",
+    "name": "Leadership Answer with Crisis Management",
+    "persona": "recruiter",
+    "theme": "leadership",
+    "answer": "During my tenure as CTO at DataSecure, we faced a critical security breach that compromised customer data for 50,000 users. The situation required immediate action to contain the breach, notify customers, and restore trust. My task was to lead the crisis response while maintaining business continuity. I took action by immediately assembling a crisis response team, implementing containment measures, and coordinating with legal and PR teams. I also established transparent communication with customers and stakeholders, implemented enhanced security measures, and conducted a thorough post-incident analysis. The result was successful containment of the breach within 4 hours, 100% customer notification within 24 hours, and implementation of new security protocols that prevented similar incidents. Customer trust was restored to 95% within 6 months, and we actually improved our security posture significantly.",
+    "expectedScores": {
+      "overall": 92,
+      "subscores": {
+        "structure": 90,
+        "specificity": 90,
+        "outcome": 95,
+        "role": 95,
+        "company": 90,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Exceptional leadership answer with crisis management and stakeholder communication",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

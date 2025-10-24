@@ -1,0 +1,215 @@
+{
+  "timestamp": "2025-10-23T15:40:40.512Z",
+  "file": "src/interview-coach/scoring/schema.ts",
+  "totalTests": 41,
+  "passed": 41,
+  "failed": 0,
+  "coverage": 100,
+  "results": [
+    {
+      "status": "PASS",
+      "name": "DimensionType is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "PersonaType is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Dimension interface is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "PersonaWeights interface is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "RedFlag interface is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "CeilingRuleHook type is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "ScoreV2Config interface is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "DIMENSIONS constant is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "PERSONA_WEIGHTS constant is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "RED_FLAGS constant is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "DEFAULT_SCORE_V2_CONFIG constant is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "ceilingRuleInsufficientLength is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "ceilingRuleHighRedFlags is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "ceilingRuleDimensionImbalance is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "ceilingRulePersonaMismatch is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "validateDimensionWeights function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "validatePersonaWeights function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "validateRedFlagPenalties function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "getCeilingRules function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "getPersonaWeights function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "getDimension function is exported",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has 7 dimensions",
+      "details": "structure dimension"
+    },
+    {
+      "status": "PASS",
+      "name": "Has specificity dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has outcome dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has role dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has company dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has persona dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has risks dimension",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has recruiter persona weights",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has hiring-manager persona weights",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has peer persona weights",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has weak-ownership red flag",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has vague-outcome red flag",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has negative-framing red flag",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has excessive-criticism red flag",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Has overconfidence red flag",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Config has version 2.0",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Config includes ceilingRuleInsufficientLength",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Config includes ceilingRuleHighRedFlags",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Config includes ceilingRuleDimensionImbalance",
+      "details": ""
+    },
+    {
+      "status": "PASS",
+      "name": "Config includes ceilingRulePersonaMismatch",
+      "details": ""
+    }
+  ]
+}

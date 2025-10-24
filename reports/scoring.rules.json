@@ -1,0 +1,341 @@
+{
+  "timestamp": "2025-10-23T15:53:05.586Z",
+  "fixtures": [
+    {
+      "fixture": "strong-star",
+      "persona": "recruiter",
+      "result": {
+        "subscores": {
+          "structure": 51,
+          "specificity": 51,
+          "outcome": 51,
+          "role": 51,
+          "company": 20,
+          "persona": 51,
+          "risks": 51
+        },
+        "overall": 48,
+        "flags": [],
+        "flagDetails": [],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "strong-star",
+      "persona": "hiring-manager",
+      "result": {
+        "subscores": {
+          "structure": 53,
+          "specificity": 53,
+          "outcome": 53,
+          "role": 53,
+          "company": 20,
+          "persona": 53,
+          "risks": 53
+        },
+        "overall": 51,
+        "flags": [],
+        "flagDetails": [],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "strong-star",
+      "persona": "peer",
+      "result": {
+        "subscores": {
+          "structure": 51,
+          "specificity": 51,
+          "outcome": 51,
+          "role": 51,
+          "company": 20,
+          "persona": 51,
+          "risks": 51
+        },
+        "overall": 47,
+        "flags": [],
+        "flagDetails": [],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "vague",
+      "persona": "recruiter",
+      "result": {
+        "subscores": {
+          "structure": 25,
+          "specificity": 25,
+          "outcome": 20,
+          "role": 25,
+          "company": 20,
+          "persona": 25,
+          "risks": 25
+        },
+        "overall": 23,
+        "flags": [
+          "vague-outcome",
+          "generic-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "vague-outcome",
+            "penalty": -8
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "vague",
+      "persona": "hiring-manager",
+      "result": {
+        "subscores": {
+          "structure": 25,
+          "specificity": 25,
+          "outcome": 20,
+          "role": 25,
+          "company": 20,
+          "persona": 25,
+          "risks": 25
+        },
+        "overall": 23,
+        "flags": [
+          "vague-outcome",
+          "generic-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "vague-outcome",
+            "penalty": -8
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "vague",
+      "persona": "peer",
+      "result": {
+        "subscores": {
+          "structure": 24,
+          "specificity": 24,
+          "outcome": 20,
+          "role": 24,
+          "company": 20,
+          "persona": 24,
+          "risks": 24
+        },
+        "overall": 23,
+        "flags": [
+          "vague-outcome",
+          "generic-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "vague-outcome",
+            "penalty": -8
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "problematic",
+      "persona": "recruiter",
+      "result": {
+        "subscores": {
+          "structure": 0,
+          "specificity": 13,
+          "outcome": 13,
+          "role": 13,
+          "company": 13,
+          "persona": 13,
+          "risks": 13
+        },
+        "overall": 12,
+        "flags": [
+          "negative-framing",
+          "generic-answer",
+          "overconfidence"
+        ],
+        "flagDetails": [
+          {
+            "flag": "negative-framing",
+            "penalty": -10
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          },
+          {
+            "flag": "overconfidence",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "problematic",
+      "persona": "hiring-manager",
+      "result": {
+        "subscores": {
+          "structure": 0,
+          "specificity": 13,
+          "outcome": 13,
+          "role": 13,
+          "company": 13,
+          "persona": 13,
+          "risks": 13
+        },
+        "overall": 11,
+        "flags": [
+          "negative-framing",
+          "generic-answer",
+          "overconfidence"
+        ],
+        "flagDetails": [
+          {
+            "flag": "negative-framing",
+            "penalty": -10
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          },
+          {
+            "flag": "overconfidence",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "problematic",
+      "persona": "peer",
+      "result": {
+        "subscores": {
+          "structure": 0,
+          "specificity": 13,
+          "outcome": 13,
+          "role": 13,
+          "company": 13,
+          "persona": 13,
+          "risks": 13
+        },
+        "overall": 11,
+        "flags": [
+          "negative-framing",
+          "generic-answer",
+          "overconfidence"
+        ],
+        "flagDetails": [
+          {
+            "flag": "negative-framing",
+            "penalty": -10
+          },
+          {
+            "flag": "generic-answer",
+            "penalty": -8
+          },
+          {
+            "flag": "overconfidence",
+            "penalty": -8
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "too-short",
+      "persona": "recruiter",
+      "result": {
+        "subscores": {
+          "structure": 25,
+          "specificity": 25,
+          "outcome": 20,
+          "role": 25,
+          "company": 20,
+          "persona": 25,
+          "risks": 25
+        },
+        "overall": 23,
+        "flags": [
+          "incomplete-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "incomplete-answer",
+            "penalty": -12
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "too-short",
+      "persona": "hiring-manager",
+      "result": {
+        "subscores": {
+          "structure": 25,
+          "specificity": 25,
+          "outcome": 20,
+          "role": 25,
+          "company": 20,
+          "persona": 25,
+          "risks": 25
+        },
+        "overall": 23,
+        "flags": [
+          "incomplete-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "incomplete-answer",
+            "penalty": -12
+          }
+        ],
+        "ceilingApplied": true
+      }
+    },
+    {
+      "fixture": "too-short",
+      "persona": "peer",
+      "result": {
+        "subscores": {
+          "structure": 25,
+          "specificity": 25,
+          "outcome": 20,
+          "role": 25,
+          "company": 20,
+          "persona": 25,
+          "risks": 25
+        },
+        "overall": 23,
+        "flags": [
+          "incomplete-answer"
+        ],
+        "flagDetails": [
+          {
+            "flag": "incomplete-answer",
+            "penalty": -12
+          }
+        ],
+        "ceilingApplied": true
+      }
+    }
+  ]
+}

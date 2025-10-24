@@ -1,0 +1,31 @@
+[
+  {
+    "id": "peer-behav-001",
+    "name": "Behavioral Answer with Team Collaboration",
+    "persona": "peer",
+    "theme": "behavioral",
+    "answer": "Tell me about a time when you had to work with a difficult team member. At my previous company, I was paired with a developer who had a very different coding style and was resistant to feedback. The situation was challenging because we needed to collaborate closely on a critical feature, but our working styles were incompatible. My task was to find a way to work effectively together while maintaining code quality and meeting deadlines. I took action by having an open conversation about our differences, establishing clear communication protocols, and finding common ground on coding standards. I also suggested pair programming sessions to learn from each other and implemented a structured code review process. The result was that we developed a strong working relationship, delivered the feature on time with high quality, and actually became close collaborators on future projects. The experience taught me the value of empathy and finding common ground with different personalities.",
+    "expectedScores": {
+      "overall": 86,
+      "subscores": {
+        "structure": 85,
+        "specificity": 85,
+        "outcome": 85,
+        "role": 80,
+        "company": 80,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Strong behavioral answer with team collaboration and conflict resolution",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

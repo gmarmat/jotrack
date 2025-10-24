@@ -1,0 +1,147 @@
+[
+  {
+    "id": "recruiter-behav-001",
+    "name": "Strong Behavioral Answer with STAR Format",
+    "persona": "recruiter",
+    "theme": "behavioral",
+    "answer": "Tell me about a time when you had to work with a difficult team member. In my previous role as a Product Manager at TechFlow, I had to collaborate with a senior developer who was resistant to following our new agile processes. The situation was challenging because this developer had 10+ years of experience and was highly respected by the team, but his resistance was slowing down our sprint velocity and affecting team morale. My task was to get him on board with our new processes while maintaining team harmony. I took action by scheduling one-on-one meetings to understand his concerns, showing him data on how the new processes were improving our delivery metrics, and involving him in process improvements. I also paired him with a junior developer who was enthusiastic about agile, which helped him see the benefits. The result was that he became one of our strongest advocates for agile processes, our sprint velocity increased by 40%, and team satisfaction scores improved from 6.5 to 8.2.",
+    "expectedScores": {
+      "overall": 89,
+      "subscores": {
+        "structure": 95,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 85,
+        "company": 80,
+        "persona": 90,
+        "risks": 85
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent behavioral answer with clear STAR format and specific outcomes",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-behav-002",
+    "name": "Behavioral Answer with Failure and Learning",
+    "persona": "recruiter",
+    "theme": "behavioral",
+    "answer": "Describe a time when you failed to meet a deadline. At my previous company, I was leading a project to implement a new customer management system with a 3-month deadline. The situation became challenging when we discovered that our initial requirements analysis was incomplete, and we needed to integrate with 5 additional systems that weren't originally scoped. My task was to manage the situation and deliver the best possible outcome. I took action by immediately communicating the challenges to stakeholders, renegotiating the timeline to 4 months, and bringing in additional resources including a systems integration specialist. I also implemented daily standups and weekly stakeholder updates to maintain transparency. While we missed the original deadline by 2 weeks, the result was a successful implementation that exceeded expectations, with 99.9% uptime and 40% improvement in customer satisfaction scores. This experience taught me the importance of thorough upfront analysis and transparent communication.",
+    "expectedScores": {
+      "overall": 82,
+      "subscores": {
+        "structure": 85,
+        "specificity": 80,
+        "outcome": 85,
+        "role": 80,
+        "company": 75,
+        "persona": 85,
+        "risks": 75
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Good behavioral answer showing failure, learning, and recovery",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-behav-003",
+    "name": "Behavioral Answer with Innovation and Risk",
+    "persona": "recruiter",
+    "theme": "behavioral",
+    "answer": "Tell me about a time when you took a calculated risk. In my role as a Senior Product Manager at InnovateCorp, I proposed investing 30% of our development budget in a new AI-powered feature that had no guarantee of success. The situation was risky because we were in a competitive market and couldn't afford to waste resources. My task was to build a compelling case for this investment and manage the associated risks. I took action by conducting extensive market research, building a prototype to validate the concept, and creating a detailed risk mitigation plan. I also established success metrics and exit criteria if the project didn't meet expectations. The result was that the AI feature became our most successful product launch, generating $2M in new revenue within 6 months and giving us a significant competitive advantage. This experience taught me the value of data-driven risk-taking and thorough preparation.",
+    "expectedScores": {
+      "overall": 87,
+      "subscores": {
+        "structure": 85,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 85,
+        "company": 85,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Strong behavioral answer with calculated risk and innovation",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-behav-004",
+    "name": "Behavioral Answer with Team Building",
+    "persona": "recruiter",
+    "theme": "behavioral",
+    "answer": "Describe a time when you had to build trust with a new team. When I joined DataFlow as a new Engineering Manager, I inherited a team of 12 developers who were skeptical of new leadership due to previous management issues. The situation was challenging because the team had low morale and was resistant to change. My task was to build trust and improve team performance while respecting their existing culture. I took action by spending the first month in one-on-one meetings with each team member to understand their concerns and aspirations. I also implemented an open-door policy, shared my management philosophy transparently, and made small wins visible to build momentum. I established team rituals like weekly retrospectives and monthly team outings. The result was that within 3 months, team satisfaction scores improved from 4.2 to 7.8, productivity increased by 35%, and we achieved our highest quarterly delivery targets in 2 years.",
+    "expectedScores": {
+      "overall": 85,
+      "subscores": {
+        "structure": 85,
+        "specificity": 80,
+        "outcome": 85,
+        "role": 90,
+        "company": 80,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Good behavioral answer with team building and trust establishment",
+      "difficulty": "medium",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  },
+  {
+    "id": "recruiter-behav-005",
+    "name": "Behavioral Answer with Customer Focus",
+    "persona": "recruiter",
+    "theme": "behavioral",
+    "answer": "Tell me about a time when you went above and beyond for a customer. At my previous role as a Customer Success Manager at SaaSFlow, we had a major client threatening to cancel their $500K annual contract due to performance issues with our platform. The situation was critical because this client represented 15% of our revenue and their feedback could impact other enterprise deals. My task was to not only resolve their issues but also turn them into a strong advocate for our platform. I took action by personally visiting their office to understand their specific challenges, coordinating with our engineering team to implement custom optimizations, and establishing a dedicated support channel. I also created a detailed success plan with clear milestones and regular check-ins. The result was that we not only retained the client but expanded their contract to $750K annually. They became our strongest reference customer, leading to 3 new enterprise deals worth $1.2M in new revenue.",
+    "expectedScores": {
+      "overall": 88,
+      "subscores": {
+        "structure": 85,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 85,
+        "company": 90,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent behavioral answer with customer focus and business impact",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]

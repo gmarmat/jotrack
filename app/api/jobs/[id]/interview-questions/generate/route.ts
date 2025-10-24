@@ -4,11 +4,51 @@ import { jobs, jobInterviewQuestions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { callAiProvider } from '@/lib/coach/aiProvider';
 import { v4 as uuidv4 } from 'uuid';
+import { createHash } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 interface RouteContext {
   params: { id: string };
+}
+
+// Evidence DTO for interview questions
+type EvidenceFields = {
+  sourceUrl?: string;      // e.g., Glassdoor / Reddit link for 'search', or 'generated' for synth
+  snippet?: string;        // short excerpt or "generated from JD/resume/context"
+  fetchedAt: string;       // ISO timestamp
+  cacheKey: string;        // `${company}:${role}:${hash(questionText)}`
+};
+
+/**
+ * Generate cache key for evidence fields
+ */
+function generateCacheKey(company: string, role: string, questionText: string): string {
+  const hash = createHash('md5').update(questionText).digest('hex').substring(0, 8);
+  return `${company.toLowerCase()}:${role.toLowerCase()}:${hash}`;
+}
+
+/**
+ * Add evidence fields to generated questions
+ */
+function addEvidenceFieldsToGenerated(
+  questions: any[], 
+  companyName: string, 
+  roleTitle: string
+): any[] {
+  const now = new Date().toISOString();
+  
+  return questions.map((question) => {
+    const cacheKey = generateCacheKey(companyName, roleTitle, question.question || question);
+    
+    return {
+      ...question,
+      sourceUrl: 'generated',
+      snippet: 'Generated from JD, resume, company values',
+      fetchedAt: now,
+      cacheKey
+    };
+  });
 }
 
 export async function POST(
@@ -379,15 +419,46 @@ export async function POST(
     
     console.log(`✅ AI questions saved to database for job ${jobId}`);
     
+    // Add evidence fields to all question sets
+    const questionsWithEvidence = {
+      recruiter: recruiterQuestions ? {
+        ...recruiterQuestions,
+        questions: addEvidenceFieldsToGenerated(
+          recruiterQuestions.questions || [],
+          companyName,
+          jobTitle
+        )
+      } : null,
+      hiringManager: hiringManagerQuestions ? {
+        ...hiringManagerQuestions,
+        questions: addEvidenceFieldsToGenerated(
+          hiringManagerQuestions.questions || [],
+          companyName,
+          jobTitle
+        )
+      } : null,
+      peer: peerQuestions ? {
+        ...peerQuestions,
+        questions: addEvidenceFieldsToGenerated(
+          peerQuestions.questions || [],
+          companyName,
+          jobTitle
+        )
+      } : null
+    };
+    
+    // Add evidence fields to synthesized questions
+    const synthesizedQuestionsWithEvidence = addEvidenceFieldsToGenerated(
+      synthesizedQuestions || [],
+      companyName,
+      jobTitle
+    );
+    
     return NextResponse.json({
       success: true,
-      questions: {
-        recruiter: recruiterQuestions,
-        hiringManager: hiringManagerQuestions,
-        peer: peerQuestions
-      },
+      questions: questionsWithEvidence,
       themes,
-      synthesizedQuestions,
+      synthesizedQuestions: synthesizedQuestionsWithEvidence,
       generatedAt: now
     });
   } catch (error: any) {

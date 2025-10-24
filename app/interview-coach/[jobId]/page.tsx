@@ -7,6 +7,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import WelcomeSearch from '@/app/components/interview-coach/WelcomeSearch';
 import SearchInsights from '@/app/components/interview-coach/SearchInsights';
 import AnswerPracticeWorkspace from '@/app/components/interview-coach/AnswerPracticeWorkspace';
+import TalkTracksPanel from '@/app/components/interview-coach/TalkTracksPanel';
 import { CoreStoriesDisplay } from '@/app/components/interview-coach/CoreStoriesDisplay';
 import FinalCheatSheet from '@/app/components/interview-coach/FinalCheatSheet';
 import { ConfidenceScoreCard } from '@/app/components/interview-coach/ConfidenceScoreCard';
@@ -38,6 +39,9 @@ export default function InterviewCoachPage() {
   
   // Current step in the flow
   const [currentStep, setCurrentStep] = useState<InterviewStep>('welcome');
+  
+  // Talk tracks panel state
+  const [showTalkTracks, setShowTalkTracks] = useState(false);
   
   // Job data
   const [jobData, setJobData] = useState<any>(null);
@@ -337,7 +341,14 @@ export default function InterviewCoachPage() {
                 </button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold">Interview Coach</h1>
+                <h1 className="text-2xl font-bold flex items-center gap-3">
+                  Interview Coach
+                  {process.env.NEXT_PUBLIC_INTERVIEW_V2 === '1' && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      V2
+                    </span>
+                  )}
+                </h1>
                 <p className="text-sm text-purple-100">
                   {jobData?.title} at {jobData?.company}
                 </p>
@@ -480,12 +491,57 @@ export default function InterviewCoachPage() {
         
         
         {currentStep === 'practice' && (
-          <AnswerPracticeWorkspace
-            jobId={jobId}
-            selectedQuestions={interviewCoachState.selectedQuestions || []}
-            interviewCoachState={interviewCoachState}
-            setInterviewCoachState={setInterviewCoachState}
-          />
+          <div className="space-y-6">
+            {/* Practice Header with Talk Tracks Button */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+              <div className="flex items-center justify-between">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Practice & Score</h1>
+                <div className="flex items-center gap-3">
+                  {/* Low confidence banner */}
+                  {(() => {
+                    const lastConfidence = interviewCoachState.answers && 
+                      Object.values(interviewCoachState.answers).length > 0 ? 
+                      Object.values(interviewCoachState.answers)[0]?.scores?.[0]?.confidence || 1 : 1;
+                    const lowConfidence = lastConfidence < 0.5;
+                    
+                    return lowConfidence && (
+                      <span className="text-xs text-amber-700 bg-amber-100 rounded px-2 py-1">
+                        Tip: adding a KPI may boost story quality (+8–12 pts)
+                      </span>
+                    );
+                  })()}
+                  
+                  {/* Talk Tracks Button */}
+                  {process.env.NEXT_PUBLIC_INTERVIEW_V2 === '1' && (
+                    <button
+                      onClick={() => setShowTalkTracks(true)}
+                      className="rounded-md bg-indigo-600 text-white px-3 py-2 hover:bg-indigo-700 transition-colors"
+                    >
+                      Generate Core Stories
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Practice Workspace */}
+            <AnswerPracticeWorkspace
+              jobId={jobId}
+              selectedQuestions={interviewCoachState.selectedQuestions || []}
+              interviewCoachState={interviewCoachState}
+              setInterviewCoachState={setInterviewCoachState}
+              persona={persona}
+            />
+            
+            {/* Talk Tracks Panel */}
+            {showTalkTracks && (
+              <TalkTracksPanel 
+                jobId={jobId} 
+                interviewCoachState={interviewCoachState}
+                persona={persona}
+              />
+            )}
+          </div>
         )}
         
         {currentStep === 'talk-tracks' && (

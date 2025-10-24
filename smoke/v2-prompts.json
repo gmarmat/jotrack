@@ -1,0 +1,8 @@
+{
+  "error": "Request validation failed",
+  "code": "VALIDATION_ERROR",
+  "issues": [
+    "jdCore: Expected array, received string"
+  ],
+  "timestamp": 1761241752131
+}

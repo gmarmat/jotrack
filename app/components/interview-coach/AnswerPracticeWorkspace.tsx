@@ -19,13 +19,15 @@ interface Props {
   selectedQuestions: string[];
   interviewCoachState: any;
   setInterviewCoachState: (state: any) => void;
+  persona?: 'recruiter' | 'hiring-manager' | 'peer';
 }
 
 export default function AnswerPracticeWorkspace({
   jobId,
   selectedQuestions,
   interviewCoachState,
-  setInterviewCoachState
+  setInterviewCoachState,
+  persona = 'hiring-manager'
 }: Props) {
   // Debug logging
   console.log('🎯 AnswerPracticeWorkspace Debug:', {
@@ -108,19 +110,37 @@ export default function AnswerPracticeWorkspace({
       
       const currentIteration = (currentQuestionData?.scores?.length || 0) + 1;
       
+      // Build V2 payload
+      const payload = {
+        questionId: selectedQuestion,
+        answer: draftAnswer,
+        persona,
+        jdCore: [], // TODO: Get from analysis data
+        companyValues: [], // TODO: Get from analysis data
+        userProfile: {}, // TODO: Get from analysis data
+        matchMatrix: null,
+        evidenceQuality: null,
+        previous: currentQuestionData?.scores?.[0] ? {
+          overall: currentQuestionData.scores[0].overall,
+          subscores: currentQuestionData.scores[0].subscores
+        } : null,
+        iteration: currentIteration
+      };
+
       const res = await fetch(`/api/interview-coach/${jobId}/score-answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionId: selectedQuestion,
-          answerText: draftAnswer,
-          iteration: currentIteration
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) throw new Error('Scoring failed');
 
       const result = await res.json();
+
+      // Check if using legacy scorer (when V2 flag is enabled but response lacks version:"v2")
+      if (process.env.NEXT_PUBLIC_INTERVIEW_V2 === '1' && result.version !== 'v2') {
+        console.warn('⚠️ Using legacy scorer - response lacks version:"v2"');
+      }
 
       // Update state with new score and discovery questions
       setInterviewCoachState((prev: any) => {
@@ -202,7 +222,8 @@ export default function AnswerPracticeWorkspace({
         body: JSON.stringify({
           questionId: selectedQuestion,
           followUpQuestion: question,
-          followUpIndex: discoveryIndex
+          followUpIndex: discoveryIndex,
+          persona
         })
       });
 
@@ -239,15 +260,24 @@ export default function AnswerPracticeWorkspace({
     try {
       setTestingImpact(prev => ({ ...prev, [discoveryIndex]: true }));
       
+      // Build V2 payload for impact test
+      const payload = {
+        questionId: selectedQuestion,
+        answer: draftAnswer,
+        persona,
+        jdCore: [], // TODO: Get from analysis data
+        companyValues: [], // TODO: Get from analysis data
+        userProfile: {}, // TODO: Get from analysis data
+        matchMatrix: null,
+        evidenceQuality: null,
+        testOnly: true,
+        followUpQA: { question, answer }
+      };
+
       const res = await fetch(`/api/interview-coach/${jobId}/score-answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionId: selectedQuestion,
-          answerText: draftAnswer,
-          testOnly: true,
-          followUpQA: { question, answer }
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) throw new Error('Impact test failed');
@@ -319,14 +349,27 @@ export default function AnswerPracticeWorkspace({
       const combinedAnswer = combinedAnswerParts.join('\n');
       const currentIteration = (currentQuestionData?.scores?.length || 0) + 1;
       
+      // Build V2 payload for combined answer
+      const payload = {
+        questionId: selectedQuestion,
+        answer: combinedAnswer,
+        persona,
+        jdCore: [], // TODO: Get from analysis data
+        companyValues: [], // TODO: Get from analysis data
+        userProfile: {}, // TODO: Get from analysis data
+        matchMatrix: null,
+        evidenceQuality: null,
+        previous: currentQuestionData?.scores?.[0] ? {
+          overall: currentQuestionData.scores[0].overall,
+          subscores: currentQuestionData.scores[0].subscores
+        } : null,
+        iteration: currentIteration
+      };
+
       const res = await fetch(`/api/interview-coach/${jobId}/score-answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          questionId: selectedQuestion,
-          answerText: combinedAnswer,
-          iteration: currentIteration
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) throw new Error('Re-scoring failed');

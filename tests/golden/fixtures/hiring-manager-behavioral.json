@@ -1,0 +1,31 @@
+[
+  {
+    "id": "hm-behav-001",
+    "name": "Strong Behavioral Answer with Decision Making",
+    "persona": "hiring-manager",
+    "theme": "behavioral",
+    "answer": "Describe a time when you had to make a difficult decision with incomplete information. At my previous company, we were facing a critical decision about whether to continue with our current technology stack or migrate to a new platform. The situation was urgent because our current system was reaching its limits, but we had limited time and resources to make the decision. My task was to evaluate the options and make a recommendation that would impact our entire engineering organization. I took action by gathering available data, consulting with key stakeholders, conducting a risk assessment, and creating a decision framework. I also established clear criteria for success and failure scenarios. The result was a decision to proceed with a phased migration approach, which proved successful and enabled us to scale our platform 5x while maintaining system stability. This experience taught me the importance of structured decision-making processes even under uncertainty.",
+    "expectedScores": {
+      "overall": 87,
+      "subscores": {
+        "structure": 90,
+        "specificity": 85,
+        "outcome": 90,
+        "role": 90,
+        "company": 85,
+        "persona": 85,
+        "risks": 80
+      }
+    },
+    "tolerance": {
+      "overall": 3,
+      "subscores": 3
+    },
+    "metadata": {
+      "description": "Excellent behavioral answer with decision making under uncertainty",
+      "difficulty": "easy",
+      "created": "2024-10-21",
+      "version": "2.0"
+    }
+  }
+]
