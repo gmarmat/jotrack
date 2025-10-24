@@ -212,7 +212,7 @@ export function QuestionSelection({
           
           <div className="text-right">
             <div className="text-3xl font-bold text-purple-600">
-              {selectedQuestions.length}
+              {selectedQuestions?.length || 0}
             </div>
             <div className="text-sm text-gray-500">selected</div>
           </div>
@@ -258,10 +258,10 @@ export function QuestionSelection({
           </div>
         </div>
         
-        {selectedQuestions.length >= 3 && (
+        {(selectedQuestions?.length || 0) >= 3 && (
           <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
             <p className="text-sm text-purple-700 dark:text-purple-300">
-              ✅ Great! You've selected {selectedQuestions.length} questions. 
+              ✅ Great! You've selected {selectedQuestions?.length || 0} questions. 
               Click the <strong>"Practice & Score"</strong> tab to start practicing.
             </p>
           </div>

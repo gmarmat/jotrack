@@ -6,6 +6,7 @@ import { executePrompt } from '@/lib/analysis/promptExecutor';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 
 export async function POST(
   request: NextRequest,
@@ -114,6 +115,7 @@ export async function POST(
       
       // Save new cover letter as active
       await db.insert(attachments).values({
+        id: randomUUID(),
         jobId,
         filename,
         path: filePath,
@@ -121,6 +123,7 @@ export async function POST(
         size: Buffer.byteLength(coverLetterData.coverLetter, 'utf8'),
         isActive: true,
         version: 1,
+        createdAt: Date.now(),
       });
       
       console.log(`💾 Saved cover letter: ${filename} (marked as active)`);

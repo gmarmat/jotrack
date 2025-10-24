@@ -165,9 +165,13 @@ export default function CoachModePage({ params }: CoachPageProps) {
 
       // Auto-advance to score tab
       setPreAppTab('score');
+      
+      // Automatically recalculate score after profile analysis
+      await handleRecalculateScore();
     } catch (error) {
       console.error('Profile analysis failed:', error);
       alert('Failed to analyze profile');
+      throw error; // Re-throw to let the UI handle the error state
     }
   };
 
@@ -224,6 +228,11 @@ export default function CoachModePage({ params }: CoachPageProps) {
 
       setProgress(prev => ({ ...prev, applied: true }));
       setPhase('post-app');
+      
+      // Redirect to jobs page after successful application
+      setTimeout(() => {
+        router.push('/jobs');
+      }, 2000); // Give user 2 seconds to see the success state
     } catch (error) {
       console.error('Mark applied failed:', error);
       alert('Failed to mark as applied');

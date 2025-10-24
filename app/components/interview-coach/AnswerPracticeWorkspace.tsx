@@ -39,7 +39,7 @@ export default function AnswerPracticeWorkspace({
   });
 
   const [selectedQuestion, setSelectedQuestion] = useState<string | null>(() => {
-    if (selectedQuestions.length === 0) return null;
+    if (!selectedQuestions || selectedQuestions.length === 0) return null;
     const firstQuestion = selectedQuestions[0];
     return typeof firstQuestion === 'string' ? firstQuestion : firstQuestion?.question || null;
   });
@@ -54,7 +54,7 @@ export default function AnswerPracticeWorkspace({
 
   // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
   useEffect(() => {
-    if (selectedQuestions.length === 0 && interviewCoachState?.questionBank?.synthesizedQuestions?.length > 0) {
+    if ((!selectedQuestions || selectedQuestions.length === 0) && interviewCoachState?.questionBank?.synthesizedQuestions?.length > 0) {
       console.log('🔄 Auto-populating selectedQuestions from synthesizedQuestions');
       console.log('🔄 Available synthesizedQuestions:', interviewCoachState.questionBank.synthesizedQuestions);
       const updated = {
@@ -63,7 +63,7 @@ export default function AnswerPracticeWorkspace({
       };
       setInterviewCoachState(updated);
     }
-  }, [selectedQuestions.length, interviewCoachState?.questionBank?.synthesizedQuestions, interviewCoachState, setInterviewCoachState]);
+  }, [selectedQuestions?.length, interviewCoachState?.questionBank?.synthesizedQuestions, interviewCoachState, setInterviewCoachState]);
 
   const currentQuestionData = selectedQuestion 
     ? interviewCoachState.answers?.[selectedQuestion]
@@ -551,7 +551,7 @@ export default function AnswerPracticeWorkspace({
       {/* Left Column: Question List */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 overflow-y-auto">
         <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
-          Selected Questions ({selectedQuestions.length})
+          Selected Questions ({selectedQuestions?.length || 0})
         </h3>
         <div className="space-y-3" data-testid="question-list">
           {selectedQuestions.map((questionObj, index) => {

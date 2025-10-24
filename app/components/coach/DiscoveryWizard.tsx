@@ -26,6 +26,9 @@ export default function DiscoveryWizard({ jobId, questions, initialResponses, in
   const [responses, setResponses] = useState<Record<string, { answer: string; skipped: boolean }>>(initialResponses || {});
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
   
   const BATCH_SIZE = 4; // Show 4 questions at a time
   const totalBatches = Math.ceil(questions.length / BATCH_SIZE);
@@ -92,14 +95,36 @@ export default function DiscoveryWizard({ jobId, questions, initialResponses, in
     }
   };
 
-  const handleComplete = () => {
-    const formattedResponses = questions.map(q => ({
-      questionId: q.id,
-      answer: responses[q.id]?.answer || '',
-      skipped: responses[q.id]?.skipped || false,
-    }));
+  // Countdown timer for analysis
+  useEffect(() => {
+    if (isAnalyzing && startTime) {
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setElapsedSeconds(elapsed);
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [isAnalyzing, startTime]);
+
+  const handleComplete = async () => {
+    setIsAnalyzing(true);
+    setStartTime(Date.now());
+    setElapsedSeconds(0);
     
-    onComplete(formattedResponses);
+    try {
+      const formattedResponses = questions.map(q => ({
+        questionId: q.id,
+        answer: responses[q.id]?.answer || '',
+        skipped: responses[q.id]?.skipped || false,
+      }));
+      
+      await onComplete(formattedResponses);
+    } finally {
+      setIsAnalyzing(false);
+      setStartTime(null);
+      setElapsedSeconds(0);
+    }
   };
 
   const getWordCount = (text: string) => {
@@ -262,11 +287,20 @@ export default function DiscoveryWizard({ jobId, questions, initialResponses, in
         {isLastBatch ? (
           <button
             onClick={handleComplete}
-            disabled={!canProceed || isSaving}
+            disabled={!canProceed || isSaving || isAnalyzing}
             className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             <Sparkles size={16} />
-            {isSaving ? 'Analyzing Responses...' : 'Complete Discovery'}
+            {isAnalyzing ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">⏳</span>
+                Analyzing... {elapsedSeconds}s
+              </span>
+            ) : isSaving ? (
+              'Saving...'
+            ) : (
+              'Complete Discovery'
+            )}
           </button>
         ) : (
           <button

@@ -34,6 +34,15 @@ export default function AttachmentsModal({
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Track when modal was opened to identify "new" documents
+  const [modalOpenedAt] = useState(Date.now());
+  
+  // Helper function to determine if a document is "new" (created in last 5 minutes)
+  const isNewDocument = (createdAt: number) => {
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    return createdAt > fiveMinutesAgo;
+  };
 
   async function fetchList() {
     setError(null);
@@ -193,11 +202,19 @@ export default function AttachmentsModal({
               <ul className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="attachments-list">
               {list.map((a) => {
                 const isImage = /\.(png|jpg|jpeg|webp)$/i.test(a.filename);
+                const isNew = isNewDocument(a.created_at);
                 return (
-                  <li key={a.id} className="p-3 flex items-center gap-3 bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid={`attachment-${a.id}`}>
+                  <li key={a.id} className={`p-3 flex items-center gap-3 transition-colors ${isNew ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500' : 'bg-white dark:bg-gray-800/50'} hover:bg-gray-50 dark:hover:bg-gray-800`} data-testid={`attachment-${a.id}`}>
                     <div className="w-10 text-center text-2xl">📎</div>
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{a.filename}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{a.filename}</div>
+                        {isNew && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            NEW
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatBytes(Math.max(0, a.size))} • {relativeTime(a.created_at)}
                       </div>

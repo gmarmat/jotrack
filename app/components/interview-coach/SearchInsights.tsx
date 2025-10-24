@@ -114,7 +114,7 @@ export default function SearchInsights({
 
   const handleContinue = () => {
     const selectedQuestions = getSelectedQuestions();
-    if (selectedQuestions.length === 0) {
+    if (!selectedQuestions || selectedQuestions.length === 0) {
       alert('Please select at least one question to continue.');
       return;
     }

@@ -52,8 +52,8 @@ export default function StatusChipDropdown({
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX
+        top: rect.bottom + 8,
+        left: rect.left
       });
     }
     setIsOpen(!isOpen);
@@ -110,7 +110,7 @@ export default function StatusChipDropdown({
       {isOpen && (
         <div 
           ref={dropdownRef}
-          className="fixed w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] max-h-[400px] overflow-y-auto"
+          className="absolute w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] max-h-[400px] overflow-y-auto"
           style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
         >
           <div className="p-2">
