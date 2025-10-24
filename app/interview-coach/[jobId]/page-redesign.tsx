@@ -110,7 +110,7 @@ export default function InterviewCoachPage() {
   );
   
   useEffect(() => {
-    if (interviewCoachState.questionBank || interviewCoachState.selectedQuestions.length > 0) {
+    if (interviewCoachState.questionBank || (interviewCoachState.selectedQuestions?.length || 0) > 0) {
       debouncedSave(interviewCoachState);
     }
   }, [interviewCoachState]);
@@ -153,7 +153,7 @@ export default function InterviewCoachPage() {
   // Breadcrumb
   const steps = [
     { id: 'welcome', label: 'Find Questions', icon: '🔍' },
-    { id: 'select', label: 'Select', icon: '✓', count: interviewCoachState.selectedQuestions.length },
+    { id: 'select', label: 'Select', icon: '✓', count: interviewCoachState.selectedQuestions?.length || 0 },
     { id: 'practice', label: 'Practice', icon: '📝' },
     { id: 'talk-tracks', label: 'Talk Tracks', icon: '✨' },
     { id: 'core-stories', label: 'Core Stories', icon: '🧠' },

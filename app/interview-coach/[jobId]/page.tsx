@@ -180,7 +180,7 @@ export default function InterviewCoachPage() {
   );
   
   useEffect(() => {
-    if (interviewCoachState.questionBank || interviewCoachState.selectedQuestions.length > 0) {
+    if (interviewCoachState.questionBank || (interviewCoachState.selectedQuestions?.length || 0) > 0) {
       debouncedSave(interviewCoachState);
     }
   }, [interviewCoachState]);
@@ -200,7 +200,7 @@ export default function InterviewCoachPage() {
         questionsFound: (questionBank.webQuestions?.length || 0) + 
                        Object.values(questionBank.aiQuestions || {}).reduce((acc: number, p: any) => 
                          acc + (p?.questions?.length || 0), 0),
-        questionsSelected: selectedQuestions.length
+        questionsSelected: selectedQuestions?.length || 0
       }
     };
     setInterviewCoachState(updated);
