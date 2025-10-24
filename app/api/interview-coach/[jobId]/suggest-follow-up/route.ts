@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { scoreAnswer, ScoringContext } from '@/src/interview-coach/scoring';
+import { scoreAnswer, ScoringContext } from '@/src/interview-coach/scoring/index';
 import { buildFollowUpPrompts } from '@/src/interview-coach/discovery/prompts';
 import { DimensionType } from '@/src/interview-coach/scoring/schema';
 import { 
@@ -12,6 +12,7 @@ import {
 } from '@/src/interview-coach/http/schema';
 import { logCoachEvent, logCoachError, extractCoachMetrics } from '@/src/interview-coach/telemetry';
 import { generateDeltaRationales } from '@/src/interview-coach/discovery/feedback';
+import { sqlite } from '@/db/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,10 +87,40 @@ export async function POST(
       userProfile, 
       matchMatrix, 
       evidenceQuality,
-      previous
+      previous: requestPrevious
     } = bodyValidation.data;
     
     console.log(`🎯 Generating follow-up prompts for job ${jobId}...`);
+    
+    // V2: Build previous from coach state if missing
+    let previous = requestPrevious;
+    if (!previous) {
+      try {
+        const coachStateRow = sqlite.prepare(`
+          SELECT interview_coach_json FROM coach_state WHERE job_id = ? LIMIT 1
+        `).get(jobId) as any;
+        
+        if (coachStateRow?.interview_coach_json) {
+          const interviewCoachData = JSON.parse(coachStateRow.interview_coach_json);
+          const answers = interviewCoachData.answers || {};
+          
+          // Find the most recent score for this question
+          const questionId = bodyValidation.data.questionId || 'unknown';
+          const questionData = answers[questionId];
+          
+          if (questionData?.scores && Array.isArray(questionData.scores) && questionData.scores.length > 0) {
+            const lastScore = questionData.scores[questionData.scores.length - 1];
+            previous = {
+              overall: lastScore.overall || 0,
+              subscores: lastScore.subscores || {}
+            };
+            console.log('✅ Built previous from coach state:', previous);
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load previous from coach state:', error);
+      }
+    }
     
     // Build ScoringContext for V2 scoring
     const scoringContext: ScoringContext = {
@@ -140,39 +171,51 @@ export async function POST(
       reasons: reasons.length
     });
     
-    // Generate delta rationales if we have previous scores to compare
-    let deltaReasons: string[] = [];
-    if (previous && previous.subscores && scoreResult.subscores) {
-      deltaReasons = generateDeltaRationales(
-        previous.subscores,
-        scoreResult.subscores,
-        scoreResult.flags || []
-      );
+    // V2: Calculate delta and rationale
+    let delta = null;
+    if (previous && scoring) {
+      const points = scoring.overall - (previous.overall || 0);
+      
+      // Generate delta rationales
+      let deltaReasons: string[] = [];
+      if (previous.subscores && scoring.subscores) {
+        try {
+          deltaReasons = generateDeltaRationales(
+            previous.subscores,
+            scoring.subscores,
+            scoring.flags || []
+          );
+        } catch (error) {
+          console.warn('⚠️ Delta rationale generation failed:', error);
+          deltaReasons = [];
+        }
+      }
+      
+      // Find the two lowest dimensions for rationale
+      const dimensionScores = Object.entries(scoring.subscores || {})
+        .sort(([,a], [,b]) => (a as number) - (b as number))
+        .slice(0, 2)
+        .map(([dim]) => dim);
+      
+      const reason = deltaReasons.length > 0 
+        ? deltaReasons.join('; ') 
+        : `${points > 0 ? '+' : ''}${points} points (${dimensionScores.join(', ')})`;
+      
+      delta = {
+        points,
+        reason,
+        dims: dimensionScores
+      };
     }
     
-    // V2: Enhanced response format
-    let response;
-    if (process.env.INTERVIEW_V2 === '1') {
-      // Calculate delta if we have previous scores
-      const delta = previous && scoreResult ? {
-        points: scoreResult.overall - (previous.overall || 0),
-        rationales: deltaReasons
-      } : null;
-
-      response = {
-        success: true,
-        version: 'v2',
-        prompts,
-        targetedDimensions,
-        reasons,
-        delta
-      };
-    } else {
-      // Legacy: Simple string list for backward compatibility
-      response = {
-        prompts: prompts.map(p => p.text)
-      };
-    }
+    // V2: Always return enhanced format
+    const response = {
+      success: true,
+      version: 'v2',
+      prompts,
+      targetedDimensions,
+      delta
+    };
     
     // Validate response schema during development/testing
     const isValidResponse = validateResponse(SuggestFollowUpResponseSchema, response);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callAiProvider } from '@/lib/ai/aiProvider';
+import { callAiProvider } from '@/lib/coach/aiProvider';
 import { 
   JobIdParamSchema, 
   validateRequest, 
@@ -80,16 +80,14 @@ export async function POST(
       );
     }
 
-    // Generate deterministic scaffold first
-    const scaffold = generateAnswerScaffold(answer, targetedDimensions, jdCore, companyValues);
+    // V2: Environment-aware AI Assist with scaffold fallback
+    const aiAssistOn = process.env.AI_ASSIST_ON === '1';
+    let draft = '';
+    let usedAi = false;
     
-    let draft = scaffold.draft;
-    let rationale = scaffold.rationale;
-
-    // If AI_ASSIST_ON flag is enabled, polish with AI
-    const aiOn = process.env.AI_ASSIST_ON === '1';
-    if (aiOn) {
+    if (aiAssistOn) {
       try {
+        console.log('🤖 AI Assist enabled - calling AI provider...');
         const aiResult = await callAiProvider('text-generation', {
           prompt: buildAIPrompt(question, answer, targetedDimensions, jdCore, companyValues, persona),
           maxTokens: 300,
@@ -98,18 +96,31 @@ export async function POST(
 
         if (aiResult.success && aiResult.data?.text) {
           draft = aiResult.data.text;
-          rationale.push('AI-enhanced with improved structure and impact metrics');
+          usedAi = true;
+          console.log('✅ AI draft generated successfully');
+        } else {
+          throw new Error('AI provider returned no text');
         }
       } catch (aiError) {
-        console.warn('⚠️ AI enhancement failed, using scaffold:', aiError);
-        rationale.push('AI enhancement unavailable, using scaffold');
+        console.warn('⚠️ AI enhancement failed, falling back to scaffold:', aiError);
+        // Fall back to scaffold
+        const scaffold = generateAnswerScaffold(answer, targetedDimensions, jdCore, companyValues, persona);
+        draft = scaffold.draft;
+        usedAi = false;
       }
+    } else {
+      console.log('📝 AI Assist disabled - generating scaffold only');
+      // AI disabled - always return scaffold
+      const scaffold = generateAnswerScaffold(answer, targetedDimensions, jdCore, companyValues, persona);
+      draft = scaffold.draft;
+      usedAi = false;
     }
 
     const response = {
+      success: true,
+      version: 'v2',
       draft,
-      rationale,
-      version: 'v2'
+      usedAi
     };
 
     // Log telemetry event
@@ -144,17 +155,45 @@ export async function POST(
 
 /**
  * Generate deterministic scaffold without AI
+ * V2: Enhanced with STAR outline, company value hook, and persona phrasing
  */
 function generateAnswerScaffold(
   currentAnswer: string,
   targetedDimensions: string[],
   jdCore?: string | string[],
-  companyValues?: string[]
+  companyValues?: string[],
+  persona?: string
 ): { draft: string; rationale: string[] } {
   const rationale: string[] = [];
   
-  // Start with current answer
-  let draft = currentAnswer;
+  // V2: Start with STAR structure outline
+  let draft = `SITUATION: [Context - company, team size, timeline]
+${currentAnswer || '[Your current answer]'}
+
+TASK: [Your goal/challenge - what needed to be accomplished]
+
+ACTION: [What YOU specifically did - decisions, leadership, technologies used]
+
+RESULT: [Measurable outcomes - metrics, business impact, team improvements]`;
+
+  // Add company value hook if company values available
+  if (companyValues && companyValues.length > 0) {
+    const valueHook = companyValues[0]; // Use first company value
+    draft += `\n\n[COMPANY_VALUE_HOOK: Connect your result to ${valueHook} - show alignment with company values]`;
+    rationale.push('Added company value alignment hook');
+  }
+  
+  // Add persona-specific phrasing
+  if (persona === 'recruiter') {
+    draft += '\n\n[RECRUITER_PHRASING: Emphasize cultural fit and communication skills]';
+    rationale.push('Added recruiter-focused phrasing');
+  } else if (persona === 'hiring-manager') {
+    draft += '\n\n[HM_PHRASING: Focus on technical skills and team leadership]';
+    rationale.push('Added hiring manager-focused phrasing');
+  } else if (persona === 'peer') {
+    draft += '\n\n[PEER_PHRASING: Highlight collaboration and day-to-day working style]';
+    rationale.push('Added peer-focused phrasing');
+  }
   
   // Enhance based on targeted dimensions
   if (targetedDimensions.includes('specificity')) {

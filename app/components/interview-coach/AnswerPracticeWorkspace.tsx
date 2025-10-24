@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Wand2, TestTube, Check, Edit2, ArrowUp, ArrowDown, Minus, Send, Sparkles } from 'lucide-react';
+import InterviewerProfileCard from './InterviewerProfileCard';
 
 interface DiscoveryAnswer {
   question: string;
@@ -48,6 +49,8 @@ export default function AnswerPracticeWorkspace({
   const [testingImpact, setTestingImpact] = useState<Record<number, boolean>>({});
   const [suggestedAnswer, setSuggestedAnswer] = useState<string | null>(null);
   const [suggestingAnswer, setSuggestingAnswer] = useState(false);
+  const [savingSnapshot, setSavingSnapshot] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
   useEffect(() => {
@@ -72,32 +75,63 @@ export default function AnswerPracticeWorkspace({
     ? latestScore.overall - previousScore.overall 
     : 0;
 
-  // Load draft answer when question changes
+  // Load draft answer when question changes - V2: Check persona-specific answers first
   useEffect(() => {
-    if (selectedQuestion && currentQuestionData) {
-      setDraftAnswer(currentQuestionData.mainStory || '');
-    } else if (selectedQuestion && !currentQuestionData) {
-      // Clear draft answer if no data for this question
-      setDraftAnswer('');
+    if (selectedQuestion) {
+      // Check persona-specific answer first
+      const personaAnswer = interviewCoachState.answersByPersona?.[persona]?.[selectedQuestion];
+      if (personaAnswer) {
+        setDraftAnswer(personaAnswer);
+        return;
+      }
+      
+      // Fall back to base answer
+      const baseAnswer = interviewCoachState.answersBase?.[selectedQuestion];
+      if (baseAnswer) {
+        setDraftAnswer(baseAnswer);
+        return;
+      }
+      
+      // Fall back to legacy structure
+      if (currentQuestionData) {
+        setDraftAnswer(currentQuestionData.mainStory || '');
+      } else {
+        // Clear draft answer if no data for this question
+        setDraftAnswer('');
+      }
     }
-  }, [selectedQuestion, currentQuestionData]);
+  }, [selectedQuestion, currentQuestionData, persona, interviewCoachState.answersByPersona, interviewCoachState.answersBase]);
 
-  // Auto-save when draft answer changes (debounced)
+  // Auto-save when draft answer changes (debounced) - V2: Persona-specific saving
   useEffect(() => {
     if (!selectedQuestion || !draftAnswer.trim()) return;
     
     const timeoutId = setTimeout(() => {
       setInterviewCoachState((prev: any) => {
         const updated = { ...prev };
+        
+        // Initialize persona-specific data structure
+        updated.answersBase = updated.answersBase || {};
+        updated.answersByPersona = updated.answersByPersona || {};
+        updated.answersByPersona[persona] = updated.answersByPersona[persona] || {};
+        
+        // Save to base answers (shared across all personas)
+        updated.answersBase[selectedQuestion] = draftAnswer;
+        
+        // Save to persona-specific answers (allows personalization)
+        updated.answersByPersona[persona][selectedQuestion] = draftAnswer;
+        
+        // Legacy: Keep existing structure for backward compatibility
         updated.answers = updated.answers || {};
         updated.answers[selectedQuestion] = updated.answers[selectedQuestion] || {};
         updated.answers[selectedQuestion].mainStory = draftAnswer;
+        
         return updated;
       });
     }, 1000); // Auto-save after 1 second of inactivity
 
     return () => clearTimeout(timeoutId);
-  }, [draftAnswer, selectedQuestion, setInterviewCoachState]);
+  }, [draftAnswer, selectedQuestion, persona, setInterviewCoachState]);
 
   const handleScoreAnswer = async () => {
     if (!selectedQuestion || !draftAnswer.trim()) {
@@ -197,14 +231,33 @@ export default function AnswerPracticeWorkspace({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: selectedQuestion,
-          currentAnswer: draftAnswer
+          answer: draftAnswer,
+          persona,
+          targetedDimensions: ['structure', 'specificity'], // Default dimensions
+          jdCore: [],
+          companyValues: []
         })
       });
       
       if (!response.ok) throw new Error('AI suggestion failed');
       
       const data = await response.json();
-      setSuggestedAnswer(data.suggestedAnswer);
+      
+      // V2: Handle new response format
+      if (data.success && data.draft) {
+        setSuggestedAnswer(data.draft);
+        
+        // Show toast notification
+        const message = data.usedAi 
+          ? 'AI draft inserted' 
+          : 'Scaffold draft inserted';
+        setToastMessage(message);
+        
+        // Clear toast after 3 seconds
+        setTimeout(() => setToastMessage(null), 3000);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       alert(`AI Suggest failed: ${error.message}`);
     } finally {
@@ -260,7 +313,7 @@ export default function AnswerPracticeWorkspace({
     try {
       setTestingImpact(prev => ({ ...prev, [discoveryIndex]: true }));
       
-      // Build V2 payload for impact test
+      // Build V2 payload for impact test using suggest-follow-up route
       const payload = {
         questionId: selectedQuestion,
         answer: draftAnswer,
@@ -270,11 +323,13 @@ export default function AnswerPracticeWorkspace({
         userProfile: {}, // TODO: Get from analysis data
         matchMatrix: null,
         evidenceQuality: null,
-        testOnly: true,
-        followUpQA: { question, answer }
+        previous: latestScore ? {
+          overall: latestScore.overall,
+          subscores: latestScore.subscores || {}
+        } : null
       };
 
-      const res = await fetch(`/api/interview-coach/${jobId}/score-answer`, {
+      const res = await fetch(`/api/interview-coach/${jobId}/suggest-follow-up`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -284,22 +339,20 @@ export default function AnswerPracticeWorkspace({
 
       const result = await res.json();
 
-      // Update with impact result
+      // Update with impact result using V2 format
       setInterviewCoachState((prev: any) => {
         const updated = { ...prev };
         const currentAnswer = updated.answers[selectedQuestion].discoveryAnswers[discoveryIndex];
         
-        // Calculate impact delta (new score - previous score)
-        const newScore = result.score?.overall || 0;
-        const previousScore = latestScore?.overall || 0;
-        const delta = newScore - previousScore;
-        
-        // Use impactExplanation from backend (not from feedback array)
-        const explanation = result.impactExplanation || 'Impact tested';
+        // Extract delta information from V2 response
+        const delta = result.delta;
+        const impact = delta?.points || 0;
+        const explanation = delta?.reason || 'Impact tested';
+        const newScore = latestScore ? latestScore.overall + impact : impact;
         
         updated.answers[selectedQuestion].discoveryAnswers[discoveryIndex] = {
           ...currentAnswer,
-          impact: delta,
+          impact: impact,
           newScore: newScore,
           explanation: explanation,
           status: 'tested'
@@ -392,6 +445,48 @@ export default function AnswerPracticeWorkspace({
     }
   };
 
+  // V2: Save snapshot function
+  const handleSaveSnapshot = async () => {
+    if (!selectedQuestion || !draftAnswer.trim()) {
+      alert('Please write your answer first');
+      return;
+    }
+
+    setSavingSnapshot(true);
+    try {
+      // Get current score and confidence
+      const currentScore = latestScore?.overall || 0;
+      const currentConfidence = latestScore?.confidence || 0.5;
+      const currentFlags = latestScore?.flags || [];
+
+      const response = await fetch(`/api/coach/${jobId}/snapshot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          persona,
+          label: `Answer for: ${selectedQuestion.substring(0, 50)}...`,
+          score: currentScore,
+          confidence: currentConfidence,
+          flags: currentFlags
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setToastMessage(`Snapshot saved: ${data.snapshot.id}`);
+        setTimeout(() => setToastMessage(null), 3000);
+      } else {
+        alert(`Failed to save snapshot: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to save snapshot:', error);
+      alert('Failed to save snapshot');
+    } finally {
+      setSavingSnapshot(false);
+    }
+  };
+
   if (!selectedQuestions || selectedQuestions.length === 0) {
     // Check if we have any questions in questionBank that we can use
     const availableQuestions = interviewCoachState?.questionBank?.synthesizedQuestions?.filter(q => q && (typeof q === 'string' || q.question)) || [];
@@ -442,6 +537,17 @@ export default function AnswerPracticeWorkspace({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-6 h-full">
+      {/* Left Sidebar - Interviewer Profile */}
+      <div className="space-y-4">
+        <InterviewerProfileCard jobId={jobId} persona={persona} />
+      </div>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">
+          <Check className="w-4 h-4" />
+          {toastMessage}
+        </div>
+      )}
       {/* Left Column: Question List */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 overflow-y-auto">
         <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
@@ -527,7 +633,7 @@ export default function AnswerPracticeWorkspace({
               })()}
             </h3>
             {latestScore && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" data-testid="score-display">
                 <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {latestScore.overall}/100
                 </span>
@@ -541,9 +647,20 @@ export default function AnswerPracticeWorkspace({
                 )}
               </div>
             )}
+            
+            {/* V2: Improvement Summary & CTAs */}
+            {latestScore && (
+              <ImprovementSummary 
+                score={latestScore.overall}
+                subscores={latestScore.subscores || {}}
+                flags={latestScore.flags || []}
+                persona={persona}
+              />
+            )}
           </div>
 
           <textarea
+            data-testid="answer-textarea"
             value={draftAnswer}
             onChange={(e) => setDraftAnswer(e.target.value)}
             placeholder={`Write your STAR story here (200-300 words):
@@ -566,6 +683,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
 
           <div className="flex gap-3 mt-4">
             <button
+              data-testid="analyze-button"
               onClick={handleScoreAnswer}
               disabled={scoring[selectedQuestion] || !draftAnswer.trim()}
               className="flex-1 flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg
@@ -589,7 +707,9 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
               disabled={suggestingAnswer || !selectedQuestion}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg
                        hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-              title="AI will generate a contextual example answer to help you win"
+              title={process.env.NEXT_PUBLIC_AI_ASSIST_ON !== '1' 
+                ? "AI Assist disabled - will generate scaffold template instead" 
+                : "AI will generate a contextual example answer to help you win"}
             >
               {suggestingAnswer ? (
                 <>
@@ -599,7 +719,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
               ) : (
                 <>
                   <Wand2 className="w-4 h-4" />
-                  AI Suggest
+                  {process.env.NEXT_PUBLIC_AI_ASSIST_ON === '1' ? 'AI Suggest' : 'Template Suggest'}
                 </>
               )}
             </button>
@@ -674,7 +794,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                   'border-gray-300 dark:border-gray-600';
 
                 return (
-                  <div key={i} className={`border-2 ${borderColor} rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50`}>
+                  <div key={i} className={`border-2 ${borderColor} rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50`} data-testid="discovery-question">
                     <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                       {i + 1}. {question}
                     </p>
@@ -690,7 +810,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                                disabled:opacity-60 disabled:cursor-not-allowed"
                     />
 
-                    {/* Impact Badge */}
+                    {/* Impact Badge with Delta and Rationale */}
                     {(discoveryAnswer.impact !== null || discoveryAnswer.status === 'ai-filled') && (
                       <div className={`mt-2 p-2 rounded text-xs ${
                         discoveryAnswer.impact && discoveryAnswer.impact > 0
@@ -707,7 +827,15 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                             {discoveryAnswer.impact > 0 ? '+' : ''}{discoveryAnswer.impact} | {discoveryAnswer.newScore}/100
                           </div>
                         )}
-                        <p className="mt-1">{discoveryAnswer.explanation || 'AI generated answer'}</p>
+                        {/* V2: Display delta with rationale inline */}
+                        {discoveryAnswer.status === 'tested' && discoveryAnswer.explanation && (
+                          <p className="mt-1 text-xs opacity-90">
+                            {discoveryAnswer.explanation}
+                          </p>
+                        )}
+                        {discoveryAnswer.status === 'ai-filled' && (
+                          <p className="mt-1 text-xs opacity-90">AI generated answer</p>
+                        )}
                       </div>
                     )}
 
@@ -782,6 +910,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                             )}
                           </button>
                           <button
+                            data-testid="ai-assist-button"
                             onClick={() => handleAiSuggest(i, question)}
                             disabled={generatingAi[i]}
                             className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30
@@ -810,7 +939,7 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
             </div>
 
             {/* Save All & Re-score Button */}
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex justify-center gap-3">
               <button
                 onClick={handleSaveAndRescore}
                 disabled={scoring[selectedQuestion]}
@@ -830,6 +959,90 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
                   </>
                 )}
               </button>
+              
+              {/* V2: Snapshot Save Button */}
+              <button
+                data-testid="save-snapshot-button"
+                onClick={handleSaveSnapshot}
+                disabled={savingSnapshot || !draftAnswer.trim()}
+                className="flex items-center gap-2 px-4 py-3 bg-gray-600 hover:bg-gray-700 
+                         text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed 
+                         transition-all font-semibold text-sm"
+              >
+                {savingSnapshot ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Save Snapshot
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* V2: Toast message for snapshot save */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50" data-testid="success-toast">
+          {toastMessage}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// V2: Improvement Summary Component
+function ImprovementSummary({ 
+  score, 
+  subscores, 
+  flags, 
+  persona 
+}: { 
+  score: number; 
+  subscores: Record<string, number>; 
+  flags: string[]; 
+  persona: 'recruiter' | 'hiring-manager' | 'peer';
+}) {
+  // Import the summarizeImprovements function
+  const { summarizeImprovements } = require('@/src/interview-coach/scoring/rules');
+  
+  // Get improvement suggestions
+  const improvements = summarizeImprovements(subscores, flags, persona);
+  
+  // Only show if score is below 75 or there are specific issues
+  if (score >= 75 && improvements.ctas.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg" data-testid="improvement-summary">
+      <div className="space-y-3">
+        {/* Summary */}
+        <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+          {improvements.summary}
+        </p>
+        
+        {/* CTAs */}
+        {improvements.ctas.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+              Quick Actions:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {improvements.ctas.map((cta, index) => (
+                <span 
+                  key={index}
+                  data-testid="cta-button"
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-800/30 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700"
+                >
+                  {cta}
+                </span>
+              ))}
             </div>
           </div>
         )}

@@ -474,7 +474,12 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
 
             {versionsOpen[kind] && (
               <div className="mt-2 space-y-1" data-testid="versions-list">
-                {versions[kind].map((ver) => {
+                {versions[kind].length === 0 ? (
+                  <div className="text-xs text-gray-500 bg-gray-50 rounded p-3 border border-gray-200">
+                    Variants are building… this takes ~30–40s. Your page will update automatically.
+                  </div>
+                ) : (
+                  versions[kind].map((ver) => {
                   const isActiveVer = ver.isActive && ver.deletedAt === null;
                   const canPreview = isPreviewable(ver.filename, ver.size);
                   const isNonPreviewable = /\.(doc|docx|rtf)$/i.test(ver.filename);
@@ -554,7 +559,8 @@ export default function AttachmentsPanel({ jobId }: AttachmentsPanelProps) {
                       </div>
                     </div>
                   );
-                })}
+                  })
+                )}
               </div>
             )}
           </div>

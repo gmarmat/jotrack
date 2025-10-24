@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { mutate } from 'swr';
 import { formatBytes, relativeTime } from './format';
 
 type Attachment = {
@@ -17,6 +18,17 @@ export default function AttachmentsModal({
   jobId: string;
   onClose: () => void;
 }) {
+  const handleClose = async () => {
+    // Revalidate SWR caches on modal close
+    const keys = [
+      `/api/jobs/${jobId}/attachments`,
+      `/api/jobs/${jobId}/analysis-data`,
+      `/api/jobs/${jobId}/attachments/versions?kind=jd`,
+      `/api/jobs/${jobId}/attachments/versions?kind=resume`,
+    ];
+    await Promise.all(keys.map(k => mutate(k, undefined, { revalidate: true })));
+    onClose();
+  };
   const [list, setList] = useState<Attachment[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -43,12 +55,12 @@ export default function AttachmentsModal({
   // ESC key handler
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     };
     
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
+  }, [handleClose]);
 
   const hasImages = useMemo(
     () => (list || []).some((a) => /\.(png|jpg|jpeg|webp)$/i.test(a.filename)),
@@ -128,7 +140,7 @@ export default function AttachmentsModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-y-auto p-4"
-      onClick={onClose}
+      onClick={handleClose}
       data-testid="attachments-modal"
     >
       <div
@@ -141,7 +153,7 @@ export default function AttachmentsModal({
           <button
             className="rounded-md p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             aria-label="Close attachments"
-            onClick={onClose}
+            onClick={handleClose}
             data-testid="close-attachments"
           >
             ✕

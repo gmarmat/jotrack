@@ -80,6 +80,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         size: attachments.size,
         kind: attachments.kind,
         version: attachments.version,
+        isActive: attachments.isActive,
         created_at: attachments.createdAt,
       })
       .from(attachments)
@@ -93,6 +94,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       size: r.size,
       kind: r.kind,
       version: r.version,
+      isActive: r.isActive,
       created_at: r.created_at,
       url: `/api/files/stream?path=${encodeURIComponent(r.path)}`,
     }));

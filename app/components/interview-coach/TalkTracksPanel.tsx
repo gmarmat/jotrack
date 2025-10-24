@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { GitCompare } from 'lucide-react';
 
 interface TalkTracksPanelProps {
   jobId: string;
@@ -12,6 +13,31 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
   const [loading, setLoading] = useState(false);
   const [stories, setStories] = useState<any[]>([]);
   const [coverage, setCoverage] = useState<Record<string, number>>({});
+  const [showCompare, setShowCompare] = useState(false);
+  
+  // V2: Calculate confidence from interview coach state
+  const calculateConfidence = () => {
+    if (!interviewCoachState.answers) return 0.5;
+    
+    const answers = Object.values(interviewCoachState.answers);
+    if (answers.length === 0) return 0.2;
+    
+    let totalConfidence = 0;
+    let validAnswers = 0;
+    
+    answers.forEach((answerData: any) => {
+      if (answerData.scores && answerData.scores.length > 0) {
+        const latestScore = answerData.scores[answerData.scores.length - 1];
+        const confidence = latestScore.confidence || 0.5;
+        totalConfidence += confidence;
+        validAnswers++;
+      }
+    });
+    
+    return validAnswers > 0 ? totalConfidence / validAnswers : 0.3;
+  };
+  
+  const confidence = calculateConfidence();
 
   async function generate() {
     setLoading(true);
@@ -78,6 +104,13 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
       });
       
       const data = await res.json();
+      
+      // V2: Handle new response format
+      if (data.success === false && data.code === 'NO_ANSWERS') {
+        alert(data.message);
+        return;
+      }
+      
       setStories(data.coreStories || []);
       setCoverage(data.coverageMap || {});
     } catch (error) {
@@ -91,19 +124,79 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Core Stories</h2>
-        <button 
-          onClick={generate} 
-          disabled={loading}
-          className="rounded-md bg-slate-900 text-white px-4 py-2 disabled:opacity-60 hover:bg-slate-800 transition-colors"
-        >
-          {loading ? 'Generating…' : 'Generate Stories'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            data-testid="compare-personas-toggle"
+            onClick={() => setShowCompare(!showCompare)}
+            className={`flex items-center gap-1 px-3 py-1 text-sm rounded ${
+              showCompare 
+                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <GitCompare className="w-4 h-4" />
+            Compare Personas
+          </button>
+          <button 
+            data-testid="generate-talk-tracks"
+            onClick={generate} 
+            disabled={loading}
+            className="rounded-md bg-slate-900 text-white px-4 py-2 disabled:opacity-60 hover:bg-slate-800 transition-colors"
+          >
+            {loading ? 'Generating…' : 'Generate Stories'}
+          </button>
+        </div>
       </div>
+      
+      {/* V2: Confidence info banner (not a blocker) */}
+      {confidence < 0.4 && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div className="flex items-start gap-2">
+            <div className="text-amber-600 dark:text-amber-400 text-sm">💡</div>
+            <div className="text-sm text-amber-800 dark:text-amber-200">
+              <strong>We'll generate tracks, but consider adding quantification for stronger results.</strong>
+              <br />
+              <span className="text-xs text-amber-600 dark:text-amber-400">
+                Current confidence: {Math.round(confidence * 100)}% • Add specific metrics and numbers to improve story quality
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cross-Persona Compare View */}
+      {showCompare && stories.length > 0 && (
+        <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Cross-Persona Comparison</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {['recruiter', 'hiring-manager', 'peer'].map(p => (
+              <div key={p} className="bg-white dark:bg-gray-700 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">
+                    {p === 'recruiter' ? '🤝' : p === 'hiring-manager' ? '💼' : '👥'}
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {p === 'hiring-manager' ? 'Hiring Manager' : p}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {p === 'recruiter' && 'Focus on culture fit and communication skills'}
+                  {p === 'hiring-manager' && 'Focus on technical depth and team leadership'}
+                  {p === 'peer' && 'Focus on collaboration and day-to-day work'}
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                  {p === persona ? 'Current' : 'Alternative'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {stories.length > 0 && (
         <div className="space-y-6">
           {stories.map((story, i) => (
-            <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4" data-testid="talk-track-story">
               <div className="font-semibold text-gray-900 dark:text-white mb-2">{story.title}</div>
               
               {/* Coverage indicators */}
@@ -123,7 +216,7 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
               {/* Persona variants */}
               <div className="grid md:grid-cols-3 gap-4 mt-4">
                 {['recruiter', 'hiring-manager', 'peer'].map(p => (
-                  <div key={p} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                  <div key={p} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3" data-testid="persona-variant">
                     <div className="text-xs font-medium uppercase text-gray-500 dark:text-gray-400 mb-2">
                       {p === 'hiring-manager' ? 'Hiring Manager' : p}
                     </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
-import { attachments, type AttachmentKind } from '@/db/schema';
+import { attachments, artifactVariants, type AttachmentKind } from '@/db/schema';
 import { eq, and, isNull, desc } from 'drizzle-orm';
 
 export async function GET(
@@ -37,7 +37,71 @@ export async function GET(
       )
       .orderBy(desc(attachments.createdAt));
 
-    return NextResponse.json({ versions });
+    // Map kind to sourceType for variant lookup
+    const sourceType = kind === 'resume' ? 'resume' : 
+                      kind === 'jd' ? 'job_description' : 
+                      kind === 'cover_letter' ? 'cover_letter' : 'attachment';
+
+    // Fetch variants for each version
+    const versionsWithVariants = await Promise.all(
+      versions.map(async (version) => {
+        const variants = await db
+          .select({
+            variantType: artifactVariants.variantType,
+            content: artifactVariants.content,
+            contentHash: artifactVariants.contentHash,
+            tokenCount: artifactVariants.tokenCount,
+            createdAt: artifactVariants.createdAt,
+          })
+          .from(artifactVariants)
+          .where(
+            and(
+              eq(artifactVariants.sourceId, version.id),
+              eq(artifactVariants.sourceType, sourceType),
+              eq(artifactVariants.isActive, true)
+            )
+          );
+
+        // Transform variants to the expected format
+        const variantMap: Record<string, any> = {};
+        variants.forEach(variant => {
+          const content = typeof variant.content === 'string' 
+            ? JSON.parse(variant.content) 
+            : variant.content;
+          
+          // Map variant types to expected keys
+          if (variant.variantType === 'ai_optimized') {
+            variantMap.normalized = {
+              path: content.path || content.filePath,
+              content: content.content || content.text,
+              tokenCount: variant.tokenCount,
+              createdAt: variant.createdAt
+            };
+          } else if (variant.variantType === 'raw') {
+            variantMap.raw = {
+              path: content.path || content.filePath,
+              content: content.content || content.text,
+              tokenCount: variant.tokenCount,
+              createdAt: variant.createdAt
+            };
+          } else if (variant.variantType === 'detailed') {
+            variantMap.detailed = {
+              path: content.path || content.filePath,
+              content: content.content || content.text,
+              tokenCount: variant.tokenCount,
+              createdAt: variant.createdAt
+            };
+          }
+        });
+
+        return {
+          ...version,
+          variants: variantMap
+        };
+      })
+    );
+
+    return NextResponse.json({ versions: versionsWithVariants });
   } catch (error) {
     console.error('GET /api/jobs/[id]/attachments/versions error:', error);
     return NextResponse.json(

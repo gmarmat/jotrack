@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
-import { jobs, jobProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { jobs, jobProfiles, attachments } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { executePrompt } from '@/lib/analysis/promptExecutor';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST(
   request: NextRequest,
@@ -88,6 +90,43 @@ export async function POST(
     const coverLetterData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
 
     console.log(`✅ Cover letter generated: ${coverLetterData.wordCount || 0} words, ${coverLetterData.principleMentions || 0} principles`);
+
+    // Save generated cover letter as attachment
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `Cover_Letter_${timestamp}.txt`;
+      const filePath = `${jobId}/${filename}`;
+      const fullPath = join(process.cwd(), 'data', 'attachments', filePath);
+      
+      // Ensure directory exists
+      await mkdir(join(process.cwd(), 'data', 'attachments', jobId), { recursive: true });
+      
+      // Write file
+      await writeFile(fullPath, coverLetterData.coverLetter, 'utf8');
+      
+      // Deactivate all existing cover letter attachments for this job
+      await db.update(attachments)
+        .set({ isActive: false })
+        .where(and(
+          eq(attachments.jobId, jobId),
+          eq(attachments.kind, 'cover_letter')
+        ));
+      
+      // Save new cover letter as active
+      await db.insert(attachments).values({
+        jobId,
+        filename,
+        path: filePath,
+        kind: 'cover_letter',
+        size: Buffer.byteLength(coverLetterData.coverLetter, 'utf8'),
+        isActive: true,
+        version: 1,
+      });
+      
+      console.log(`💾 Saved cover letter: ${filename} (marked as active)`);
+    } catch (error) {
+      console.error('Failed to save generated cover letter:', error);
+    }
 
     return NextResponse.json({
       success: true,

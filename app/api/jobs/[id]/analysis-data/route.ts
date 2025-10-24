@@ -185,17 +185,24 @@ export async function GET(
           analyzedAt: analyzedAtMs,
         };
         
+        // Handle both old and new data structures
+        const matchScore = matchScoreData?.matchPercentage || matchScoreData?.matchScore?.overallScore;
+        const skillsCount = matchScoreData?.skills?.length || matchScoreData?.skillsMatch?.technicalSkills?.length || 0;
+        const sampleSkills = matchScoreData?.skills?.slice(0, 3)?.map((s: any) => s.term) || 
+                            matchScoreData?.skillsMatch?.technicalSkills?.slice(0, 3)?.map((s: any) => s.skill);
+        
         console.log(`✅ Loaded cached match score + skills data:`, {
-          matchScore: matchScoreData?.matchScore?.overallScore,
-          skillsCount: matchScoreData?.skillsMatch?.technicalSkills?.length || 0,
-          hasSkillsMatch: !!matchScoreData?.skillsMatch,
+          matchScore: matchScore,
+          skillsCount: skillsCount,
+          hasSkillsMatch: skillsCount > 0,
           cacheAge: ageStr,
-          sampleSkills: matchScoreData?.skillsMatch?.technicalSkills?.slice(0, 2)
+          sampleSkills: sampleSkills
         });
       } catch (error) {
         console.error('Failed to parse match score data:', error);
       }
     }
+
 
     // Load people profiles analysis data if available
     let peopleProfiles = null;

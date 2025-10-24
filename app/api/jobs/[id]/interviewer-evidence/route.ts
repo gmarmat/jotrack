@@ -80,7 +80,11 @@ export async function GET(
       }
     });
     
-    console.log(`✅ Retrieved interviewer evidence for ${Object.keys(evidence).length} people`);
+    if ((Object.keys(evidence).length ?? 0) > 0) {
+      console.log(`✅ Retrieved interviewer evidence for ${Object.keys(evidence).length} people`);
+    } else {
+      console.log('ℹ️ No interviewer profiles linked; returning empty evidence');
+    }
     
     return NextResponse.json({
       success: true,

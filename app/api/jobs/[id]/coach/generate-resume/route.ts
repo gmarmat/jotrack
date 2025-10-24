@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
-import { jobs, jobProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { jobs, jobProfiles, attachments } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { executePrompt } from '@/lib/analysis/promptExecutor';
 import { getJobAnalysisVariants } from '@/lib/analysis/promptExecutor';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST(
   request: NextRequest,
@@ -96,6 +98,43 @@ export async function POST(
 
     console.log(`✅ Resume generated: ${resumeData.formatting?.totalWords || 0} words, ${resumeData.changes?.length || 0} optimizations made`);
     console.log(`📊 ATS readability: ${(resumeData.keywordOptimization?.atsReadabilityScore * 100 || 0).toFixed(0)}%`);
+
+    // Save generated resume as attachment
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `Optimized_Resume_${timestamp}.txt`;
+      const filePath = `${jobId}/${filename}`;
+      const fullPath = join(process.cwd(), 'data', 'attachments', filePath);
+      
+      // Ensure directory exists
+      await mkdir(join(process.cwd(), 'data', 'attachments', jobId), { recursive: true });
+      
+      // Write file
+      await writeFile(fullPath, resumeData.resume, 'utf8');
+      
+      // Deactivate all existing resume attachments for this job
+      await db.update(attachments)
+        .set({ isActive: false })
+        .where(and(
+          eq(attachments.jobId, jobId),
+          eq(attachments.kind, 'resume')
+        ));
+      
+      // Save new optimized resume as active
+      await db.insert(attachments).values({
+        jobId,
+        filename,
+        path: filePath,
+        kind: 'resume',
+        size: Buffer.byteLength(resumeData.resume, 'utf8'),
+        isActive: true,
+        version: 1,
+      });
+      
+      console.log(`💾 Saved optimized resume: ${filename} (marked as active)`);
+    } catch (error) {
+      console.error('Failed to save generated resume:', error);
+    }
 
     return NextResponse.json({
       success: true,

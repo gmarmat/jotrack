@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import useSWR, { useSWRConfig, mutate } from 'swr';
+import { fetcher } from '@/src/lib/swr';
 import CollapsibleHorizontalTimeline from '@/app/components/timeline/CollapsibleHorizontalTimeline';
 import JobHeader from '@/app/components/jobs/JobHeader';
 import JobNotesCard from '@/app/components/jobs/JobNotesCard';
@@ -12,11 +14,17 @@ import CoachModeEntryCard from '@/app/components/coach/CoachModeEntryCard';
 import InterviewCoachEntryCard from '@/app/components/coach/InterviewCoachEntryCard';
 import AttachmentsModal from '@/app/components/AttachmentsModal';
 import AttachmentsSection from '@/app/components/attachments/AttachmentsSection';
+import AttachmentQuickAccess from '@/app/components/job/AttachmentQuickAccess';
 import GlobalSettingsButton from '@/app/components/GlobalSettingsButton';
 import VariantViewerModal from '@/app/components/VariantViewerModal';
 import AttachmentViewerModal from '@/app/components/AttachmentViewerModal';
 import { type JobStatus } from '@/lib/status';
 import { calculateDelta } from '@/lib/timeDelta';
+
+// Utility function for shortening file names
+function shortName(filename: string) {
+  return filename.replace(/\.(docx|pdf|txt)$/i, '').slice(0, 40);
+}
 import { ChevronDown, ChevronUp, Eye, Paperclip, CheckCircle2, FileText, X } from 'lucide-react';
 
 export default function JobDetailPage({ params }: { params: { id: string } }) {
@@ -99,6 +107,10 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
   const [analysisData, setAnalysisData] = useState<any>(null); // v2.4: Data for AiShowcase
   const router = useRouter();
   const id = params.id;
+
+  // SWR hooks for loading states
+  const { data: attachmentsData, error: attachmentsError, isLoading: attLoading } = useSWR(`/api/jobs/${id}/attachments`, fetcher);
+  const { mutate } = useSWRConfig();
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -432,40 +444,30 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
   // v2.7: Handle global analyze all
   const handleGlobalAnalyze = async () => {
-    setAnalyzing(true);
+    setRefreshing(true);
     setAnalyzeError(null);
     setAnalyzeSuccess(false);
 
     try {
-      const res = await fetch(`/api/jobs/${id}/analyze-all`, {
-        method: 'POST',
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        setAnalyzeError(data.message || 'Analysis failed');
-        return;
+      const response = await fetch(`/api/jobs/${id}/refresh-variants`, { method: 'POST' });
+      
+      if (response.ok) {
+        // Revalidate SWR caches after analyze
+        const keys = [
+          `/api/jobs/${id}/attachments`,
+          `/api/jobs/${id}/analysis-data`,
+          `/api/jobs/${id}/attachments/versions?kind=jd`,
+          `/api/jobs/${id}/attachments/versions?kind=resume`,
+        ];
+        await Promise.all(keys.map(k => mutate(k, undefined, { revalidate: true })));
+        console.debug('[ATT] AnalyzeAll → revalidated SWR keys');
+        
+        // Show success toast
+        setAnalyzeSuccess(true);
+        setTimeout(() => setAnalyzeSuccess(false), 3000);
       }
-
-      // Success! Show success message for 3 seconds
-      setAnalyzeSuccess(true);
-      setTimeout(() => setAnalyzeSuccess(false), 3000);
-
-      // Refresh staleness info
-      const stalenessRes = await fetch(`/api/jobs/${id}/check-staleness`);
-      if (stalenessRes.ok) {
-        const stalenessData = await stalenessRes.json();
-        setStalenessInfo(stalenessData);
-      }
-
-      // Optionally refresh the page to show updated analysis
-      // window.location.reload();
-    } catch (error) {
-      console.error('Error running global analysis:', error);
-      setAnalyzeError(error instanceof Error ? error.message : 'Analysis failed');
     } finally {
-      setAnalyzing(false);
+      setRefreshing(false); // ensure this always runs
     }
   };
 
@@ -504,6 +506,11 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         const stalenessData = await stalenessRes.json();
         setStalenessInfo(stalenessData);
       }
+
+      // Auto-refresh attachments after upload/refresh
+      // Force UI refresh
+      mutate(`/api/jobs/${id}/attachments`);
+      mutate(`/api/jobs/${id}/analysis-data`);
     } catch (error) {
       console.error('Error refreshing variants:', error);
       setRefreshError(error instanceof Error ? error.message : 'Refresh failed');
@@ -544,8 +551,6 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         currentStatusEnteredAt={currentStatusEnteredAt || undefined}
         jdAttachmentId={jdAttachmentId}
         onViewJd={handleViewJd}
-        jobTitle={job.title}
-        companyName={job.company}
       />
 
       <div className="max-w-6xl mx-auto px-4 space-y-6 mt-6 pb-8">
@@ -639,7 +644,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
         )}
 
         {/* v2.7: OLD Data Status Panel - MOVED to 3-column header above, keeping for reference */}
-        {false && stalenessInfo && (
+        {stalenessInfo && (
           <div
             className={`p-4 rounded-lg border-l-4 ${
               stalenessInfo.severity === 'no_variants'
@@ -734,14 +739,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 {stalenessInfo.severity === 'variants_fresh' && (
                   <button
                     onClick={handleGlobalAnalyze}
-                    disabled={analyzing}
+                    disabled={attLoading || refreshing}
                     className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                      analyzing
+                      (attLoading || refreshing)
                         ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
                     }`}
                   >
-                    {analyzing ? (
+                    {(attLoading || refreshing) ? (
                       <span className="flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
@@ -788,14 +793,14 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
 
                     <button
                       onClick={handleGlobalAnalyze}
-                      disabled={analyzing}
+                      disabled={attLoading || refreshing}
                       className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
                         analyzing
                           ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
                           : 'bg-blue-600 hover:bg-blue-700 text-white opacity-75 hover:opacity-100'
                       }`}
                     >
-                      {analyzing ? (
+                      {(attLoading || refreshing) ? (
                         <span className="flex items-center gap-2">
                           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
@@ -813,6 +818,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   </>
                 )}
               </div>
+
             </div>
             
             {/* Collapsible Content */}
@@ -944,6 +950,51 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 Analysis Error: {analyzeError}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Quick Access to Variants - Standalone Section */}
+        {!loading && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 my-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Quick Access:</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const list = attachmentsData || attachmentsList;
+                  const resumeAttachment = list.find((a: any) => a.kind === 'resume');
+                  if (resumeAttachment) {
+                    setSelectedAttachment({
+                      id: resumeAttachment.id,
+                      filename: resumeAttachment.filename,
+                      kind: resumeAttachment.kind,
+                    });
+                    setVariantViewerOpen(true);
+                  }
+                }}
+                className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                title="View resume variants (raw, AI-optimized)"
+              >
+                📄 Resume Variants
+              </button>
+              <button
+                onClick={() => {
+                  const list = attachmentsData || attachmentsList;
+                  const jdAttachment = list.find((a: any) => a.kind === 'jd');
+                  if (jdAttachment) {
+                    setSelectedAttachment({
+                      id: jdAttachment.id,
+                      filename: jdAttachment.filename,
+                      kind: jdAttachment.kind,
+                    });
+                    setVariantViewerOpen(true);
+                  }
+                }}
+                className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
+                title="View JD variants (raw, AI-optimized)"
+              >
+                💼 JD Variants
+              </button>
+            </div>
           </div>
         )}
 
@@ -1175,7 +1226,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 {stalenessInfo?.severity === 'variants_fresh' && (
                   <button
                     onClick={handleGlobalAnalyze}
-                    disabled={analyzing}
+                    disabled={attLoading || refreshing}
                     className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   >
                     {analyzing ? 'Analyzing...' : 'Analyze All'}
@@ -1193,44 +1244,54 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </div>
 
               {/* Quick Access to Variants */}
-              {stalenessInfo?.hasVariants && attachmentsList.length > 0 && (
+              {attachmentsList.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Quick Access:</p>
                   <div className="flex flex-col gap-1.5">
-                    <button
-                      onClick={() => {
-                        const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
-                        if (resumeAttachment) {
-                          setSelectedAttachment({
-                            id: resumeAttachment.id,
-                            filename: resumeAttachment.filename,
-                            kind: resumeAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
-                      title="View resume variants (raw, AI-optimized, detailed)"
-                    >
-                      📄 Resume Variants
-                    </button>
-                    <button
-                      onClick={() => {
-                        const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
-                        if (jdAttachment) {
-                          setSelectedAttachment({
-                            id: jdAttachment.id,
-                            filename: jdAttachment.filename,
-                            kind: jdAttachment.kind,
-                          });
-                          setVariantViewerOpen(true);
-                        }
-                      }}
-                      className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
-                      title="View JD variants (raw, AI-optimized, detailed)"
-                    >
-                      💼 JD Variants
-                    </button>
+                    {(() => {
+                      const resumeAttachment = attachmentsList.find(a => a.kind === 'resume' && a.isActive);
+                      return resumeAttachment ? (
+                        <a
+                          href={`/api/files/stream?path=${id}/${resumeAttachment.filename}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block focus:outline-none"
+                          data-testid="quick-access-link"
+                        >
+                          <div className="text-xs px-3 py-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800 font-medium transition-colors text-left"
+                            title="View resume variants (raw, AI-optimized, detailed)"
+                          >
+                            📄 Resume Variants
+                          </div>
+                        </a>
+                      ) : (
+                        <div className="text-xs px-3 py-2 bg-gray-50 dark:bg-gray-900/20 text-gray-500 dark:text-gray-400 rounded-lg border border-gray-200 dark:border-gray-800 font-medium text-left opacity-50">
+                          📄 Resume Variants (No Resume)
+                        </div>
+                      );
+                    })()}
+                    {(() => {
+                      const jdAttachment = attachmentsList.find(a => a.kind === 'jd' && a.isActive);
+                      return jdAttachment ? (
+                        <a
+                          href={`/api/files/stream?path=${id}/${jdAttachment.filename}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block focus:outline-none"
+                          data-testid="quick-access-link"
+                        >
+                          <div className="text-xs px-3 py-2 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg border border-purple-200 dark:border-purple-800 font-medium transition-colors text-left"
+                            title="View JD variants (raw, AI-optimized, detailed)"
+                          >
+                            💼 JD Variants
+                          </div>
+                        </a>
+                      ) : (
+                        <div className="text-xs px-3 py-2 bg-gray-50 dark:bg-gray-900/20 text-gray-500 dark:text-gray-400 rounded-lg border border-gray-200 dark:border-gray-800 font-medium text-left opacity-50">
+                          💼 JD Variants (No JD)
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
@@ -1327,7 +1388,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   🎯 Interview Scheduled?
                 </h3>
                 <p className="text-purple-100 mb-2">
-                  Let's help you ace it! Interview Coach will:
+                  Let&apos;s help you ace it! Interview Coach will:
                 </p>
                 <ul className="text-sm text-purple-100 space-y-1 ml-4 list-disc">
                   <li>Search Glassdoor, Reddit, Blind for real interview questions</li>
@@ -1465,6 +1526,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                   await checkStaleness();
                 }}
               />
+              
             </div>
           </div>
         </div>

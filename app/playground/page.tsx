@@ -93,7 +93,7 @@ export default function PlaygroundPage() {
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
                     Test different animation styles for the AI Analyze buttons. 
-                    Pick your favorite, then we'll apply it to the real buttons!
+                    Pick your favorite, then we&apos;ll apply it to the real buttons!
                   </p>
                 </div>
 
@@ -112,10 +112,10 @@ export default function PlaygroundPage() {
                   <ol className="space-y-2 text-sm text-blue-800 dark:text-blue-400">
                     <li><strong>1.</strong> Select an animation style from the grid (6 options)</li>
                     <li><strong>2.</strong> Adjust the duration slider to match your typical analysis time</li>
-                    <li><strong>3.</strong> Click "Start" to see the animation in action</li>
+                    <li><strong>3.</strong> Click &quot;Start&quot; to see the animation in action</li>
                     <li><strong>4.</strong> Watch how the border animates during the countdown</li>
                     <li><strong>5.</strong> Try all 6 styles and pick your favorite!</li>
-                    <li><strong>6.</strong> Tell me which one you like, and I'll apply it to the real buttons</li>
+                    <li><strong>6.</strong> Tell me which one you like, and I&apos;ll apply it to the real buttons</li>
                   </ol>
                 </div>
 

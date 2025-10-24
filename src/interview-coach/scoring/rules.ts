@@ -2,7 +2,7 @@ export type Dimension = 'specificity' | 'role' | 'outcome' | 'clarity' | 'struct
 
 export interface ImprovementSummary {
   summary: string;
-  cta: string;
+  ctas: string[];
   targeted: Dimension[];
 }
 
@@ -66,10 +66,12 @@ export function scoreAnswer(context: ScoringContext): ScoringResult {
 
 /**
  * Summarize improvements based on lowest scoring dimensions and key flags
+ * V2: Returns actionable CTAs array for UI display
  */
 export function summarizeImprovements(
   subscores: Record<string, number> = {},
-  flags: string[] = []
+  flags: string[] = [],
+  persona: 'recruiter' | 'hiring-manager' | 'peer' = 'hiring-manager'
 ) {
   const safeFlags = Array.isArray(flags) ? flags.filter(Boolean) : [];
   const dims = Object.entries(subscores)
@@ -84,14 +86,54 @@ export function summarizeImprovements(
   const needsMetric = flagSet.has('NO_METRIC') || targeted.includes('specificity');
   const weakOwnership = flagSet.has('WEAK_OWNERSHIP') || targeted.includes('role');
   const vagueOutcome = flagSet.has('VAGUE_OUTCOME') || targeted.includes('outcome');
+  const needsStructure = targeted.includes('structure');
+  const needsClarity = targeted.includes('clarity');
 
-  const parts: string[] = [];
-  if (needsMetric) parts.push('Add 1–2 concrete KPIs (before/after, time, cost, users).');
-  if (weakOwnership) parts.push('Call out your decision and direct contribution ("I decided…", "I changed…").');
-  if (vagueOutcome) parts.push('State the result in business/user terms (e.g., "cut P95 by 38% for 2.4M users").');
+  // Build summary (1-2 sentences)
+  const summaryParts: string[] = [];
+  if (needsMetric) summaryParts.push('add before/after metric');
+  if (weakOwnership) summaryParts.push('show your direct impact');
+  if (vagueOutcome) summaryParts.push('state the business result');
+  if (needsStructure) summaryParts.push('use STAR format');
+  if (needsClarity) summaryParts.push('simplify technical terms');
 
-  const summary = parts.slice(0, 2).join(' ');
-  const cta = `Answer the prompts on ${targeted.join(' & ')} to unlock +8–12 pts.`;
+  const summary = summaryParts.length > 0 
+    ? `To reach 75+: ${summaryParts.slice(0, 2).join(' and ')}.`
+    : 'Your answer is well-structured. Consider adding more specific details.';
 
-  return { summary, cta, targeted };
+  // Build actionable CTAs (max 3)
+  const ctas: string[] = [];
+  
+  if (needsMetric) {
+    ctas.push('Add KPI');
+  }
+  if (weakOwnership) {
+    ctas.push('State timeframe');
+  }
+  if (vagueOutcome) {
+    ctas.push('Tie to company value');
+  }
+  if (needsStructure && ctas.length < 3) {
+    ctas.push('Use STAR format');
+  }
+  if (needsClarity && ctas.length < 3) {
+    ctas.push('Simplify language');
+  }
+
+  // Add persona-specific CTAs if space allows
+  if (ctas.length < 3) {
+    if (persona === 'recruiter') {
+      ctas.push('Emphasize culture fit');
+    } else if (persona === 'hiring-manager') {
+      ctas.push('Show technical depth');
+    } else if (persona === 'peer') {
+      ctas.push('Highlight collaboration');
+    }
+  }
+
+  return { 
+    summary, 
+    ctas: ctas.slice(0, 3), // Max 3 CTAs
+    targeted: targeted.slice(0, 2) // Max 2 targeted dimensions
+  };
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the AI provider
-vi.mock('@/lib/ai/aiProvider', () => ({
+vi.mock('@/lib/coach/aiProvider', () => ({
   callAiProvider: vi.fn()
 }));
 
@@ -20,7 +20,7 @@ describe('Suggest Answer Route', () => {
 
   describe('Deterministic scaffold generation', () => {
     it('should generate scaffold without AI when AI_ASSIST_ON is not set', async () => {
-      const { callAiProvider } = await import('@/lib/ai/aiProvider');
+      const { callAiProvider } = await import('@/lib/coach/aiProvider');
       
       const requestBody = {
         answer: 'I led a project that improved performance.',
@@ -51,7 +51,7 @@ describe('Suggest Answer Route', () => {
     it('should enhance with AI when AI_ASSIST_ON=1', async () => {
       process.env.AI_ASSIST_ON = '1';
       
-      const { callAiProvider } = await import('@/lib/ai/aiProvider');
+      const { callAiProvider } = await import('@/lib/coach/aiProvider');
       vi.mocked(callAiProvider).mockResolvedValue({
         success: true,
         data: { text: 'AI-enhanced answer with metrics and clarity' }
@@ -86,7 +86,7 @@ describe('Suggest Answer Route', () => {
     it('should fallback to scaffold if AI enhancement fails', async () => {
       process.env.AI_ASSIST_ON = '1';
       
-      const { callAiProvider } = await import('@/lib/ai/aiProvider');
+      const { callAiProvider } = await import('@/lib/coach/aiProvider');
       vi.mocked(callAiProvider).mockRejectedValue(new Error('AI service unavailable'));
 
       const requestBody = {

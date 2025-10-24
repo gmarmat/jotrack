@@ -82,11 +82,13 @@ export async function POST(
     const raw = await request.json().catch(() => ({}));
     const isV2 = process.env.INTERVIEW_V2 === '1';
 
+    // V2 Request Guards - Safe defaults after Zod parse
     const body = {
-      // legacy aliases
-      questionId: raw.questionId ?? raw.question ?? 'custom',
+      // Safe defaults for required fields
       answer: raw.answer ?? raw.answerText ?? '',
+      questionId: raw.questionId ?? raw.question ?? 'unknown',
       persona: raw.persona ?? 'hiring-manager',
+      // Safe defaults for optional fields
       jdCore: Array.isArray(raw.jdCore) ? raw.jdCore : (raw.jdCore ? [raw.jdCore] : []),
       companyValues: Array.isArray(raw.companyValues) ? raw.companyValues : (raw.companyValues ? [raw.companyValues] : []),
       userProfile: raw.userProfile ?? {},
@@ -95,19 +97,31 @@ export async function POST(
       previous: raw.previous ?? null,
     };
 
-    if (!body.answer || typeof body.answer !== 'string' || !body.answer.trim()) {
-      return NextResponse.json({ success: false, error: 'Missing answer' }, { status: 400 });
+    // V2: Check for empty answer with friendly error
+    if (body.answer.trim().length === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        code: 'EMPTY_ANSWER', 
+        message: 'Please enter an answer to score.', 
+        version: 'v2' 
+      }, { status: 200 });
     }
 
     const persona = body.persona as 'recruiter' | 'hiring-manager' | 'peer';
     
-    // Extract fields from body
+    // V2: Additional safety guards for optional fields
+    const safeJdCore = Array.isArray(body.jdCore) ? body.jdCore : [];
+    const safeCompanyValues = Array.isArray(body.companyValues) ? body.companyValues : [];
+    const safeUserProfile = body.userProfile && typeof body.userProfile === 'object' ? body.userProfile : {};
+    const safeMatchMatrix = body.matchMatrix && typeof body.matchMatrix === 'object' ? body.matchMatrix : null;
+    
+    // Extract fields from body with safe defaults
     const { 
       answer, 
-      jdCore, 
-      companyValues, 
-      userProfile, 
-      matchMatrix, 
+      jdCore = safeJdCore, 
+      companyValues = safeCompanyValues, 
+      userProfile = safeUserProfile, 
+      matchMatrix = safeMatchMatrix, 
       evidenceQuality,
       previous,
       questionId, 
@@ -216,13 +230,23 @@ export async function POST(
       throw new Error('AI failed to return scoring data');
     }
     
-    // Ensure feedback object exists to prevent undefined errors
+    // V2: Comprehensive safety guards to prevent undefined crashes
     scoreData.feedback = scoreData.feedback || {};
     
-    // Ensure score arrays exist
-    if (!scoreData.iterations) scoreData.iterations = [];
-    if (!scoreData.scores) scoreData.scores = [];
-    if (!scoreData.followUpQuestions) scoreData.followUpQuestions = [];
+    // Ensure all arrays exist and are properly initialized
+    if (!Array.isArray(scoreData.iterations)) scoreData.iterations = [];
+    if (!Array.isArray(scoreData.scores)) scoreData.scores = [];
+    if (!Array.isArray(scoreData.followUpQuestions)) scoreData.followUpQuestions = [];
+    if (!Array.isArray(scoreData.flags)) scoreData.flags = [];
+    
+    // Ensure numeric values have safe defaults
+    scoreData.overall = typeof scoreData.overall === 'number' ? scoreData.overall : 0;
+    scoreData.confidence = typeof scoreData.confidence === 'number' ? scoreData.confidence : 0.5;
+    
+    // Ensure subscores object exists
+    if (!scoreData.subscores || typeof scoreData.subscores !== 'object') {
+      scoreData.subscores = {};
+    }
     
     console.log('✅ Answer scored:', {
       overall: scoreData.overall,
@@ -238,54 +262,89 @@ export async function POST(
     if (isV2Request && process.env.INTERVIEW_V2 === '1') {
       console.log('🚀 V2 scoring enabled - computing enhanced metrics...');
       
-      // Build ScoringContext for V2 scoring
+      // V2: Safety guards for V2 scoring context
+      const safeAnswerText = answerTextToUse || answer || '';
+      const safePersona = persona || 'hiring-manager';
+      const safeJdCore = Array.isArray(jdCore) ? jdCore : [];
+      const safeCompanyValues = Array.isArray(companyValues) ? companyValues : [];
+      const safeUserProfile = userProfile && typeof userProfile === 'object' ? userProfile : {};
+      const safeMatchMatrix = matchMatrix && typeof matchMatrix === 'object' ? matchMatrix : null;
+      
+      // Build ScoringContext for V2 scoring with safe defaults
       const scoringContext: ScoringContext = {
-        answer: answerTextToUse,
-        persona: persona as 'recruiter' | 'hm' | 'peer',
-        jdCore,
-        companyValues,
-        userProfile,
-        matchMatrix,
+        answer: safeAnswerText,
+        persona: safePersona as 'recruiter' | 'hm' | 'peer',
+        jdCore: safeJdCore,
+        companyValues: safeCompanyValues,
+        userProfile: safeUserProfile,
+        matchMatrix: safeMatchMatrix,
         styleProfileId: null // Could be extracted from coach state if needed
       };
       
       // Get V2 scoring result
       const v2Scoring = scoreAnswer(scoringContext);
       
-      // Compute confidence metrics
-      const signalsCoverage = deriveSignalsCoverage(scoringContext);
-      const evidenceQualityValue = evidenceQuality ?? 0.6; // Safe default
-      const { confidence, reasons } = computeConfidence({
-        signalsCoverage,
-        evidenceQuality: evidenceQualityValue
-      });
+      // V2: Safety guards for confidence computation
+      let signalsCoverage = 0.5; // Safe default
+      let confidence = 0.5; // Safe default
+      let reasons: string[] = []; // Safe default
       
-      // Compute deltas if previous scores provided
+      try {
+        signalsCoverage = deriveSignalsCoverage?.(scoringContext) ?? 0.5;
+        const evidenceQualityValue = evidenceQuality ?? 0.6; // Safe default
+        const confidenceResult = computeConfidence?.({
+          signalsCoverage,
+          evidenceQuality: evidenceQualityValue
+        });
+        confidence = confidenceResult?.confidence ?? 0.5;
+        reasons = confidenceResult?.reasons ?? [];
+      } catch (error) {
+        console.warn('⚠️ Confidence computation failed, using defaults:', error);
+      }
+      
+      // V2: Safety guards for deltas computation
       let deltas = null;
-      if (previous) {
-        deltas = {
-          overall: v2Scoring.overall - (previous.overall || 0),
-          ...Object.fromEntries(
-            Object.entries(v2Scoring.subscores).map(([key, value]) => [
-              key, 
-              value - (previous.subscores?.[key] || 0)
-            ])
-          )
-        };
+      if (previous && typeof previous === 'object') {
+        try {
+          const safePreviousOverall = typeof previous.overall === 'number' ? previous.overall : 0;
+          const safePreviousSubscores = previous.subscores && typeof previous.subscores === 'object' ? previous.subscores : {};
+          const safeV2Subscores = v2Scoring.subscores && typeof v2Scoring.subscores === 'object' ? v2Scoring.subscores : {};
+          
+          deltas = {
+            overall: (v2Scoring.overall || 0) - safePreviousOverall,
+            ...Object.fromEntries(
+              Object.entries(safeV2Subscores).map(([key, value]) => [
+                key, 
+                (typeof value === 'number' ? value : 0) - (safePreviousSubscores[key] || 0)
+              ])
+            )
+          };
+        } catch (error) {
+          console.warn('⚠️ Delta computation failed:', error);
+          deltas = null;
+        }
       }
       
       // Clamp all scores to valid ranges
       const clampScore = (score: number) => Math.max(0, Math.min(100, score));
       const clampConfidence = (conf: number) => Math.max(0, Math.min(1, conf));
       
+      // V2: Safety guards for result construction
+      const safeV2Overall = typeof v2Scoring.overall === 'number' ? v2Scoring.overall : 0;
+      const safeV2Subscores = v2Scoring.subscores && typeof v2Scoring.subscores === 'object' ? v2Scoring.subscores : {};
+      const safeV2Flags = Array.isArray(v2Scoring.flags) ? v2Scoring.flags : [];
+      
       v2Result = {
-        score: clampScore(v2Scoring.overall),
+        score: clampScore(safeV2Overall),
         subscores: Object.fromEntries(
-          Object.entries(v2Scoring.subscores).map(([key, value]) => [key, clampScore(value)])
+          Object.entries(safeV2Subscores).map(([key, value]) => [
+            key, 
+            clampScore(typeof value === 'number' ? value : 0)
+          ])
         ),
-        flags: v2Scoring.flags,
+        flags: safeV2Flags,
         confidence: clampConfidence(confidence),
-        confidenceReasons: reasons,
+        confidenceReasons: Array.isArray(reasons) ? reasons : [],
         deltas,
         version: "v2"
       };

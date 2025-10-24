@@ -76,7 +76,7 @@ export async function POST(
     const themes = Array.isArray(body.themes) ? body.themes : [];
     const persona = body.persona || 'hiring-manager';
 
-    // If no answers provided, try to get from database
+    // V2: Load answers from coach_state if no explicit answers provided
     if (answers.length === 0) {
       try {
         const coachStateRow = sqlite.prepare(`
@@ -87,31 +87,45 @@ export async function POST(
 
         if (coachStateRow?.interview_coach_json) {
           const coachData = JSON.parse(coachStateRow.interview_coach_json);
-          const mainAnswers = Object.values(coachData.answers || {});
+          const answersData = coachData.answers || {};
           
-          for (const answerData of mainAnswers) {
-            if (answerData.answerText) {
+          // Load latest base answers + persona deltas
+          Object.entries(answersData).forEach(([questionId, answerData]: [string, any]) => {
+            if (answerData.mainStory && answerData.mainStory.trim()) {
               answers.push({
-                questionId: 'main-answer',
-                text: answerData.answerText
+                questionId,
+                text: answerData.mainStory
               });
             }
-          }
+            
+            // Also include discovery answers if they exist
+            if (answerData.discoveryAnswers) {
+              Object.values(answerData.discoveryAnswers).forEach((discoveryAnswer: any) => {
+                if (discoveryAnswer.answer && discoveryAnswer.answer.trim()) {
+                  answers.push({
+                    questionId: `${questionId}-discovery`,
+                    text: discoveryAnswer.answer
+                  });
+                }
+              });
+            }
+          });
         }
       } catch (dbError) {
         console.warn('⚠️ Could not load answers from database:', dbError);
       }
     }
 
-    // If still no answers, return helpful message
+    // V2: If still no answers, return helpful guidance (not an error)
     if (answers.length === 0) {
       return NextResponse.json({
         success: false,
-        message: 'No answers found yet. Please provide some answers first.',
+        code: 'NO_ANSWERS',
+        message: 'Add at least one answer or use AI Assist.',
         version: 'v2',
         coverage: { star: 0, specificity: 0, outcome: 0, role: 0, company: 0 },
         personas: { recruiter: [], 'hiring-manager': [], peer: [] }
-      });
+      }, { status: 200 });
     }
     
     // Set defaults for optional parameters

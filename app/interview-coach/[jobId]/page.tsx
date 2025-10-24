@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, History } from 'lucide-react';
 import WelcomeSearch from '@/app/components/interview-coach/WelcomeSearch';
 import SearchInsights from '@/app/components/interview-coach/SearchInsights';
 import AnswerPracticeWorkspace from '@/app/components/interview-coach/AnswerPracticeWorkspace';
@@ -16,6 +16,9 @@ import { calculateSignalConfidence, calculateOverallConfidence } from '@/lib/int
 import { predictInterviewSuccess } from '@/lib/interview/successPrediction';
 import { generateWeaknessFramings } from '@/lib/interview/redFlagFraming';
 import { analyzeCareerTrajectory, analyzeCompetitiveContext } from '@/lib/interview/signalExtraction';
+import { Persona, PERSONAS, PERSONA_LABELS, PERSONA_ICONS, PERSONA_DESCRIPTIONS } from '@/src/interview-coach/persona';
+import YourWorkDrawer from '@/app/components/interview-coach/YourWorkDrawer';
+import GuidedTutorial from '@/app/components/interview-coach/GuidedTutorial';
 
 type InterviewStep = 'welcome' | 'practice' | 'talk-tracks';
 
@@ -35,13 +38,22 @@ export default function InterviewCoachPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = params.jobId as string;
-  const persona = (searchParams.get('type') || 'recruiter') as 'recruiter' | 'hiring-manager' | 'peer';
+  
+  // Persona state management
+  const [selectedPersona, setSelectedPersona] = useState<Persona>('hiring-manager');
   
   // Current step in the flow
   const [currentStep, setCurrentStep] = useState<InterviewStep>('welcome');
   
   // Talk tracks panel state
   const [showTalkTracks, setShowTalkTracks] = useState(false);
+  
+  // Your Work drawer state
+  const [showYourWork, setShowYourWork] = useState(false);
+  
+  // Guided tutorial state
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState(false);
   
   // Job data
   const [jobData, setJobData] = useState<any>(null);
@@ -51,7 +63,7 @@ export default function InterviewCoachPage() {
   
   // Interview Coach state from coach_state.interview_coach_json
   const [interviewCoachState, setInterviewCoachState] = useState<any>({
-    persona,
+    persona: selectedPersona,
     questionBank: null, // Stores search results
     selectedQuestions: [],
     answers: {},
@@ -126,6 +138,14 @@ export default function InterviewCoachPage() {
         } else if (savedState.questionBank) {
           setCurrentStep('practice'); // Skip insights, go directly to practice
         }
+        
+        // Check if tutorial was completed
+        if (savedState.tutorialCompleted) {
+          setTutorialCompleted(true);
+        }
+      } else {
+        // New user - show tutorial
+        setShowTutorial(true);
       }
     } catch (error) {
       console.error('❌ Failed to load Interview Coach data:', error);
@@ -196,7 +216,7 @@ export default function InterviewCoachPage() {
     try {
       // Clear the interview coach state
       const resetState = {
-        persona,
+        persona: selectedPersona,
         currentStep: 'welcome',
         progress: {
           questionsFound: 0,
@@ -356,6 +376,27 @@ export default function InterviewCoachPage() {
             </div>
             
             <div className="flex items-center gap-3">
+              {!tutorialCompleted && (
+                <button
+                  onClick={() => setShowTutorial(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm font-medium text-white"
+                  title="Start guided tutorial"
+                >
+                  <span>🎯</span>
+                  <span>Start Tutorial</span>
+                </button>
+              )}
+              
+              <button
+                data-testid="your-work-button"
+                onClick={() => setShowYourWork(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
+                title="View your work history and snapshots"
+              >
+                <History className="w-4 h-4" />
+                <span>Your Work</span>
+              </button>
+              
               <button
                 onClick={handleRestartInterviewCoach}
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium"
@@ -416,6 +457,90 @@ export default function InterviewCoachPage() {
         </div>
       )}
       
+      {/* Persona Selector */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" data-testid="persona-selector">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interviewer Perspective
+            </h2>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {PERSONA_DESCRIPTIONS[selectedPersona]}
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            {PERSONAS.map((persona) => {
+              const isSelected = persona === selectedPersona;
+              const progress = Math.floor(Math.random() * 100); // Stub progress numbers
+              
+              return (
+                <button
+                  key={persona}
+                  data-testid="persona-pill"
+                  onClick={() => {
+                    setSelectedPersona(persona);
+                    setInterviewCoachState((prev: any) => ({
+                      ...prev,
+                      persona
+                    }));
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${
+                    isSelected
+                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{PERSONA_ICONS[persona]}</span>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {PERSONA_LABELS[persona]}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {progress}% complete
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress ring */}
+                  <div className="relative w-8 h-8">
+                    <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="14"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                        className="text-gray-200 dark:text-gray-600"
+                      />
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="14"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 14}`}
+                        strokeDashoffset={`${2 * Math.PI * 14 * (1 - progress / 100)}`}
+                        className={isSelected ? 'text-purple-500' : 'text-gray-400'}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                        {progress}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Confidence Score Card (V2.0 - Shows signal quality) */}
@@ -480,7 +605,7 @@ export default function InterviewCoachPage() {
         {currentStep === 'welcome' && (
           <WelcomeSearch
             jobId={jobId}
-            persona={persona}
+            persona={selectedPersona}
             companyName={jobData.company}
             roleTitle={jobData.title}
             onSearchComplete={handleSearchComplete}
@@ -530,7 +655,7 @@ export default function InterviewCoachPage() {
               selectedQuestions={interviewCoachState.selectedQuestions || []}
               interviewCoachState={interviewCoachState}
               setInterviewCoachState={setInterviewCoachState}
-              persona={persona}
+              persona={selectedPersona}
             />
             
             {/* Talk Tracks Panel */}
@@ -538,7 +663,7 @@ export default function InterviewCoachPage() {
               <TalkTracksPanel 
                 jobId={jobId} 
                 interviewCoachState={interviewCoachState}
-                persona={persona}
+                persona={selectedPersona}
               />
             )}
           </div>
@@ -574,6 +699,42 @@ export default function InterviewCoachPage() {
         )}
 
       </div>
+      
+      {/* Your Work Drawer */}
+      <YourWorkDrawer
+        jobId={jobId}
+        isOpen={showYourWork}
+        onClose={() => setShowYourWork(false)}
+        onSelectSnapshot={(snapshot) => {
+          console.log('Selected snapshot:', snapshot);
+          // TODO: Implement snapshot selection logic
+        }}
+      />
+      
+      {/* Guided Tutorial */}
+      <GuidedTutorial
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        onComplete={() => {
+          setTutorialCompleted(true);
+          setShowTutorial(false);
+          // Save tutorial completion to state
+          setInterviewCoachState((prev: any) => ({
+            ...prev,
+            tutorialCompleted: true
+          }));
+        }}
+        currentStep={currentStep}
+        onStepChange={(step) => {
+          if (step === 'persona') {
+            // Tutorial will guide them to select persona
+          } else if (step === 'practice') {
+            setCurrentStep('practice');
+          } else if (step === 'talk-tracks') {
+            setCurrentStep('talk-tracks');
+          }
+        }}
+      />
     </div>
   );
 }

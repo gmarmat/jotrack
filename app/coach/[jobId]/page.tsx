@@ -426,16 +426,16 @@ export default function CoachModePage({ params }: CoachPageProps) {
               <div className="text-center py-12 space-y-6">
                 <CheckCircle2 className="w-20 h-20 text-green-600 mx-auto" />
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                  You're Ready to Apply!
+                  You&apos;re Ready to Apply!
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                  Your resume and cover letter are optimized. When you've submitted your application, mark it as applied to unlock interview prep.
+                  Your resume and cover letter are optimized. When you&apos;ve submitted your application, mark it as applied to unlock interview prep.
                 </p>
                 <button
                   onClick={handleMarkApplied}
                   className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-700 hover:to-emerald-700"
                 >
-                  I've Applied! → Start Interview Prep
+                  I&apos;ve Applied! → Start Interview Prep
                 </button>
               </div>
             )}
