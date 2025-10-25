@@ -102,13 +102,20 @@ export async function searchInterviewQuestions(
     console.log(`✅ Success patterns:`, webIntelligence.successPatterns.length);
     console.log(`✅ Warnings:`, webIntelligence.warnings.length);
     
-    // Convert to old format for backwards compatibility
-    const questions: SearchedQuestion[] = webIntelligence.questions.map(q => ({
-      question: q,
-      source: 'Web Search',
-      url: '',
-      category: categorizeQuestion(q)
-    }));
+    // Convert to old format for backwards compatibility, preserving source URLs
+    const questions: SearchedQuestion[] = webIntelligence.questions.map((q, index) => {
+      // Try to find the source URL for this question
+      const sourceResult = allResults.find(r => 
+        r.content?.includes(q) || r.snippet?.includes(q)
+      );
+      
+      return {
+        question: q,
+        source: 'Web Search',
+        url: sourceResult?.url || '',
+        category: categorizeQuestion(q)
+      };
+    });
     
     const sources = allResults.map(r => r.url).filter(Boolean);
     
