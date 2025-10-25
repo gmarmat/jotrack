@@ -367,32 +367,32 @@ export default function WelcomeSearch({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
             {persona === 'recruiter' && (
               <>
-                <div>• Culture fit indicators and team dynamics</div>
-                <div>• Communication style and soft skills</div>
-                <div>• Motivation and career goals alignment</div>
-                <div>• Salary expectations and negotiation signals</div>
-                <div>• Company values and mission alignment</div>
-                <div>• Behavioral examples and STAR stories</div>
+                <div>• Job description requirements and keywords</div>
+                <div>• Company culture and values from web search</div>
+                <div>• Recruiter profile and communication style</div>
+                <div>• Match score and skills gap analysis</div>
+                <div>• Strong skills to showcase (from resume)</div>
+                <div>• Weak critical skills to address</div>
               </>
             )}
             {persona === 'hiring-manager' && (
               <>
-                <div>• Technical depth and problem-solving skills</div>
-                <div>• Leadership experience and team management</div>
-                <div>• Strategic thinking and business impact</div>
-                <div>• Industry knowledge and domain expertise</div>
-                <div>• Project management and execution ability</div>
-                <div>• Innovation and process improvement</div>
+                <div>• Job description and technical requirements</div>
+                <div>• Hiring manager profile and priorities</div>
+                <div>• Match score and skills gap analysis</div>
+                <div>• Strong technical skills to highlight</div>
+                <div>• Leadership and management experience</div>
+                <div>• Business impact and strategic thinking</div>
               </>
             )}
             {persona === 'peer' && (
               <>
+                <div>• Technical skills from job description</div>
+                <div>• Peer interviewer profile and approach</div>
+                <div>• Match score and skills gap analysis</div>
+                <div>• Strong technical skills to demonstrate</div>
                 <div>• System design and architecture knowledge</div>
-                <div>• Collaboration and teamwork skills</div>
-                <div>• Code quality and technical standards</div>
-                <div>• Problem-solving approach and methodology</div>
-                <div>• Learning agility and adaptability</div>
-                <div>• Cross-functional communication</div>
+                <div>• Collaboration and teamwork signals</div>
               </>
             )}
           </div>
@@ -400,22 +400,38 @@ export default function WelcomeSearch({
 
       </div>
 
-      {/* Search Button */}
-      <div className="text-center">
-        <button
-          onClick={handleStartSearch}
-          disabled={searching}
-          className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
-                   hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
-                   transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          <Search className="inline w-5 h-5 mr-2" />
-          {searching ? 'Searching...' : 'Begin Search & Analysis'}
-        </button>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
-          ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
-        </p>
-      </div>
+        {/* Search Button */}
+        <div className="text-center">
+          <button
+            onClick={handleStartSearch}
+            disabled={searching}
+            className="px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl
+                     hover:from-purple-700 hover:to-blue-700 transition-all font-bold text-lg shadow-xl
+                     transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <Search className="inline w-5 h-5 mr-2" />
+            {searching ? 'Searching...' : 'Begin Search & Analysis'}
+          </button>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+            ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
+          </p>
+        </div>
+        
+        {/* View Insights Button for existing question bank */}
+        {existingQuestionBank && (
+          <div className="text-center mt-4">
+            <button
+              onClick={() => {
+                // TODO: Implement insights view
+                console.log('View insights clicked');
+              }}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg
+                       hover:bg-indigo-700 transition-all font-semibold"
+            >
+              📊 View Insights
+            </button>
+          </div>
+        )}
 
       {/* Search in Progress */}
       {searching && (
