@@ -96,7 +96,9 @@ export function calculateSignalConfidence(signals: {
   // Company Intelligence Confidence
   if (signals.companyIntelligence) {
     const analyzedAt = signals.companyIntelligence.analyzedAt || 0;
-    const age = (Date.now() / 1000) - analyzedAt;
+    // Use a stable timestamp to prevent random fluctuations
+    const now = Math.floor(Date.now() / 1000);
+    const age = now - analyzedAt;
     const days = Math.floor(age / (24 * 3600));
     const isRecent = days < 7;
     const isStale = days > 30;

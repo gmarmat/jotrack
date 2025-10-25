@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Check, History } from 'lucide-react';
@@ -547,7 +547,7 @@ export default function InterviewCoachPage() {
         {analysisData && currentStep === 'welcome' && (
           <>
             <ConfidenceScoreCard 
-              overall={calculateOverallConfidence(
+              overall={useMemo(() => calculateOverallConfidence(
                 calculateSignalConfidence({
                   peopleProfiles: analysisData.peopleProfiles,
                   matchScore: analysisData.matchScoreData,
@@ -555,7 +555,7 @@ export default function InterviewCoachPage() {
                   skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
                   webIntelligence: interviewCoachState.questionBank?.webIntelligence
                 })
-              )}
+              ), [analysisData, interviewCoachState.questionBank])}
             />
             
             {/* Success Prediction Card (V2.0 - Shows win probability) */}
