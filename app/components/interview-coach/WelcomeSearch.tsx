@@ -285,45 +285,7 @@ export default function WelcomeSearch({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Welcome Header */}
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Welcome to Interview Coach
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-          We'll help you prep and ace your interview with personalized questions and guidance
-        </p>
-      </div>
 
-      {/* How It Works */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="text-center">
-            <div className="text-4xl mb-3">🔍</div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Questions</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Search online sources and generate AI questions tailored to your role
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl mb-3">📝</div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. Practice & Score</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Write STAR stories and get AI feedback to improve your answers
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl mb-3">✨</div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Talk Tracks</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Get detailed talking points and memorize key stories
-            </p>
-          </div>
-        </div>
-
-
-      </div>
 
         {/* Search Button */}
         <div className="text-center">
