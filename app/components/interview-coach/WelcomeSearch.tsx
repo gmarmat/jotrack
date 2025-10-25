@@ -102,14 +102,13 @@ export default function WelcomeSearch({
       setSearchComplete(true);
       setSearchResults(questionBank);
       
-      // Automatically call onSearchComplete to save the question bank
-      console.log('🔍 Search completed, calling onSearchComplete with:', {
+      // Don't auto-progress - let user choose next action
+      console.log('🔍 Search completed, question bank ready:', {
         hasQuestionBank: !!questionBank,
         webQuestions: questionBank?.webQuestions?.length || 0,
         aiQuestions: Object.keys(questionBank?.aiQuestions || {}),
         synthesizedQuestions: questionBank?.synthesizedQuestions?.length || 0
       });
-      onSearchComplete(questionBank);
       
     } catch (error: any) {
       alert(`Search failed: ${error.message}`);
@@ -157,14 +156,20 @@ export default function WelcomeSearch({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{index + 1}.</span>
                     <div className="flex-1">
                       <p className="text-sm text-gray-700 dark:text-gray-300">{q.question}</p>
-                      {q.source && (
+                      {q.sourceUrl && (
                         <a 
-                          href={q.source} 
+                          href={q.sourceUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors mt-1"
                         >
-                          {new URL(q.source).hostname.replace('www.', '')}
+                          {(() => {
+                            try {
+                              return new URL(q.sourceUrl).hostname.replace('www.', '');
+                            } catch {
+                              return q.source || 'Web Search';
+                            }
+                          })()}
                         </a>
                       )}
                     </div>
@@ -431,30 +436,103 @@ export default function WelcomeSearch({
               </div>
             </div>
             
+            {/* Web Questions Dropdown */}
+            {searchResults.webQuestions && searchResults.webQuestions.length > 0 && (
+              <div className="mt-6">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                    <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-300">
+                      🌐 Web Search Questions ({searchResults.webQuestions.length})
+                    </h4>
+                    <span className="text-sm text-blue-600 dark:text-blue-400 group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-4 space-y-3 pl-4">
+                    {searchResults.webQuestions.map((q: any, index: number) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{index + 1}.</span>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{q.question}</p>
+                          {q.sourceUrl && (
+                            <a 
+                              href={q.sourceUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-block px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                            >
+                              {(() => {
+                                try {
+                                  return new URL(q.sourceUrl).hostname.replace('www.', '');
+                                } catch {
+                                  return q.source || 'Web Search';
+                                }
+                              })()}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            )}
+            
+            {/* AI Questions Dropdown */}
+            {searchResults.aiQuestions && Object.keys(searchResults.aiQuestions).length > 0 && (
+              <div className="mt-6">
+                <details className="group">
+                  <summary className="flex items-center justify-between cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                    <h4 className="text-lg font-semibold text-purple-800 dark:text-purple-300">
+                      🤖 AI Generated Questions ({Object.values(searchResults.aiQuestions).reduce((acc: number, p: any) => acc + (p?.questions?.length || 0), 0)})
+                    </h4>
+                    <span className="text-sm text-purple-600 dark:text-purple-400 group-open:rotate-180 transition-transform">
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="mt-4 space-y-4 pl-4">
+                    {Object.entries(searchResults.aiQuestions).map(([persona, data]: [string, any]) => (
+                      <div key={persona} className="bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600 p-4">
+                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          {personaTitles[persona]} ({data.questions?.length || 0} questions)
+                        </h5>
+                        <div className="space-y-2">
+                          {data.questions?.map((q: any, index: number) => (
+                            <div key={index} className="flex items-start gap-3 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{index + 1}.</span>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{q.question}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            )}
+            
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <p className="text-sm text-green-700 dark:text-green-300">
                 ✅ Questions found successfully! Ready to proceed to practice.
               </p>
             </div>
             
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => onSearchComplete(searchResults)}
-                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg
-                         hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
+                className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg
+                         hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg"
               >
-                Continue to Practice →
+                📝 Continue to Practice →
               </button>
               
               <button
                 onClick={() => {
-                  // TODO: Implement insights view
                   console.log('View insights clicked');
                   alert('View Insights clicked! (This will show detailed analysis of your questions)');
                 }}
-                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl
-                         hover:from-indigo-700 hover:to-purple-700 transition-all font-bold text-lg shadow-xl
-                         transform hover:scale-105 border-2 border-indigo-300"
+                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg
+                         hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold shadow-lg"
               >
                 📊 View Insights
               </button>
@@ -463,11 +541,12 @@ export default function WelcomeSearch({
                 onClick={() => {
                   setSearchComplete(false);
                   setSearchResults(null);
+                  handleStartSearch();
                 }}
-                className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg
-                         hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-semibold"
+                className="px-8 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg
+                         hover:from-orange-700 hover:to-red-700 transition-all font-semibold shadow-lg"
               >
-                🔄 Search Again
+                🔄 New Search
               </button>
             </div>
           </div>
