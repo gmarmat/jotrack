@@ -28,16 +28,31 @@ export async function searchInterviewQuestions(
 }> {
   console.log(`🔍 Searching interview questions for ${companyName} - ${roleTitle}...`);
   
-  // Build search queries (multiple for richer data)
+  // Build BROAD search queries (not restrictive by role)
   const queries = [
-    `${companyName} ${roleTitle} interview questions site:glassdoor.com`,
+    // Company-specific searches (broader)
+    `${companyName} interview questions site:glassdoor.com`,
     `${companyName} interview experience site:reddit.com`,
-    `${companyName} ${roleTitle} interview site:teamblind.com`,
+    `${companyName} interview site:teamblind.com`,
     `${companyName} interview questions`,
-    `${companyName} ${roleTitle} interview`,
     `${companyName} interview process`,
     `${companyName} interview tips`,
     `${companyName} interview experience`,
+    `${companyName} interview feedback`,
+    `${companyName} interview reviews`,
+    // Role-specific searches (broader)
+    `${roleTitle} interview questions site:glassdoor.com`,
+    `${roleTitle} interview experience site:reddit.com`,
+    `${roleTitle} interview questions`,
+    `${roleTitle} interview tips`,
+    // Industry/domain searches
+    `${companyName} tech interview`,
+    `${companyName} product interview`,
+    `${companyName} engineering interview`,
+    // General interview questions for the role
+    `${roleTitle} behavioral questions`,
+    `${roleTitle} technical questions`,
+    `${roleTitle} interview prep`,
   ];
   
   // Add interviewer-specific searches if names provided
@@ -46,10 +61,10 @@ export async function searchInterviewQuestions(
   });
   
   try {
-    // Execute all searches in parallel
+    // Execute all searches in parallel (more results per query)
     const searchPromises = queries.map(query => 
       searchWeb(query, {
-        maxResults: 5,
+        maxResults: 8, // Increased from 5 to 8
         searchDepth: 'advanced'
       })
     );
@@ -98,7 +113,7 @@ export async function searchInterviewQuestions(
     const sources = allResults.map(r => r.url).filter(Boolean);
     
     return {
-      questions: questions.slice(0, 50), // Increased cap for V2.0
+      questions: questions.slice(0, 100), // Increased cap to 100 for broader search
       sources: Array.from(new Set(sources)),
       webIntelligence  // NEW! Rich intelligence data
     };
