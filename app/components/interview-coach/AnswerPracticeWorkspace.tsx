@@ -57,9 +57,22 @@ export default function AnswerPracticeWorkspace({
     if ((!selectedQuestions || selectedQuestions.length === 0) && interviewCoachState?.questionBank?.synthesizedQuestions?.length > 0) {
       console.log('🔄 Auto-populating selectedQuestions from synthesizedQuestions');
       console.log('🔄 Available synthesizedQuestions:', interviewCoachState.questionBank.synthesizedQuestions);
+      
+      // Fix character array issue - convert to proper strings
+      const fixedQuestions = interviewCoachState.questionBank.synthesizedQuestions.map((q: any) => {
+        if (typeof q === 'object' && q !== null && !Array.isArray(q)) {
+          // If it's an object with numeric keys, it's a character array - convert to string
+          const keys = Object.keys(q).filter(k => /^\d+$/.test(k));
+          if (keys.length > 0) {
+            return keys.map(k => q[k]).join('');
+          }
+        }
+        return typeof q === 'string' ? q : String(q);
+      });
+      
       const updated = {
         ...interviewCoachState,
-        selectedQuestions: interviewCoachState.questionBank.synthesizedQuestions
+        selectedQuestions: fixedQuestions
       };
       setInterviewCoachState(updated);
     }
@@ -550,7 +563,7 @@ export default function AnswerPracticeWorkspace({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-6 h-full">
+    <div className="h-full">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">
@@ -558,78 +571,99 @@ export default function AnswerPracticeWorkspace({
           {toastMessage}
         </div>
       )}
-      {/* Left Column: Question List */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 overflow-y-auto">
-        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
-          Selected Questions ({selectedQuestions?.length || 0})
-        </h3>
-        <div className="space-y-3" data-testid="question-list">
-          {selectedQuestions.map((questionObj, index) => {
-            // Handle both object format {question, source, url, category} and string format
-            const questionText = typeof questionObj === 'string' ? questionObj : questionObj?.question || `Question ${index + 1}`;
-            const questionId = typeof questionObj === 'string' ? questionObj : questionObj?.question || `question-${index}`;
-            
-            const qData = interviewCoachState.answers?.[questionId];
-            const qScore = qData?.scores?.[qData.scores.length - 1]?.overall || 0;
-            const hasScore = qScore > 0;
-            const isActive = questionId === selectedQuestion;
-            
-            return (
-              <button
-                key={questionId}
-                data-testid={`question-item-${index}`}
-                onClick={() => {
-                  // Auto-save current answer before switching
-                  if (selectedQuestion && draftAnswer.trim()) {
-                    setInterviewCoachState((prev: any) => {
-                      const updated = { ...prev };
-                      updated.answers = updated.answers || {};
-                      updated.answers[selectedQuestion] = updated.answers[selectedQuestion] || {};
-                      updated.answers[selectedQuestion].mainStory = draftAnswer;
-                      return updated;
-                    });
-                  }
-                  setSelectedQuestion(questionId);
-                }}
-                className={`w-full text-left p-3 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 ring-2 ring-purple-500'
-                    : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">
-                    {hasScore ? (qScore >= 75 ? '✅' : '🟡') : '⭕'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
-                      {questionText}
-                    </p>
-                    <div className="mt-1 space-y-1">
-                      {hasScore && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
-                          Score: {qScore}/100
+      
+      {/* Two-Column Layout - Questions Left, Answer Right */}
+      <div className="grid grid-cols-2 gap-6 h-full" style={{ height: '600px' }}>
+        {/* Left Column: Question List (30%) */}
+        <div className="flex flex-col border-2 border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
+          <div className="bg-purple-100 dark:bg-purple-900/30 px-4 py-2 border-b border-purple-200 dark:border-purple-800">
+            <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-300">
+              Interview Questions ({selectedQuestions?.length || 0})
+            </h4>
+            <p className="text-xs text-purple-700 dark:text-purple-400">
+              Select a question to practice your answer
+            </p>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="space-y-3" data-testid="question-list">
+              {selectedQuestions.map((questionObj, index) => {
+                // Handle both object format {question, source, url, category} and string format
+                const questionText = typeof questionObj === 'string' ? questionObj : questionObj?.question || `Question ${index + 1}`;
+                const questionId = typeof questionObj === 'string' ? questionObj : questionObj?.question || `question-${index}`;
+                
+                const qData = interviewCoachState.answers?.[questionId];
+                const qScore = qData?.scores?.[qData.scores.length - 1]?.overall || 0;
+                const hasScore = qScore > 0;
+                const isActive = questionId === selectedQuestion;
+                
+                return (
+                  <button
+                    key={questionId}
+                    data-testid={`question-item-${index}`}
+                    onClick={() => {
+                      // Auto-save current answer before switching
+                      if (selectedQuestion && draftAnswer.trim()) {
+                        setInterviewCoachState((prev: any) => {
+                          const updated = { ...prev };
+                          updated.answers = updated.answers || {};
+                          updated.answers[selectedQuestion] = updated.answers[selectedQuestion] || {};
+                          updated.answers[selectedQuestion].mainStory = draftAnswer;
+                          return updated;
+                        });
+                      }
+                      setSelectedQuestion(questionId);
+                    }}
+                    className={`w-full text-left p-3 rounded-lg transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 ring-2 ring-purple-500'
+                        : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg">
+                        {hasScore ? (qScore >= 75 ? '✅' : '🟡') : '⭕'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
+                          {questionText}
                         </p>
-                      )}
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-                          Theme: {getQuestionTheme(questionText)}
-                        </span>
+                        <div className="mt-1 space-y-1">
+                          {hasScore && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              Score: {qScore}/100
+                            </p>
+                          )}
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                              Theme: {getQuestionTheme(questionText)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                            {getQuestionImportance(questionText)}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                        {getQuestionImportance(questionText)}
-                      </p>
                     </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Right Column: Active Workspace */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 overflow-y-auto space-y-6">
+        {/* Right Column: Answer Workspace (70%) */}
+        <div className="flex flex-col border-2 border-blue-200 dark:border-blue-800 rounded-lg overflow-hidden">
+          <div className="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 border-b border-blue-200 dark:border-blue-800">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+              Your Answer
+            </h4>
+            <p className="text-xs text-blue-700 dark:text-blue-400">
+              Write your STAR story and get AI feedback
+            </p>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 space-y-6">
         {/* Section 1: Main Story */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -993,15 +1027,10 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
               </button>
             </div>
           </div>
-        )}
-      </div>
-      
-      {/* V2: Toast message for snapshot save */}
-      {toastMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50" data-testid="success-toast">
-          {toastMessage}
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

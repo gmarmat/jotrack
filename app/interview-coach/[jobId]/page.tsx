@@ -244,7 +244,18 @@ export default function InterviewCoachPage() {
     });
     
     // Auto-select all synthesized questions for practice
-    const selectedQuestions = questionBank.synthesizedQuestions || [];
+    // Fix character array issue - convert to proper strings
+    const rawQuestions = questionBank.synthesizedQuestions || [];
+    const selectedQuestions = rawQuestions.map((q: any) => {
+      if (typeof q === 'object' && q !== null && !Array.isArray(q)) {
+        // If it's an object with numeric keys, it's a character array - convert to string
+        const keys = Object.keys(q).filter(k => /^\d+$/.test(k));
+        if (keys.length > 0) {
+          return keys.map(k => q[k]).join('');
+        }
+      }
+      return typeof q === 'string' ? q : String(q);
+    });
     
     const updated = {
       ...interviewCoachState,

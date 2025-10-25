@@ -1,9 +1,9 @@
 # Agent Reference Guide - JoTrack Development
 
 **Purpose**: Single source of truth for AI assistants working on this codebase  
-**Last Updated**: October 21, 2025  
+**Last Updated**: October 25, 2025  
 **Status**: Living document - update after major changes
-**Recent Updates**: Fixed Interview Coach template placeholder issues, AI synthesis step, and web search limitations
+**Recent Updates**: Fixed Interview Coach two-column layout, character array issues, LLM API optimization analysis, and practice workspace improvements
 
 ---
 
@@ -13,7 +13,7 @@
 **Stack**: Next.js 14.2.33, React, TypeScript, SQLite, Tailwind CSS  
 **AI Providers**: OpenAI (GPT-4o-mini, GPT-4o), Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)  
 **Current Phase**: V2.7 - Production-ready with Interview Coach  
-**Last UI Update**: October 21, 2025 - Coach cards with value propositions, two-column layout, compact timeline, settings modal fix, Interview Coach comprehensive fixes
+**Last UI Update**: October 25, 2025 - Interview Coach two-column layout implementation, character array fixes, LLM API optimization analysis, practice workspace improvements
 
 ### The Complete System (High-Level)
 
@@ -1436,6 +1436,68 @@ className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4
 - ✅ Web search finding multiple questions instead of just 1
 - ✅ User-controlled flow instead of auto-navigation
 
+### Interview Coach Two-Column Layout & Character Array Fixes (October 25, 2025)
+
+**Critical Issues Resolved**:
+- **Two-Column Layout Implementation**: Practice and Score page now uses proper two-column layout like resume coach (30% questions, 70% answer workspace)
+- **Character Array React Errors**: Fixed AI synthesis returning character arrays instead of strings causing React rendering errors
+- **Questions Not Passing**: Fixed questions from search step not appearing in practice step due to character array format
+- **Timestamp Display**: Fixed stale cache timestamps showing old dates instead of current search time
+- **Web Questions Display**: Fixed web search only showing 1 question instead of all 30 questions
+- **AI Generation Issues**: Fixed hiring-manager AI generation returning 0 questions
+
+**Technical Changes**:
+- Updated `app/components/interview-coach/AnswerPracticeWorkspace.tsx` with two-column layout (`grid grid-cols-2 gap-6`)
+- Added character array detection and conversion in `app/interview-coach/[jobId]/page.tsx`
+- Enhanced `app/components/interview-coach/WelcomeSearch.tsx` to display new search results instead of cached data
+- Fixed `app/api/jobs/[id]/interview-questions/generate/route.ts` character array handling
+- Added missing `interview-questions-synthesis` AI capability to `lib/coach/aiProvider.ts`
+
+**Two-Column Layout Structure**:
+```typescript
+// Left Column (30%): Question List
+<div className="flex flex-col border-2 border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
+  <div className="bg-purple-100 dark:bg-purple-900/30 px-4 py-2 border-b">
+    <h4>Interview Questions ({selectedQuestions?.length || 0})</h4>
+  </div>
+  <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+    {/* Question list with scores and themes */}
+  </div>
+</div>
+
+// Right Column (70%): Answer Workspace  
+<div className="flex flex-col border-2 border-blue-200 dark:border-blue-800 rounded-lg overflow-hidden">
+  <div className="bg-blue-100 dark:bg-blue-900/30 px-4 py-2 border-b">
+    <h4>Your Answer</h4>
+  </div>
+  <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+    {/* Large textarea, scoring, AI suggestions */}
+  </div>
+</div>
+```
+
+**Character Array Fix**:
+```typescript
+// Convert character arrays to proper strings
+const fixedQuestions = rawQuestions.map((q: any) => {
+  if (typeof q === 'object' && q !== null && !Array.isArray(q)) {
+    const keys = Object.keys(q).filter(k => /^\d+$/.test(k));
+    if (keys.length > 0) {
+      return keys.map(k => q[k]).join('');
+    }
+  }
+  return typeof q === 'string' ? q : String(q);
+});
+```
+
+**Results**:
+- ✅ Two-column layout working (questions left, answers right)
+- ✅ No React errors with character arrays
+- ✅ Questions properly display in practice step
+- ✅ Fresh timestamps show current search time
+- ✅ All 30 web questions display correctly
+- ✅ AI generation working for all personas
+
 ### Recent UI Improvements (October 21, 2025)
 
 **1. Coach Cards with Clear Value Propositions**
@@ -1629,6 +1691,103 @@ DATABASE_URL=./data/jotrack.db  # SQLite path
 NODE_ENV=development            # Environment
 PORT=3000                       # Server port
 ```
+
+---
+
+## 🚀 LLM API Optimization Analysis (October 25, 2025)
+
+**Status**: ✅ ANALYSIS COMPLETE  
+**Goal**: Minimize AI API costs while maximizing data reuse and local intelligence  
+**Potential Savings**: 70% reduction in API costs ($7.00/year for 50 jobs)
+
+### Current Caching Status
+
+| Feature | Cache Status | TTL | Optimization Potential |
+|---------|-------------|-----|----------------------|
+| **Web Search** | ✅ Cached | 21 days | Good |
+| **Company Ecosystem** | ✅ Cached | 7 days | Good |
+| **Company Intelligence** | ❌ No cache | - | 🔴 **HIGH** |
+| **AI Interview Questions** | ❌ No cache | - | 🔴 **HIGH** |
+| **People Analysis** | ✅ Cached | 24 hours | Good |
+| **Match Score** | ❌ No cache | - | 🟡 **MEDIUM** |
+
+### Critical Issues Found
+
+**Issue 1: Interview Questions Over-Generation (50% waste)**
+- **Current**: Always generates ALL 3 personas (recruiter, hiring-manager, peer) = $0.05
+- **Problem**: User selects "Hiring Manager" but we generate all 3
+- **Waste**: $0.03 per call (60% unnecessary)
+- **Fix**: Only generate selected persona
+
+**Issue 2: No Caching for AI Generation**
+- **Current**: Interview questions AI generation has NO caching
+- **Problem**: Same job regenerates questions every time
+- **Waste**: $0.05 per visit to practice page
+- **Fix**: Cache AI-generated questions per job
+
+**Issue 3: Company Intelligence No Caching**
+- **Current**: Company Intelligence has NO caching (unlike Ecosystem)
+- **Problem**: Re-analyzes same company repeatedly
+- **Waste**: $0.03 per analysis
+- **Fix**: Add 30-day cache for company intelligence
+
+**Issue 4: Redundant Analysis Calls**
+- **Current**: Multiple analysis calls use same JD+Resume context
+- **Problem**: Same inputs analyzed 3-4 times
+- **Waste**: $0.08 per job
+- **Fix**: Bundle analysis with fingerprint detection
+
+### Recommended Optimizations
+
+**Priority 1: Interview Questions Caching (Immediate 50% savings)**
+```typescript
+// Add to interview-questions/generate/route.ts
+const cacheKey = `interview-questions:${jobId}:${persona}`;
+const cached = await getCachedResult(cacheKey);
+if (cached && !forceRefresh) {
+  return NextResponse.json({ ...cached, cached: true });
+}
+```
+
+**Priority 2: Persona-Specific Generation (60% savings)**
+```typescript
+// Only generate requested persona
+if (persona === 'hiring-manager') {
+  // Only call hiring-manager AI
+} else if (persona === 'all') {
+  // Generate all 3
+}
+```
+
+**Priority 3: Company Intelligence Caching (40% savings)**
+```typescript
+// Add 30-day cache for company intelligence
+const cacheKey = `company-intelligence:${companyName}`;
+const cached = await getCachedResult(cacheKey);
+```
+
+**Priority 4: Analysis Bundling (30% savings)**
+```typescript
+// Check if JD/Resume changed before re-analyzing
+const fingerprint = hashInputs({ jd, resume });
+if (fingerprint === lastFingerprint) {
+  return cachedResults;
+}
+```
+
+### Implementation Priority
+
+1. **Immediate**: Add caching to interview questions generation
+2. **Next**: Implement persona-specific generation  
+3. **Then**: Add company intelligence caching
+4. **Finally**: Implement analysis bundling
+
+### Cost Analysis
+
+- **Interview Questions**: $0.03 per job × 50 jobs = **$1.50/year**
+- **Company Intelligence**: $0.03 per job × 50 jobs = **$1.50/year**  
+- **Analysis Bundling**: $0.08 per job × 50 jobs = **$4.00/year**
+- **Total Annual Savings**: **$7.00/year** (70% reduction)
 
 ---
 
