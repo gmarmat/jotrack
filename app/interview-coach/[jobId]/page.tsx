@@ -591,133 +591,54 @@ export default function InterviewCoachPage() {
 
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Data Quality & Success Probability Cards - Side by Side */}
+        {/* Confidence Score Card (V2.0 - Shows signal quality) */}
         {analysisData && currentStep === 'welcome' && confidenceScore && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Preparation Confidence Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Preparation Confidence
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    How confident are we in the data we have?
-                  </p>
-                </div>
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {confidenceScore.score}%
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                {confidenceScore.signals.map((signal, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        signal.confidence >= 80 ? 'bg-green-500' : 
-                        signal.confidence >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                      }`} />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {signal.signal}
-                      </span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {signal.confidence}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  {confidenceScore.recommendation}
-                </p>
-              </div>
-            </div>
+            <ConfidenceScoreCard 
+              overall={confidenceScore}
+            />
             
-            {/* Success Probability Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Success Probability
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    What's your chance of getting this job?
-                  </p>
-                </div>
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {(() => {
-                    // Calculate answer scores from interview coach state
-                    const answerScores: number[] = [];
-                    if (interviewCoachState.answers) {
-                      Object.values(interviewCoachState.answers).forEach((ans: any) => {
-                        if (ans.scores && ans.scores.length > 0) {
-                          const latestScore = ans.scores[ans.scores.length - 1];
-                          answerScores.push(latestScore.overall || 0);
-                        }
-                      });
-                    }
-                    
-                    // Get competitive advantages
-                    const skillsMatch = analysisData.matchScoreData?.skillsMatch || [];
-                    const competitiveAdvantages = Array.isArray(skillsMatch)
-                      ? skillsMatch
-                          .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
-                          .slice(0, 3)
-                      : [];
-                    
-                    // Generate red flags
-                    const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
-                      ? generateWeaknessFramings(
-                          analysisData.resumeVariant.raw || '',
-                          analysisData.matchScoreData,
-                          analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
-                          interviewCoachState.questionBank?.webIntelligence?.warnings || []
-                        )
-                      : [];
-                    
-                    const prediction = predictInterviewSuccess({
-                      matchScore: analysisData.matchScoreData?.matchScore || 0,
-                      answerScores,
-                      interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
-                      redFlags,
-                      competitiveAdvantages
-                    });
-                    
-                    return Math.round(prediction.successRate * 100);
-                  })()}%
-                </div>
-              </div>
+            {/* Success Prediction Card (V2.0 - Shows win probability) */}
+            {(() => {
+              // Calculate answer scores from interview coach state
+              const answerScores: number[] = [];
+              if (interviewCoachState.answers) {
+                Object.values(interviewCoachState.answers).forEach((ans: any) => {
+                  if (ans.scores && ans.scores.length > 0) {
+                    const latestScore = ans.scores[ans.scores.length - 1];
+                    answerScores.push(latestScore.overall || 0);
+                  }
+                });
+              }
               
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Match Score</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {Math.round((analysisData.matchScoreData?.matchScore || 0) * 100)}%
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Skills Match</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {analysisData.matchScoreData?.skillsMatch?.length || 0} skills
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Company Intel</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {analysisData.companyIntelligence ? 'Available' : 'Not available'}
-                  </span>
-                </div>
-              </div>
+              // Get competitive advantages
+              const skillsMatch = analysisData.matchScoreData?.skillsMatch || [];
+              const competitiveAdvantages = Array.isArray(skillsMatch)
+                ? skillsMatch
+                    .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
+                    .slice(0, 3)
+                : [];
               
-              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  Based on your profile strength vs. job requirements
-                </p>
-              </div>
-            </div>
+              // Generate red flags
+              const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
+                ? generateWeaknessFramings(
+                    analysisData.resumeVariant.raw || '',
+                    analysisData.matchScoreData,
+                    analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
+                    interviewCoachState.questionBank?.webIntelligence?.warnings || []
+                  )
+                : [];
+              
+              const prediction = predictInterviewSuccess({
+                matchScore: analysisData.matchScoreData?.matchScore || 0,
+                answerScores,
+                interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
+                redFlags,
+                competitiveAdvantages
+              });
+              
+              return <SuccessPredictionCard prediction={prediction} />;
+            })()}
           </div>
         )}
         
