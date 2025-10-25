@@ -516,9 +516,12 @@ export async function callAiProvider(
 
     // For inline prompts (text variants), return raw text without parsing
     let result;
+    console.log(`🔍 AI Provider Debug: capability=${capability}, promptKind=${promptKind}`);
     if (promptKind === 'inline-prompt') {
+      console.log(`✅ Using inline prompt - returning raw text`);
       result = content.trim();  // Return text as-is
     } else {
+      console.log(`❌ Using template prompt - parsing as JSON`);
       // For template prompts, parse as JSON
       try {
         result = JSON.parse(content);
@@ -658,6 +661,7 @@ function mapCapabilityToPromptKind(capability: string): any {
     'talk-track-recruiter': 'talk-track-recruiter',
     'talk-track-hiring-manager': 'talk-track-hiring-manager',
     'talk-track-peer': 'talk-track-peer',
+    'generate-talk-track': 'inline-prompt',
     'recommendations': 'recommendations',
     'linkedin-optimization': 'linkedin-optimization',
     'answer-scoring': 'answer-scoring',
@@ -886,6 +890,15 @@ function buildPromptVariables(capability: string, inputs: any): any {
     case 'extract_structured_data':
       // These use inline prompts in refresh-variants/route.ts, return inputs as-is
       return inputs;
+
+    case 'generate-talk-track':
+      return {
+        answerText: inputs.answerText || '',
+        theme: inputs.theme || '',
+        persona: inputs.persona || 'hiring-manager',
+        companyContext: inputs.companyContext || 'Unknown Company',
+        roleContext: inputs.roleContext || 'Unknown Role'
+      };
 
     default:
       return common;

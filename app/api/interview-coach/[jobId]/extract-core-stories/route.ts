@@ -73,7 +73,7 @@ export async function POST(
     
     // Parse request body with safe defaults
     const answers = Array.isArray(body.answers) ? body.answers : [];
-    const themes = Array.isArray(body.themes) ? body.themes : [];
+    let themes = Array.isArray(body.themes) ? body.themes : [];
     const persona = body.persona || 'hiring-manager';
 
     // V2: Load answers from coach_state if no explicit answers provided
@@ -82,12 +82,18 @@ export async function POST(
         const coachStateRow = sqlite.prepare(`
           SELECT interview_coach_json FROM coach_state 
           WHERE job_id = ? AND interview_coach_json IS NOT NULL
-          ORDER BY created_at DESC LIMIT 1
-        `).get(jobId);
+          ORDER BY updated_at DESC LIMIT 1
+        `).get(jobId) as any;
 
         if (coachStateRow?.interview_coach_json) {
           const coachData = JSON.parse(coachStateRow.interview_coach_json);
           const answersData = coachData.answers || {};
+          
+          console.log('🔍 Debug: Loading answers from database:', {
+            hasAnswers: !!coachData.answers,
+            answersKeys: Object.keys(answersData),
+            answersCount: Object.keys(answersData).length
+          });
           
           // Load latest base answers + persona deltas
           Object.entries(answersData).forEach(([questionId, answerData]: [string, any]) => {
@@ -128,6 +134,32 @@ export async function POST(
       }, { status: 200 });
     }
     
+    // If no themes provided, extract them from answers or use defaults
+    if (themes.length === 0) {
+      // Try to extract themes from answer scores
+      const extractedThemes: string[] = [];
+      answers.forEach((answer: any) => {
+        if (answer.scores && answer.scores.length > 0) {
+          const latestScore = answer.scores[answer.scores.length - 1];
+          if (latestScore.subscores) {
+            Object.keys(latestScore.subscores).forEach(theme => {
+              if (!extractedThemes.includes(theme)) {
+                extractedThemes.push(theme);
+              }
+            });
+          }
+        }
+      });
+      
+      // If we found themes from scores, use them
+      if (extractedThemes.length > 0) {
+        themes = extractedThemes;
+      } else {
+        // Fallback to default themes
+        themes = ['impact', 'ownership', 'ambiguity_resolution', 'cost'];
+      }
+    }
+    
     // Set defaults for optional parameters
     const maxStories = body.maxStories || 4;
     const minStories = body.minStories || 2;
@@ -144,8 +176,8 @@ export async function POST(
       minStories: minStories || 3
     };
     
-    // Synthesize core stories (deterministic, no LLM)
-    const result = synthesizeCoreStories(synthesisInput);
+    // Synthesize core stories (AI-powered for conversational talk tracks)
+    const result = await synthesizeCoreStories(synthesisInput);
     
     console.log('✅ Core stories synthesized:', {
       storiesCount: result.coreStories.length,
@@ -160,7 +192,7 @@ export async function POST(
     // Get existing coach state
     const coachStateRow = sqlite.prepare(`
       SELECT interview_coach_json FROM coach_state WHERE job_id = ? LIMIT 1
-    `).get(jobId);
+    `).get(jobId) as any;
     
     let interviewCoachData: any = {};
     if (coachStateRow?.interview_coach_json) {
@@ -235,7 +267,7 @@ export async function POST(
       persona: persona || 'unknown',
       durationMs: 0, // Duration would need to be measured from start
       ...metrics,
-      metadata: { persona, answersCount: answers.length, themesCount: themes.length }
+      metadata: { persona: persona || 'unknown', answersCount: answers.length, themesCount: themes.length }
     });
     
     return NextResponse.json(response);
@@ -243,10 +275,10 @@ export async function POST(
     console.error('❌ Core stories synthesis failed:', error);
     
     // Log error telemetry
-    logCoachError('extract-core-stories', persona || 'unknown', error, { 
-      persona, 
-      answersCount: answers?.length || 0, 
-      themesCount: themes?.length || 0 
+    logCoachError('extract-core-stories', 'unknown', error, { 
+      persona: 'unknown', 
+      answersCount: 0, 
+      themesCount: 0 
     });
     
     // Map error to standardized format

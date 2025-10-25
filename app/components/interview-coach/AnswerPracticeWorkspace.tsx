@@ -55,6 +55,25 @@ export default function AnswerPracticeWorkspace({
   const [suggestingAnswer, setSuggestingAnswer] = useState(false);
   const [savingSnapshot, setSavingSnapshot] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
+
+  // Countdown timer for AI operations (countdown, not countup)
+  const estimatedTime = 15; // Estimated time for AI Suggest in seconds
+  const remainingSeconds = Math.max(0, estimatedTime - elapsedSeconds);
+  
+  useEffect(() => {
+    if (suggestingAnswer && startTime) {
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setElapsedSeconds(elapsed);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else if (!suggestingAnswer) {
+      setElapsedSeconds(0);
+      setStartTime(null);
+    }
+  }, [suggestingAnswer, startTime]);
 
   // Auto-populate selectedQuestions if empty but synthesizedQuestions exist
   useEffect(() => {
@@ -259,8 +278,9 @@ export default function AnswerPracticeWorkspace({
       return;
     }
     
-    setSuggestingAnswer(true);
-    try {
+        setSuggestingAnswer(true);
+        setStartTime(Date.now());
+        try {
       // Get the actual question text from selectedQuestions array
       const questionObj = selectedQuestions.find(q => 
         (typeof q === 'string' ? q : q?.question) === selectedQuestion
@@ -819,7 +839,9 @@ e.g., "Reduced deployment time by 90% (2hrs → 12min), cut bug rate by 40%, and
               {suggestingAnswer ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Suggesting...
+                  <span className="text-xs font-semibold tabular-nums">
+                    {remainingSeconds > 0 ? `${remainingSeconds}s` : 'Starting...'}
+                  </span>
                 </>
               ) : (
                 <>

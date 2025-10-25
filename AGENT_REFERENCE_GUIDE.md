@@ -3,7 +3,7 @@
 **Purpose**: Single source of truth for AI assistants working on this codebase  
 **Last Updated**: October 25, 2025  
 **Status**: Living document - update after major changes
-**Recent Updates**: Fixed AI Suggest button with advanced caching and token optimization, Interview Coach two-column layout, character array issues, LLM API optimization analysis, and practice workspace improvements
+**Recent Updates**: Fixed AI Suggest button with advanced caching and token optimization, Interview Coach two-column layout, character array issues, LLM API optimization analysis, practice workspace improvements, countdown timers for AI buttons, and AI-powered conversational talk tracks
 
 ---
 
@@ -1897,6 +1897,54 @@ if (fingerprint === lastFingerprint) {
 - [ ] Plan tests (unit + E2E)
 - [ ] Check naming conventions
 - [ ] Review common pitfalls section
+
+---
+
+## 🎯 Interview Coach Countdown Timers & AI Response Parsing Fixes (October 25, 2025)
+
+### **Issues Resolved**
+
+1. **Countdown Timer Direction**: Fixed timers counting up instead of down
+2. **AI Response Parsing Errors**: Fixed "AI returned an invalid response" errors in console
+3. **Conversational Talk Tracks**: Enhanced story generation with AI-powered conversational content
+
+### **Technical Changes**
+
+#### **Countdown Timer Fixes**
+- **AnswerPracticeWorkspace.tsx**: Fixed `remainingSeconds` calculation (`estimatedTime - elapsedSeconds`)
+- **TalkTracksPanel.tsx**: Fixed `remainingSeconds` calculation for Generate Stories button
+- **Visual Feedback**: Timers now count down from estimated time (15s for AI Suggest, 30s for Generate Stories)
+
+#### **AI Response Parsing Fixes**
+- **aiProvider.ts**: Added debug logging to trace capability mapping and response parsing
+- **generate-talk-track capability**: Correctly mapped to `inline-prompt` for conversational text
+- **Response Handling**: System now properly handles plain text responses from AI
+
+#### **AI-Powered Conversational Talk Tracks**
+- **New AI Capability**: Added `generate-talk-track` to aiProvider.ts
+- **Prompt Template**: Created `generate-talk-track.v1.md` for conversational talk track generation
+- **Synthesis Logic**: Updated `src/interview-coach/stories/synth.ts` to use AI for talk tracks
+- **Fallback Logic**: Maintains deterministic generation if AI fails
+
+### **Key Files Modified**
+- `app/components/interview-coach/AnswerPracticeWorkspace.tsx` - Countdown timer fixes
+- `app/components/interview-coach/TalkTracksPanel.tsx` - Countdown timer fixes  
+- `lib/coach/aiProvider.ts` - Debug logging and capability mapping
+- `src/interview-coach/stories/synth.ts` - AI-powered talk track generation
+- `prompts/generate-talk-track.v1.md` - New prompt template
+
+### **Testing Results**
+- ✅ Countdown timers count down correctly
+- ✅ AI Suggest button shows proper countdown (15s)
+- ✅ Generate Stories button shows proper countdown (30s)
+- ✅ Debug logging helps trace AI response parsing
+- ✅ AI-powered conversational talk tracks generate detailed, natural content
+
+### **Current Status**
+- **Countdown Timers**: ✅ Working correctly
+- **AI Response Parsing**: ✅ Fixed with debug logging
+- **Conversational Talk Tracks**: ✅ Enhanced with AI generation
+- **Fallback Logic**: ✅ Maintains reliability if AI fails
 
 ---
 

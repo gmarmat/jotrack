@@ -6,6 +6,7 @@
  */
 
 import { scoreAnswer, ScoringContext } from '@/src/interview-coach/scoring/rules';
+import { callAiProvider } from '@/lib/coach/aiProvider';
 
 // ============================================================================
 // TYPES
@@ -233,6 +234,82 @@ export function variantizePersona(
   return { long, short };
 }
 
+/**
+ * Generate AI-powered conversational talk track
+ */
+async function generateAiTalkTrack(
+  answerText: string, 
+  theme: string, 
+  persona: Persona
+): Promise<{ long: string; short: string[] }> {
+  try {
+    // Create inline prompt for conversational talk track
+    const companyContext = 'Fortive'; // TODO: Make this dynamic
+    const roleContext = 'Product Manager'; // TODO: Make this dynamic
+    
+    const prompt = `You are an expert interview coach helping a candidate prepare for ${roleContext} interviews at ${companyContext}.
+
+Transform the candidate's raw answer into a natural, conversational talk track that they can use to answer interview questions about ${theme}.
+
+## Input
+- **Answer Text**: ${answerText}
+- **Theme**: ${theme}
+- **Persona**: ${persona}
+- **Company**: ${companyContext}
+- **Role**: ${roleContext}
+
+## Requirements
+
+### 1. Conversational Style
+- Write as if the candidate is speaking naturally in an interview
+- Use "I" statements and personal pronouns
+- Include natural transitions and connecting phrases
+- Make it sound like a real conversation, not a formal presentation
+
+### 2. Structure (STAR Method)
+- **Situation**: Set the context naturally ("So, in my previous role at...")
+- **Task**: Explain what needed to be done ("I was responsible for...")
+- **Action**: Describe what you did with specific details ("What I did was...")
+- **Result**: Share the outcome with metrics ("The result was...")
+
+### 3. Persona-Specific Tone
+- **Recruiter**: Focus on cultural fit, motivation, and soft skills
+- **Hiring Manager**: Emphasize technical depth, leadership, and business impact
+- **Peer**: Highlight collaboration, technical decisions, and problem-solving
+
+### 4. Content Requirements
+- Include specific metrics and numbers where possible
+- Mention relevant technologies, tools, or methodologies
+- Show growth and learning from the experience
+- Connect to the ${theme} theme throughout
+
+Generate a natural, conversational talk track that the candidate can use directly in their interview.`;
+
+    const aiResult = await callAiProvider('generate-talk-track', {
+      prompt
+    });
+
+    if (aiResult.result) {
+      // AI returns conversational text directly, not JSON
+      const long = aiResult.result.trim();
+      
+      // Extract key points for short version from the conversational text
+      const lines = long.split('\n').filter(line => line.trim());
+      const short = lines
+        .filter(line => line.includes('•') || line.includes('-') || line.includes('*') || line.includes('What I did') || line.includes('The result'))
+        .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+        .slice(0, 6); // Limit to 6 key points
+      
+      return { long, short };
+    }
+  } catch (error) {
+    console.warn('AI talk track generation failed, using fallback:', error);
+  }
+  
+  // Fallback to deterministic generation
+  return variantizePersona({ s: 'Situation', t: 'Task', a: answerText, r: 'Result' }, persona);
+}
+
 // ============================================================================
 // MAIN SYNTHESIS
 // ============================================================================
@@ -240,7 +317,7 @@ export function variantizePersona(
 /**
  * Synthesize core stories from answers and themes
  */
-export function synthesizeCoreStories(input: SynthesisInput): SynthesisOutput {
+export async function synthesizeCoreStories(input: SynthesisInput): Promise<SynthesisOutput> {
   const { answers, themes, persona, maxStories = 4, minStories = 3 } = input;
   
   if (answers.length < 3) {
@@ -277,11 +354,11 @@ export function synthesizeCoreStories(input: SynthesisInput): SynthesisOutput {
     // Create story ID
     const storyId = `cs_${i + 1}`;
     
-    // Create variants for all personas
+    // Create variants for all personas using AI
     const variants: Record<Persona, CoreStoryVariant> = {
-      recruiter: variantizePersona(star, 'recruiter'),
-      'hiring-manager': variantizePersona(star, 'hiring-manager'),
-      peer: variantizePersona(star, 'peer')
+      recruiter: await generateAiTalkTrack(star.content, theme, 'recruiter'),
+      'hiring-manager': await generateAiTalkTrack(star.content, theme, 'hiring-manager'),
+      peer: await generateAiTalkTrack(star.content, theme, 'peer')
     };
     
     // Create core story
