@@ -200,7 +200,9 @@ export default function InterviewCoachPage() {
         console.log('💾 Auto-saving Interview Coach state:', {
           hasQuestionBank: !!state.questionBank,
           selectedQuestions: state.selectedQuestions?.length || 0,
-          currentStep: state.currentStep
+          currentStep: state.currentStep,
+          answersCount: state.answers ? Object.keys(state.answers).length : 0,
+          answers: state.answers ? Object.keys(state.answers) : []
         });
         
         setSaving(true);
@@ -229,7 +231,9 @@ export default function InterviewCoachPage() {
   );
   
   useEffect(() => {
-    if (interviewCoachState.questionBank || (interviewCoachState.selectedQuestions?.length || 0) > 0) {
+    if (interviewCoachState.questionBank || 
+        (interviewCoachState.selectedQuestions?.length || 0) > 0 ||
+        (interviewCoachState.answers && Object.keys(interviewCoachState.answers).length > 0)) {
       debouncedSave(interviewCoachState);
     }
   }, [interviewCoachState]);

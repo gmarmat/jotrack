@@ -34,7 +34,15 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
       }
     });
     
-    return validAnswers > 0 ? totalConfidence / validAnswers : 0.3;
+    // If user has provided answers, be more generous with confidence
+    if (validAnswers > 0) {
+      const averageConfidence = totalConfidence / validAnswers;
+      // Boost confidence if user has actually provided answers
+      const boostedConfidence = Math.max(averageConfidence, 0.4); // Minimum 40% if answers exist
+      return Math.min(boostedConfidence, 1.0); // Cap at 100%
+    }
+    
+    return 0.3;
   };
   
   const confidence = calculateConfidence();
@@ -149,7 +157,7 @@ export default function TalkTracksPanel({ jobId, interviewCoachState, persona }:
       </div>
       
       {/* V2: Confidence info banner (not a blocker) */}
-      {confidence < 0.4 && (
+      {confidence < 0.1 && (
         <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <div className="flex items-start gap-2">
             <div className="text-amber-600 dark:text-amber-400 text-sm">💡</div>
