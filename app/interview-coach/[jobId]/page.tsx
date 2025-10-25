@@ -540,59 +540,101 @@ export default function InterviewCoachPage() {
       )}
       
       {/* Persona Selector */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" data-testid="persona-selector">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Interviewer Perspective
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Choose your interviewer type to get targeted prep
-              </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" data-testid="persona-selector">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Interviewer Perspective
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Choose your interviewer type to get targeted prep
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              {/* Persona Selection - Narrower tiles */}
+              <div className="flex gap-2">
+                {PERSONAS.map((persona) => {
+                  const isSelected = persona === selectedPersona;
+                  
+                  return (
+                    <button
+                      key={persona}
+                      data-testid="persona-pill"
+                      onClick={() => {
+                        setSelectedPersona(persona);
+                        setInterviewCoachState((prev: any) => ({
+                          ...prev,
+                          persona
+                        }));
+                      }}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700'
+                      }`}
+                    >
+                      <span className="text-xl">{PERSONA_ICONS[persona]}</span>
+                      <div className="text-left">
+                        <div className="font-medium text-gray-900 dark:text-white text-sm">
+                          {PERSONA_LABELS[persona]}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {persona === 'recruiter' && 'Culture fit, motivation'}
+                          {persona === 'hiring-manager' && 'Technical depth, leadership'}
+                          {persona === 'peer' && 'System design, collaboration'}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Signals Section - Shows when persona is selected */}
+              {selectedPersona && (
+                <div className="flex-1 ml-4 pl-4 border-l border-gray-200 dark:border-gray-600">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    Signals We Use for {PERSONA_LABELS[selectedPersona]}
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    {selectedPersona === 'recruiter' && (
+                      <>
+                        <div>• Job description requirements and keywords</div>
+                        <div>• Company culture and values from web search</div>
+                        <div>• Recruiter profile and communication style</div>
+                        <div>• Match score and skills gap analysis</div>
+                        <div>• Strong skills to showcase (from resume)</div>
+                        <div>• Weak critical skills to address</div>
+                      </>
+                    )}
+                    {selectedPersona === 'hiring-manager' && (
+                      <>
+                        <div>• Job description and technical requirements</div>
+                        <div>• Hiring manager profile and priorities</div>
+                        <div>• Match score and skills gap analysis</div>
+                        <div>• Strong technical skills to highlight</div>
+                        <div>• Leadership and management experience</div>
+                        <div>• Business impact and strategic thinking</div>
+                      </>
+                    )}
+                    {selectedPersona === 'peer' && (
+                      <>
+                        <div>• Technical skills from job description</div>
+                        <div>• Peer interviewer profile and approach</div>
+                        <div>• Match score and skills gap analysis</div>
+                        <div>• Strong technical skills to demonstrate</div>
+                        <div>• System design and architecture knowledge</div>
+                        <div>• Collaboration and teamwork signals</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          
-          <div className="flex gap-3">
-            {PERSONAS.map((persona) => {
-              const isSelected = persona === selectedPersona;
-              
-              return (
-                <button
-                  key={persona}
-                  data-testid="persona-pill"
-                  onClick={() => {
-                    setSelectedPersona(persona);
-                    setInterviewCoachState((prev: any) => ({
-                      ...prev,
-                      persona
-                    }));
-                  }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${
-                    isSelected
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{PERSONA_ICONS[persona]}</span>
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {PERSONA_LABELS[persona]}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {persona === 'recruiter' && 'Focuses on Culture fit, motivation, and communication skills'}
-                        {persona === 'hiring-manager' && 'Focuses on Technical depth, leadership, and problem-solving'}
-                        {persona === 'peer' && 'Focuses on System design, collaboration, and team dynamics'}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
         </div>
-      </div>
 
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

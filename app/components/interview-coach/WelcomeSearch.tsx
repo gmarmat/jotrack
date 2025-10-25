@@ -322,44 +322,6 @@ export default function WelcomeSearch({
           </div>
         </div>
 
-        {/* Signals We Use - Independent Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Signals We Use for {currentPersona.title}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
-            {persona === 'recruiter' && (
-              <>
-                <div>• Job description requirements and keywords</div>
-                <div>• Company culture and values from web search</div>
-                <div>• Recruiter profile and communication style</div>
-                <div>• Match score and skills gap analysis</div>
-                <div>• Strong skills to showcase (from resume)</div>
-                <div>• Weak critical skills to address</div>
-              </>
-            )}
-            {persona === 'hiring-manager' && (
-              <>
-                <div>• Job description and technical requirements</div>
-                <div>• Hiring manager profile and priorities</div>
-                <div>• Match score and skills gap analysis</div>
-                <div>• Strong technical skills to highlight</div>
-                <div>• Leadership and management experience</div>
-                <div>• Business impact and strategic thinking</div>
-              </>
-            )}
-            {persona === 'peer' && (
-              <>
-                <div>• Technical skills from job description</div>
-                <div>• Peer interviewer profile and approach</div>
-                <div>• Match score and skills gap analysis</div>
-                <div>• Strong technical skills to demonstrate</div>
-                <div>• System design and architecture knowledge</div>
-                <div>• Collaboration and teamwork signals</div>
-              </>
-            )}
-          </div>
-        </div>
 
       </div>
 
