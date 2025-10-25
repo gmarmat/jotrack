@@ -452,36 +452,66 @@ export default function InterviewCoachPage() {
             </div>
           </div>
           
-          {/* Breadcrumb - Compact version */}
-          <div className="mt-6 flex items-center gap-1 overflow-x-auto pb-2">
-            {steps.map((step, index) => {
-              const isActive = step.id === currentStep;
-              const isCompleted = step.status === 'completed';
-              const isAccessible = index <= currentStepIndex || isCompleted;
-              
-              return (
-                <div key={step.id} className="flex items-center">
-                  <button
-                    onClick={() => isAccessible && setCurrentStep(step.id as InterviewStep)}
-                    disabled={!isAccessible}
-                    title={step.description}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all ${
-                      isActive
-                        ? 'bg-white text-purple-600 shadow-lg'
-                        : isCompleted
-                        ? 'bg-white/30 text-white hover:bg-white/40 cursor-pointer'
-                        : 'bg-white/10 text-purple-200 cursor-not-allowed'
-                    }`}
-                  >
-                    {isCompleted ? <Check className="w-3 h-3" /> : <span className="text-xs">{step.icon}</span>}
-                    <span>{step.label}</span>
-                  </button>
-                  {index < steps.length - 1 && (
-                    <div className="w-4 h-0.5 bg-white/20 mx-0.5" />
-                  )}
+          {/* Breadcrumb with How it Works - Expanded version */}
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-1 overflow-x-auto pb-2">
+              {steps.map((step, index) => {
+                const isActive = step.id === currentStep;
+                const isCompleted = step.status === 'completed';
+                const isAccessible = index <= currentStepIndex || isCompleted;
+                
+                return (
+                  <div key={step.id} className="flex items-center">
+                    <button
+                      onClick={() => isAccessible && setCurrentStep(step.id as InterviewStep)}
+                      disabled={!isAccessible}
+                      title={step.description}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs whitespace-nowrap transition-all ${
+                        isActive
+                          ? 'bg-white text-purple-600 shadow-lg'
+                          : isCompleted
+                          ? 'bg-white/30 text-white hover:bg-white/40 cursor-pointer'
+                          : 'bg-white/10 text-purple-200 cursor-not-allowed'
+                      }`}
+                    >
+                      {isCompleted ? <Check className="w-3 h-3" /> : <span className="text-xs">{step.icon}</span>}
+                      <span>{step.label}</span>
+                    </button>
+                    {index < steps.length - 1 && (
+                      <div className="w-4 h-0.5 bg-white/20 mx-0.5" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* How it Works - Expanded in header */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-white mb-3">How it Works</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-purple-100">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">🔍</span>
+                  <div>
+                    <div className="font-medium">Search & Discover</div>
+                    <div className="text-purple-200">Find interview questions from multiple sources</div>
+                  </div>
                 </div>
-              );
-            })}
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">📝</span>
+                  <div>
+                    <div className="font-medium">Practice & Score</div>
+                    <div className="text-purple-200">Write answers and get AI feedback</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">✨</span>
+                  <div>
+                    <div className="font-medium">Talk Tracks</div>
+                    <div className="text-purple-200">Generate STAR format stories</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
