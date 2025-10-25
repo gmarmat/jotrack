@@ -87,6 +87,22 @@ export default function InterviewCoachPage() {
   // Sticky header scroll state
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   
+  // Calculate confidence score (memoized)
+  const confidenceScore = useMemo(() => {
+    if (analysisData) {
+      return calculateOverallConfidence(
+        calculateSignalConfidence({
+          peopleProfiles: analysisData.peopleProfiles,
+          matchScore: analysisData.matchScoreData,
+          companyIntelligence: analysisData.companyIntelligence,
+          skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
+          webIntelligence: interviewCoachState.questionBank?.webIntelligence
+        })
+      );
+    }
+    return null;
+  }, [analysisData, interviewCoachState.questionBank]);
+  
   // Load job data and Interview Coach state
   useEffect(() => {
     loadData();
@@ -544,18 +560,10 @@ export default function InterviewCoachPage() {
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Confidence Score Card (V2.0 - Shows signal quality) */}
-        {analysisData && currentStep === 'welcome' && (
+        {analysisData && currentStep === 'welcome' && confidenceScore && (
           <>
             <ConfidenceScoreCard 
-              overall={useMemo(() => calculateOverallConfidence(
-                calculateSignalConfidence({
-                  peopleProfiles: analysisData.peopleProfiles,
-                  matchScore: analysisData.matchScoreData,
-                  companyIntelligence: analysisData.companyIntelligence,
-                  skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
-                  webIntelligence: interviewCoachState.questionBank?.webIntelligence
-                })
-              ), [analysisData, interviewCoachState.questionBank])}
+              overall={confidenceScore}
             />
             
             {/* Success Prediction Card (V2.0 - Shows win probability) */}
