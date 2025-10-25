@@ -102,6 +102,14 @@ export async function searchInterviewQuestions(
     console.log(`✅ Success patterns:`, webIntelligence.successPatterns.length);
     console.log(`✅ Warnings:`, webIntelligence.warnings.length);
     
+    // Debug: Log sample content to understand why few questions are found
+    console.log(`🔍 Debug: Sample search results content:`, allResults.slice(0, 2).map(r => ({
+      url: r.url,
+      contentLength: r.content?.length || 0,
+      snippetLength: r.snippet?.length || 0,
+      hasQuestions: (r.content || r.snippet || '').includes('?')
+    })));
+    
     // Convert to old format for backwards compatibility, preserving source URLs
     const questions: SearchedQuestion[] = webIntelligence.questions.map((q, index) => {
       // Try to find the source URL for this question

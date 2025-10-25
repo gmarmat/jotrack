@@ -243,8 +243,18 @@ export function extractWebIntelligence(
 ): WebIntelligence {
   // Extract questions (existing behavior)
   const questions: string[] = [];
-  searchResults.forEach(result => {
+  searchResults.forEach((result, index) => {
     const content = result.content || result.snippet || '';
+    
+    // Debug: Log content sample for first few results
+    if (index < 2) {
+      console.log(`🔍 Debug: Result ${index} content sample:`, {
+        url: result.url,
+        contentLength: content.length,
+        contentSample: content.substring(0, 200),
+        hasQuestions: content.includes('?')
+      });
+    }
     
     // Look for question patterns
     const questionPatterns = [
@@ -256,14 +266,21 @@ export function extractWebIntelligence(
       /([^.!?\n]{20,200}\?)/g,  // Any sentence ending with ?
     ];
     
+    let foundInThisResult = 0;
     questionPatterns.forEach(pattern => {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match[1] && match[1].length > 10 && match[1].length < 200) {
           questions.push(match[1].trim());
+          foundInThisResult++;
         }
       }
     });
+    
+    // Debug: Log questions found in this result
+    if (index < 2) {
+      console.log(`🔍 Debug: Found ${foundInThisResult} questions in result ${index}`);
+    }
   });
   
   // Extract interviewer validations (NEW!)
