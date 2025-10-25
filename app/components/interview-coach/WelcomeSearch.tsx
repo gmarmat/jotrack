@@ -28,9 +28,7 @@ export default function WelcomeSearch({
   const [expandedSections, setExpandedSections] = useState({
     webQuestions: false,
     aiQuestions: false,
-    finalQuestions: false,
-    signals: false,
-    customQuestion: false
+    finalQuestions: false
   });
 
   const personaTitles = {
@@ -361,57 +359,45 @@ export default function WelcomeSearch({
           </div>
         </div>
 
-        {/* Signals We Use - Collapsible */}
-        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <button
-            onClick={() => setExpandedSections(prev => ({ ...prev, signals: !prev.signals }))}
-            className="flex items-center justify-between w-full p-6 text-left hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors rounded-lg"
-          >
-            <h3 className="font-semibold text-gray-900 dark:text-white">Signals We Use</h3>
-            {expandedSections.signals ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-          </button>
-          
-          {expandedSections.signals && (
-            <div className="px-6 pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
-                <div>• Job Description keywords and requirements</div>
-                <div>• Company culture and values</div>
-                <div>• Resume experience and skills</div>
-                <div>• Interviewer profiles and preferences</div>
-                <div>• Your writing style for natural delivery</div>
-              </div>
-            </div>
-          )}
+        {/* Signals We Use - Always Visible & Persona-Specific */}
+        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+            Signals We Use for {currentPersona.title}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
+            {persona === 'recruiter' && (
+              <>
+                <div>• Culture fit indicators and team dynamics</div>
+                <div>• Communication style and soft skills</div>
+                <div>• Motivation and career goals alignment</div>
+                <div>• Salary expectations and negotiation signals</div>
+                <div>• Company values and mission alignment</div>
+                <div>• Behavioral examples and STAR stories</div>
+              </>
+            )}
+            {persona === 'hiring-manager' && (
+              <>
+                <div>• Technical depth and problem-solving skills</div>
+                <div>• Leadership experience and team management</div>
+                <div>• Strategic thinking and business impact</div>
+                <div>• Industry knowledge and domain expertise</div>
+                <div>• Project management and execution ability</div>
+                <div>• Innovation and process improvement</div>
+              </>
+            )}
+            {persona === 'peer' && (
+              <>
+                <div>• System design and architecture knowledge</div>
+                <div>• Collaboration and teamwork skills</div>
+                <div>• Code quality and technical standards</div>
+                <div>• Problem-solving approach and methodology</div>
+                <div>• Learning agility and adaptability</div>
+                <div>• Cross-functional communication</div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Custom Question Input */}
-        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <button
-            onClick={() => setExpandedSections(prev => ({ ...prev, customQuestion: !prev.customQuestion }))}
-            className="flex items-center justify-between w-full p-6 text-left hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors rounded-lg"
-          >
-            <h3 className="font-semibold text-gray-900 dark:text-white">Add Custom Question</h3>
-            {expandedSections.customQuestion ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-          </button>
-          
-          {expandedSections.customQuestion && (
-            <div className="px-6 pb-6">
-              <div className="space-y-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Have a specific question you want to practice? Add it here and we'll help you prepare for it.
-                </p>
-                <textarea
-                  placeholder="Enter your custom interview question here..."
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  rows={3}
-                />
-                <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-                  Add Question
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Search Button */}
@@ -523,6 +509,17 @@ export default function WelcomeSearch({
                          hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg"
               >
                 Continue to Practice →
+              </button>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement insights view
+                  console.log('View insights clicked');
+                }}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg
+                         hover:bg-indigo-700 transition-all font-semibold"
+              >
+                📊 View Insights
               </button>
               
               <button

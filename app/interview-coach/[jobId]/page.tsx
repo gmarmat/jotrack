@@ -498,18 +498,19 @@ export default function InterviewCoachPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4" data-testid="persona-selector">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Interviewer Perspective
-            </h2>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {PERSONA_DESCRIPTIONS[selectedPersona]}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Interviewer Perspective
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Choose your interviewer type to get targeted prep
+              </p>
             </div>
           </div>
           
           <div className="flex gap-3">
             {PERSONAS.map((persona) => {
               const isSelected = persona === selectedPersona;
-              const progress = Math.floor(Math.random() * 100); // Stub progress numbers
               
               return (
                 <button
@@ -535,100 +536,159 @@ export default function InterviewCoachPage() {
                         {PERSONA_LABELS[persona]}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {progress}% complete
+                        {PERSONA_DESCRIPTIONS[persona]}
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Progress ring */}
-                  <div className="relative w-8 h-8">
-                    <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
-                      <circle
-                        cx="16"
-                        cy="16"
-                        r="14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="none"
-                        className="text-gray-200 dark:text-gray-600"
-                      />
-                      <circle
-                        cx="16"
-                        cy="16"
-                        r="14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 14}`}
-                        strokeDashoffset={`${2 * Math.PI * 14 * (1 - progress / 100)}`}
-                        className={isSelected ? 'text-purple-500' : 'text-gray-400'}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                        {progress}
-                      </span>
                     </div>
                   </div>
                 </button>
               );
             })}
           </div>
+          
+          {/* Persona-specific focus area */}
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
+              <span className="font-medium">Focus:</span>
+              <span>
+                {selectedPersona === 'recruiter' && 'Culture fit, motivation, and communication skills'}
+                {selectedPersona === 'hiring-manager' && 'Technical depth, leadership, and problem-solving'}
+                {selectedPersona === 'peer' && 'System design, collaboration, and team dynamics'}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Content based on current step */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Confidence Score Card (V2.0 - Shows signal quality) */}
+        {/* Data Quality & Success Probability Cards - Side by Side */}
         {analysisData && currentStep === 'welcome' && confidenceScore && (
-          <>
-            <ConfidenceScoreCard 
-              overall={confidenceScore}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Preparation Confidence Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Preparation Confidence
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    How confident are we in the data we have?
+                  </p>
+                </div>
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {confidenceScore.score}%
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {confidenceScore.signals.map((signal, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        signal.confidence >= 80 ? 'bg-green-500' : 
+                        signal.confidence >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {signal.signal}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {signal.confidence}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  {confidenceScore.recommendation}
+                </p>
+              </div>
+            </div>
             
-            {/* Success Prediction Card (V2.0 - Shows win probability) */}
-            {(() => {
-              // Calculate answer scores from interview coach state
-              const answerScores: number[] = [];
-              if (interviewCoachState.answers) {
-                Object.values(interviewCoachState.answers).forEach((ans: any) => {
-                  if (ans.scores && ans.scores.length > 0) {
-                    const latestScore = ans.scores[ans.scores.length - 1];
-                    answerScores.push(latestScore.overall || 0);
-                  }
-                });
-              }
+            {/* Success Probability Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Success Probability
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    What's your chance of getting this job?
+                  </p>
+                </div>
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {(() => {
+                    // Calculate answer scores from interview coach state
+                    const answerScores: number[] = [];
+                    if (interviewCoachState.answers) {
+                      Object.values(interviewCoachState.answers).forEach((ans: any) => {
+                        if (ans.scores && ans.scores.length > 0) {
+                          const latestScore = ans.scores[ans.scores.length - 1];
+                          answerScores.push(latestScore.overall || 0);
+                        }
+                      });
+                    }
+                    
+                    // Get competitive advantages
+                    const skillsMatch = analysisData.matchScoreData?.skillsMatch || [];
+                    const competitiveAdvantages = Array.isArray(skillsMatch)
+                      ? skillsMatch
+                          .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
+                          .slice(0, 3)
+                      : [];
+                    
+                    // Generate red flags
+                    const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
+                      ? generateWeaknessFramings(
+                          analysisData.resumeVariant.raw || '',
+                          analysisData.matchScoreData,
+                          analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
+                          interviewCoachState.questionBank?.webIntelligence?.warnings || []
+                        )
+                      : [];
+                    
+                    const prediction = predictInterviewSuccess({
+                      matchScore: analysisData.matchScoreData?.matchScore || 0,
+                      answerScores,
+                      interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
+                      redFlags,
+                      competitiveAdvantages
+                    });
+                    
+                    return Math.round(prediction.successRate * 100);
+                  })()}%
+                </div>
+              </div>
               
-              // Get competitive advantages
-              const skillsMatch = analysisData.matchScoreData?.skillsMatch || [];
-              const competitiveAdvantages = Array.isArray(skillsMatch)
-                ? skillsMatch
-                    .filter((s: any) => s.matchStrength === 'strong' && s.yearsExperience >= 5)
-                    .slice(0, 3)
-                : [];
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Match Score</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {Math.round((analysisData.matchScoreData?.matchScore || 0) * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Skills Match</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {analysisData.matchScoreData?.skillsMatch?.length || 0} skills
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Company Intel</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {analysisData.companyIntelligence ? 'Available' : 'Not available'}
+                  </span>
+                </div>
+              </div>
               
-              // Generate red flags
-              const redFlags = analysisData.matchScoreData && analysisData.resumeVariant
-                ? generateWeaknessFramings(
-                    analysisData.resumeVariant.raw || '',
-                    analysisData.matchScoreData,
-                    analyzeCareerTrajectory(analysisData.resumeVariant.raw || ''),
-                    interviewCoachState.questionBank?.webIntelligence?.warnings || []
-                  )
-                : [];
-              
-              const prediction = predictInterviewSuccess({
-                matchScore: analysisData.matchScoreData?.matchScore || 0,
-                answerScores,
-                interviewerProfile: analysisData.peopleProfiles?.profiles?.[0] || null,
-                redFlags,
-                competitiveAdvantages
-              });
-              
-              return <SuccessPredictionCard prediction={prediction} />;
-            })()}
-          </>
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  Based on your profile strength vs. job requirements
+                </p>
+              </div>
+            </div>
+          </div>
         )}
         
         {currentStep === 'welcome' && (
@@ -686,6 +746,26 @@ export default function InterviewCoachPage() {
               setInterviewCoachState={setInterviewCoachState}
               persona={selectedPersona}
             />
+            
+            {/* Add Custom Question Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Add Custom Question
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Have a specific question you want to practice? Add it here and we'll help you prepare for it.
+              </p>
+              <div className="space-y-3">
+                <textarea
+                  placeholder="Enter your custom interview question here..."
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+                <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                  Add Question
+                </button>
+              </div>
+            </div>
             
             {/* Talk Tracks Panel */}
             {showTalkTracks && (
