@@ -367,6 +367,18 @@ export default function InterviewCoachPage() {
             </div>
           </div>
           
+          {/* Current Stage in Center */}
+          <div className="flex-1 flex justify-center">
+            <div className="text-center">
+              <div className="text-sm font-semibold">
+                {steps.find(s => s.id === currentStep)?.label || 'Search & Discover'}
+              </div>
+              <div className="text-xs text-purple-100">
+                {steps.find(s => s.id === currentStep)?.description || 'Find interview questions'}
+              </div>
+            </div>
+          </div>
+          
           {/* Compact step indicator */}
           <div className="flex items-center gap-2">
             {steps.map((step, index) => {
@@ -408,6 +420,9 @@ export default function InterviewCoachPage() {
                 </h1>
                 <p className="text-sm text-purple-100">
                   {jobData?.title} at {jobData?.company}
+                </p>
+                <p className="text-xs text-purple-200 mt-1">
+                  We'll help you prep and ace your interview with personalized questions and guidance.
                 </p>
               </div>
             </div>
@@ -566,25 +581,15 @@ export default function InterviewCoachPage() {
                         {PERSONA_LABELS[persona]}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {PERSONA_DESCRIPTIONS[persona]}
+                        {persona === 'recruiter' && 'Focuses on Culture fit, motivation, and communication skills'}
+                        {persona === 'hiring-manager' && 'Focuses on Technical depth, leadership, and problem-solving'}
+                        {persona === 'peer' && 'Focuses on System design, collaboration, and team dynamics'}
                       </div>
                     </div>
                   </div>
                 </button>
               );
             })}
-          </div>
-          
-          {/* Persona-specific focus area */}
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-200">
-              <span className="font-medium">Focus:</span>
-              <span>
-                {selectedPersona === 'recruiter' && 'Culture fit, motivation, and communication skills'}
-                {selectedPersona === 'hiring-manager' && 'Technical depth, leadership, and problem-solving'}
-                {selectedPersona === 'peer' && 'System design, collaboration, and team dynamics'}
-              </span>
-            </div>
           </div>
         </div>
       </div>

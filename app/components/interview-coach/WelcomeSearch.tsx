@@ -110,43 +110,6 @@ export default function WelcomeSearch({
   if (existingQuestionBank) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Welcome Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome to Interview Coach
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-            We'll help you prep and ace your interview with personalized questions and guidance
-          </p>
-        </div>
-
-        {/* How It Works */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-3">🔍</div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">1. Find Questions</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Search online sources and generate AI questions tailored to your role
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-3">📝</div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">2. Practice & Score</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Write STAR stories and get AI feedback to improve your answers
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-3">✨</div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">3. Talk Tracks</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Get detailed talking points and memorize key stories
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Search Results with Progressive Disclosure */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
@@ -359,9 +322,9 @@ export default function WelcomeSearch({
           </div>
         </div>
 
-        {/* Signals We Use - Always Visible & Persona-Specific */}
-        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+        {/* Signals We Use - Independent Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Signals We Use for {currentPersona.title}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
@@ -417,19 +380,24 @@ export default function WelcomeSearch({
           </p>
         </div>
         
-        {/* View Insights Button for existing question bank */}
+        {/* View Insights Button for existing question bank - VERY VISIBLE */}
         {existingQuestionBank && (
-          <div className="text-center mt-4">
+          <div className="text-center mt-6">
             <button
               onClick={() => {
                 // TODO: Implement insights view
                 console.log('View insights clicked');
+                alert('View Insights clicked! (This will show detailed analysis of your questions)');
               }}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg
-                       hover:bg-indigo-700 transition-all font-semibold"
+              className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl
+                       hover:from-indigo-700 hover:to-purple-700 transition-all font-bold text-lg shadow-xl
+                       transform hover:scale-105 border-2 border-indigo-300"
             >
               📊 View Insights
             </button>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              See detailed analysis of your interview questions
+            </p>
           </div>
         )}
 
@@ -531,9 +499,11 @@ export default function WelcomeSearch({
                 onClick={() => {
                   // TODO: Implement insights view
                   console.log('View insights clicked');
+                  alert('View Insights clicked! (This will show detailed analysis of your questions)');
                 }}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg
-                         hover:bg-indigo-700 transition-all font-semibold"
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl
+                         hover:from-indigo-700 hover:to-purple-700 transition-all font-bold text-lg shadow-xl
+                         transform hover:scale-105 border-2 border-indigo-300"
               >
                 📊 View Insights
               </button>
