@@ -51,6 +51,31 @@ function addEvidenceFieldsToGenerated(
   });
 }
 
+/**
+ * Deduplicate questions based on question text similarity
+ */
+function deduplicateQuestions(questions: any[]): any[] {
+  const seen = new Set<string>();
+  const deduplicated: any[] = [];
+  
+  for (const question of questions) {
+    const questionText = (question.question || question).toLowerCase().trim();
+    
+    // Simple similarity check - normalize common variations
+    const normalized = questionText
+      .replace(/[^\w\s]/g, '') // Remove punctuation
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    if (!seen.has(normalized)) {
+      seen.add(normalized);
+      deduplicated.push(question);
+    }
+  }
+  
+  return deduplicated;
+}
+
 export async function POST(
   request: NextRequest,
   context: RouteContext
@@ -59,6 +84,7 @@ export async function POST(
     const jobId = context.params.id;
     const body = await request.json().catch(() => ({}));
     const persona = body.persona || 'all'; // 'recruiter', 'hiring-manager', 'peer', or 'all'
+    const forceRefresh = body.forceRefresh || false;
     
     console.log(`✨ Generating AI interview questions for job ${jobId} (persona: ${persona})...`);
     
@@ -182,6 +208,7 @@ export async function POST(
     }
     
     // Determine which personas to generate based on request
+    console.log('🎭 Received persona from request:', persona, typeof persona);
     const shouldGenerateRecruiter = persona === 'all' || persona === 'recruiter';
     const shouldGenerateHiringManager = persona === 'all' || persona === 'hiring-manager';
     const shouldGeneratePeer = persona === 'all' || persona === 'peer';
@@ -223,6 +250,14 @@ export async function POST(
     }
     
     if (shouldGenerateHiringManager) {
+      console.log('🎯 Generating hiring manager questions with profile:', {
+        hasProfile: !!hiringManagerProfile,
+        profileName: hiringManagerProfile?.name || 'Unknown',
+        matchScore,
+        strongSkills: strongSkills.length,
+        weakSkills: weakCriticalSkills.length
+      });
+      
       promises.push(
         callAiProvider('interview-questions-hiring-manager', {
           companyName,
@@ -329,7 +364,9 @@ export async function POST(
         
         // Better error handling for synthesis
         if (synthesisResult && synthesisResult.result) {
+          console.log('🧠 Raw synthesis result:', JSON.stringify(synthesisResult.result, null, 2));
           const synthesis = parseAiResult(synthesisResult.result);
+          console.log('🧠 Parsed synthesis result:', JSON.stringify(synthesis, null, 2));
           themes = synthesis.themes || [];
           synthesizedQuestions = synthesis.synthesizedQuestions || [];
         } else {
@@ -419,12 +456,12 @@ export async function POST(
     
     console.log(`✅ AI questions saved to database for job ${jobId}`);
     
-    // Add evidence fields to all question sets
+    // Add evidence fields to all question sets with deduplication
     const questionsWithEvidence = {
       recruiter: recruiterQuestions ? {
         ...recruiterQuestions,
         questions: addEvidenceFieldsToGenerated(
-          recruiterQuestions.questions || [],
+          deduplicateQuestions(recruiterQuestions.questions || []),
           companyName,
           jobTitle
         )
@@ -432,7 +469,7 @@ export async function POST(
       hiringManager: hiringManagerQuestions ? {
         ...hiringManagerQuestions,
         questions: addEvidenceFieldsToGenerated(
-          hiringManagerQuestions.questions || [],
+          deduplicateQuestions(hiringManagerQuestions.questions || []),
           companyName,
           jobTitle
         )
@@ -440,16 +477,28 @@ export async function POST(
       peer: peerQuestions ? {
         ...peerQuestions,
         questions: addEvidenceFieldsToGenerated(
-          peerQuestions.questions || [],
+          deduplicateQuestions(peerQuestions.questions || []),
           companyName,
           jobTitle
         )
       } : null
     };
     
-    // Add evidence fields to synthesized questions
+    // Fix character array issue - convert to proper strings
+    const fixedSynthesizedQuestions = (synthesizedQuestions || []).map(q => {
+      if (typeof q === 'object' && q !== null && !Array.isArray(q)) {
+        // If it's an object with numeric keys, it's a character array - convert to string
+        const keys = Object.keys(q).filter(k => /^\d+$/.test(k));
+        if (keys.length > 0) {
+          return keys.map(k => q[k]).join('');
+        }
+      }
+      return typeof q === 'string' ? q : String(q);
+    });
+
+    // Add evidence fields to synthesized questions with deduplication
     const synthesizedQuestionsWithEvidence = addEvidenceFieldsToGenerated(
-      synthesizedQuestions || [],
+      deduplicateQuestions(fixedSynthesizedQuestions),
       companyName,
       jobTitle
     );

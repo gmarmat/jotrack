@@ -65,6 +65,18 @@ export default function AnswerPracticeWorkspace({
     }
   }, [selectedQuestions?.length, interviewCoachState?.questionBank?.synthesizedQuestions, interviewCoachState, setInterviewCoachState]);
 
+  // Debug logging for question data
+  useEffect(() => {
+    console.log('🎯 Practice Workspace Debug:', {
+      selectedQuestions: selectedQuestions?.length || 0,
+      selectedQuestionsData: selectedQuestions,
+      questionBank: interviewCoachState?.questionBank ? 'exists' : 'missing',
+      synthesizedQuestions: interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0,
+      webQuestions: interviewCoachState?.questionBank?.webQuestions?.length || 0,
+      aiQuestions: interviewCoachState?.questionBank?.aiQuestions ? Object.keys(interviewCoachState.questionBank.aiQuestions) : 'none'
+    });
+  }, [selectedQuestions, interviewCoachState]);
+
   const currentQuestionData = selectedQuestion 
     ? interviewCoachState.answers?.[selectedQuestion]
     : null;
@@ -504,24 +516,26 @@ export default function AnswerPracticeWorkspace({
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-          No Questions Selected
+          No Questions Available
         </h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          You need to complete the Insights step first to generate interview questions.
+          Please complete the search step first to generate interview questions.
         </p>
         <div className="text-sm text-gray-500 mb-4">
-          Debug: questionBank exists: {interviewCoachState?.questionBank ? 'Yes' : 'No'}<br/>
-          synthesizedQuestions: {interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0}<br/>
-          webQuestions: {interviewCoachState?.questionBank?.webQuestions?.length || 0}
+          Debug Info:<br/>
+          • questionBank exists: {interviewCoachState?.questionBank ? 'Yes' : 'No'}<br/>
+          • synthesizedQuestions: {interviewCoachState?.questionBank?.synthesizedQuestions?.length || 0}<br/>
+          • webQuestions: {interviewCoachState?.questionBank?.webQuestions?.length || 0}<br/>
+          • aiQuestions: {interviewCoachState?.questionBank?.aiQuestions ? Object.keys(interviewCoachState.questionBank.aiQuestions).join(', ') : 'None'}
         </div>
         <button 
           onClick={() => setInterviewCoachState({
             ...interviewCoachState,
-            currentStep: 'insights'
+            currentStep: 'welcome'
           })}
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
         >
-          Go to Insights
+          Go to Search
         </button>
       </div>
     );
@@ -537,10 +551,6 @@ export default function AnswerPracticeWorkspace({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-6 h-full">
-      {/* Left Sidebar - Interviewer Profile */}
-      <div className="space-y-4">
-        <InterviewerProfileCard jobId={jobId} persona={persona} />
-      </div>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-2">

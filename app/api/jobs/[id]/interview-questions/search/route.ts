@@ -79,13 +79,38 @@ function isCacheFresh(fetchedAt: number): boolean {
   return Date.now() - fetchedAt < CACHE_TTL_MS;
 }
 
+/**
+ * Deduplicate questions based on question text similarity
+ */
+function deduplicateQuestions(questions: any[]): any[] {
+  const seen = new Set<string>();
+  const deduplicated: any[] = [];
+  
+  for (const question of questions) {
+    const questionText = (question.question || question).toLowerCase().trim();
+    
+    // Simple similarity check - normalize common variations
+    const normalized = questionText
+      .replace(/[^\w\s]/g, '') // Remove punctuation
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    if (!seen.has(normalized)) {
+      seen.add(normalized);
+      deduplicated.push(question);
+    }
+  }
+  
+  return deduplicated;
+}
+
 export async function POST(
   request: NextRequest,
   context: RouteContext
 ) {
   try {
     const jobId = context.params.id;
-    const { companyName, roleTitle } = await request.json();
+    const { companyName, roleTitle, forceRefresh = false } = await request.json();
     
     if (!companyName || !roleTitle) {
       return NextResponse.json(
@@ -97,6 +122,7 @@ export async function POST(
     console.log(`🔍 Searching interview questions for ${companyName} - ${roleTitle}...`);
     
     // V2.0: Load interviewer names from People Profiles for validation
+    // NOTE: Web search should be generic, not persona-specific
     let interviewerNames: string[] = [];
     try {
       const peopleAnalysis = sqlite.prepare(`
@@ -114,20 +140,26 @@ export async function POST(
       console.log('⚠️ No people profiles found, skipping interviewer validation');
     }
     
-    // Check cache first (90 day TTL)
+    console.log(`🔍 Web search is GENERIC (not persona-specific) - will find questions for all interviewers`);
+    
+    // Check cache first (90 day TTL) - unless forceRefresh is true
     const now = Math.floor(Date.now() / 1000);
     const normalizedCompany = companyName.toLowerCase().trim();
     
-    const cached = await db
-      .select()
-      .from(interviewQuestionsCache)
-      .where(
-        and(
-          eq(interviewQuestionsCache.companyName, normalizedCompany),
-          gt(interviewQuestionsCache.expiresAt, now)
+    let cached: any[] = [];
+    
+    if (!forceRefresh) {
+      cached = await db
+        .select()
+        .from(interviewQuestionsCache)
+        .where(
+          and(
+            eq(interviewQuestionsCache.companyName, normalizedCompany),
+            gt(interviewQuestionsCache.expiresAt, now)
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
+    }
     
     if (cached.length > 0) {
       console.log('✅ Using cached interview questions (company-wide cache)');
@@ -173,7 +205,7 @@ export async function POST(
     }
     
     // No cache - search web for questions
-    console.log('🌐 No cache found, searching web with Tavily...');
+    console.log(`🌐 ${forceRefresh ? 'Force refresh requested, bypassing cache. ' : 'No cache found, '}searching web with Tavily...`);
     const { questions, sources, webIntelligence } = await searchInterviewQuestions(
       companyName,
       roleTitle,
@@ -189,9 +221,13 @@ export async function POST(
       });
     }
     
+    // Deduplicate questions to prevent duplicates
+    const deduplicatedQuestions = deduplicateQuestions(questions);
+    console.log(`✅ Deduplicated ${questions.length} questions to ${deduplicatedQuestions.length} unique questions`);
+    
     // Add evidence fields to fresh questions
     const questionsWithEvidence = addEvidenceFields(
-      questions,
+      deduplicatedQuestions,
       companyName,
       roleTitle,
       sources,

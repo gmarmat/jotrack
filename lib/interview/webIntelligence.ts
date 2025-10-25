@@ -256,23 +256,38 @@ export function extractWebIntelligence(
       });
     }
     
-    // Look for question patterns
+    // Look for question patterns - more comprehensive
     const questionPatterns = [
       /["']([^"']+\?)/g,  // Quoted questions
       /Q:\s*([^?\n]+\?)/gi,  // Q: format
       /asked\s+["']([^"']+\?)/gi,  // "They asked..."
       /(?:Question|Q)\s*[:#]?\s*([^.!?\n]{10,200}\?)/gi,  // "Question:" format
       /(?:Tell me about|Describe|Explain|What|Why|How|When|Where)\s+[^.!?\n]{10,200}\?/gi,  // Common starters
-      /([^.!?\n]{20,200}\?)/g,  // Any sentence ending with ?
+      /([^.!?\n]{15,200}\?)/g,  // Any sentence ending with ? (reduced min length)
+      // Additional patterns for better coverage
+      /(?:Can you|Would you|Have you|Do you|Are you)\s+[^.!?\n]{10,200}\?/gi,  // Modal questions
+      /(?:Walk me through|Tell me about|Describe a time|Give me an example)\s+[^.!?\n]{10,200}\?/gi,  // Behavioral starters
+      /(?:How would you|What would you|Why would you)\s+[^.!?\n]{10,200}\?/gi,  // Hypothetical questions
     ];
     
     let foundInThisResult = 0;
     questionPatterns.forEach(pattern => {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
-        if (match[1] && match[1].length > 10 && match[1].length < 200) {
-          questions.push(match[1].trim());
-          foundInThisResult++;
+        const question = match[1] || match[0];
+        if (question && question.length > 8 && question.length < 300) {
+          // Additional filtering to remove non-questions
+          const trimmed = question.trim();
+          if (!trimmed.includes('©') && 
+              !trimmed.includes('www.') && 
+              !trimmed.toLowerCase().includes('cookie') &&
+              !trimmed.toLowerCase().includes('privacy') &&
+              !trimmed.toLowerCase().includes('terms of service') &&
+              !trimmed.toLowerCase().includes('click here') &&
+              trimmed.includes('?')) {
+            questions.push(trimmed);
+            foundInThisResult++;
+          }
         }
       }
     });
