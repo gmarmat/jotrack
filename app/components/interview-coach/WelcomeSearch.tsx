@@ -102,6 +102,15 @@ export default function WelcomeSearch({
       setSearchComplete(true);
       setSearchResults(questionBank);
       
+      // Automatically call onSearchComplete to save the question bank
+      console.log('🔍 Search completed, calling onSearchComplete with:', {
+        hasQuestionBank: !!questionBank,
+        webQuestions: questionBank?.webQuestions?.length || 0,
+        aiQuestions: Object.keys(questionBank?.aiQuestions || {}),
+        synthesizedQuestions: questionBank?.synthesizedQuestions?.length || 0
+      });
+      onSearchComplete(questionBank);
+      
     } catch (error: any) {
       alert(`Search failed: ${error.message}`);
       setSearching(false);

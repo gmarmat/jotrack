@@ -113,7 +113,7 @@ export async function searchInterviewQuestions(
     const sources = allResults.map(r => r.url).filter(Boolean);
     
     return {
-      questions: questions.slice(0, 100), // Increased cap to 100 for broader search
+      questions: questions.slice(0, 30), // Optimal cap for speed vs coverage
       sources: Array.from(new Set(sources)),
       webIntelligence  // NEW! Rich intelligence data
     };
