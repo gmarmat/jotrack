@@ -11,6 +11,7 @@ interface Props {
   onSearchComplete: (questionBank: any) => void;
   existingQuestionBank?: any;
   analysisData?: any; // For stats display
+  onNavigateToPractice?: () => void; // For navigating to practice step
 }
 
 export default function WelcomeSearch({
@@ -20,7 +21,8 @@ export default function WelcomeSearch({
   roleTitle,
   onSearchComplete,
   existingQuestionBank,
-  analysisData
+  analysisData,
+  onNavigateToPractice
 }: Props) {
   const [searching, setSearching] = useState(false);
   const [searchComplete, setSearchComplete] = useState(false);
@@ -297,30 +299,46 @@ export default function WelcomeSearch({
                      transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <Search className="inline w-5 h-5 mr-2" />
-            {searching ? 'Searching...' : 'Begin Search & Analysis'}
+            {searching ? 'Searching...' : (existingQuestionBank ? 'Begin NEW Search & Analysis' : 'Begin Search & Analysis')}
           </button>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
             ⏱️ Takes ~30 seconds • Cached for 90 days (no repeat cost!)
           </p>
         </div>
         
-        {/* View Insights Button for existing question bank - VERY VISIBLE */}
+        {/* Action Buttons for existing question bank */}
         {existingQuestionBank && (
-          <div className="text-center mt-6">
-            <button
-              onClick={() => {
-                // TODO: Implement insights view
-                console.log('View insights clicked');
-                alert('View Insights clicked! (This will show detailed analysis of your questions)');
-              }}
-              className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl
-                       hover:from-indigo-700 hover:to-purple-700 transition-all font-bold text-lg shadow-xl
-                       transform hover:scale-105 border-2 border-indigo-300"
-            >
-              📊 View Insights
-            </button>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              See detailed analysis of your interview questions
+          <div className="text-center space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => {
+                  console.log('Continue to Practice clicked');
+                  if (onNavigateToPractice) {
+                    onNavigateToPractice();
+                  }
+                }}
+                className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl
+                         hover:from-green-700 hover:to-emerald-700 transition-all font-bold text-lg shadow-xl
+                         transform hover:scale-105 border-2 border-green-300"
+              >
+                📝 Continue to Practice
+              </button>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement insights view
+                  console.log('View insights clicked');
+                  alert('View Insights clicked! (This will show detailed analysis of your questions)');
+                }}
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl
+                         hover:from-indigo-700 hover:to-purple-700 transition-all font-bold text-lg shadow-xl
+                         transform hover:scale-105 border-2 border-indigo-300"
+              >
+                📊 View Insights
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              You have existing analysis data. Continue practicing or start a new search.
             </p>
           </div>
         )}

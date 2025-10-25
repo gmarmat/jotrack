@@ -686,17 +686,18 @@ export default function InterviewCoachPage() {
           </div>
         )}
         
-        {currentStep === 'welcome' && (
-          <WelcomeSearch
-            jobId={jobId}
-            persona={selectedPersona}
-            companyName={jobData.company}
-            roleTitle={jobData.title}
-            onSearchComplete={handleSearchComplete}
-            existingQuestionBank={interviewCoachState.questionBank}
-            analysisData={analysisData}
-          />
-        )}
+          {currentStep === 'welcome' && (
+            <WelcomeSearch
+              jobId={jobId}
+              persona={selectedPersona}
+              companyName={jobData.company}
+              roleTitle={jobData.title}
+              onSearchComplete={handleSearchComplete}
+              existingQuestionBank={interviewCoachState.questionBank}
+              analysisData={analysisData}
+              onNavigateToPractice={() => setCurrentStep('practice')}
+            />
+          )}
         
         
         {currentStep === 'practice' && (
