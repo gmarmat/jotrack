@@ -467,8 +467,8 @@ export default function InterviewCoachPage() {
             </div>
           </div>
           
-          {/* Breadcrumb with How it Works - Expanded version */}
-          <div className="mt-6 space-y-4">
+          {/* Breadcrumb */}
+          <div className="mt-6">
             <div className="flex items-center gap-1 overflow-x-auto pb-2">
               {steps.map((step, index) => {
                 const isActive = step.id === currentStep;
@@ -498,34 +498,6 @@ export default function InterviewCoachPage() {
                   </div>
                 );
               })}
-            </div>
-            
-            {/* How it Works - Expanded in header */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-white mb-3">How it Works</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-purple-100">
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">🔍</span>
-                  <div>
-                    <div className="font-medium">Search & Discover</div>
-                    <div className="text-purple-200">Find interview questions from multiple sources</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">📝</span>
-                  <div>
-                    <div className="font-medium">Practice & Score</div>
-                    <div className="text-purple-200">Write answers and get AI feedback</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">✨</span>
-                  <div>
-                    <div className="font-medium">Talk Tracks</div>
-                    <div className="text-purple-200">Generate STAR format stories</div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
