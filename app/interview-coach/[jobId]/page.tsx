@@ -197,14 +197,26 @@ export default function InterviewCoachPage() {
   const debouncedSave = useCallback(
     debounce(async (state: any) => {
       try {
+        console.log('💾 Auto-saving Interview Coach state:', {
+          hasQuestionBank: !!state.questionBank,
+          selectedQuestions: state.selectedQuestions?.length || 0,
+          currentStep: state.currentStep
+        });
+        
         setSaving(true);
-        await fetch(`/api/coach/${jobId}/save`, {
+        const response = await fetch(`/api/coach/${jobId}/save`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             interviewCoachJson: JSON.stringify(state)
           })
         });
+        
+        if (response.ok) {
+          console.log('✅ Auto-save successful');
+        } else {
+          console.error('❌ Auto-save failed:', response.status, await response.text());
+        }
         
         // Auto-advance removed - users control their own flow
       } catch (error) {
@@ -224,6 +236,13 @@ export default function InterviewCoachPage() {
   
   // Step handlers
   const handleSearchComplete = (questionBank: any) => {
+    console.log('🔍 handleSearchComplete called with:', {
+      hasQuestionBank: !!questionBank,
+      webQuestions: questionBank?.webQuestions?.length || 0,
+      aiQuestions: Object.keys(questionBank?.aiQuestions || {}),
+      synthesizedQuestions: questionBank?.synthesizedQuestions?.length || 0
+    });
+    
     // Auto-select all synthesized questions for practice
     const selectedQuestions = questionBank.synthesizedQuestions || [];
     
@@ -240,6 +259,13 @@ export default function InterviewCoachPage() {
         questionsSelected: selectedQuestions?.length || 0
       }
     };
+    
+    console.log('💾 Setting interview coach state:', {
+      hasQuestionBank: !!updated.questionBank,
+      selectedQuestions: updated.selectedQuestions?.length || 0,
+      currentStep: updated.currentStep
+    });
+    
     setInterviewCoachState(updated);
     setCurrentStep('practice');
   };
