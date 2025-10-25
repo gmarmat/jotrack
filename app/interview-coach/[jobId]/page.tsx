@@ -778,6 +778,8 @@ export default function InterviewCoachPage() {
               interviewCoachState={interviewCoachState}
               setInterviewCoachState={setInterviewCoachState}
               persona={selectedPersona}
+              jobData={jobData}
+              analysisData={analysisData}
             />
             
             {/* Add Custom Question Section */}

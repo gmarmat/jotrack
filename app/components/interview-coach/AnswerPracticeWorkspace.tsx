@@ -21,6 +21,8 @@ interface Props {
   interviewCoachState: any;
   setInterviewCoachState: (state: any) => void;
   persona?: 'recruiter' | 'hiring-manager' | 'peer';
+  jobData?: any;
+  analysisData?: any;
 }
 
 export default function AnswerPracticeWorkspace({
@@ -28,7 +30,9 @@ export default function AnswerPracticeWorkspace({
   selectedQuestions,
   interviewCoachState,
   setInterviewCoachState,
-  persona = 'hiring-manager'
+  persona = 'hiring-manager',
+  jobData,
+  analysisData
 }: Props) {
   // Debug logging
   console.log('🎯 AnswerPracticeWorkspace Debug:', {
@@ -249,24 +253,80 @@ export default function AnswerPracticeWorkspace({
   const handleSuggestAnswer = async () => {
     if (!selectedQuestion) return;
     
+    // Validate that we have some content to work with
+    if (!draftAnswer || draftAnswer.trim().length < 10) {
+      alert('Please write at least a few sentences about your experience before using AI Suggest.');
+      return;
+    }
+    
     setSuggestingAnswer(true);
     try {
+      // Get the actual question text from selectedQuestions array
+      const questionObj = selectedQuestions.find(q => 
+        (typeof q === 'string' ? q : q?.question) === selectedQuestion
+      );
+      const questionText = typeof questionObj === 'string' ? questionObj : questionObj?.question || selectedQuestion;
+      
+      // Extract rich context from passed props
+      const matchMatrix = analysisData?.matchMatrix;
+      
+      // Get JD core requirements and company values from jobData
+      const jdCore = jobData?.jdCore || jobData?.coreRequirements || jobData?.requirements || [];
+      const companyValues = jobData?.companyValues || jobData?.values || jobData?.culture || [];
+      
+      // Get resume context from analysisData
+      const resumeContext = analysisData?.resumeData?.summary || 
+                           analysisData?.resumeData?.experience || 
+                           analysisData?.resumeSummary || 
+                           'No resume context available';
+      
+      // Get company and role info from jobData
+      const companyName = jobData?.companyName || jobData?.company || 'Unknown Company';
+      const roleTitle = jobData?.roleTitle || jobData?.title || 'Unknown Role';
+      
+      const requestBody = {
+        question: questionText,
+        answer: draftAnswer,
+        persona,
+        targetedDimensions: ['structure', 'specificity'], // Default dimensions
+        jdCore,
+        companyValues,
+        userProfile: {
+          resume: resumeContext,
+          company: companyName,
+          role: roleTitle
+        },
+        matchMatrix
+      };
+      
+      console.log('🎯 Suggest Answer Request:', {
+        question: questionText.substring(0, 50) + '...',
+        answer: draftAnswer.substring(0, 50) + '...',
+        persona,
+        targetedDimensions: ['structure', 'specificity'],
+        jdCore: jdCore.length,
+        companyValues: companyValues.length,
+        userProfile: {
+          resume: resumeContext.substring(0, 50) + '...',
+          company: companyName,
+          role: roleTitle
+        }
+      });
+      
       const response = await fetch(`/api/interview-coach/${jobId}/suggest-answer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: selectedQuestion,
-          answer: draftAnswer,
-          persona,
-          targetedDimensions: ['structure', 'specificity'], // Default dimensions
-          jdCore: [],
-          companyValues: []
-        })
+        body: JSON.stringify(requestBody)
       });
       
-      if (!response.ok) throw new Error('AI suggestion failed');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`AI suggestion failed: ${response.status} ${errorText}`);
+      }
       
       const data = await response.json();
+      console.log('✅ API Response:', { success: data.success, usedAi: data.usedAi, draftLength: data.draft?.length });
       
       // V2: Handle new response format
       if (data.success && data.draft) {
@@ -284,6 +344,7 @@ export default function AnswerPracticeWorkspace({
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
+      console.error('❌ Suggest Answer Error:', error);
       alert(`AI Suggest failed: ${error.message}`);
     } finally {
       setSuggestingAnswer(false);

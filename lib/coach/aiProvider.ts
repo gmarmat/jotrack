@@ -653,6 +653,7 @@ function mapCapabilityToPromptKind(capability: string): any {
     'interview-questions-hiring-manager': 'interview-questions-hiring-manager',
     'interview-questions-peer': 'interview-questions-peer',
     'interview-questions-synthesis': 'interview-questions-synthesis',
+    'suggest-answer': 'suggest-answer',
     'writing-style-evaluation': 'writing-style-evaluation',
     'talk-track-recruiter': 'talk-track-recruiter',
     'talk-track-hiring-manager': 'talk-track-hiring-manager',
@@ -784,6 +785,16 @@ function buildPromptVariables(capability: string, inputs: any): any {
         persona: inputs.persona || 'hiring-manager',
         totalCount: inputs.totalCount || 0,
         allQuestions: inputs.allQuestions || '[]'
+      };
+
+    case 'suggest-answer':
+      return {
+        question: inputs.question || 'Unknown question',
+        resumeContext: inputs.resumeContext || 'No resume context available',
+        jdContext: inputs.jdContext || 'No job description context available',
+        companyName: inputs.companyName || 'Unknown Company',
+        roleTitle: inputs.roleTitle || 'Unknown Role',
+        currentAnswer: inputs.currentAnswer || 'No current answer'
       };
 
     case 'writing-style-evaluation':

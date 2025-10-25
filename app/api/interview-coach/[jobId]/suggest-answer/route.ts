@@ -6,6 +6,7 @@ import {
   mapErrorToResponse 
 } from '@/src/interview-coach/http/schema';
 import { logCoachEvent, logCoachError } from '@/src/interview-coach/telemetry';
+import { sqlite } from '@/db/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,21 +86,48 @@ export async function POST(
     let draft = '';
     let usedAi = false;
     
+    // Token Optimization: Check for existing AI-optimized content
+    const contentHash = require('crypto').createHash('sha256')
+      .update(`${question}-${answer}-${userProfile?.company}-${userProfile?.role}`)
+      .digest('hex');
+    
+    // Check cache for similar suggestions (24 hour TTL)
+    const cacheKey = `suggest-answer-${contentHash}`;
+    const cached = await checkSuggestionCache(cacheKey);
+    
+    if (cached) {
+      console.log('✅ Using cached suggestion');
+      return NextResponse.json({
+        success: true,
+        version: 'v2',
+        draft: cached.draft,
+        usedAi: cached.usedAi,
+        cached: true
+      });
+    }
+    
     if (aiAssistOn) {
       try {
         console.log('🤖 AI Assist enabled - calling AI provider...');
-        const aiResult = await callAiProvider('text-generation', {
-          prompt: buildAIPrompt(question, answer, targetedDimensions, jdCore, companyValues, persona),
-          maxTokens: 300,
-          temperature: 0.7
+        
+        // Token Optimization: Use existing AI-optimized variants if available
+        const optimizedContext = await getOptimizedContext(jobId, userProfile);
+        
+        const aiResult = await callAiProvider('suggest-answer', {
+          question,
+          currentAnswer: answer,
+          resumeContext: optimizedContext.resume || userProfile?.resume || 'No resume context available',
+          jdContext: optimizedContext.jd || (Array.isArray(jdCore) ? jdCore.join(' ') : jdCore) || 'No job description context available',
+          companyName: userProfile?.company || 'Unknown Company',
+          roleTitle: userProfile?.role || 'Unknown Role'
         });
 
-        if (aiResult.success && aiResult.data?.text) {
-          draft = aiResult.data.text;
+        if (aiResult.result) {
+          draft = aiResult.result;
           usedAi = true;
           console.log('✅ AI draft generated successfully');
         } else {
-          throw new Error('AI provider returned no text');
+          throw new Error('AI provider returned no result');
         }
       } catch (aiError) {
         console.warn('⚠️ AI enhancement failed, falling back to scaffold:', aiError);
@@ -122,6 +150,9 @@ export async function POST(
       draft,
       usedAi
     };
+
+    // Store in cache for future use
+    await storeSuggestionCache(cacheKey, response);
 
     // Log telemetry event
     logCoachEvent({
@@ -254,4 +285,69 @@ Improve the answer by addressing the targeted dimensions while maintaining authe
 - Improving clarity and structure
 
 Return only the improved answer (200-300 words max):`;
+}
+
+/**
+ * Check cache for suggestion (24 hour TTL)
+ */
+async function checkSuggestionCache(cacheKey: string): Promise<any> {
+  try {
+    const cached = sqlite.prepare(
+      'SELECT result_json, created_at FROM suggestion_cache WHERE cache_key = ? ORDER BY created_at DESC LIMIT 1'
+    ).get(cacheKey) as any;
+
+    if (cached) {
+      const age = Date.now() - cached.created_at;
+      const ttl = 24 * 60 * 60 * 1000; // 24 hours
+      if (age < ttl) {
+        return JSON.parse(cached.result_json);
+      }
+    }
+  } catch (error) {
+    console.warn('Cache lookup error:', error);
+  }
+  return null;
+}
+
+/**
+ * Store suggestion in cache
+ */
+async function storeSuggestionCache(cacheKey: string, result: any): Promise<void> {
+  try {
+    sqlite.prepare(
+      'INSERT OR REPLACE INTO suggestion_cache (cache_key, result_json, created_at) VALUES (?, ?, ?)'
+    ).run(cacheKey, JSON.stringify(result), Date.now());
+  } catch (error) {
+    console.warn('Cache store error:', error);
+  }
+}
+
+/**
+ * Get optimized context using existing AI-optimized variants
+ */
+async function getOptimizedContext(jobId: string, userProfile: any): Promise<{resume?: string, jd?: string}> {
+  try {
+    // Try to get existing AI-optimized variants from the job
+    const variants = sqlite.prepare(
+      'SELECT ai_optimized FROM attachments WHERE job_id = ? AND is_active = 1 AND ai_optimized IS NOT NULL'
+    ).all(jobId) as any[];
+
+    const context: {resume?: string, jd?: string} = {};
+    
+    for (const variant of variants) {
+      if (variant.ai_optimized) {
+        const parsed = JSON.parse(variant.ai_optimized);
+        if (parsed.type === 'resume' && !context.resume) {
+          context.resume = parsed.content;
+        } else if (parsed.type === 'job_description' && !context.jd) {
+          context.jd = parsed.content;
+        }
+      }
+    }
+    
+    return context;
+  } catch (error) {
+    console.warn('Error getting optimized context:', error);
+    return {};
+  }
 }
