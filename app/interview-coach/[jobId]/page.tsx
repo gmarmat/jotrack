@@ -87,7 +87,7 @@ export default function InterviewCoachPage() {
   // Sticky header scroll state
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   
-  // Calculate confidence score (memoized)
+  // Calculate confidence score (memoized) - only based on stable analysis data
   const confidenceScore = useMemo(() => {
     if (analysisData && analysisData.peopleProfiles && analysisData.matchScoreData) {
       console.log('🔍 Calculating confidence score with data:', {
@@ -102,7 +102,7 @@ export default function InterviewCoachPage() {
         matchScore: analysisData.matchScoreData,
         companyIntelligence: analysisData.companyIntelligence,
         skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
-        webIntelligence: interviewCoachState.questionBank?.webIntelligence
+        webIntelligence: null // Remove dependency on interviewCoachState
       });
       
       const overall = calculateOverallConfidence(signals);
@@ -110,7 +110,7 @@ export default function InterviewCoachPage() {
       return overall;
     }
     return null;
-  }, [analysisData, interviewCoachState.questionBank]);
+  }, [analysisData]); // Removed interviewCoachState.questionBank from dependencies
   
   // Load job data and Interview Coach state
   useEffect(() => {
