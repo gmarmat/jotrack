@@ -89,16 +89,25 @@ export default function InterviewCoachPage() {
   
   // Calculate confidence score (memoized)
   const confidenceScore = useMemo(() => {
-    if (analysisData) {
-      return calculateOverallConfidence(
-        calculateSignalConfidence({
-          peopleProfiles: analysisData.peopleProfiles,
-          matchScore: analysisData.matchScoreData,
-          companyIntelligence: analysisData.companyIntelligence,
-          skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
-          webIntelligence: interviewCoachState.questionBank?.webIntelligence
-        })
-      );
+    if (analysisData && analysisData.peopleProfiles && analysisData.matchScoreData) {
+      console.log('🔍 Calculating confidence score with data:', {
+        peopleProfiles: analysisData.peopleProfiles?.profiles?.length || 0,
+        matchScore: analysisData.matchScoreData?.matchScore,
+        companyIntelligence: !!analysisData.companyIntelligence,
+        webIntelligence: !!interviewCoachState.questionBank?.webIntelligence
+      });
+      
+      const signals = calculateSignalConfidence({
+        peopleProfiles: analysisData.peopleProfiles,
+        matchScore: analysisData.matchScoreData,
+        companyIntelligence: analysisData.companyIntelligence,
+        skillsMatch: analysisData.matchScoreData?.skillsMatch || [],
+        webIntelligence: interviewCoachState.questionBank?.webIntelligence
+      });
+      
+      const overall = calculateOverallConfidence(signals);
+      console.log('📊 Confidence score result:', overall.score);
+      return overall;
     }
     return null;
   }, [analysisData, interviewCoachState.questionBank]);
